@@ -1,0 +1,1 @@
+In this folder we will store i18n files

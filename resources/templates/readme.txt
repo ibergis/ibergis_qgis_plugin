@@ -1,0 +1,1 @@
+In this folder we will store templates for geopackages and qgis project templates
