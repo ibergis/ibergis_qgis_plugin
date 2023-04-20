@@ -41,22 +41,12 @@ You can find more information on https://github.com/Giswater/giswater_dbmodel/wi
 You can find the Frequent Answers and Questions for project on https://github.com/Giswater/giswater_dbmodel/wiki/FAQs
 
 ## CODE REPOSITORY
-Use the https://github.com/Giswater/docs repository to find some info about DOCS<br>
-Use the https://github.com/Giswater/giswater_qgis_plugin repository to find some info about PYTHON QGIS PLUGIN.<br>
-Use the https://github.com/Giswater/giswater_dbmodel repository to find some info about DATABASE MODEL.<br>
-Rest of repositories are no significant. Some of them they are deprecated or some of them are not used yet.
 
 ## VERSIONING
-Giswater works using three degrees of releases wich it means that the number three codes:
-	Major. Minor. Built
 
 Major: New architecture with new great functionalities without forward compatibility.<br>
 Minor: Bug fix and new great functionalities (including refactors) with forward compatibility.<br>
 Built: Bug fix and new little functionalities with forward compatibility.<br>
-
-The time-period for built releases is one-per-month (12 builts / year).<br>
-The time-period for minor releases is one-per-year (1 minor / year).<br>
-There is no time-period defined for major releases.<br>
 
 
 ## LICENSE
@@ -64,16 +54,3 @@ This program is free software: you can redistribute it and/or modify it under th
 
 
 ## THANKS TO
-GITS-BarcelonaTech University<br>
-Aigües de Mataró<br>
-Aigües de Girona<br>
-Aigües de Blanes<br>
-Aigües del Prat<br>
-Aigües de Vic<br>
-Aigües de Castellbisbal<br>
-Aigües de Banyoles<br>
-Figueres de Serveis, S.A<br>
-Prodaisa<br>
-Sabemsa<br>
-Consorci Aigües de Tarragona<br>
-
