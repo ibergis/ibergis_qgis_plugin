@@ -21,15 +21,15 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('inp_losses', 'attributes', 'inp_losses', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('inp_losses_values', 'attributes', 'inp_losses_values', '', 0, 0, 0, 0, 0, 0);
 
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('polygon', 'features', 'polygon', '', 0, 0, 0, 0, 0, 25831);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('point', 'features', 'point', '', 0, 0, 0, 0, 0, 25831);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('manzone', 'features', 'manzone', '', 0, 0, 0, 0, 0, 25831);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('losszone', 'features', 'losszone', '', 0, 0, 0, 0, 0, 25831);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('roof', 'features', 'roof', '', 0, 0, 0, 0, 0, 25831);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('element', 'features', 'element', '', 0, 0, 0, 0, 0, 25831);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('edge', 'features', 'edge', '', 0, 0, 0, 0, 0, 25831);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('vertex', 'features', 'vertex', '', 0, 0, 0, 0, 0, 25831);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('raingage', 'features', 'raingage', '', 0, 0, 0, 0, 0, 25831);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('polygon', 'features', 'polygon', '', 0, 0, 0, 0, 0, 4326);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('point', 'features', 'point', '', 0, 0, 0, 0, 0, 4326);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('manzone', 'features', 'manzone', '', 0, 0, 0, 0, 0, 4326);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('losszone', 'features', 'losszone', '', 0, 0, 0, 0, 0, 4326);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('roof', 'features', 'roof', '', 0, 0, 0, 0, 0, 4326);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('element', 'features', 'element', '', 0, 0, 0, 0, 0, 4326);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('edge', 'features', 'edge', '', 0, 0, 0, 0, 0, 4326);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('vertex', 'features', 'vertex', '', 0, 0, 0, 0, 0, 4326);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) VALUES('raingage', 'features', 'raingage', '', 0, 0, 0, 0, 0, 4326);
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_selector', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_parameter', 0);
