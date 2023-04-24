@@ -42,7 +42,7 @@ CREATE TABLE inp_landuses (
     landuses_id  integer PRIMARY KEY,
     scenario_id integer CHECK (typeof(scenario_id)='integer'),
     name text,
-    manning double,
+    manning double CHECK (typeof(manning)='double'),
     active  boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL)
 );
 
@@ -89,7 +89,7 @@ CREATE TABLE polygon (
     geom geometry,
     sector_id integer CHECK (typeof(sector_id)='integer'),
     scenario_id integer CHECK (typeof(scenario_id)='integer'),
-    dmax double,
+    dmax double CHECK (typeof(dmax)='double'),
     structured boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL),
     descript text
 );
@@ -99,7 +99,7 @@ CREATE TABLE point (
     geom geometry,
     sector_id integer CHECK (typeof(sector_id)='integer'),
     scenario_id integer CHECK (typeof(scenario_id)='integer'),
-    elevation double
+    elevation double CHECK (typeof(elevation)='double')
 );
 
 CREATE TABLE manzone (
@@ -112,7 +112,7 @@ CREATE TABLE manzone (
     source text,
     descript text,
     land_use integer CHECK (typeof(land_use)='integer'),
-    custom_manning double
+    custom_manning double CHECK (typeof(custom_manning)='double')
 );
 
 CREATE TABLE losszone (
@@ -123,14 +123,14 @@ CREATE TABLE losszone (
     name text,
     source text,
     descript text,
-    losslin_aparam double,
-    losslin_bparam double,
-    lossscs_aparam double,
-    lossscs_bparam double,
-    losshort_aparam double,
-    losshort_bparam double,
-    lossgreen_aparam double,
-    lossgreen_bparam double
+    losslin_aparam double CHECK (typeof(losslin_aparam)='double'),
+    losslin_bparam double CHECK (typeof(losslin_bparam)='double'),
+    lossscs_aparam double CHECK (typeof(lossscs_aparam)='double'),
+    lossscs_bparam double CHECK (typeof(lossscs_bparam)='double'),
+    losshort_aparam double CHECK (typeof(losshort_aparam)='double'),
+    losshort_bparam double CHECK (typeof(losshort_bparam)='double'),
+    lossgreen_aparam double CHECK (typeof(lossgreen_aparam)='double'),
+    lossgreen_bparam double CHECK (typeof(lossgreen_bparam)='double')
 );
 
 CREATE TABLE roof (
@@ -141,14 +141,14 @@ CREATE TABLE roof (
     name text,
     source text,
     descript text,
-    slope double,
-    width double,
-    manning double,
+    slope double CHECK (typeof(slope)='double'),
+    width double CHECK (typeof(width)='double'),
+    manning double CHECK (typeof(manning)='double'),
     outlet_type text,
     outlet_id integer CHECK (typeof(outlet_id)='integer'),
-    totalvol double,
-    inletvol double,
-    lossvol double
+    totalvol double CHECK (typeof(totalvol)='double'),
+    inletvol double CHECK (typeof(inletvol)='double'),
+    lossvol double CHECK (typeof(lossvol)='double')
 );
 
 CREATE TABLE element (
@@ -186,13 +186,13 @@ CREATE TABLE vertex (
     sector_id integer CHECK (typeof(sector_id)='integer'),
     scenario_id integer CHECK (typeof(scenario_id)='integer'),
     source text,
-    elevation double
+    elevation double CHECK (typeof(elevation)='double')
 );
 
 CREATE TABLE raingage (
     fid integer PRIMARY KEY,
     geom geometry,
-    sector_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
     descript text,
     name text,
     rain_type boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL),
