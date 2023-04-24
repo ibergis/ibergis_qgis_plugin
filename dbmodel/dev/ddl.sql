@@ -12,8 +12,8 @@ This version of Giswater is provided by Giswater Association
 
 CREATE TABLE sys_selector (
     selector_id integer PRIMARY KEY,
-	parameter text,
-    value integer
+    parameter text,
+    value integer CHECK (typeof(value)='integer')
 );
 
 CREATE TABLE sys_parameter (
@@ -40,7 +40,7 @@ CREATE TABLE cat_scenario (
 
 CREATE TABLE inp_landuses (
     landuses_id  integer PRIMARY KEY,
-    scenario_id integer,
+    scenario_id integer CHECK (typeof(scenario_id)='integer'),
     name text,
     manning double,
     active  boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL)
@@ -52,7 +52,7 @@ CREATE TABLE inp_landuses (
 
 CREATE TABLE inp_curves (
     curve_id integer PRIMARY KEY,
-    sector_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
     active boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL)
 );
 
@@ -65,7 +65,7 @@ CREATE TABLE inp_curves_value (
 CREATE TABLE inp_timeseries (
     timser_id integer PRIMARY KEY,
     name text,
-    sector_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
     descript text,
     timser_type text,
     active boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL)
@@ -85,10 +85,10 @@ CREATE TABLE inp_timeseries_value (
 -- ----------------------
 CREATE TABLE polygon (
     fid integer PRIMARY KEY,
-    pol_id integer,
+    pol_id integer CHECK (typeof(pol_id)='integer'),
     geom geometry,
-    sector_id integer,
-    scenario_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
+    scenario_id integer CHECK (typeof(scenario_id)='integer'),
     dmax double,
     structured boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL),
     descript text
@@ -97,29 +97,29 @@ CREATE TABLE polygon (
 CREATE TABLE point (
     fid integer PRIMARY KEY,
     geom geometry,
-    sector_id integer,
-    scenario_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
+    scenario_id integer CHECK (typeof(scenario_id)='integer'),
     elevation double
 );
 
 CREATE TABLE manzone (
     fid integer PRIMARY KEY,
-    manzone_id integer,
+    manzone_id integer CHECK (typeof(manzone_id)='integer'),
     geom geometry,
-    sector_id integer,
-    scenario_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
+    scenario_id integer CHECK (typeof(scenario_id)='integer'),
     name text,
     source text,
     descript text,
-    land_use integer,
+    land_use integer CHECK (typeof(land_use)='integer'),
     custom_manning double
 );
 
 CREATE TABLE losszone (
     fid integer PRIMARY KEY,
     geom geometry,
-    sector_id integer,
-    scenario_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
+    scenario_id integer CHECK (typeof(scenario_id)='integer'),
     name text,
     source text,
     descript text,
@@ -136,8 +136,8 @@ CREATE TABLE losszone (
 CREATE TABLE roof (
     fid integer PRIMARY KEY,
     geom geometry,
-    sector_id integer,
-    scenario_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
+    scenario_id integer CHECK (typeof(scenario_id)='integer'),
     name text,
     source text,
     descript text,
@@ -145,7 +145,7 @@ CREATE TABLE roof (
     width double,
     manning double,
     outlet_type text,
-    outlet_id integer,
+    outlet_id integer CHECK (typeof(outlet_id)='integer'),
     totalvol double,
     inletvol double,
     lossvol double
@@ -154,11 +154,11 @@ CREATE TABLE roof (
 CREATE TABLE element (
     fid integer PRIMARY KEY,
     geom geometry,
-    sector_id integer NULL,
-    scenario_id integer NULL,
-    manzone_id integer NULL,
-    losszone_id integer NULL,
-    roof_id integer NULL,
+    sector_id integer NULL CHECK (typeof(sector_id)='integer'),
+    scenario_id integer NULL CHECK (typeof(scenario_id)='integer'),
+    manzone_id integer NULL CHECK (typeof(manzone_id)='integer'),
+    losszone_id integer NULL CHECK (typeof(losszone_id)='integer'),
+    roof_id integer NULL CHECK (typeof(roof_id)='integer'),
     source text NULL,
     vertex_id1 real NULL,
     vertex_id2 real NULL,
@@ -173,18 +173,18 @@ CREATE TABLE element (
 CREATE TABLE edge (
     fid integer PRIMARY KEY,
     geom geometry,
-    sector_id integer,
-    scenario_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
+    scenario_id integer CHECK (typeof(scenario_id)='integer'),
     source text,
-    vertex_id1 integer,
-    vertex_id2 integer
+    vertex_id1 integer CHECK (typeof(vertex_id1)='integer'),
+    vertex_id2 integer CHECK (typeof(vertex_id2)='integer')
 );
 
 CREATE TABLE vertex (
     fid integer PRIMARY KEY,
     geom geometry,
-    sector_id integer,
-    scenario_id integer,
+    sector_id integer CHECK (typeof(sector_id)='integer'),
+    scenario_id integer CHECK (typeof(scenario_id)='integer'),
     source text,
     elevation double
 );
@@ -196,7 +196,7 @@ CREATE TABLE raingage (
     descript text,
     name text,
     rain_type boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL),
-    timeseries_id integer
+    timeseries_id integer CHECK (typeof(timeseries_id)='integer')
 );
 
 
