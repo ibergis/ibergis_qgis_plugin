@@ -11,17 +11,20 @@ This version of Giswater is provided by Giswater Association
 -----------------------
 
 CREATE TABLE sys_selector (
-    parameter text,
+    selector_id integer PRIMARY KEY,
+	parameter text,
     value integer
 );
 
 CREATE TABLE sys_parameter (
-    parameter text,
+    parameter_id integer PRIMARY KEY,
+	parameter text,
     value text
 );
 
 CREATE TABLE sys_typevalue (
-    typevalue text,
+    typevalue_id integer PRIMARY KEY,
+	typevalue text,
     id text,
     idval text,
     descript text,
@@ -36,7 +39,7 @@ CREATE TABLE cat_scenario (
 );
 
 CREATE TABLE inp_landuses (
-    id  integer PRIMARY KEY,
+    landuses_id  integer PRIMARY KEY,
     scenario_id integer,
     name text,
     manning double,
