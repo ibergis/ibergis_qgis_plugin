@@ -74,8 +74,8 @@ CREATE TABLE inp_timeseries (
 CREATE TABLE inp_timeseries_value (
     rid integer PRIMARY KEY,
     timser_id text,
-    date datetime default (strftime('%Y-%m-%d','now'),
-    time datetime default (strftime('%H:%M:%f','now'),
+    date datetime,
+    time datetime,
     val real
 );
 
@@ -90,7 +90,7 @@ CREATE TABLE polygon (
     sector_id integer CHECK (typeof(sector_id)='integer'),
     scenario_id integer CHECK (typeof(scenario_id)='integer'),
     dmax double CHECK (typeof(dmax)='double'),
-    structured boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL),
+    structured boolean CHECK (typeof(structured) IN (0,1) OR typeof(structured)=NULL),
     descript text
 );
 
@@ -195,7 +195,7 @@ CREATE TABLE raingage (
     sector_id integer CHECK (typeof(sector_id)='integer'),
     descript text,
     name text,
-    rain_type boolean CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL),
+    rain_type boolean CHECK (typeof(rain_type) IN (0,1) OR typeof(rain_type)=NULL),
     timeseries_id integer CHECK (typeof(timeseries_id)='integer')
 );
 
