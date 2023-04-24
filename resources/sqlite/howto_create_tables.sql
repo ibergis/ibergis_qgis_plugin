@@ -72,8 +72,8 @@ CREATE TRIGGER "trigger_insert_feature_count_tablname" AFTER INSERT ON "tablname
 CREATE TABLE tablgeo (
 	fid integer primary key,
 	geom	geometry,
-	sector_id	integer,
-	scenario_id	integer,
+	sector_id	integer CHECK (typeof(sector_id) = 'integer'),,
+	scenario_id	integer CHECK (typeof(scenario_id) = 'integer'),
 	name	text,
 	source	text,
 	descript	text,
@@ -81,7 +81,7 @@ CREATE TABLE tablgeo (
 	width	double CHECK (typeof(width) = 'double'),
 	manning	double CHECK (typeof(manning) = 'double'),
 	outlet_type	text,
-	outlet_id	integer CHECK (typeof(outlet_id) = 'double'),
+	outlet_id	integer CHECK (typeof(outlet_id) = 'integer'),
 	totalvol	double CHECK (typeof(totalvol) = 'double'),
 	inletvol	double CHECK (typeof(inletvol) = 'double'),
 	lossvol	double CHECK (typeof(lossvol) = 'double')
