@@ -47,11 +47,13 @@ CREATE TABLE tablname (
 	tablname_id INTEGER PRIMARY KEY,
 	descript text,
 	text text,
-	active BOOLEAN CHECK (typeof(active) IN (0,1) OR typeof(active)=NULL),
+	active BOOLEAN CHECK (active IN (0,1)) OR active=NULL),
 	fieldt text,
 	fieldnum real,
 	parameter text
 );
+
+
 
 --2. INSERTS INTO GPKG SYSTEM TABLES
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, min_x, min_y, max_x, max_y, srs_id) 
