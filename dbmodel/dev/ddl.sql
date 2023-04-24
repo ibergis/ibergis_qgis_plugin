@@ -74,8 +74,8 @@ CREATE TABLE inp_timeseries (
 CREATE TABLE inp_timeseries_value (
     rid integer PRIMARY KEY,
     timser_id text,
-    date tstamp,
-    time tstamp,
+    date datetime default (strftime('%Y-%m-%d','now'),
+    time datetime default (strftime('%H:%M:%f','now'),
     val real
 );
 
