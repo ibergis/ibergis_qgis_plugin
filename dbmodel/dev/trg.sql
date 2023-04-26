@@ -14,13 +14,10 @@ CREATE TRIGGER "trigger_delete_feature_count_sys_selector" AFTER DELETE ON "sys_
 CREATE TRIGGER "trigger_delete_feature_count_sys_parameter" AFTER DELETE ON "sys_parameter" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sys_parameter'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_scenario" AFTER DELETE ON "cat_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_scenario'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_landuses" AFTER DELETE ON "inp_landuses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_landuses'); END;
-CREATE TRIGGER "trigger_delete_feature_count_inp_landuses_value" AFTER DELETE ON "inp_landuses_value" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_landuses_value'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_curves" AFTER DELETE ON "inp_curves" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_curves'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_curves_value" AFTER DELETE ON "inp_curves_value" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_curves_value'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_timeseries" AFTER DELETE ON "inp_timeseries" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_timeseries'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_timeseries_value" AFTER DELETE ON "inp_timeseries_value" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_timeseries_value'); END;
-CREATE TRIGGER "trigger_delete_feature_count_inp_losses" AFTER DELETE ON "inp_losses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_losses'); END;
-CREATE TRIGGER "trigger_delete_feature_count_inp_losses_values" AFTER DELETE ON "inp_losses_values" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_losses_values'); END;
 
 CREATE TRIGGER "trigger_delete_feature_count_polygon" AFTER DELETE ON "polygon"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('polygon'); END;
 CREATE TRIGGER "trigger_delete_feature_count_point" AFTER DELETE ON "point"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('point'); END;
@@ -41,8 +38,6 @@ CREATE TRIGGER "trigger_insert_feature_count_inp_curves" AFTER INSERT ON "inp_cu
 CREATE TRIGGER "trigger_insert_feature_count_inp_curves_value" AFTER INSERT ON "inp_curves_value" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_curves_value'); END;
 CREATE TRIGGER "trigger_insert_feature_count_inp_timeseries" AFTER INSERT ON "inp_timeseries" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_timeseries'); END;
 CREATE TRIGGER "trigger_insert_feature_count_inp_timeseries_value" AFTER INSERT ON "inp_timeseries_value" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_timeseries_value'); END;
-CREATE TRIGGER "trigger_insert_feature_count_inp_losses" AFTER INSERT ON "inp_losses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_losses'); END;
-CREATE TRIGGER "trigger_insert_feature_count_inp_losses_values" AFTER INSERT ON "inp_losses_values" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_losses_values'); END;
 
 CREATE TRIGGER "trigger_insert_feature_count_polygon" AFTER INSERT ON "polygon"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('polygon'); END;
 CREATE TRIGGER "trigger_insert_feature_count_point" AFTER INSERT ON "point"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('point'); END;

@@ -46,10 +46,6 @@ CREATE TABLE inp_landuses (
     active  boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
---CREATE TABLE inp_landuses_value (
-
---);
-
 CREATE TABLE inp_curves (
     curve_id integer PRIMARY KEY,
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
