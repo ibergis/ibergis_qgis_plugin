@@ -76,7 +76,7 @@ CREATE TABLE inp_timeseries_value (
     timser_id text CHECK (typeof(timser_id)='text' OR timser_id=NULL),
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-    val real CHECK (typeof(val)='real' OR val=NULL
+    val real CHECK (typeof(val)='real' OR val=NULL)
 );
 
 
@@ -195,7 +195,7 @@ CREATE TABLE raingage (
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
-    rain_type boolean CHECK (typeof(rain_type) IN (0,1,NULL),
+    rain_type boolean CHECK (typeof(rain_type) IN (0,1,NULL)),
     timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL)
 );
 
