@@ -13,6 +13,7 @@ if __name__ == '__main__':
     # QgsApplication.setPrefixPath('/usr', True)
 
     print("prueba")
+    print("otro cambio")
 
     # Create a reference to the QgsApplication
     app = QgsApplication([], True)
