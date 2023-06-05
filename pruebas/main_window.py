@@ -34,4 +34,3 @@ if __name__ == '__main__':
 
     # Remove the provider and layer registries from memory
     app.exitQgis()
-    sys.exit(exitcode)

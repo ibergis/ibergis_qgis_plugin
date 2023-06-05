@@ -31,7 +31,7 @@ if __name__ == '__main__':
     # Load providers
     app.initQgis()
 
-    folder_path = "/home/david/Dropbox/BGEO/Drain/pyqgis/scripts/folder_1/"
+    folder_path = os.getcwd()
     if not os.path.exists(folder_path):
         print(f"File not found")
     filename = 'dialog_designer.ui'
