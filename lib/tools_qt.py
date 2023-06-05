@@ -18,7 +18,7 @@ from warnings import warn
 
 from qgis.PyQt.QtCore import QDate, QDateTime, QSortFilterProxyModel, QStringListModel, QTime, Qt, QRegExp, pyqtSignal,\
     QPersistentModelIndex, QCoreApplication, QTranslator, QEvent
-from qgis.PyQt.QtGui import QPixmap, QDoubleValidator, QTextCharFormat, QFont, QIcon
+from qgis.PyQt.QtGui import QPixmap, QDoubleValidator, QTextCharFormat, QFont
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.PyQt.QtWidgets import QAction, QLineEdit, QComboBox, QWidget, QDoubleSpinBox, QCheckBox, QLabel, QTextEdit, \
     QDateEdit, QAbstractItemView, QCompleter, QDateTimeEdit, QTableView, QSpinBox, QTimeEdit, QPushButton, \
@@ -214,13 +214,13 @@ def get_text(dialog, widget, add_quote=False, return_string_null=True):
         elif type(widget) is QCheckBox:
             value = is_checked(dialog, widget)
             if type(value) is bool:
-                text = str(text)
+                text = str(value)
             else:
                 text = None
 
-        if not text and return_string_null:
+        if text in (None, '') and return_string_null:
             text = "null"
-        elif not text:
+        elif text in (None, ''):
             text = ""
         if add_quote and text != "null":
             text = "'" + text + "'"
@@ -570,8 +570,16 @@ def set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_tr
 def get_col_index_by_col_name(qtable, column_name):
     """ Return column index searching by column name """
 
-    record = qtable.model().record(0)
-    column_index = record.indexOf(column_name)
+    model = qtable.model()
+    column_index = -1
+    try:
+        record = model.record(0)
+        column_index = record.indexOf(column_name)
+    except AttributeError:
+        for x in range(0, model.columnCount()):
+            if model.headerData(x, Qt.Horizontal) == column_name:
+                column_index = x
+                break
 
     if column_index == -1:
         column_index = None
@@ -611,7 +619,7 @@ def set_calendar_empty(widget):
 
 def add_horizontal_spacer():
 
-    widget = QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum)
+    widget = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
     return widget
 
 
@@ -980,7 +988,7 @@ def show_warning_open_file(text, inf_text, file_path, context_name=None):
     iface.messageBar().pushWidget(widget, 1)
 
 
-def show_question(text, title="Info", inf_text=None, context_name=None, parameter=None, force_action=False):
+def show_question(text, title=None, inf_text=None, context_name=None, parameter=None, force_action=False):
     """ Ask question to the user """
 
     # Expert mode does not ask and accept all actions
@@ -1006,13 +1014,6 @@ def show_question(text, title="Info", inf_text=None, context_name=None, paramete
     msg_box.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
     msg_box.setDefaultButton(QMessageBox.Ok)
     msg_box.setWindowFlags(Qt.WindowStaysOnTopHint)
-
-    # Set window icon
-    icon_folder = f"{global_vars.plugin_dir}{os.sep}icons"
-    icon_path = f"{icon_folder}{os.sep}dialogs{os.sep}20x20{os.sep}giswater.png"
-    giswater_icon = QIcon(icon_path)
-    msg_box.setWindowIcon(giswater_icon)
-
     ret = msg_box.exec_()
     if ret == QMessageBox.Ok:
         return True
@@ -1094,18 +1095,13 @@ def tr(message, context_name=None, aux_context='ui_message'):
     return value
 
 
-def manage_translation(context_name, dialog=None, log_info=False, plugin_dir=None, plugin_name=None):
+def manage_translation(context_name, dialog=None, log_info=False):
     """ Manage locale and corresponding 'i18n' file """
 
     # Get locale of QGIS application
     locale = tools_qgis.get_locale()
 
-    if plugin_dir is None:
-        plugin_dir = global_vars.plugin_dir
-    if plugin_name is None:
-        plugin_name = global_vars.plugin_name
-
-    locale_path = os.path.join(plugin_dir, 'i18n', f'{plugin_name}_{locale}.qm')
+    locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_{locale}.qm')
     if not os.path.exists(locale_path):
         if log_info:
             tools_log.log_info("Locale not found", parameter=locale_path)
