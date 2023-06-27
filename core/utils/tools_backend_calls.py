@@ -121,7 +121,6 @@ def delete_object(**kwargs):
     qtable = tools_qt.get_widget(dialog, f"{qtable_name}")
 
 
-
     # Get selected rows
     selected_list = qtable.selectionModel().selectedRows()
     if len(selected_list) == 0:
@@ -156,46 +155,6 @@ def delete_object(**kwargs):
         tools_db.execute_sql(sql, log_sql=False)
         _reload_table(**kwargs)
 
-
-def open_visit_manager(**kwargs):
-    dialog = kwargs['dialog']
-    complet_result = kwargs['complet_result']
-    func_params = kwargs['func_params']
-    feature_type = complet_result['body']['feature']['featureType']
-    feature_id = complet_result['body']['feature']['id']
-
-    manage_visit = GwVisit()
-    # manage_visit.visit_added.connect(_update_visit_table)
-    manage_visit.manage_visits(feature_type, feature_id)
-
-
-# def manage_document(doc_id, **kwargs):
-#     """ Function called in class tools_gw.add_button(...) -->
-#         widget.clicked.connect(partial(getattr(self, function_name), **kwargs)) """
-#     feature = None
-#     complet_result = kwargs['complet_result']
-#     feature_type = complet_result['body']['feature']['featureType']
-#     feature_id = complet_result['body']['feature']['id']
-#     field_id = str(complet_result['body']['feature']['idName'])
-#     table_parent = str(complet_result['body']['feature']['tableParent'])
-#     schema_name = str(complet_result['body']['feature']['schemaName'])
-#
-#     # When click button 'new_element' element id is the signal emited by the button
-#     if doc_id is False:
-#         layer = tools_qgis.get_layer_by_tablename(table_parent, False, False, schema_name)
-#         if layer:
-#             expr_filter = f"{field_id} = '{feature_id}'"
-#             feature = tools_qgis.get_feature_by_expr(layer, expr_filter)
-#
-#     doc = GwDocument()
-#     doc.get_document(feature=feature, feature_type=feature_type)
-#     # If document exist
-#     if doc_id:
-#         tools_qt.set_widget_text(doc.dlg_add_doc, "doc_id", doc_id)
-#         doc.dlg_add_doc.btn_accept.clicked.connect(partial(_reload_table, **kwargs))
-#     # If we are creating a new element
-#     else:
-#         doc.dlg_add_doc.btn_accept.clicked.connect(partial(_manage_document_new, doc, **kwargs))
 
 
 def open_selected_path(**kwargs):
@@ -288,74 +247,6 @@ def filter_table(**kwargs):
 
     return complet_list
 
-# def filter_table_mincut(**kwargs):
-#     """
-#          Function called in module GwInfo: def _set_filter_listeners(self, complet_result, dialog, widget_list, columnname, widgetname)
-#          at lines:  widget.textChanged.connect(partial(getattr(tools_backend_calls, widgetfunction), **kwargs))
-#                     widget.currentIndexChanged.connect(partial(getattr(tools_backend_calls, widgetfunction), **kwargs))
-#      """
-#
-#     complet_result = kwargs['complet_result']
-#     model = kwargs['model']
-#     dialog = kwargs['dialog']
-#     widget_list = kwargs['widget_list']
-#     widgetname = kwargs['widgetname']
-#     linkedobject = kwargs['linkedobject']
-#     feature_id = kwargs['feature_id']
-#     func_params = kwargs['func_params']
-#
-#     filter_fields = get_filter_qtableview_mincut(dialog, widget_list, func_params)
-#     try:
-#         index_tab = dialog.tab_main.currentIndex()
-#         tab_name = dialog.tab_main.widget(index_tab).objectName()
-#     except:
-#         tab_name = 'main'
-#     complet_list = _get_list(complet_result, '', tab_name, filter_fields, widgetname, 'form_feature', linkedobject, feature_id)
-#     if complet_list is False:
-#         return False
-#     for field in complet_list['body']['data']['fields']:
-#         qtable = dialog.findChild(QTableView, field['widgetname'])
-#         if qtable:
-#             if field['value'] is None:
-#                 model.removeRows(0, model.rowCount())
-#                 return complet_list
-#             model.clear()
-#             tools_gw.add_tableview_header(qtable, field)
-#             tools_gw.fill_tableview_rows(qtable, field)
-#             tools_gw.set_tablemodel_config(dialog, qtable, field['widgetname'], 1, True)
-#             tools_qt.set_tableview_config(qtable)
-#
-#     return complet_list
-
-# def open_rpt_result(**kwargs):
-#     """
-#     Open form of selected element of the @qtable??'
-#         function called in module tools_gw: def add_tableview(complet_result, field, m'odule=sys.modules[__name__])
-#         at lines:   widget.doubleClicked.connect(partial(getattr(module, function_name), **kwargs))
-#     """
-#
-#     qtable = kwargs['qtable']
-#     complet_list = kwargs['complet_result']
-#     func_params = kwargs['func_params']
-#     # Get selected rows
-#     selected_list = qtable.selectionModel().selectedRows()
-#     if len(selected_list) == 0:
-#         message = "Any record selected"
-#         tools_qgis.show_warning(message)
-#         return
-#
-#     index = selected_list[0]
-#     row = index.row()
-#     table_name = complet_list['body']['feature']['tableName']
-#     column_index = tools_qt.get_col_index_by_col_name(qtable, func_params['columnfind'])
-#     feature_id = index.sibling(row, column_index).data()
-#     info_feature = GwInfo('tab_data')
-#     complet_result, dialog = info_feature.open_form(table_name=table_name, feature_id=feature_id, tab_type='tab_data')
-#
-#     if not complet_result:
-#         tools_log.log_info("FAIL open_rpt_result")
-#         return
-
 
 def set_layer_index(**kwargs):
     """ Force reload dataProvider of layer """
@@ -372,22 +263,6 @@ def set_layer_index(**kwargs):
             tools_qgis.set_layer_index(layer_name)
 
 
-def get_info_node(**kwargs):
-    """ Function called in class tools_gw.add_button(...) -->
-            widget.clicked.connect(partial(getattr(self, function_name), **kwargs)) """
-
-    dialog = kwargs['dialog']
-    widget = kwargs['widget']
-
-    feature_id = tools_qt.get_text(dialog, widget)
-    if widget.property('value') not in (None, ''):
-        feature_id = widget.property('value')
-    custom_form = GwInfo('tab_data')
-    complet_result, dialog = custom_form.open_form(table_name='v_edit_node', feature_id=feature_id,
-                                                       tab_type='tab_data', is_docker=False)
-    if not complet_result:
-        tools_log.log_info("FAIL open_node")
-        return
 
 
 def set_style_mapzones(**kwargs):
@@ -703,62 +578,6 @@ def get_filter_qtableview(dialog, widget_list, complet_result, filter_fields = '
     return filter_fields
 
 
-def get_filter_qtableview_mincut(dialog, widget_list, func_params, filter_fields = ''):
-
-    for widget in widget_list:
-        if widget.property('isfilter'):
-            functions = None
-            if widget.property('widgetfunction') is not None:
-                widgetfunction = widget.property('widgetfunction')
-                if isinstance(widgetfunction, list):
-                    functions = widgetfunction
-                else:
-                    functions = [widgetfunction]
-
-                for f in functions:
-                    if 'isFilter' in f and f['isFilter']: continue
-                    columnname = widget.property('columnname')
-                    parameters = f['parameters']
-                    filter_sign = "ILIKE"
-                    column_id = 0
-
-                    if 'columnfind' in parameters:
-                        columnname = parameters['columnfind']
-
-                    if widget.property('widgetcontrols') is not None and 'filterSign' in widget.property('widgetcontrols'):
-                        if widget.property('widgetcontrols')['filterSign'] is not None:
-                            filter_sign = widget.property('widgetcontrols')['filterSign']
-                    if widget.property('widgetcontrols') is not None and 'columnId' in widget.property('widgetcontrols'):
-                        if widget.property('widgetcontrols')['columnId'] is not None:
-                            column_id = widget.property('widgetcontrols')['columnId']
-                    if type(widget) == QComboBox:
-                        value = tools_qt.get_combo_value(dialog, widget, column_id)
-                        if value == -1:
-                            value = None
-                    elif type(widget) is QgsDateTimeEdit:
-                        value = tools_qt.get_calendar_date(dialog, widget, date_format='yyyy-MM-dd')
-                    else:
-                        value = tools_qt.get_text(dialog, widget, False, False)
-
-                    if value in (None, ''):
-                        continue
-
-                    if type(widget) in (QDoubleSpinBox, QSpinBox, QgsDateTimeEdit):
-                        if not widget.isEnabled():
-                            continue
-
-                    if widget.objectName() == "main_spm_next_days":
-                        filter_fields += filter_by_days(dialog, widget)
-                    elif type(widget) is QgsDateTimeEdit:
-                        filter_fields += filter_by_dates(dialog, widget)
-                    else:
-                        filter_fields += f'"{columnname}":{{"value":"{value}","filterSign":"{filter_sign}"}}, '
-
-    if filter_fields != "":
-        filter_fields = filter_fields[:-2]
-
-    return filter_fields
-
 # region private functions
 
 
@@ -776,20 +595,6 @@ def _get_list(complet_result, form_name='', tab_name='', filter_fields='', widge
         return False
 
     return complet_list
-
-
-def _manage_document_new(doc, **kwargs):
-    """ Get inserted doc_id and add it to current feature """
-
-    if doc.doc_id is None:
-        return
-    dialog = kwargs['dialog']
-    index_tab = dialog.tab_main.currentIndex()
-    tab_name = dialog.tab_main.widget(index_tab).objectName()
-    func_params = kwargs['func_params']
-
-    tools_qt.set_widget_text(dialog,  f"{tab_name}_{func_params['sourcewidget']}", doc.doc_id)
-    add_object(**kwargs)
 
 
 def _reload_table(**kwargs):

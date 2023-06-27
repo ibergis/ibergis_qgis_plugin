@@ -12,7 +12,6 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QLineEdit
 
 from .dialog import GwDialog
-from .docker import GwDocker
 from .main_window import GwMainWindow
 
 # region private functions

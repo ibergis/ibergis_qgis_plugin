@@ -16,7 +16,6 @@ from qgis.core import Qgis
 
 from .task import GwTask
 from ..utils import tools_gw
-from ..ui.ui_manager import GwProjectCheckUi
 from ... import global_vars
 from ...lib import tools_qgis, tools_log, tools_qt, tools_os
 

@@ -40,10 +40,8 @@ from ..ui.main_window import GwMainWindow
 from ..ui.docker import GwDocker
 from ..ui.ui_manager import GwSelectorUi
 from . import tools_backend_calls
-# from ..load_project_menu import GwMenuLoad
 from ..utils.select_manager import GwSelectManager
 from ..utils.snap_manager import GwSnapManager
-# from ..toolbars.toc import epa_world_button
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt, tools_log, tools_os, tools_db
 from ...lib.tools_qt import GwHyperLinkLabel, GwHyperLinkLineEdit
@@ -3730,31 +3728,6 @@ def get_project_version(schemaname=None):
         project_version = row[0]
 
     return project_version
-
-
-def export_layers_to_gpkg(layers, path):
-    """ This function is not used on Giswater Project at the moment. """
-
-    uri = tools_db.get_uri()
-    schema_name = global_vars.dao_db_credentials['schema'].replace('"', '')
-    is_first = True
-    options = QgsVectorFileWriter.SaveVectorOptions()
-    options.driverName = "GPKG"
-
-    for layer in layers:
-
-        uri.setDataSource(schema_name, f"{layer['name']}", "the_geom", None, f"{layer['id']}")
-        vlayer = QgsVectorLayer(uri.uri(), f"{layer['name']}", 'postgres')
-
-        if is_first:
-            options.layerName = vlayer.name()
-            QgsVectorFileWriter.writeAsVectorFormatV2(vlayer, path, QgsCoordinateTransformContext(), options)
-            is_first = False
-        else:
-            # switch mode to append layer instead of overwriting the file
-            options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
-            options.layerName = vlayer.name()
-            QgsVectorFileWriter.writeAsVectorFormatV2(vlayer, path, QgsCoordinateTransformContext(), options)
 
 
 # region compatibility QGIS version functions
