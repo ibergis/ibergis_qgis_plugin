@@ -15,3 +15,5 @@ from .main.nonvisual_manager_button import GwNonVisualManagerButton
 from .utilities.csv_btn import GwCSVButton
 from .utilities.toolbox_btn import GwToolBoxButton
 
+# ToC
+from .toc.add_child_layer_button import GwAddChildLayerButton
