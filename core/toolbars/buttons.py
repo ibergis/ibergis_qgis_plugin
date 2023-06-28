@@ -6,9 +6,12 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 
-# main
+# Main
 from .main.go2epa_button import GwGo2EpaButton
 from .main.dscenario_manager_btn import GwDscenarioManagerButton
 from .main.nonvisual_manager_button import GwNonVisualManagerButton
-from .main.csv_btn import GwCSVButton
+
+# Utilities
+from .utilities.csv_btn import GwCSVButton
+from .utilities.toolbox_btn import GwToolBoxButton
 

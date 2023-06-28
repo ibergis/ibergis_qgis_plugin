@@ -20,7 +20,7 @@ def _get_ui_class(ui_file_name, subfolder='shared'):
     """ Get UI Python class from @ui_file_name """
 
     # Folder that contains UI files
-    if subfolder in ('main'):
+    if subfolder in ('main', 'utilities'):
         ui_folder_path = os.path.dirname(__file__) + os.sep + 'toolbars' + os.sep + subfolder
     else:
         ui_folder_path = os.path.dirname(__file__) + os.sep + subfolder
@@ -73,10 +73,10 @@ class GwNonVisualTimeseriesUi(GwDialog, FROM_CLASS):
 FROM_CLASS = _get_ui_class('nonvisual_lids.ui', 'main')
 class GwNonVisualLidsUi(GwDialog, FROM_CLASS):
     pass
-FORM_CLASS = _get_ui_class('csv.ui', 'main')
+FORM_CLASS = _get_ui_class('csv.ui', 'utilities')
 class GwCsvUi(GwDialog, FORM_CLASS):
     pass
-FORM_CLASS = _get_ui_class('toolbox_reports.ui', 'main')
+FORM_CLASS = _get_ui_class('toolbox_reports.ui', 'utilities')
 class GwToolboxReportsUi(GwDialog, FORM_CLASS):
     pass
 # endregion
@@ -158,15 +158,15 @@ FORM_CLASS = _get_ui_class('admin_visitparam.ui', 'admin')
 class GwAdminVisitParamUi(GwDialog, FORM_CLASS):
     pass
 
-FORM_CLASS = _get_ui_class('toolbox.ui', 'main')
+FORM_CLASS = _get_ui_class('toolbox.ui', 'utilities')
 class GwToolboxUi(GwDialog, FORM_CLASS):
     pass
 
-FORM_CLASS = _get_ui_class('toolbox_tool.ui', 'main')
+FORM_CLASS = _get_ui_class('toolbox_tool.ui', 'utilities')
 class GwToolboxManagerUi(GwDialog, FORM_CLASS):
     pass
 
-FORM_CLASS = _get_ui_class('project_check.ui', 'main')
+FORM_CLASS = _get_ui_class('project_check.ui', 'utilities')
 class GwProjectCheckUi(GwDialog, FORM_CLASS):
     pass
 # endregion

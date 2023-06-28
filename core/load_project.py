@@ -428,6 +428,7 @@ class GwLoadProject(QObject):
 
         # Enable toolbars: 'main'
         self._enable_toolbar("main")
+        self._enable_toolbar("utilities")
         self._hide_button("308")
 
 

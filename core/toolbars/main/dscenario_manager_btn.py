@@ -16,7 +16,7 @@ from qgis.PyQt.QtWidgets import QTableView, QAbstractItemView, QMenu, QCheckBox,
 from qgis.PyQt.QtWidgets import QDialog, QLineEdit
 
 from ..dialog import GwAction
-from ..main.toolbox_btn import GwToolBoxButton
+from ..utilities.toolbox_btn import GwToolBoxButton
 from ...ui.ui_manager import GwDscenarioManagerUi, GwDscenarioUi
 from ...utils import tools_gw
 from ...models.item_delegates import ReadOnlyDelegate, EditableDelegate
