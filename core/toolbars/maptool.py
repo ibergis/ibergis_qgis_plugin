@@ -29,7 +29,6 @@ class GwMaptool(QgsMapTool):
         self.settings = global_vars.giswater_settings
         self.plugin_dir = global_vars.plugin_dir
         self.project_type = global_vars.project_type
-        self.show_help = tools_gw.get_config_parser('system', 'show_help', "project", "drain")
         self.layer_arc = None
         self.layer_connec = None
         self.layer_gully = None
