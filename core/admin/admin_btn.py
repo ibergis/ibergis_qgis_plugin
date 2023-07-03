@@ -61,10 +61,6 @@ class GwAdminButton:
         self.project_type_selected = None
         self.schema_type = None
         self.form_enabled = True
-        self.lower_postgresql_version = int(tools_qgis.get_plugin_metadata('minorPgVersion', '9.5', global_vars.plugin_dir)
-                                            .replace('.', ''))
-        self.upper_postgresql_version = int(tools_qgis.get_plugin_metadata('majorPgVersion', '14.99', global_vars.plugin_dir)
-                                            .replace('.', ''))
         self.total_sql_files = 0    # Total number of SQL files to process
         self.current_sql_file = 0   # Current number of SQL file
         self.progress_value = 0     # (current_sql_file / total_sql_files) * 100
@@ -894,11 +890,6 @@ class GwAdminButton:
             tools_log.log_warning(f"User not found: {self.username}")
             return
 
-        # Check PostgreSQL Version
-        if int(self.postgresql_version) not in range(self.lower_postgresql_version, self.upper_postgresql_version) and self.form_enabled:
-            message = "Incompatible version of PostgreSQL"
-            self.form_enabled = False
-
         # Check super_user
         super_user = tools_db.check_super_user(self.username)
         force_superuser = tools_gw.get_config_parser('system', 'force_superuser', 'user', 'init', False,
@@ -1398,13 +1389,6 @@ class GwAdminButton:
 
             # Get username
             self.username = self._get_user_connection(connection_name)
-
-            # Check PostgreSQL Version
-            self.postgresql_version = tools_db.get_pg_version()
-            if int(self.postgresql_version) not in range(self.lower_postgresql_version,
-                                                         self.upper_postgresql_version) and self.form_enabled:
-                message = "Incompatible version of PostgreSQL"
-                self.form_enabled = False
 
             # Check postgis extension and create if not exist
             postgis_extension = tools_db.check_postgis_version()
