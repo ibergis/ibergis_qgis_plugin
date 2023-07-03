@@ -15,8 +15,8 @@ from time import time
 from datetime import timedelta
 
 from qgis.PyQt.QtCore import QStringListModel, Qt, QTimer
-from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QTableView, QAbstractItemView, \
-    QGroupBox, QSpacerItem, QSizePolicy, QGridLayout, QLabel, QTabWidget
+from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGroupBox, QSpacerItem, QSizePolicy, \
+    QGridLayout, QLabel, QTabWidget
 from qgis.core import QgsApplication
 
 from ...shared.selector import GwSelector

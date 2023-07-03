@@ -10,7 +10,7 @@ from functools import partial
 
 from qgis.core import QgsProject, Qgis, QgsApplication, QgsSnappingUtils
 from qgis.PyQt.QtCore import QObject, Qt
-from qgis.PyQt.QtWidgets import QToolBar, QActionGroup, QDockWidget, QLabel, QApplication, QTableView, QDialog, QComboBox
+from qgis.PyQt.QtWidgets import QToolBar, QActionGroup, QDockWidget, QApplication, QDialog
 
 from .models.plugin_toolbar import GwPluginToolbar
 from .toolbars import buttons

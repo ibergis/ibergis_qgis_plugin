@@ -11,9 +11,9 @@ from sip import isdeleted
 from qgis.core import QgsProject
 from qgis.PyQt.QtGui import QRegExpValidator, QStandardItemModel, QCursor
 from qgis.PyQt.QtSql import QSqlTableModel
-from qgis.PyQt.QtCore import Qt, QRegExp, QPoint
+from qgis.PyQt.QtCore import QRegExp, QPoint
 from qgis.PyQt.QtWidgets import QTableView, QAbstractItemView, QMenu, QCheckBox, QWidgetAction, QComboBox
-from qgis.PyQt.QtWidgets import QDialog, QLineEdit
+from qgis.PyQt.QtWidgets import QLineEdit
 
 from ..dialog import GwAction
 from ..utilities.toolbox_btn import GwToolBoxButton

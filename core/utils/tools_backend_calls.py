@@ -12,20 +12,15 @@ import webbrowser
 
 from functools import partial
 from qgis.PyQt.QtCore import QDate, QRegExp, Qt
-from qgis.PyQt.QtWidgets import QComboBox, QDateEdit, QLineEdit, QMessageBox, QTableView, QWidget, QDoubleSpinBox, QSpinBox
-from qgis.core import QgsEditorWidgetSetup, QgsFieldConstraints, QgsMessageLog, QgsLayerTreeLayer, QgsVectorLayer, QgsDataSourceUri
+from qgis.PyQt.QtWidgets import QDateEdit, QLineEdit, QTableView, QWidget
+from qgis.core import QgsEditorWidgetSetup, QgsFieldConstraints, QgsLayerTreeLayer, QgsVectorLayer
 from qgis.gui import QgsDateTimeEdit
 from qgis.PyQt.QtWidgets import QComboBox
 
 from ... import global_vars
-# from ..shared.document import GwDocument
-# from ..shared.element import GwElement
-# from ..shared.info import GwInfo
-# from ..shared.visit import GwVisit
 from ..utils import tools_gw
 from ...lib import tools_qgis, tools_qt, tools_log, tools_os, tools_db
 
-# from ..shared.mincut_tools import filter_by_days, filter_by_dates
 
 def add_object(**kwargs):
     """
