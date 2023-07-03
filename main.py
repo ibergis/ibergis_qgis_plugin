@@ -125,13 +125,6 @@ class Drain(QObject):
                 global_vars.logger.close_logger()
         except Exception as e:
             tools_log.log_info(f"Exception in unload when global_vars.logger.close_logger(): {e}")
-
-        # try:
-        #     # Remove 'Giswater menu'
-        #     tools_gw.unset_giswater_menu()
-        # except Exception as e:
-        #     tools_log.log_info(f"Exception in unload when tools_gw.unset_giswater_menu(): {e}")
-
         try:
             # Unlisten notify channel and stop thread
             if hasattr(global_vars, 'notify'):
@@ -168,7 +161,6 @@ class Drain(QObject):
             layers = QgsProject.instance().mapLayers().values()
             if hide_gw_button is False and len(layers) == 0:
                 self._set_info_button()
-                tools_gw.create_giswater_menu(False)
         except Exception as e:
             tools_log.log_info(f"Exception in unload when self._set_info_button(): {e}")
 

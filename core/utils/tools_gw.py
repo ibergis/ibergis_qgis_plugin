@@ -3779,23 +3779,6 @@ def get_sysversion_addparam():
     return None
 
 
-# def create_giswater_menu(project_loaded=False):
-#     """ Create Giswater menu """
-#     if global_vars.load_project_menu is None:
-#         global_vars.load_project_menu = GwMenuLoad()
-#     global_vars.load_project_menu.read_menu(project_loaded)
-
-
-# def unset_giswater_menu():
-#     """ Unset Giswater menu (when plugin is disabled or reloaded) """
-#
-#     menu_giswater = global_vars.iface.mainWindow().menuBar().findChild(QMenu, "Giswater")
-#     if menu_giswater not in (None, "None"):
-#         menu_giswater.clear()  # I think it's good to clear the menu before deleting it, just in case
-#         menu_giswater.deleteLater()
-#         # global_vars.load_project_menu = None
-
-
 def reset_position_dialog(show_message=False, plugin='core', file_name='session'):
     """ Reset position dialog x/y """
 
