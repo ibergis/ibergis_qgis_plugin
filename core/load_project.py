@@ -8,7 +8,7 @@ or (at your option) any later version.
 import os
 from functools import partial
 
-from qgis.core import QgsProject, Qgis, QgsApplication, QgsSnappingUtils
+from qgis.core import QgsProject, QgsApplication, QgsSnappingUtils
 from qgis.PyQt.QtCore import QObject, Qt
 from qgis.PyQt.QtWidgets import QToolBar, QActionGroup, QDockWidget, QApplication, QDialog
 
@@ -52,33 +52,15 @@ class GwLoadProject(QObject):
         if not self._check_database_connection(show_warning):
             return
 
-        # Get SRID from table node
-        global_vars.data_epsg = tools_db.get_srid('v_edit_node', global_vars.schema_name)
-
-        # Manage schema name
-        tools_db.get_current_user()
-        layer_source = tools_qgis.get_layer_source(self.layer_node)
-        schema_name = layer_source['schema']
-        if schema_name:
-            global_vars.schema_name = schema_name.replace('"', '')
-
-        # Set PostgreSQL parameter 'search_path'
-        tools_db.set_search_path(layer_source['schema'])
-
-        # Get water software from table 'sys_version'
-        global_vars.project_type = tools_gw.get_project_type()
-        if global_vars.project_type is None:
-            return
-
-        # Check if loaded project is ud or ws
-        if not self._check_project_type():
-            return
+        # TODO: Get SRID from table node
+        global_vars.data_epsg = "25831"
+        global_vars.project_type = "ud"
 
         # Removes all deprecated variables defined at drain.config
         tools_gw.remove_deprecated_config_vars()
 
         project_role = global_vars.project_vars.get('project_role')
-        global_vars.project_vars['project_role'] = tools_gw.get_role_permissions(project_role)
+        global_vars.project_vars['project_role'] = None
 
         # Check if user has config files 'init' and 'session' and its parameters
         tools_gw.user_params_to_userconfig()
@@ -93,51 +75,14 @@ class GwLoadProject(QObject):
         global_vars.plugin_name = tools_qgis.get_plugin_metadata('name', 'drain', global_vars.plugin_dir)
         tools_qt.manage_translation(global_vars.plugin_name)
 
-
-        # Check if schema exists
-        schema_exists = tools_db.check_schema(global_vars.schema_name)
-        if not schema_exists:
-            tools_qgis.show_warning("Selected schema not found", parameter=global_vars.schema_name)
-
-        # Check that there are no layers (v_edit_node) with the same view name, coming from different schemes
-        status = self._check_layers_from_distinct_schema()
-        if status is False:
-            return
-
-        # Open automatically 'search docker' depending its value in user settings
-        # open_search = tools_gw.get_config_parser('dialogs_actions', 'search_open_loadproject', "user", "init")
-        # if tools_os.set_boolean(open_search):
-        #     self.dlg_search = GwSearchUi()
-        #     self.gw_search = GwSearch()
-        #     self.gw_search.open_search(self.dlg_search, load_project=True)
-
-        # Get feature cat
-        global_vars.feature_cat = tools_gw.manage_feature_cat()
-
-        # Create menu
-        # tools_gw.create_giswater_menu(True)
-
         # Get 'utils_use_gw_snapping' parameter
-        use_gw_snapping = tools_gw.get_config_value('utils_use_gw_snapping', table='config_param_system')
-        if use_gw_snapping:
-            use_gw_snapping = tools_os.set_boolean(use_gw_snapping[0])
-            global_vars.use_gw_snapping = use_gw_snapping
-
-        # Manage snapping layers
-        if global_vars.use_gw_snapping is True:
-            self._manage_snapping_layers()
+        global_vars.use_gw_snapping = False
 
         # Manage actions of the different plugin_toolbars
         self._manage_toolbars()
 
         # Manage "btn_updateall" from attribute table
         self._manage_attribute_table()
-
-        # call dynamic mapzones repaint
-        tools_gw.set_style_mapzones()
-
-        # Check roles of this user to show or hide toolbars
-        self._check_user_roles()
 
         # Check parameter 'force_tab_expl'
         force_tab_expl = tools_gw.get_config_parser('system', 'force_tab_expl', 'user', 'init', prefix=False)
@@ -155,7 +100,6 @@ class GwLoadProject(QObject):
 
         # Manage versions of Giswater and PostgreSQL
         plugin_version = tools_qgis.get_plugin_metadata('version', 0, global_vars.plugin_dir)
-        project_version = tools_gw.get_project_version(schema_name)
         # Only get the x.y.zzz, not x.y.zzz.n
         try:
             plugin_version_l = str(plugin_version).split('.')
@@ -165,56 +109,18 @@ class GwLoadProject(QObject):
                     plugin_version = f"{plugin_version}.{plugin_version_l[i]}"
         except Exception:
             pass
-        try:
-            project_version_l = str(project_version).split('.')
-            if len(project_version_l) >= 4:
-                project_version = f'{project_version_l[0]}'
-                for i in range(1, 3):
-                    project_version = f"{project_version}.{project_version_l[i]}"
-        except Exception:
-            pass
-        if project_version == plugin_version:
-            message = "Project read finished"
-            tools_log.log_info(message)
-        else:
-            message = (f"Project read finished with different versions on plugin metadata ({plugin_version}) and "
-                       f"PostgreSQL sys_version table ({project_version}).")
-            tools_log.log_warning(message)
-            tools_qgis.show_warning(message)
+
+        message = f"Project read finished. Plugin version: {plugin_version}"
+        tools_log.log_info(message)
 
         # Reset dialogs position
         tools_gw.reset_position_dialog()
 
-        # Manage compatibility version of Giswater
-        self._check_version_compatibility()
-
         # Call gw_fct_setcheckproject and create GwProjectLayersConfig thread
-        self._config_layers()
+        #self._config_layers()
+
 
     # region private functions
-
-    def _check_version_compatibility(self):
-
-        # Get current QGIS and PostgreSQL versions
-        qgis_version = Qgis.QGIS_VERSION[:4]
-        postgresql_version = tools_db.get_pg_version()
-
-        # Get version compatiblity from metadata.txt
-        minorQgisVersion = tools_qgis.get_plugin_metadata('minorQgisVersion', '3.10', global_vars.plugin_dir)
-        majorQgisVersion = tools_qgis.get_plugin_metadata('majorQgisVersion', '3.99', global_vars.plugin_dir)
-        minorPgVersion = tools_qgis.get_plugin_metadata('minorPgVersion', '9.5', global_vars.plugin_dir).replace('.', '')
-        majorPgVersion = tools_qgis.get_plugin_metadata('majorPgVersion', '11.99', global_vars.plugin_dir).replace('.', '')
-
-        url_wiki = "https://github.com/Giswater/giswater_dbmodel/wiki/Version-compatibility"
-        if qgis_version is not None and minorQgisVersion is not None and majorQgisVersion is not None:
-            if qgis_version < minorQgisVersion or qgis_version > majorQgisVersion:
-                msg = "QGIS version is not compatible with Giswater. Please check wiki"
-                tools_qgis.show_message_link(f"{msg}", url_wiki, message_level=1, btn_text="Open wiki")
-        if postgresql_version is not None and minorPgVersion is not None and majorPgVersion is not None:
-            if int(postgresql_version) < int(minorPgVersion) or int(postgresql_version) > int(majorPgVersion):
-                msg = "PostgreSQL version is not compatible with Giswater. Please check wiki"
-                tools_qgis.show_message_link(f"{msg}", url_wiki, message_level=1, btn_text="Open wiki")
-
 
     def _get_project_variables(self):
         """ Manage QGIS project variables """
@@ -239,104 +145,12 @@ class GwLoadProject(QObject):
 
 
     def _check_project(self, show_warning):
-        """ Check if loaded project is valid for Giswater """
-
-        # Check if table 'v_edit_node' is loaded
-        self.layer_node = tools_qgis.get_layer_by_tablename("v_edit_node")
-        layer_arc = tools_qgis.get_layer_by_tablename("v_edit_arc")
-        layer_connec = tools_qgis.get_layer_by_tablename("v_edit_connec")
-        if (self.layer_node, layer_arc, layer_connec) == (None, None, None):  # If no gw layers are present
-            return False
-
-        # Check missing layers
-        missing_layers = {}
-        if self.layer_node is None:
-            missing_layers['v_edit_node'] = True
-        if layer_arc is None:
-            missing_layers['v_edit_arc'] = True
-        if layer_connec is None:
-            missing_layers['v_edit_connec'] = True
-
-        # Show message if layers are missing
-        if missing_layers:
-            if show_warning:
-                title = "Giswater plugin cannot be loaded"
-                msg = f"QGIS project seems to be a Giswater project, but layer(s) {[k for k,v in missing_layers.items()]} are missing"
-                tools_qgis.show_warning(msg, 20, title=title)
-            return False
-
-        return True
-
-
-    def _check_project_type(self):
-        """ Check if loaded project is valid for Giswater """
-        # Check if table 'v_edit_node' is loaded
-        if global_vars.project_type not in ('ws', 'ud'):
-            return False
-
-        addparam = tools_gw.get_sysversion_addparam()
-        if addparam:
-            add_type = addparam.get("type")
-            if add_type and add_type.lower() not in ("ws", "ud"):
-                global_vars.project_loaded = True
-                return False
-
+        """ TODO: Check if loaded project is valid for Drain """
         return True
 
 
     def _check_database_connection(self, show_warning, force_commit=False):
-        """ Set new database connection. If force_commit=True then force commit before opening project """
-
-        try:
-            if global_vars.dao and force_commit:
-                tools_log.log_info("Force commit")
-                global_vars.dao.commit()
-        except Exception as e:
-            tools_log.log_info(str(e))
-        finally:
-            self.connection_status, not_version, layer_source = tools_db.set_database_connection()
-            if not self.connection_status or not_version:
-                message = global_vars.session_vars['last_error']
-                if show_warning:
-                    if message:
-                        tools_qgis.show_warning(message, 15)
-                    tools_log.log_warning(str(layer_source))
-                return False
-
-            return True
-
-
-    def _check_layers_from_distinct_schema(self):
-        """
-            Checks if there are duplicate layers in any of the defined schemas from project_vars.
-
-            :returns: False if there are duplicate layers and project_vars main_schema or add_schema
-            haven't been set.
-        """
-
-        layers = tools_qgis.get_project_layers()
-        repeated_layers = {}
-        for layer in layers:
-            layer_toc_name = tools_qgis.get_layer_source_table_name(layer)
-            if layer_toc_name == 'v_edit_node':
-                layer_source = tools_qgis.get_layer_source(layer)
-                repeated_layers[layer_source['schema'].replace('"', '')] = 'v_edit_node'
-
-        if len(repeated_layers) > 1:
-            if global_vars.project_vars['main_schema'] in (None, '', 'null', 'NULL') \
-                    or global_vars.project_vars['add_schema'] in (None, '', 'null', 'NULL'):
-                msg = "QGIS project has more than one v_edit_node layer coming from different schemas. " \
-                      "If you are looking to manage two schemas, it is mandatory to define which is the master and " \
-                      "which isn't. To do this, you need to configure the QGIS project setting this project's " \
-                      "variables: gwMainSchema and gwAddSchema."
-                tools_qt.show_info_box(msg)
-                return False
-
-            # If there are layers with a different schema, the one that the user has in the project variable
-            # 'gwMainSchema' is taken as the schema_name.
-            if global_vars.project_vars['main_schema'] not in (None, 'NULL', ''):
-                global_vars.schema_name = global_vars.project_vars['main_schema']
-
+        """ TODO: Set new database connection. If force_commit=True then force commit before opening project """
         return True
 
 
@@ -456,51 +270,6 @@ class GwLoadProject(QObject):
         plugin_toolbar.toolbar.setProperty('gw_name', toolbar_id)
         plugin_toolbar.list_actions = list_actions
         self.plugin_toolbars[toolbar_id] = plugin_toolbar
-
-
-    def _manage_snapping_layers(self):
-        """ Manage snapping of layers """
-
-        tools_qgis.manage_snapping_layer('v_edit_arc', snapping_type=2)
-        tools_qgis.manage_snapping_layer('v_edit_connec', snapping_type=0)
-        tools_qgis.manage_snapping_layer('v_edit_node', snapping_type=0)
-        tools_qgis.manage_snapping_layer('v_edit_gully', snapping_type=0)
-
-
-    def _check_user_roles(self):
-        """ Check roles of this user to show or hide toolbars """
-
-        if global_vars.project_vars['project_role'] == 'role_basic':
-            return
-
-        elif global_vars.project_vars['project_role'] == 'role_om':
-            self._enable_toolbar("om")
-            return
-
-        elif global_vars.project_vars['project_role'] == 'role_edit':
-            self._enable_toolbar("om")
-            self._enable_toolbar("edit")
-            self._enable_toolbar("cad")
-
-        elif global_vars.project_vars['project_role'] == 'role_epa':
-            self._enable_toolbar("om")
-            self._enable_toolbar("edit")
-            self._enable_toolbar("cad")
-            self._enable_toolbar("epa")
-            self._hide_button("308", False)
-
-        elif global_vars.project_vars['project_role'] == 'role_master' or global_vars.project_vars['project_role'] == 'role_admin':
-            self._enable_toolbar("om")
-            self._enable_toolbar("edit")
-            self._enable_toolbar("cad")
-            self._enable_toolbar("epa")
-            self._enable_toolbar("plan")
-            self._hide_button("308", False)
-
-        # Check if exist some feature_cat with active True on cat_feature table
-        if global_vars.feature_cat is None:
-            self._enable_button("01", False)
-            self._enable_button("02", False)
 
 
     def _config_layers(self):
@@ -629,7 +398,6 @@ class GwLoadProject(QObject):
                     tools_qgis.zoom_to_rectangle(x1, y1, x2, y2, margin=0)
             except KeyError:
                 pass
-            tools_gw.set_style_mapzones()
 
 
     def _enable_toolbars(self, visible=True):
