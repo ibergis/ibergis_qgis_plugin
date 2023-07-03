@@ -33,7 +33,7 @@ from ..ui.ui_manager import GwAdminUi, GwAdminDbProjectUi, GwAdminRenameProjUi, 
 from ..utils import tools_gw
 from ... import global_vars
 from .i18n_generator import GwI18NGenerator
-from ...lib import tools_qt, tools_qgis, tools_log, tools_db, tools_os
+from ...lib import tools_qt, tools_qgis, tools_log, tools_db, tools_os, tools_gpkgdao
 from ..ui.docker import GwDocker
 from ..threads.project_schema_create import GwCreateSchemaTask
 from ..threads.project_schema_utils_create import GwCreateSchemaUtilsTask
@@ -65,6 +65,7 @@ class GwAdminButton:
         self.current_sql_file = 0   # Current number of SQL file
         self.progress_value = 0     # (current_sql_file / total_sql_files) * 100
         self.progress_ratio = 0.8   # Ratio to apply to 'progress_value'
+        self.gpkg_dao = None
 
 
     def init_sql(self, set_database_connection=False, username=None, show_dialog=True):
@@ -94,6 +95,9 @@ class GwAdminButton:
         self.status_ok = QPixmap(f"{self.icon_folder}status_ok.png")
         self.status_ko = QPixmap(f"{self.icon_folder}status_ko.png")
         self.status_no_update = QPixmap(f"{self.icon_folder}status_not_updated.png")
+
+        # Connect to sqlite database
+        self.gpkg_dao = tools_gpkgdao.GwGpkgDao()
 
         # Create the dialog and signals
         self._init_show_database()
@@ -428,12 +432,21 @@ class GwAdminButton:
         self.cmb_locale = self.dlg_readsql_create_project.findChild(QComboBox, 'cmb_locale')
 
         # Populate combo with all locales
-        status, sqlite_cur = tools_gw.create_sqlite_conn("configDD")
-        if status:
-            list_locale = self._select_active_locales(sqlite_cur)
-            tools_qt.fill_combo_values(self.cmb_locale, list_locale, 1)
-            locale = tools_gw.get_config_parser('btn_admin', 'project_locale', 'user', 'session', False, force_reload=True)
-            tools_qt.set_combo_value(self.cmb_locale, locale, 0)
+        filename = "config.sqlite"
+        db_filepath = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}gis{os.sep}{filename}"
+        tools_log.log_info(db_filepath)
+        if os.path.exists(db_filepath):
+            status = self.gpkg_dao.init_db(db_filepath)
+            if status:
+                list_locale = self._select_active_locales()
+                tools_qt.fill_combo_values(self.cmb_locale, list_locale, 1)
+                locale = tools_gw.get_config_parser('btn_admin', 'project_locale', 'user', 'session', False, force_reload=True)
+                tools_qt.set_combo_value(self.cmb_locale, locale, 0)
+            else:
+                msg = self.gpkg_dao.last_error
+                tools_log.log_warning(msg)
+        else:
+            tools_log.log_warning(f"Database not found: {db_filepath}")
 
         # Set shortcut keys
         self.dlg_readsql_create_project.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_readsql_create_project, False))
@@ -2856,11 +2869,11 @@ class GwAdminButton:
         tools_db.execute_sql(sql)
 
 
-    def _select_active_locales(self, sqlite_cursor):
+    def _select_active_locales(self):
 
         sql = f"SELECT locale as id, name as idval FROM locales WHERE active = 1"
-        sqlite_cursor.execute(sql)
-        return sqlite_cursor.fetchall()
+        rows = self.gpkg_dao.get_rows(sql)
+        return rows
 
 
     def _save_custom_sql_path(self, dialog):
