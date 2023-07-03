@@ -1109,41 +1109,6 @@ def set_style_mapzones():
                 lyr.triggerRepaint()
 
 
-def manage_feature_cat():
-    """ Manage records from table 'cat_feature' """
-
-    # Dictionary to keep every record of table 'cat_feature'
-    # Key: field tablename
-    # Value: Object of the class SysFeatureCat
-    feature_cat = {}
-
-    body = create_body()
-    result = execute_procedure('gw_fct_getcatfeaturevalues', body)
-    # If result ara none, probably the conection has broken so try again
-    if not result:
-        result = execute_procedure('gw_fct_getcatfeaturevalues', body)
-        if not result:
-            return None
-
-    msg = "Field child_layer of id: "
-    for value in result['body']['data']['values']:
-        tablename = value['child_layer']
-        if not tablename:
-            msg += f"{value['id']}, "
-            continue
-        elem = GwCatFeature(value['id'], value['system_id'], value['feature_type'], value['shortcut_key'],
-                            value['parent_layer'], value['child_layer'])
-
-        feature_cat[tablename] = elem
-
-    feature_cat = OrderedDict(sorted(feature_cat.items(), key=lambda t: t[0]))
-
-    if msg != "Field child_layer of id: ":
-        tools_qgis.show_warning(f"{msg} is not defined in table cat_feature")
-
-    return feature_cat
-
-
 def build_dialog_info(dialog, result, my_json=None):
 
     fields = result['body']['data']
@@ -3707,27 +3672,6 @@ def hide_widgets_form(dialog, dlg_name):
                 if lbl_widget:
                     lbl_widget.setVisible(False)
                 widget.setVisible(False)
-
-
-def get_project_version(schemaname=None):
-    """ Get project version from table 'sys_version' """
-
-    if schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-
-    project_version = None
-    tablename = "sys_version"
-    exists = tools_db.check_table(tablename, schemaname)
-    if not exists:
-        tools_qgis.show_warning(f"Table not found: '{tablename}'")
-        return None
-
-    sql = f"SELECT giswater FROM {schemaname}.{tablename} ORDER BY id DESC LIMIT 1"
-    row = tools_db.get_row(sql)
-    if row:
-        project_version = row[0]
-
-    return project_version
 
 
 # region compatibility QGIS version functions

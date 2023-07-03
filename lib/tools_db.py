@@ -28,19 +28,6 @@ def create_list_for_completer(sql):
     return list_items
 
 
-def check_schema(schemaname=None):
-    """ Check if selected schema exists """
-
-    if schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-
-    schemaname = schemaname.replace('"', '')
-    sql = "SELECT nspname FROM pg_namespace WHERE nspname = %s"
-    params = [schemaname]
-    row = get_row(sql, params=params)
-    return row
-
-
 def check_table(tablename, schemaname=None):
     """ Check if selected table exists in selected schema """
 
