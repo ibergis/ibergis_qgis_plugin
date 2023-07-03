@@ -358,16 +358,11 @@ class GwAdminButton:
         self.task1 = GwTask('Manage schema')
         QgsApplication.taskManager().addTask(self.task1)
         self.task1.setProgress(0)
-        status = self._load_fct_ftrg()
-        self.task1.setProgress(20)
-        self.task1.setProgress(40)
-        if status:
-            status = self.update_31to39(project_type=project_type)
         self.task1.setProgress(60)
-        if status:
-            status = self.execute_last_process(schema_name=schema_name, locale=True)
+        self.execute_last_process(schema_name=schema_name, locale=True)
         self.task1.setProgress(100)
 
+        status = True
         if update_changelog is False:
             status = (self.error_count == 0)
             self._manage_result_message(status, parameter="Load updates")
@@ -478,136 +473,6 @@ class GwAdminButton:
         return True
 
 
-    def update_minor31to39(self, folder_update, new_project, project_type, no_ct):
-
-        folder_utils = os.path.join(folder_update, 'utils')
-        if self._process_folder(folder_utils) is True:
-            status = self._load_sql(folder_utils, no_ct, set_progress_bar=True)
-            if status is False:
-                return False
-
-        if new_project:
-            folder_project = project_type
-        else:
-            folder_project = self.project_type_selected
-        folder_project_type = os.path.join(folder_update, folder_project)
-        if self._process_folder(folder_project_type):
-            status = self._load_sql(folder_project_type, no_ct, set_progress_bar=True)
-            if status is False:
-                return False
-
-        folder_locale = os.path.join(folder_update, 'i18n', self.locale)
-        if self._process_folder(folder_locale) is True:
-            status = self._execute_files(folder_locale, True, set_progress_bar=True)
-            if status is False:
-                return False
-
-        return True
-
-
-    def update_31to39(self, new_project=False, project_type=False, no_ct=False):
-        """"""
-
-        if not os.path.exists(self.folder_updates):
-            tools_qgis.show_message("The update folder was not found in sql folder")
-            self.error_count = self.error_count + 1
-            return
-
-        folders = sorted(os.listdir(self.folder_updates + ''))
-        for folder in folders:
-            sub_folders = sorted(os.listdir(os.path.join(self.folder_updates, folder)))
-            for sub_folder in sub_folders:
-                folder_update = os.path.join(self.folder_updates, folder, sub_folder)
-                if new_project:
-                    if self.dev_commit is True:
-                        if str(sub_folder) > '31100':
-                            status = self.update_minor31to39(folder_update, new_project, project_type, no_ct)
-                            if status is False:
-                                return False
-                    else:
-                        if str(sub_folder) > '31100' and str(sub_folder) <= str(self.plugin_version).replace('.', ''):
-                            status = self.update_minor31to39(folder_update, new_project, project_type, no_ct)
-                            if status is False:
-                                return False
-                else:
-                    if self.dev_commit is True:
-                        if str(sub_folder) > str(self.project_version).replace('.', '') and str(sub_folder) > '31100':
-                            status = self.update_minor31to39(folder_update, new_project, project_type, no_ct)
-                            if status is False:
-                                return False
-                    else:
-                        if str(sub_folder) > str(self.project_version).replace('.', '') and str(sub_folder) > '31100' and str(sub_folder) <= str(self.plugin_version).replace('.', ''):
-                            status = self.update_minor31to39(folder_update, new_project, project_type, no_ct)
-                            if status is False:
-                                return False
-        return True
-
-
-    def load_views(self):
-        """"""
-
-        list_folders = []
-        list_folders.append(os.path.join(self.folder_software, self.file_pattern_ddlview))
-        list_folders.append(os.path.join(self.folder_utils, self.file_pattern_ddlview))
-        for folder in list_folders:
-            status = self._execute_files(folder, set_progress_bar=True)
-            if not status and self.dev_commit is False:
-                return False
-
-        return True
-
-
-    def update_30to31(self, new_project=False, project_type=False, set_progress_bar=True):
-        """"""
-
-        if not os.path.exists(self.folder_updates):
-            tools_qgis.show_message("The update folder was not found in sql folder")
-            self.error_count = self.error_count + 1
-            return True
-
-        # Process only subfolders of folder '31'
-        folder = os.path.join(self.folder_updates, '31')
-        sub_folders = sorted(os.listdir(os.path.join(self.folder_updates, folder)))
-        for sub_folder in sub_folders:
-            if new_project:
-                if str(sub_folder) <= '31100':
-                    folderpath = os.path.join(self.folder_updates, folder, sub_folder, 'utils')
-                    if self._process_folder(folderpath) is True:
-                        status = self._load_sql(folderpath, set_progress_bar=set_progress_bar)
-                        if status is False:
-                            return False
-                    folderpath = os.path.join(self.folder_updates, folder, sub_folder, project_type)
-                    if self._process_folder(folderpath) is True:
-                        status = self._load_sql(folderpath, set_progress_bar=set_progress_bar)
-                        if status is False:
-                            return False
-                    folderpath = os.path.join(self.folder_updates, folder, sub_folder, 'i18n', self.locale)
-                    if self._process_folder(folderpath) is True:
-                        status = self._execute_files(folderpath, True, set_progress_bar=set_progress_bar)
-                        if status is False:
-                            return False
-
-            else:
-                if str(sub_folder) > str(self.project_version).replace('.', '') and str(sub_folder) <= '31100':
-                    folderpath = os.path.join(self.folder_updates, folder, sub_folder, 'utils')
-                    if self._process_folder(folderpath) is True:
-                        status = self._load_sql(folderpath)
-                        if status is False:
-                            return False
-                    folderpath = os.path.join(self.folder_updates, folder, sub_folder, self.project_type_selected)
-                    if self._process_folder(folderpath) is True:
-                        status = self._load_sql(folderpath)
-                        if status is False:
-                            return False
-                    folderpath = os.path.join(self.folder_updates, folder, sub_folder, 'i18n', self.locale)
-                    if self._process_folder(folderpath) is True:
-                        status = self._execute_files(folderpath, True)
-                        if status is False:
-                            return False
-
-        return True
-
-
     def load_sample_data(self, project_type):
 
         global_vars.dao.commit()
@@ -626,21 +491,6 @@ class GwAdminButton:
         status = self._execute_files(folder, set_progress_bar=True)
         if not status and self.dev_commit is False:
             return False
-
-        return True
-
-
-    def load_trg(self):
-        """"""
-
-        list_folders = []
-        list_folders.append(os.path.join(self.folder_utils, self.file_pattern_trg))
-        list_folders.append(os.path.join(self.folder_software, self.file_pattern_trg))
-
-        for folder in list_folders:
-            status = self._execute_files(folder, set_progress_bar=True)
-            if not status and self.dev_commit is False:
-                return False
 
         return True
 
@@ -1226,9 +1076,6 @@ class GwAdminButton:
         sql = f'ALTER SCHEMA {schema} RENAME TO {self.schema}'
         status = tools_db.execute_sql(sql, commit=False)
         if status:
-            # Reload fcts
-            self._reload_fct_ftrg()
-            self.task1.setProgress(40)
             # Call fct gw_fct_admin_rename_fixviews
             sql = ('SELECT ' + str(self.schema) + '.gw_fct_admin_rename_fixviews($${"data":{"currentSchemaName":"'
                    + self.schema + '","oldSchemaName":"' + str(schema) + '"}}$$)::text')
@@ -1280,38 +1127,6 @@ class GwAdminButton:
         """"""
         schema_name = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.project_schema_name)
         return schema_name
-
-
-    def _reload_fct_ftrg(self):
-        """"""
-        self._load_fct_ftrg()
-
-
-    def _load_fct_ftrg(self):
-        """"""
-
-        folder = os.path.join(self.folder_utils, self.file_pattern_fct)
-
-        status = self._execute_files(folder)
-        if not status and self.dev_commit is False:
-            return False
-
-        folder = os.path.join(self.folder_utils, self.file_pattern_ftrg)
-        status = self._execute_files(folder)
-        if not status and self.dev_commit is False:
-            return False
-
-        folder = os.path.join(self.folder_software, self.file_pattern_fct)
-        status = self._execute_files(folder)
-        if not status and self.dev_commit is False:
-            return False
-
-        folder = os.path.join(self.folder_software, self.file_pattern_ftrg)
-        status = self._execute_files(folder)
-        if not status and self.dev_commit is False:
-            return False
-
-        return True
 
 
     """ Create new connection when change combo connections """
@@ -1694,8 +1509,6 @@ class GwAdminButton:
         if self.chk_schema_funcion.isChecked():
             self.task1 = GwTask('Manage schema')
             QgsApplication.taskManager().addTask(self.task1)
-            self.task1.setProgress(50)
-            self._reload_fct_ftrg()
             self.task1.setProgress(100)
 
         status = (self.error_count == 0)

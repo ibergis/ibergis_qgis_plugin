@@ -13,11 +13,9 @@ import random
 import re
 import sys
 import sqlite3
-import webbrowser
 
 if 'nt' in sys.builtin_module_names:
     import ctypes
-from collections import OrderedDict
 from functools import partial
 
 from qgis.PyQt.QtCore import Qt, QStringListModel, QVariant, QDate, QSettings, QLocale, QRegularExpression, QRegExp
@@ -26,15 +24,13 @@ from qgis.PyQt.QtGui import QCursor, QPixmap, QColor, QFontMetrics, QStandardIte
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QFrame, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, \
-    QToolButton, QWidget, QApplication, QDockWidget, QMenu
+    QToolButton, QWidget, QApplication, QDockWidget
 from qgis.core import Qgis, QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsFeatureRequest, QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsPointLocator, \
-    QgsSnappingConfig, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsApplication, QgsVectorFileWriter, \
-    QgsCoordinateTransformContext, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsDataSourceUri, \
-    QgsProviderRegistry
+    QgsSnappingConfig, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsFieldConstraints, \
+    QgsEditorWidgetSetup, QgsRasterLayer
 from qgis.gui import QgsDateTimeEdit, QgsRubberBand
 
-from ..models.cat_feature import GwCatFeature
 from ..ui.dialog import GwDialog
 from ..ui.main_window import GwMainWindow
 from ..ui.docker import GwDocker
@@ -46,9 +42,6 @@ from ... import global_vars
 from ...lib import tools_qgis, tools_qt, tools_log, tools_os, tools_db
 from ...lib.tools_qt import GwHyperLinkLabel, GwHyperLinkLineEdit
 
-# These imports are for the add_{widget} functions (modules need to be imported in order to find it by its name)
-# noinspection PyUnresolvedReferences
-# from ..shared import info, mincut_tools
 
 def load_settings(dialog, plugin='core'):
     """ Load user UI settings related with dialog position and size """

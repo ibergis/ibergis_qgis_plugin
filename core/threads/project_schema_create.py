@@ -7,7 +7,6 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 
-import glob
 import os
 
 from .task import GwTask
@@ -139,22 +138,6 @@ class GwCreateSchemaTask(GwTask):
         if (not status and self.admin.dev_commit is False) or self.isCanceled():
             return False
 
-        status = self.admin.update_30to31(True, project_type)
-        if (not status and self.admin.dev_commit is False) or self.isCanceled():
-            return False
-
-        status = self.admin.load_views()
-        if (not status and self.admin.dev_commit is False) or self.isCanceled():
-            return False
-
-        status = self.admin.load_trg()
-        if (not status and self.admin.dev_commit is False) or self.isCanceled():
-            return False
-
-        status = self.admin.update_31to39(True, project_type)
-        if (not status and self.admin.dev_commit is False) or self.isCanceled():
-            return False
-
         status = True
         if exec_last_process:
             tools_log.log_info("Execute function 'gw_fct_admin_schema_lastprocess'")
@@ -192,7 +175,7 @@ class GwCreateSchemaTask(GwTask):
 
         total_sql_files = 0
         dict_process = {}
-        list_process = ['load_base', 'load_locale', 'update_30to31', 'load_views', 'load_trg']
+        list_process = ['load_base', 'load_locale']
 
         for process_name in list_process:
             tools_log.log_info(f"Task 'Create schema' execute function 'def get_number_of_files_process' with parameters: '{process_name}'")
@@ -202,41 +185,7 @@ class GwCreateSchemaTask(GwTask):
             dict_process[process_name] = total
             self.dict_folders_process[process_name] = dict_folders
 
-        # Manage process 'update_31to39'
-        process_name = 'update_31to39'
-        tools_log.log_info(f"Task 'Create schema' execute function 'def get_folders_process' with parameters: '{process_name}'")
-        dict_folders = self.get_folders_process(process_name)
-        self.dict_folders_process[process_name] = dict_folders
-
-        total_folder_update = 0
-        list_folder_update_major = sorted(glob.glob(f"{self.admin.folder_updates}/*/"))
-        for folder_update_major in list_folder_update_major:
-            total_folder_update_major = 0
-            list_folder_update_minor = sorted(glob.glob(f"{folder_update_major}/*/"))
-            for folder_update_minor in list_folder_update_minor:
-                tools_log.log_info(f"Task 'Create schema' execute function 'def get_number_of_files_folder_update_minor' with parameters: '{folder_update_minor}'")
-                total_files_minor = self.get_number_of_files_folder_update_minor(folder_update_minor)
-                total_folder_update_major += total_files_minor
-            tools_log.log_info(f"Folder {folder_update_major}: {total_folder_update_major}")
-            total_folder_update += total_folder_update_major
-
-        tools_log.log_info(f"Number of SQL files '{process_name}': {total_folder_update}")
-        dict_process[process_name] = total_folder_update
-
-        total_sql_files += total_folder_update
-
         return total_sql_files
-
-
-    def get_number_of_files_folder_update_minor(self, folder_update_minor):
-
-        project_type = self.params['project_type']
-        files_project_type = list(glob.iglob(folder_update_minor + f'**/**/{project_type}/*.sql', recursive=True))
-        files_utils = list(glob.iglob(folder_update_minor + '**/**/utils/*.sql', recursive=True))
-        files_i18n = list(glob.iglob(folder_update_minor + '**/**/i18n/**/*.sql', recursive=True))
-        total = len(files_project_type) + len(files_utils) + len(files_i18n)
-
-        return total
 
 
     def get_number_of_files_process(self, process_name: str):
@@ -276,27 +225,6 @@ class GwCreateSchemaTask(GwTask):
 
         elif process_name == 'load_locale':
             dict_folders[self.admin.folder_locale] = 0
-
-        elif process_name == 'update_30to31':
-            dict_folders[os.path.join(self.admin.folder_updates, '31', '31100')] = 0
-
-        elif process_name == 'load_views':
-            dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_ddlview)] = 0
-            dict_folders[os.path.join(self.admin.folder_utils, self.admin.file_pattern_ddlview)] = 0
-
-        elif process_name == 'load_trg':
-            dict_folders[os.path.join(self.admin.folder_utils, self.admin.file_pattern_trg)] = 0
-            dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_trg)] = 0
-
-        elif process_name == 'update_31to39':
-            dict_folders[os.path.join(self.admin.folder_updates, '31', '31103')] = 0
-            dict_folders[os.path.join(self.admin.folder_updates, '31', '31105')] = 0
-            dict_folders[os.path.join(self.admin.folder_updates, '31', '31109')] = 0
-            dict_folders[os.path.join(self.admin.folder_updates, '31', '31110')] = 0
-            dict_folders[os.path.join(self.admin.folder_updates, '32')] = 0
-            dict_folders[os.path.join(self.admin.folder_updates, '33')] = 0
-            dict_folders[os.path.join(self.admin.folder_updates, '34')] = 0
-            dict_folders[os.path.join(self.admin.folder_updates, '35')] = 0
 
         return dict_folders
 
