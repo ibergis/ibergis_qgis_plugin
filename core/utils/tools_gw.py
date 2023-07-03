@@ -3382,31 +3382,6 @@ def refresh_selectors(tab_name=None):
             pass
 
 
-# def set_epa_world(_set_epa_world=None, selector_change=None):
-#     """ Activate or deactivate EPA world. If @_set_epa_world is None it will just refresh the filters """
-#
-#     epa_world_button.set_epa_world(_set_epa_world, selector_change)
-
-
-def open_dlg_help():
-    """ Opens the help page for the last focused dialog """
-
-    parser = configparser.ConfigParser(strict=False)
-    path = f"{global_vars.plugin_dir}{os.sep}config{os.sep}drain.config"
-    if not os.path.exists(path):
-        webbrowser.open_new_tab('https://giswater.gitbook.io/giswater-manual')
-        return True
-
-    parser.read(path)
-    try:
-        web_tag = parser.get('web_tag', global_vars.session_vars['last_focus'])
-        webbrowser.open_new_tab(f'https://giswater.gitbook.io/giswater-manual/{web_tag}')
-    except Exception:
-        webbrowser.open_new_tab('https://giswater.gitbook.io/giswater-manual')
-    finally:
-        return True
-
-
 def manage_current_selections_docker(result, open=False):
     """
     Manage labels for the current_selections docker
