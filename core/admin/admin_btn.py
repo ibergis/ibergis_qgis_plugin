@@ -433,17 +433,15 @@ class GwAdminButton:
         self.cmb_locale = self.dlg_readsql_create_project.findChild(QComboBox, 'cmb_locale')
 
         # Populate combo with all locales
-        status, sqlite_cur = tools_gw.create_sqlite_conn("config")
-        list_locale = self._select_active_locales(sqlite_cur)
-        tools_qt.fill_combo_values(self.cmb_locale, list_locale, 1)
-        locale = tools_gw.get_config_parser('btn_admin', 'project_locale', 'user', 'session', False, force_reload=True)
-        tools_qt.set_combo_value(self.cmb_locale, locale, 0)
+        status, sqlite_cur = tools_gw.create_sqlite_conn("configDD")
+        if status:
+            list_locale = self._select_active_locales(sqlite_cur)
+            tools_qt.fill_combo_values(self.cmb_locale, list_locale, 1)
+            locale = tools_gw.get_config_parser('btn_admin', 'project_locale', 'user', 'session', False, force_reload=True)
+            tools_qt.set_combo_value(self.cmb_locale, locale, 0)
 
         # Set shortcut keys
         self.dlg_readsql_create_project.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_readsql_create_project, False))
-
-        # Get database connection name
-        self.connection_name = str(tools_qt.get_text(self.dlg_readsql, self.cmb_connection))
 
         # Set signals
         self._set_signals_create_project()
@@ -1739,10 +1737,10 @@ class GwAdminButton:
         self.cmb_project_type = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.cmb_project_type)
         tools_qt.set_widget_text(self.dlg_readsql_create_project, self.cmb_create_project_type, self.cmb_project_type)
         self._change_project_type(self.cmb_create_project_type)
-        self.connection_name = str(tools_qt.get_text(self.dlg_readsql, self.cmb_connection))
+        connection_name = str(tools_qt.get_text(self.dlg_readsql, self.cmb_connection))
 
         # Open dialog
-        self.dlg_readsql_create_project.setWindowTitle(f"Create Project - {self.connection_name}")
+        self.dlg_readsql_create_project.setWindowTitle(f"Create Project - {connection_name}")
         tools_gw.open_dialog(self.dlg_readsql_create_project, dlg_name='admin_dbproject')
 
 

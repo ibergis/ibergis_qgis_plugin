@@ -52,11 +52,6 @@ class GwGo2EpaButton(GwAction):
     # region private functions
 
     def _open_go2epa(self):
-
-        self._go2epa()
-
-
-    def _go2epa(self):
         """ Button 23: Open form to set INP, RPT and project """
 
         # Show form in docker?
@@ -79,8 +74,7 @@ class GwGo2EpaButton(GwAction):
         # Set shortcut keys
         self.dlg_go2epa.key_escape.connect(partial(tools_gw.close_docker))
 
-        self.dlg_go2epa.btn_hs_ds.clicked.connect(
-            partial(self._sector_selection))
+        self.dlg_go2epa.btn_hs_ds.clicked.connect(partial(self._sector_selection))
 
         # Check OS and enable/disable checkbox execute EPA software
         if sys.platform != "win32":
@@ -88,7 +82,6 @@ class GwGo2EpaButton(GwAction):
             self.dlg_go2epa.chk_exec.setEnabled(False)
             self.dlg_go2epa.chk_exec.setText('Execute EPA software (Runs only on Windows)')
 
-        self._set_completer_result(self.dlg_go2epa.txt_result_name, 'v_ui_rpt_cat_result', 'result_id')
         self.check_result_id()
         if global_vars.session_vars['dialog_docker']:
             tools_qt.manage_translation('go2epa', self.dlg_go2epa)
@@ -432,29 +425,6 @@ class GwGo2EpaButton(GwAction):
 
         if hasattr(self, 'go2epa_task'):
             self.go2epa_task.cancel()
-
-
-    def _set_completer_result(self, widget, viewname, field_name):
-        """ Set autocomplete of widget 'feature_id'
-            getting id's from selected @viewname
-        """
-
-        # Adding auto-completion to a QLineEdit
-        self.completer = QCompleter()
-        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
-        widget.setCompleter(self.completer)
-        model = QStringListModel()
-
-        sql = f"SELECT {field_name} FROM {viewname}"
-        rows = tools_db.get_rows(sql)
-
-        if rows:
-            for i in range(0, len(rows)):
-                aux = rows[i]
-                rows[i] = str(aux[0])
-
-            model.setStringList(rows)
-            self.completer.setModel(model)
 
 
     def _go2epa_options(self):
