@@ -1073,8 +1073,9 @@ def check_query_layer(layer):
 def get_epsg():
 
     epsg = iface.mapCanvas().mapSettings().destinationCrs().authid()
-    epsg = epsg.split(':')[1]
-
+    epsg = epsg.split(':')
+    if len(epsg) > 1:
+        epsg = epsg[1]
     return epsg
 
 
