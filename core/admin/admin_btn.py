@@ -75,20 +75,20 @@ class GwAdminButton:
         default_connection = self._populate_combo_connections()
         # Bug #733 was here
         # Check if connection is still False
-        if set_database_connection:
-            connection_status, not_version, layer_source = tools_db.set_database_connection()
-        else:
-            connection_status = global_vars.session_vars['logged_status']
+        # if set_database_connection:
+        #     connection_status, not_version, layer_source = tools_db.set_database_connection()
+        # else:
+        #     connection_status = global_vars.session_vars['logged_status']
 
         settings = QSettings()
-        settings.beginGroup(f"PostgreSQL/connections/{default_connection}")
+        settings.beginGroup(f"providers/ogr/GPKG/connections/{default_connection}")
         self.is_service = settings.value('service')
-        if not connection_status and not self.is_service:
-            self._create_credentials_form(set_connection=default_connection)
-            return
-
-        if not connection_status and self.is_service:
-            self.form_enabled = False
+        # if not connection_status and not self.is_service:
+        #     self._create_credentials_form(set_connection=default_connection)
+        #     return
+        #
+        # if not connection_status and self.is_service:
+        #     self.form_enabled = False
 
         # Set label status connection
         self.icon_folder = f"{self.plugin_dir}{os.sep}icons{os.sep}dialogs{os.sep}20x20{os.sep}"
@@ -101,7 +101,7 @@ class GwAdminButton:
 
         # Create the dialog and signals
         self._init_show_database()
-        self._info_show_database(connection_status=connection_status, username=username, show_dialog=show_dialog)
+        self._info_show_database(username=username, show_dialog=show_dialog)
 
 
     def create_project_data_schema(self, project_name_schema=None, project_descript=None, project_type=None,
@@ -533,12 +533,11 @@ class GwAdminButton:
         # Attach model to table view
         qtable.setModel(model)
 
-
     def _populate_combo_connections(self):
         """ Fill the combo with the connections that exist in QGis """
 
         s = QSettings()
-        s.beginGroup("PostgreSQL/connections")
+        s.beginGroup("providers/ogr/GPKG/connections")
         default_connection = s.value('selected')
         connections = s.childGroups()
         self.list_connections = []
@@ -1249,16 +1248,14 @@ class GwAdminButton:
         settings.setValue('selected', connection_name)
         settings.endGroup()
 
-
     def _get_last_connection(self):
         """"""
 
         settings = QSettings()
-        settings.beginGroup("PostgreSQL/connections")
+        settings.beginGroup("providers/ogr/GPKG/connections")
         connection_name = settings.value('selected')
         settings.endGroup()
         return connection_name
-
 
     def _get_user_connection(self, connection_name):
         """"""
