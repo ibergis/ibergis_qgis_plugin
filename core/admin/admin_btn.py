@@ -107,7 +107,7 @@ class GwAdminButton:
     def create_project_data_schema(self, project_name_schema=None, project_descript=None, project_type=None,
             project_srid=None, project_locale=None, is_test=False, exec_last_process=True, example_data=True):
         """"""
-
+        print(self.dlg_readsql_create_project.connection_name)
         # Get project parameters
         if project_name_schema is None or not project_name_schema:
             project_name_schema = tools_qt.get_text(self.dlg_readsql_create_project, 'project_name')
@@ -380,7 +380,7 @@ class GwAdminButton:
 
         return status
 
-    def init_dialog_create_project(self, gpkg=None, project_type=None):
+    def init_dialog_create_project(self, project_type=None):
         """ Initialize dialog (only once) """
 
         self.dlg_readsql_create_project = GwAdminDbProjectUi()
@@ -415,13 +415,13 @@ class GwAdminButton:
         self._manage_srid()
 
         # Fill combo 'project_type'
-        self.cmb_create_project_type = self.dlg_readsql_create_project.findChild(QComboBox, 'cmb_create_project_type')
-        if gpkg is not None:
-            self.cmb_create_project_type.addItem(gpkg)
+        # self.cmb_create_project_type = self.dlg_readsql_create_project.findChild(QComboBox, 'cmb_create_project_type')
+        # if gpkg is not None:
+        #     self.cmb_create_project_type.addItem(gpkg)
 
-        if project_type:
-            tools_qt.set_widget_text(self.dlg_readsql_create_project, self.cmb_create_project_type, project_type)
-            self._change_project_type(self.cmb_create_project_type)
+        # if project_type:
+        #     tools_qt.set_widget_text(self.dlg_readsql_create_project, self.cmb_create_project_type, project_type)
+        #     self._change_project_type(self.cmb_create_project_type)
 
         # Enable_disable data file widgets
         self._enable_datafile()
@@ -652,8 +652,8 @@ class GwAdminButton:
         # self.dlg_readsql.btn_custom_select_file.clicked.connect(
         #     partial(tools_qt.get_folder_path, self.dlg_readsql, "custom_path_folder"))
 
-        # self.cmb_connection.currentIndexChanged.connect(partial(self._event_change_connection))
-        # self.cmb_connection.currentIndexChanged.connect(partial(self._set_info_project))
+        self.cmb_connection.currentIndexChanged.connect(partial(self._event_change_connection))
+        #self.cmb_connection.currentIndexChanged.connect(partial(self._set_info_project))
 
         # self.dlg_readsql.btn_schema_rename.clicked.connect(partial(self._open_rename))
         # self.dlg_readsql.btn_delete.clicked.connect(partial(self._delete_schema))
@@ -912,11 +912,11 @@ class GwAdminButton:
         """"""
 
         # Check if exist schema
-        schema_name = tools_qt.get_text(self.dlg_readsql, 'project_schema_name')
-        if schema_name is None:
-            msg = "In order to create a qgis project you have to create a schema first ."
-            tools_qt.show_info_box(msg)
-            return
+        # schema_name = tools_qt.get_text(self.dlg_readsql, 'project_schema_name')
+        # if schema_name is None:
+        #     msg = "In order to create a qgis project you have to create a schema first ."
+        #     tools_qt.show_info_box(msg)
+        #     return
 
         # Create GIS project dialog
         self.dlg_create_gis_project = GwAdminGisProjectUi()
@@ -931,8 +931,8 @@ class GwAdminButton:
                 self.dlg_create_gis_project.cmb_roletype.setCurrentIndex(qgis_file_type)
             except Exception:
                 pass
-        schema_name = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.project_schema_name)
-        tools_qt.set_widget_text(self.dlg_create_gis_project, 'txt_gis_file', schema_name)
+        # schema_name = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.project_schema_name)
+        # tools_qt.set_widget_text(self.dlg_create_gis_project, 'txt_gis_file', schema_name)
         qgis_file_path = tools_gw.get_config_parser('btn_admin', 'qgis_file_path', "user", "session", prefix=False,
                                                     force_reload=True)
         if qgis_file_path is None:
@@ -1152,103 +1152,103 @@ class GwAdminButton:
 
         connection_name = str(tools_qt.get_text(self.dlg_readsql, self.cmb_connection))
 
-        credentials = {'db': None, 'schema': None, 'table': None, 'service': None,
-                       'host': None, 'port': None, 'user': None, 'password': None, 'sslmode': None}
-
-        self.form_enabled = True
-        message = ''
-
-        settings = QSettings()
-        settings.beginGroup(f"PostgreSQL/connections/{connection_name}")
-        credentials['host'] = settings.value('host')
-        if settings.value('host') in (None, ""):
-            credentials['host'] = 'localhost'
-        credentials['port'] = settings.value('port')
-        credentials['db'] = settings.value('database')
-        credentials['user'] = settings.value('username')
-        credentials['password'] = settings.value('password')
-        credentials['service'] = settings.value('service')
-        self.is_service = credentials['service']
-
-        sslmode_settings = settings.value('sslmode')
-        try:
-            sslmode_dict = {0: 'prefer', 1: 'disable', 3: 'require'}
-            sslmode = sslmode_dict.get(sslmode_settings, 'prefer')
-        except ValueError:
-            sslmode = sslmode_settings
-        credentials['sslmode'] = sslmode
-        settings.endGroup()
-
-        self.logged, credentials = tools_db.connect_to_database_credentials(credentials)
-        if self.is_service and not self.logged:
-            self.form_enabled = False
-            message = 'There is an error in the configuration of the pgservice file, ' \
-                      'please check it or consult your administrator'
-            tools_qt.enable_dialog(self.dlg_readsql, False, ['cmb_connection', 'btn_gis_create', 'cmb_project_type', 'project_schema_name'])
-            self.dlg_readsql.lbl_status.setPixmap(self.status_ko)
-            tools_qt.set_widget_text(self.dlg_readsql, 'lbl_status_text', message)
-            tools_qt.set_widget_text(self.dlg_readsql, 'lbl_schema_name', '')
-            self.dlg_readsql.btn_gis_create.setEnabled(False)
-
-        elif not self.logged:
-            self._close_dialog_admin(self.dlg_readsql)
-            self._create_credentials_form(set_connection=connection_name)
-        else:
-            if any(x in str(credentials['db']) for x in ('.', ',')):
-                message = 'Database name contains special characters that are not supported'
-                self.form_enabled = False
-            elif str(self.plugin_version) > str(self.project_version):
-                self.dlg_readsql.lbl_status.setPixmap(self.status_no_update)
-                tools_qt.set_widget_text(self.dlg_readsql, self.dlg_readsql.lbl_status_text,
-                '(Schema version is lower than plugin version, please update schema)')
-                self.dlg_readsql.btn_info.setEnabled(True)
-            elif str(self.plugin_version) < str(self.project_version):
-                self.dlg_readsql.lbl_status.setPixmap(self.status_no_update)
-                tools_qt.set_widget_text(self.dlg_readsql, self.dlg_readsql.lbl_status_text,
-                '(Schema version is higher than plugin version, please update plugin)')
-                self.dlg_readsql.btn_info.setEnabled(True)
-            else:
-                self.dlg_readsql.lbl_status.setPixmap(self.status_ok)
-                tools_qt.set_widget_text(self.dlg_readsql, self.dlg_readsql.lbl_status_text, '')
-                self.dlg_readsql.btn_info.setEnabled(False)
-            tools_qt.enable_dialog(self.dlg_readsql, True)
-
-            self._populate_data_schema_name(self.cmb_project_type)
-            self._set_last_connection(connection_name)
+        # credentials = {'db': None, 'schema': None, 'table': None, 'service': None,
+        #                'host': None, 'port': None, 'user': None, 'password': None, 'sslmode': None}
+        #
+        # self.form_enabled = True
+        # message = ''
+        #
+        # settings = QSettings()
+        # settings.beginGroup(f"PostgreSQL/connections/{connection_name}")
+        # credentials['host'] = settings.value('host')
+        # if settings.value('host') in (None, ""):
+        #     credentials['host'] = 'localhost'
+        # credentials['port'] = settings.value('port')
+        # credentials['db'] = settings.value('database')
+        # credentials['user'] = settings.value('username')
+        # credentials['password'] = settings.value('password')
+        # credentials['service'] = settings.value('service')
+        # self.is_service = credentials['service']
+        #
+        # sslmode_settings = settings.value('sslmode')
+        # try:
+        #     sslmode_dict = {0: 'prefer', 1: 'disable', 3: 'require'}
+        #     sslmode = sslmode_dict.get(sslmode_settings, 'prefer')
+        # except ValueError:
+        #     sslmode = sslmode_settings
+        # credentials['sslmode'] = sslmode
+        # settings.endGroup()
+        #
+        # self.logged, credentials = tools_db.connect_to_database_credentials(credentials)
+        # if self.is_service and not self.logged:
+        #     self.form_enabled = False
+        #     message = 'There is an error in the configuration of the pgservice file, ' \
+        #               'please check it or consult your administrator'
+        #     tools_qt.enable_dialog(self.dlg_readsql, False, ['cmb_connection', 'btn_gis_create', 'cmb_project_type', 'project_schema_name'])
+        #     self.dlg_readsql.lbl_status.setPixmap(self.status_ko)
+        #     tools_qt.set_widget_text(self.dlg_readsql, 'lbl_status_text', message)
+        #     tools_qt.set_widget_text(self.dlg_readsql, 'lbl_schema_name', '')
+        #     self.dlg_readsql.btn_gis_create.setEnabled(False)
+        #
+        # elif not self.logged:
+        #     self._close_dialog_admin(self.dlg_readsql)
+        #     self._create_credentials_form(set_connection=connection_name)
+        # else:
+        #     if any(x in str(credentials['db']) for x in ('.', ',')):
+        #         message = 'Database name contains special characters that are not supported'
+        #         self.form_enabled = False
+        #     elif str(self.plugin_version) > str(self.project_version):
+        #         self.dlg_readsql.lbl_status.setPixmap(self.status_no_update)
+        #         tools_qt.set_widget_text(self.dlg_readsql, self.dlg_readsql.lbl_status_text,
+        #         '(Schema version is lower than plugin version, please update schema)')
+        #         self.dlg_readsql.btn_info.setEnabled(True)
+        #     elif str(self.plugin_version) < str(self.project_version):
+        #         self.dlg_readsql.lbl_status.setPixmap(self.status_no_update)
+        #         tools_qt.set_widget_text(self.dlg_readsql, self.dlg_readsql.lbl_status_text,
+        #         '(Schema version is higher than plugin version, please update plugin)')
+        #         self.dlg_readsql.btn_info.setEnabled(True)
+        #     else:
+        #         self.dlg_readsql.lbl_status.setPixmap(self.status_ok)
+        #         tools_qt.set_widget_text(self.dlg_readsql, self.dlg_readsql.lbl_status_text, '')
+        #         self.dlg_readsql.btn_info.setEnabled(False)
+        #     tools_qt.enable_dialog(self.dlg_readsql, True)
+        #
+        #     self._populate_data_schema_name(self.cmb_project_type)
+        self._set_last_connection(connection_name)
 
             # Get username
-            self.username = self._get_user_connection(connection_name)
+        self.username = self._get_user_connection(connection_name)
 
-            # Check postgis extension and create if not exist
-            postgis_extension = tools_db.check_postgis_version()
-            if postgis_extension and self.form_enabled:
-                sql = "CREATE EXTENSION IF NOT EXISTS POSTGIS;"
-                tools_db.execute_sql(sql)
-            elif self.form_enabled:
-                message = "Unable to create Postgis extension. Packages must be installed, consult your administrator."
-                self.form_enabled = False
-            # Check fuzzystrmatch extension and create if not exist
-            fuzzystrmatch_extension = tools_db.check_pg_extension('fuzzystrmatch')
-            if fuzzystrmatch_extension and self.form_enabled:
-                sql = "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;"
-                tools_db.execute_sql(sql)
-            elif self.form_enabled:
-                self.form_enabled = False
-                message = "Unable to create fuzzystrmatch extension. Packages must be installed, consult your administrator."
-
-            if self.form_enabled is False:
-                ignore_widgets = ['cmb_connection', 'btn_gis_create', 'cmb_project_type', 'project_schema_name']
-                tools_qt.enable_dialog(self.dlg_readsql, False, ignore_widgets)
-                self.dlg_readsql.lbl_status.setPixmap(self.status_ko)
-                tools_qt.set_widget_text(self.dlg_readsql, 'lbl_status_text', message)
-                tools_qt.set_widget_text(self.dlg_readsql, 'lbl_schema_name', '')
+            # # Check postgis extension and create if not exist
+            # postgis_extension = tools_db.check_postgis_version()
+            # if postgis_extension and self.form_enabled:
+            #     sql = "CREATE EXTENSION IF NOT EXISTS POSTGIS;"
+            #     tools_db.execute_sql(sql)
+            # elif self.form_enabled:
+            #     message = "Unable to create Postgis extension. Packages must be installed, consult your administrator."
+            #     self.form_enabled = False
+            # # Check fuzzystrmatch extension and create if not exist
+            # fuzzystrmatch_extension = tools_db.check_pg_extension('fuzzystrmatch')
+            # if fuzzystrmatch_extension and self.form_enabled:
+            #     sql = "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;"
+            #     tools_db.execute_sql(sql)
+            # elif self.form_enabled:
+            #     self.form_enabled = False
+            #     message = "Unable to create fuzzystrmatch extension. Packages must be installed, consult your administrator."
+            #
+            # if self.form_enabled is False:
+            #     ignore_widgets = ['cmb_connection', 'btn_gis_create', 'cmb_project_type', 'project_schema_name']
+            #     tools_qt.enable_dialog(self.dlg_readsql, False, ignore_widgets)
+            #     self.dlg_readsql.lbl_status.setPixmap(self.status_ko)
+            #     tools_qt.set_widget_text(self.dlg_readsql, 'lbl_status_text', message)
+            #     tools_qt.set_widget_text(self.dlg_readsql, 'lbl_schema_name', '')
 
 
     def _set_last_connection(self, connection_name):
         """"""
 
         settings = QSettings()
-        settings.beginGroup("PostgreSQL/connections")
+        settings.beginGroup("providers/ogr/GPKG/connections")
         settings.setValue('selected', connection_name)
         settings.endGroup()
 
@@ -1267,7 +1267,7 @@ class GwAdminButton:
         connection_username = None
         settings = QSettings()
         if connection_name:
-            settings.beginGroup(f"PostgreSQL/connections/{connection_name}")
+            settings.beginGroup(f"Pproviders/ogr/GPKG/connections{connection_name}")
             connection_username = settings.value('username')
             settings.endGroup()
 
@@ -1426,24 +1426,24 @@ class GwAdminButton:
         tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, srid)
 
 
-    def _filter_srid_changed(self):
-        """"""
-
-        filter_value = tools_qt.get_text(self.dlg_readsql_create_project, self.filter_srid)
-        if filter_value == 'null':
-            filter_value = ''
-        sql = ("SELECT substr(srtext, 1, 6) as " + '"Type"' + ", srid as " + '"SRID"' + ", "
-               "substr(split_part(srtext, ',', 1), 9) as " + '"Description"' + " "
-               "FROM public.spatial_ref_sys "
-               "WHERE CAST(srid AS TEXT) LIKE '" + str(filter_value))
-        sql += "%'  AND  srtext ILIKE 'PROJCS%' ORDER BY substr(srtext, 1, 6), srid"
-        self.last_srids = tools_db.get_rows(sql)
-
-        # Populate Table
-        self.model_srid = QSqlQueryModel()
-        self.model_srid.setQuery(sql, db=global_vars.qgis_db_credentials)
-        self.tbl_srid.setModel(self.model_srid)
-        self.tbl_srid.show()
+    # def _filter_srid_changed(self):
+    #     """"""
+    #
+    #     filter_value = tools_qt.get_text(self.dlg_readsql_create_project, self.filter_srid)
+    #     if filter_value == 'null':
+    #         filter_value = ''
+    #     sql = ("SELECT substr(srtext, 1, 6) as " + '"Type"' + ", srid as " + '"SRID"' + ", "
+    #            "substr(split_part(srtext, ',', 1), 9) as " + '"Description"' + " "
+    #            "FROM public.spatial_ref_sys "
+    #            "WHERE CAST(srid AS TEXT) LIKE '" + str(filter_value))
+    #     sql += "%'  AND  srtext ILIKE 'PROJCS%' ORDER BY substr(srtext, 1, 6), srid"
+    #     self.last_srids = tools_db.get_rows(sql)
+    #
+    #     # Populate Table
+    #     self.model_srid = QSqlQueryModel()
+    #     self.model_srid.setQuery(sql, db=global_vars.qgis_db_credentials)
+    #     self.tbl_srid.setModel(self.model_srid)
+    #     self.tbl_srid.show()
 
 
     def _set_info_project(self):
@@ -1544,31 +1544,32 @@ class GwAdminButton:
         self.dlg_readsql_create_project.btn_close.clicked.connect(
             partial(self._close_dialog_admin, self.dlg_readsql_create_project))
         self.dlg_readsql_create_project.btn_push_file.clicked.connect(partial(self._select_file_inp))
-        self.cmb_create_project_type.currentIndexChanged.connect(
-            partial(self._change_project_type, self.cmb_create_project_type))
+        # self.cmb_create_project_type.currentIndexChanged.connect(
+        #     partial(self._change_project_type, self.cmb_create_project_type))
         self.cmb_locale.currentIndexChanged.connect(partial(self._update_locale))
         self.rdb_import_data.toggled.connect(partial(self._enable_datafile))
-        self.filter_srid.textChanged.connect(partial(self._filter_srid_changed))
+        # self.filter_srid.textChanged.connect(partial(self._filter_srid_changed))
 
 
     def _open_create_project(self):
         """"""
 
-        connection_name = str(tools_qt.get_text(self.dlg_readsql, self.cmb_connection))
         # Create dialog and signals
         if self.dlg_readsql_create_project is None:
-            self.init_dialog_create_project(gpkg=connection_name)
+            self.init_dialog_create_project()
 
-        self._filter_srid_changed()
+        # self._filter_srid_changed()
 
         # Get project_type from previous dialog
-        self.cmb_project_type = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.cmb_project_type)
-        tools_qt.set_widget_text(self.dlg_readsql_create_project, self.cmb_create_project_type, self.cmb_project_type)
-        self._change_project_type(self.cmb_create_project_type)
+        # self.cmb_project_type = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.cmb_project_type)
+        # tools_qt.set_widget_text(self.dlg_readsql_create_project, self.cmb_create_project_type, self.cmb_project_type)
+        # self._change_project_type(self.cmb_create_project_type)
+        self.connection_name = str(tools_qt.get_text(self.dlg_readsql, self.cmb_connection))
 
         # Open dialog
-        self.dlg_readsql_create_project.setWindowTitle(f"Create Project - {connection_name}")
+        self.dlg_readsql_create_project.setWindowTitle(f"Create Project - {self.connection_name}")
         tools_gw.open_dialog(self.dlg_readsql_create_project, dlg_name='admin_dbproject')
+
 
 
     def _open_rename(self):
@@ -2627,11 +2628,11 @@ class GwAdminButton:
             self._open_manage_field('update')
 
 
-    def _change_project_type(self, widget):
+    def _change_project_type(self, gpkg_name):
         """ Take current project type changed """
 
-        self.project_type_selected = tools_qt.get_text(self.dlg_readsql, widget)
-        self.folder_software = os.path.join(self.sql_dir, self.project_type_selected)
+        #self.project_type_selected = tools_qt.get_text(self.dlg_readsql, widget)
+        self.folder_software = os.path.join(self.sql_dir, gpkg_name)
 
 
     def _insert_inp_into_db(self, folder_path=None):
