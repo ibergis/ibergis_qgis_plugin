@@ -35,7 +35,7 @@ from ... import global_vars
 from .i18n_generator import GwI18NGenerator
 from ...lib import tools_qt, tools_qgis, tools_log, tools_db, tools_os, tools_gpkgdao
 from ..ui.docker import GwDocker
-from ..threads.project_schema_create import GwCreateSchemaTask
+from ..threads.project_gpkg_schema_create import GwGpkgCreateSchemaTask
 from ..threads.project_schema_utils_create import GwCreateSchemaUtilsTask
 from ..threads.project_schema_update import GwUpdateSchemaTask
 from ..threads.project_schema_copy import GwCopySchemaTask
@@ -66,6 +66,7 @@ class GwAdminButton:
         self.progress_value = 0     # (current_sql_file / total_sql_files) * 100
         self.progress_ratio = 0.8   # Ratio to apply to 'progress_value'
         self.gpkg_dao = None
+        self.gpkg = None
 
 
     def init_sql(self, set_database_connection=False, username=None, show_dialog=True):
@@ -107,44 +108,44 @@ class GwAdminButton:
     def create_project_data_schema(self, project_name_schema=None, project_descript=None, project_type=None,
             project_srid=None, project_locale=None, is_test=False, exec_last_process=True, example_data=True):
         """"""
-        print(self.dlg_readsql_create_project.connection_name)
         # Get project parameters
-        if project_name_schema is None or not project_name_schema:
-            project_name_schema = tools_qt.get_text(self.dlg_readsql_create_project, 'project_name')
-        if project_descript is None or not project_descript:
-            project_descript = tools_qt.get_text(self.dlg_readsql_create_project, 'project_descript')
-        if project_type is None:
-            project_type = tools_qt.get_text(self.dlg_readsql_create_project, 'cmb_create_project_type')
+        # if project_name_schema is None or not project_name_schema:
+        #     project_name_schema = tools_qt.get_text(self.dlg_readsql_create_project, 'project_name')
+        # if project_descript is None or not project_descript:
+        #     project_descript = tools_qt.get_text(self.dlg_readsql_create_project, 'project_descript')
+        # if project_type is None:
+        #     project_type = tools_qt.get_text(self.dlg_readsql_create_project, 'cmb_create_project_type')
         if project_srid is None:
             project_srid = tools_qt.get_text(self.dlg_readsql_create_project, 'srid_id')
         if project_locale is None:
             project_locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
 
         # Set class variables
-        self.schema = project_name_schema
-        self.descript = project_descript
-        self.schema_type = project_type
+        # self.schema = project_name_schema
+        # self.descript = project_descript
+        self.schema_type = 'dev'
         self.project_epsg = project_srid
         self.locale = project_locale
-        self.folder_locale = os.path.join(self.sql_dir, 'i18n', self.locale)
+        #self.folder_locale = os.path.join(self.sql_dir, 'i18n', self.locale)
+        self.gpkg = tools_qt.get_text(self.dlg_readsql, 'cmb_connection')
 
         # Save in settings
-        tools_gw.set_config_parser('btn_admin', 'project_name_schema', f'{project_name_schema}', prefix=False)
-        tools_gw.set_config_parser('btn_admin', 'project_descript', f'{project_descript}', prefix=False)
-        inp_file_path = tools_qt.get_text(self.dlg_readsql_create_project, 'data_file', False, False)
-        tools_gw.set_config_parser('btn_admin', 'inp_file_path', f'{inp_file_path}', prefix=False)
+        # tools_gw.set_config_parser('btn_admin', 'project_name_schema', f'{project_name_schema}', prefix=False)
+        # tools_gw.set_config_parser('btn_admin', 'project_descript', f'{project_descript}', prefix=False)
+        # inp_file_path = tools_qt.get_text(self.dlg_readsql_create_project, 'data_file', False, False)
+        # tools_gw.set_config_parser('btn_admin', 'inp_file_path', f'{inp_file_path}', prefix=False)
         locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
         tools_gw.set_config_parser('btn_admin', 'project_locale', f'{locale}', prefix=False)
 
         # Check if project name is valid
-        if not self._check_project_name(project_name_schema, project_descript):
-            return
+        # if not self._check_project_name(project_name_schema, project_descript):
+        #     return
 
         # Check if srid value is valid
-        if self.last_srids is None:
-            msg = "This SRID value does not exist on Postgres Database. Please select a diferent one."
-            tools_qt.show_info_box(msg, "Info")
-            return
+        # if self.last_srids is None:
+        #     msg = "This SRID value does not exist on Postgres Database. Please select a diferent one."
+        #     tools_qt.show_info_box(msg, "Info")
+        #     return
 
         msg = "This process will take time (few minutes). Are you sure to continue?"
         title = "Create example"
@@ -152,31 +153,31 @@ class GwAdminButton:
         if not answer:
             return
 
-        tools_log.log_info(f"Create schema of type '{project_type}': '{project_name_schema}'")
+        tools_log.log_info(f"Create schema of type '{self.schema_type}': '{self.gpkg}'")
 
-        if self.rdb_import_data.isChecked():
-            self.file_inp = tools_qt.get_text(self.dlg_readsql_create_project, 'data_file')
-            if self.file_inp == 'null':
-                msg = "The 'Path' field is required for Import INP data."
-                tools_qt.show_info_box(msg, "Info")
-                return
-            # Check that the INP file works with the selected project_type
-            with open(self.file_inp, 'rb', 0) as file, \
-                    mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as s:
-                msg = ""
-                # If we're creating a 'ud' project but the INP file is from epanet
-                if project_type == 'ud' and s.find(b'[PIPES]') != -1:
-                    msg = "The selected INP file does not match with a 'UD' project.\n" \
-                          "Please check it before continuing..."
-                # If we're creating a 'ws' project but the INP file is from swmm
-                if project_type == 'ws' and s.find(b'[CONDUITS]') != -1:
-                    msg = "The selected INP file does not match with a 'WS' project.\n" \
-                          "Please check it before continuing..."
-                if msg:
-                    tools_qt.show_info_box(msg, "Warning")
-                    return
+        # if self.rdb_import_data.isChecked():
+        #     self.file_inp = tools_qt.get_text(self.dlg_readsql_create_project, 'data_file')
+        #     if self.file_inp == 'null':
+        #         msg = "The 'Path' field is required for Import INP data."
+        #         tools_qt.show_info_box(msg, "Info")
+        #         return
+        #     # Check that the INP file works with the selected project_type
+        #     with open(self.file_inp, 'rb', 0) as file, \
+        #             mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as s:
+        #         msg = ""
+        #         # If we're creating a 'ud' project but the INP file is from epanet
+        #         if project_type == 'ud' and s.find(b'[PIPES]') != -1:
+        #             msg = "The selected INP file does not match with a 'UD' project.\n" \
+        #                   "Please check it before continuing..."
+        #         # If we're creating a 'ws' project but the INP file is from swmm
+        #         if project_type == 'ws' and s.find(b'[CONDUITS]') != -1:
+        #             msg = "The selected INP file does not match with a 'WS' project.\n" \
+        #                   "Please check it before continuing..."
+        #         if msg:
+        #             tools_qt.show_info_box(msg, "Warning")
+        #             return
 
-        elif self.rdb_sample.isChecked():
+        if self.rdb_sample.isChecked():
 
             if self.locale != 'en_US' or str(self.project_epsg) != '25831':
                 msg = ("This functionality is only allowed with the locality 'en_US' and SRID 25831."
@@ -187,17 +188,17 @@ class GwAdminButton:
                     project_srid = '25831'
                     self.locale = 'en_US'
                     project_locale = 'en_US'
-                    self.folder_locale = os.path.join(self.sql_dir, 'i18n', project_locale)
+                    # self.folder_locale = os.path.join(self.sql_dir, 'i18n', project_locale)
                     tools_qt.set_widget_text(self.dlg_readsql_create_project, 'srid_id', '25831')
                     tools_qt.set_combo_value(self.cmb_locale, 'en_US', 0)
                 else:
                     return
 
         # Check postGis version
-        major_version = self.postgis_version.split(".")
-        if int(major_version[0]) >= 3:
-            sql = f"CREATE EXTENSION IF NOT EXISTS postgis_raster;"
-            tools_db.execute_sql(sql)
+        # major_version = self.postgis_version.split(".")
+        # if int(major_version[0]) >= 3:
+        #     sql = f"CREATE EXTENSION IF NOT EXISTS postgis_raster;"
+        #     tools_db.execute_sql(sql)
 
         self.error_count = 0
         # We retrieve the desired name of the schema, since in case there had been a schema with the same name, we had
@@ -210,33 +211,35 @@ class GwAdminButton:
 
         self.timer.start(1000)
 
-        description = f"Create schema"
-        params = {'is_test': is_test, 'project_type': project_type, 'exec_last_process': exec_last_process,
-                  'project_name_schema': project_name_schema, 'project_locale': project_locale,
+        description = f"Create Geopackage schema"
+        # params = {'is_test': is_test, 'project_type': project_type, 'exec_last_process': exec_last_process,
+        #           'project_name_schema': project_name_schema, 'project_locale': project_locale,
+        #           'project_srid': project_srid, 'example_data': example_data}
+        params = {'is_test': is_test, 'gpkg': self.gpkg, 'project_locale': project_locale,
                   'project_srid': project_srid, 'example_data': example_data}
-        self.task_create_schema = GwCreateSchemaTask(self, description, params, timer=self.timer)
+        self.task_create_schema = GwGpkgCreateSchemaTask(self, description, params, timer=self.timer)
         QgsApplication.taskManager().addTask(self.task_create_schema)
         QgsApplication.taskManager().triggerTask(self.task_create_schema)
 
 
-    def manage_process_result(self, project_name, project_type, is_test=False, is_utils=False, dlg=None):
+    def manage_process_result(self, is_test=False, is_utils=False, dlg=None):
         """"""
 
         status = (self.error_count == 0)
         self._manage_result_message(status, parameter="Create project")
         if status:
-            global_vars.dao.commit()
+            self.gpkg_dao.commit()
             if is_utils is False:
                 self._close_dialog_admin(self.dlg_readsql_create_project)
-            if not is_test:
-                self._populate_data_schema_name(self.cmb_project_type)
-                self._manage_utils()
-                if project_name is not None and is_utils is False:
-                    tools_qt.set_widget_text(self.dlg_readsql, 'cmb_project_type', project_type)
-                    tools_qt.set_widget_text(self.dlg_readsql, self.dlg_readsql.project_schema_name, project_name)
-                    self._set_info_project()
-        else:
-            global_vars.dao.rollback()
+        #     if not is_test:
+        #         self._populate_data_schema_name(self.cmb_project_type)
+        #         self._manage_utils()
+        #         if project_name is not None and is_utils is False:
+        #             tools_qt.set_widget_text(self.dlg_readsql, 'cmb_project_type', project_type)
+        #             tools_qt.set_widget_text(self.dlg_readsql, self.dlg_readsql.project_schema_name, project_name)
+        #             self._set_info_project()
+        # else:
+        #     global_vars.dao.rollback()
             # Reset count error variable to 0
             self.error_count = 0
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
@@ -390,8 +393,8 @@ class GwAdminButton:
         # Find Widgets in form
         self.rdb_sample = self.dlg_readsql_create_project.findChild(QRadioButton, 'rdb_sample')
         self.rdb_data = self.dlg_readsql_create_project.findChild(QRadioButton, 'rdb_data')
-        self.rdb_import_data = self.dlg_readsql_create_project.findChild(QRadioButton, 'rdb_import_data')
-        self.data_file = self.dlg_readsql_create_project.findChild(QLineEdit, 'data_file')
+        # self.rdb_import_data = self.dlg_readsql_create_project.findChild(QRadioButton, 'rdb_import_data')
+        # self.data_file = self.dlg_readsql_create_project.findChild(QLineEdit, 'data_file')
 
         # Load user values
         # self.project_name.setText(tools_gw.get_config_parser('btn_admin', 'project_name_schema', "user", "session",
@@ -409,7 +412,7 @@ class GwAdminButton:
             self.data_file.setText(inp_file_path)
 
         # TODO: do and call listener for buton + table -> temp_csv
-        self.btn_push_file = self.dlg_readsql_create_project.findChild(QPushButton, 'btn_push_file')
+        #self.btn_push_file = self.dlg_readsql_create_project.findChild(QPushButton, 'btn_push_file')
 
         # Manage SRID
         self._manage_srid()
@@ -424,7 +427,7 @@ class GwAdminButton:
         #     self._change_project_type(self.cmb_create_project_type)
 
         # Enable_disable data file widgets
-        self._enable_datafile()
+        # self._enable_datafile()
 
         # Get combo locale
         self.cmb_locale = self.dlg_readsql_create_project.findChild(QComboBox, 'cmb_locale')
@@ -486,7 +489,7 @@ class GwAdminButton:
         return True
 
 
-    def load_sample_data(self, project_type):
+    def load_sample_data(self, project_type="dev"):
 
         global_vars.dao.commit()
         folder = os.path.join(self.folder_example, 'user', project_type)
@@ -565,8 +568,11 @@ class GwAdminButton:
 
         # Declare all file variables
         # self.file_pattern_tablect = "tablect"
-        # self.file_pattern_ddl = "ddl"
-        # self.file_pattern_dml = "dml"
+        self.file_pattern_ddl = "ddl"
+        self.file_pattern_dml = "dml"
+        self.file_pattern_rtree = "rtree"
+        self.file_pattern_sys_gpkg = "sys_gpkg"
+        self.file_pattern_trg = "trg"
         # self.file_pattern_fct = "fct"
         # self.file_pattern_trg = "trg"
         # self.file_pattern_ftrg = "ftrg"
@@ -1217,7 +1223,7 @@ class GwAdminButton:
         self._set_last_connection(connection_name)
 
             # Get username
-        self.username = self._get_user_connection(connection_name)
+        # self.username = self._get_user_connection(connection_name)
 
             # # Check postgis extension and create if not exist
             # postgis_extension = tools_db.check_postgis_version()
@@ -1261,20 +1267,20 @@ class GwAdminButton:
         settings.endGroup()
         return connection_name
 
-    def _get_user_connection(self, connection_name):
-        """"""
-
-        connection_username = None
-        settings = QSettings()
-        if connection_name:
-            settings.beginGroup(f"Pproviders/ogr/GPKG/connections{connection_name}")
-            connection_username = settings.value('username')
-            settings.endGroup()
-
-        if connection_username is None or connection_username == "":
-            connection_username = tools_db.get_current_user()
-
-        return connection_username
+    # def _get_user_connection(self, connection_name):
+    #     """"""
+    #
+    #     connection_username = None
+    #     settings = QSettings()
+    #     if connection_name:
+    #         settings.beginGroup(f"providers/ogr/GPKG/connections{connection_name}")
+    #         connection_username = settings.value('username')
+    #         settings.endGroup()
+    #
+    #     if connection_username is None or connection_username == "":
+    #         connection_username = tools_db.get_current_user()
+    #
+    #     return connection_username
 
 
     def _create_visit_class(self):
@@ -1360,16 +1366,6 @@ class GwAdminButton:
         cmb_locale = tools_qt.get_combo_value(self.dlg_readsql, self.cmb_locale, 0)
         self.folder_locale = os.path.join(self.sql_dir, 'i18n', cmb_locale)
 
-
-    def _enable_datafile(self):
-        """"""
-
-        if self.rdb_import_data.isChecked() is True:
-            self.data_file.setEnabled(True)
-            self.btn_push_file.setEnabled(True)
-        else:
-            self.data_file.setEnabled(False)
-            self.btn_push_file.setEnabled(False)
 
 
     def _populate_data_schema_name(self, widget):
@@ -1543,11 +1539,11 @@ class GwAdminButton:
         self.dlg_readsql_create_project.btn_accept.clicked.connect(partial(self.create_project_data_schema))
         self.dlg_readsql_create_project.btn_close.clicked.connect(
             partial(self._close_dialog_admin, self.dlg_readsql_create_project))
-        self.dlg_readsql_create_project.btn_push_file.clicked.connect(partial(self._select_file_inp))
+        #self.dlg_readsql_create_project.btn_push_file.clicked.connect(partial(self._select_file_inp))
         # self.cmb_create_project_type.currentIndexChanged.connect(
         #     partial(self._change_project_type, self.cmb_create_project_type))
         self.cmb_locale.currentIndexChanged.connect(partial(self._update_locale))
-        self.rdb_import_data.toggled.connect(partial(self._enable_datafile))
+        # self.rdb_import_data.toggled.connect(partial(self._enable_datafile))
         # self.filter_srid.textChanged.connect(partial(self._filter_srid_changed))
 
 
@@ -1609,13 +1605,13 @@ class GwAdminButton:
         tools_log.log_info(f"Processing folder: {filedir}")
         filelist = sorted(os.listdir(filedir))
         status = True
-        if utils_schema_name:
-            schema_name = utils_schema_name
-        elif self.schema is None:
-            schema_name = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.project_schema_name)
-            schema_name = schema_name.replace('"', '')
-        else:
-            schema_name = self.schema.replace('"', '')
+        # if utils_schema_name:
+        #     schema_name = utils_schema_name
+        # elif self.schema is None:
+        #     schema_name = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.project_schema_name)
+        #     schema_name = schema_name.replace('"', '')
+        # else:
+        #     schema_name = self.schema.replace('"', '')
         if self.project_epsg:
             self.project_epsg = str(self.project_epsg).replace('"', '')
         else:
@@ -1623,31 +1619,31 @@ class GwAdminButton:
             tools_qgis.show_warning(msg)
 
         # Manage folders 'i18n'
-        manage_i18n = i18n
-        if 'i18n' in filedir:
-            manage_i18n = True
-
-        if manage_i18n:
-            files_to_execute = [f"{self.project_type_selected}.sql", "utils.sql", "ddl.sql", "ddlview.sql", "dml.sql",
-                                "tablect.sql", "trg.sql"]
-            for file in filelist:
-                status = True
-                if file in files_to_execute:
+        # manage_i18n = i18n
+        # if 'i18n' in filedir:
+        #     manage_i18n = True
+        #
+        # if manage_i18n:
+        #     files_to_execute = [f"{self.project_type_selected}.sql", "utils.sql", "ddl.sql", "ddlview.sql", "dml.sql",
+        #                         "tablect.sql", "trg.sql"]
+        #     for file in filelist:
+        #         status = True
+        #         if file in files_to_execute:
+        #             tools_log.log_info(os.path.join(filedir, file))
+        #             self.current_sql_file += 1
+        #             status = self._read_execute_file(filedir, file, schema_name, self.project_epsg, set_progress_bar)
+        #         if not status and self.dev_commit is False:
+        #             return False
+        #
+        # else:
+        for file in filelist:
+            if ".sql" in file:
+                if (no_ct is True and "tablect.sql" not in file) or no_ct is False:
                     tools_log.log_info(os.path.join(filedir, file))
                     self.current_sql_file += 1
-                    status = self._read_execute_file(filedir, file, schema_name, self.project_epsg, set_progress_bar)
-                if not status and self.dev_commit is False:
-                    return False
-
-        else:
-            for file in filelist:
-                if ".sql" in file:
-                    if (no_ct is True and "tablect.sql" not in file) or no_ct is False:
-                        tools_log.log_info(os.path.join(filedir, file))
-                        self.current_sql_file += 1
-                        status = self._read_execute_file(filedir, file, schema_name, self.project_epsg, set_progress_bar)
-                        if not status and self.dev_commit is False:
-                            return False
+                    status = self._read_execute_file(filedir, file, self.project_epsg, set_progress_bar)
+                    if not status and self.dev_commit is False:
+                        return False
 
         return status
 
@@ -1672,7 +1668,8 @@ class GwAdminButton:
             filepath = os.path.join(filedir, file)
             f = open(filepath, 'r', encoding="utf8")
             if f:
-                f_to_read = str(f.read().replace("SCHEMA_NAME", schema_name).replace("SRID_VALUE", project_epsg))
+                # f_to_read = str(f.read().replace("SCHEMA_NAME", schema_name).replace("SRID_VALUE", project_epsg))
+                f_to_read = str(f.read())
                 status = tools_db.execute_sql(str(f_to_read), filepath=filepath, commit=self.dev_commit, is_thread=True)
 
                 if status is False:

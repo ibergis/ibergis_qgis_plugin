@@ -21,8 +21,11 @@
        <string>Project schema Settings</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="srid_id"/>
+       <item row="6" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="cmb_locale"/>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="lbl_filter">
@@ -31,26 +34,42 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout">
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="srid_id"/>
+       </item>
+       <item row="5" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QLineEdit" name="data_file">
-           <property name="readOnly">
+          <widget class="QRadioButton" name="rdb_data">
+           <property name="text">
+            <string>Empty data</string>
+           </property>
+           <property name="checked">
             <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btn_push_file">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
+          <widget class="QRadioButton" name="rdb_sample">
            <property name="text">
-            <string>...</string>
+            <string>Example data</string>
            </property>
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lbl_locale">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>Locale:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="4" column="1">
         <widget class="QTableView" name="tbl_srid">
@@ -96,53 +115,6 @@
          <attribute name="verticalHeaderVisible">
           <bool>false</bool>
          </attribute>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QRadioButton" name="rdb_data">
-           <property name="text">
-            <string>Empty data</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="rdb_sample">
-           <property name="text">
-            <string>Example data</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="rdb_import_data">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="text">
-            <string>Import data</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="cmb_locale"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="lbl_locale">
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
-         <property name="text">
-          <string>Locale:</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
         </widget>
        </item>
       </layout>
@@ -218,9 +190,6 @@
   <tabstop>tbl_srid</tabstop>
   <tabstop>rdb_data</tabstop>
   <tabstop>rdb_sample</tabstop>
-  <tabstop>rdb_import_data</tabstop>
-  <tabstop>data_file</tabstop>
-  <tabstop>btn_push_file</tabstop>
  </tabstops>
  <resources/>
  <connections/>
