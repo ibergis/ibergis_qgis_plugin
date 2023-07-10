@@ -18,7 +18,7 @@ if 'nt' in sys.builtin_module_names:
     import ctypes
 from functools import partial
 
-from qgis.PyQt.QtCore import Qt, QStringListModel, QVariant, QDate, QSettings, QLocale, QRegularExpression, QRegExp
+from qgis.PyQt.QtCore import Qt, QStringListModel, QVariant, QDate, QSettings, QLocale, QRegExp
 from qgis.PyQt.QtGui import QCursor, QPixmap, QColor, QFontMetrics, QStandardItemModel, QIcon, QStandardItem, \
     QIntValidator, QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtSql import QSqlTableModel
@@ -26,7 +26,7 @@ from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QCo
     QCompleter, QPushButton, QTableView, QFrame, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, \
     QToolButton, QWidget, QApplication, QDockWidget
 from qgis.core import Qgis, QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
-    QgsFeatureRequest, QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsPointLocator, \
+    QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsPointLocator, \
     QgsSnappingConfig, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsFieldConstraints, \
     QgsEditorWidgetSetup, QgsRasterLayer
 from qgis.gui import QgsDateTimeEdit, QgsRubberBand
@@ -1102,69 +1102,6 @@ def set_style_mapzones():
                 lyr.triggerRepaint()
 
 
-def build_dialog_info(dialog, result, my_json=None):
-
-    fields = result['body']['data']
-    if 'fields' not in fields:
-        return
-    grid_layout = dialog.findChild(QGridLayout, 'lyt_main_1')
-
-    for order, field in enumerate(fields["fields"]):
-        if field.get('hidden'):
-            continue
-
-        label = QLabel()
-        label.setObjectName('lbl_' + field['label'])
-        label.setText(field['label'].capitalize())
-
-        if 'tooltip' in field:
-            label.setToolTip(field['tooltip'])
-        else:
-            label.setToolTip(field['label'].capitalize())
-
-        widget = None
-        if field['widgettype'] in ('text', 'textline') or field['widgettype'] == 'typeahead':
-            completer = QCompleter()
-            widget = add_lineedit(field)
-            widget = set_widget_size(widget, field)
-            widget = set_data_type(field, widget)
-            if field['widgettype'] == 'typeahead':
-                widget = set_typeahead(field, dialog, widget, completer)
-            widget.editingFinished.connect(partial(get_values, dialog, widget, my_json))
-        elif field['widgettype'] == 'datetime':
-            widget = add_calendar(dialog, field)
-            widget.valueChanged.connect(partial(get_values, dialog, widget, my_json))
-        elif field['widgettype'] == 'hyperlink':
-            widget = add_hyperlink(field)
-        elif field['widgettype'] == 'textarea':
-            widget = add_textarea(field)
-            widget.textChanged.connect(partial(get_values, dialog, widget, my_json))
-        elif field['widgettype'] in ('combo', 'combobox'):
-            widget = add_combo(field)
-            widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            widget.currentIndexChanged.connect(partial(get_values, dialog, widget, my_json))
-        elif field['widgettype'] in ('check', 'checkbox'):
-            kwargs = {"dialog": dialog, "field": field}
-            widget = add_checkbox(**kwargs)
-            widget.stateChanged.connect(partial(get_values, dialog, widget, my_json))
-        elif field['widgettype'] == 'button':
-            kwargs = {"dialog": dialog, "field": field}
-            widget = add_button(**kwargs)
-
-        if 'ismandatory' in field:
-            widget.setProperty('ismandatory', field['ismandatory'])
-
-        if 'layoutorder' in field and field['layoutorder'] is not None:
-            order = field['layoutorder']
-        grid_layout.addWidget(label, order, 0)
-        grid_layout.addWidget(widget, order, 1)
-
-    vertical_spacer1 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-    grid_layout.addItem(vertical_spacer1)
-
-    return result
-
-
 def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module=sys.modules[__name__]):
 
     try:
@@ -2052,47 +1989,6 @@ def get_actions_from_json(json_result, sql):
         tools_qt.manage_exception(None, f"{type(e).__name__}: {e}", sql, global_vars.schema_name)
 
 
-def exec_pg_function(function_name, parameters=None, commit=True, schema_name=None, log_sql=False, rubber_band=None,
-        aux_conn=None, is_thread=False, check_function=True):
-    """ Manage execution of database function @function_name
-        If execution failed, execute it again up to the value indicated in parameter 'exec_procedure_max_retries'
-    """
-
-    # Define dictionary with results
-    dict_result= {}
-    status = False
-    function_failed = False
-    json_result = None
-    complet_result = None
-
-    attempt = 0
-    while json_result is None and attempt < global_vars.exec_procedure_max_retries:
-        attempt += 1
-        if attempt == 1:
-            tools_log.log_info(f"Starting process...")
-        else:
-            tools_log.log_info(f"Retrieving process ({attempt}/{global_vars.exec_procedure_max_retries})...")
-        json_result = execute_procedure(function_name, parameters, schema_name, commit, log_sql, rubber_band, aux_conn,
-            is_thread, check_function)
-        complet_result = json_result
-        if json_result is None or not json_result:
-            function_failed = True
-        elif 'status' in json_result:
-            if json_result['status'] == 'Failed':
-                tools_log.log_warning(json_result)
-                function_failed = True
-            else:
-                status = True
-            break
-
-    dict_result['status'] = status
-    dict_result['function_failed'] = function_failed
-    dict_result['json_result'] = json_result
-    dict_result['complet_result'] = complet_result
-
-    return dict_result
-
-
 def execute_procedure(function_name, parameters=None, schema_name=None, commit=True, log_sql=True, rubber_band=None,
         aux_conn=None, is_thread=False, check_function=True):
     """ Manage execution database function
@@ -2377,55 +2273,6 @@ def manage_json_return(json_result, sql, rubber_band=None, i=None):
         tools_qgis.clean_layer_group_from_toc('GW Temporal Layers')
 
 
-def get_rows_by_feature_type(class_object, dialog, table_object, feature_type):
-    """ Get records of @feature_type associated to selected @table_object """
-
-    object_id = tools_qt.get_text(dialog, table_object + "_id")
-    table_relation = table_object + "_x_" + feature_type
-    widget_name = "tbl_" + table_relation
-
-    exists = tools_db.check_table(table_relation)
-    if not exists:
-        tools_log.log_info(f"Not found: {table_relation}")
-        return
-
-    sql = (f"SELECT {feature_type}_id "
-           f"FROM {table_relation} "
-           f"WHERE {table_object}_id = '{object_id}'")
-    rows = tools_db.get_rows(sql, log_info=False)
-    if rows:
-        for row in rows:
-            class_object.list_ids[feature_type].append(str(row[0]))
-            class_object.ids.append(str(row[0]))
-
-        expr_filter = get_expression_filter(feature_type, class_object.list_ids, class_object.layers)
-        table_name = f"v_edit_{feature_type}"
-        tools_qt.set_table_model(dialog, widget_name, table_name, expr_filter)
-
-
-def get_project_type(schemaname=None):
-    """ Get project type from table 'sys_version' """
-
-    project_type = None
-    if schemaname is None and global_vars.schema_name is None:
-        return None
-    elif schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-
-    tablename = "sys_version"
-    exists = tools_db.check_table(tablename, schemaname)
-    if not exists:
-        tools_qgis.show_warning(f"Table not found: '{tablename}'")
-        return None
-
-    sql = f"SELECT lower(project_type) FROM {schemaname}.{tablename} ORDER BY id DESC LIMIT 1"
-    row = tools_db.get_row(sql)
-    if row:
-        project_type = row[0]
-
-    return project_type
-
-
 def get_project_info(schemaname=None):
     """ Get project information from table 'sys_version' """
 
@@ -2453,62 +2300,6 @@ def get_project_info(schemaname=None):
                              }
 
     return project_info_dict
-
-
-def get_layers_from_feature_type(feature_type):
-    """ Get layers of the group @feature_type """
-
-    list_items = []
-    sql = (f"SELECT child_layer "
-           f"FROM cat_feature "
-           f"WHERE upper(feature_type) = '{feature_type.upper()}' "
-           f"UNION SELECT DISTINCT parent_layer "
-           f"FROM cat_feature "
-           f"WHERE upper(feature_type) = '{feature_type.upper()}';")
-    rows = tools_db.get_rows(sql)
-    if rows:
-        for row in rows:
-            layer = tools_qgis.get_layer_by_tablename(row[0])
-            if layer:
-                list_items.append(layer)
-
-    return list_items
-
-
-def get_role_permissions(qgis_project_role):
-
-    role_master = False
-    role_edit = False
-    role_om = False
-    role_epa = False
-    role_basic = False
-
-    role_admin = tools_db.check_role_user("role_admin")
-    if not role_admin:
-        role_master = tools_db.check_role_user("role_master")
-        if not role_master:
-            role_epa = tools_db.check_role_user("role_epa")
-            if not role_epa:
-                role_edit = tools_db.check_role_user("role_edit")
-                if not role_edit:
-                    role_om = tools_db.check_role_user("role_om")
-                    if not role_om:
-                        role_basic = tools_db.check_role_user("role_basic")
-
-    if role_basic or qgis_project_role == 'role_basic':
-        return 'role_basic'
-    elif role_om or qgis_project_role == 'role_om':
-        return 'role_om'
-    elif role_edit or qgis_project_role == 'role_edit':
-        return 'role_edit'
-    elif role_epa or qgis_project_role == 'role_epa':
-        return 'role_epa'
-    elif role_master or qgis_project_role == 'role_master':
-        return 'role_master'
-    elif role_admin or qgis_project_role == 'role_admin':
-        return 'role_admin'
-    else:
-        return 'role_basic'
 
 
 def get_config_value(parameter='', columns='value', table='config_param_user', sql_added=None, log_info=True):
@@ -2711,82 +2502,6 @@ def set_model_signals(class_object):
         class_object.qtbl_gully.selectionModel().selectionChanged.connect(partial(
             class_object._manage_tab_feature_buttons
         ))
-
-def insert_feature(class_object, dialog, table_object, query=False, remove_ids=True, lazy_widget=None,
-                   lazy_init_function=None):
-    """ Select feature with entered id. Set a model with selected filter.
-        Attach that model to selected table
-    """
-
-    tools_qgis.disconnect_signal_selection_changed()
-    feature_type = get_signal_change_tab(dialog)
-    # Clear list of ids
-    if remove_ids:
-        class_object.ids = []
-
-    field_id = f"{feature_type}_id"
-    feature_id = tools_qt.get_text(dialog, "feature_id")
-    expr_filter = f"{field_id} = '{feature_id}'"
-
-    # Check expression
-    (is_valid, expr) = tools_qt.check_expression_filter(expr_filter)
-    if not is_valid:
-        return None
-
-    # Select features of layers applying @expr
-    tools_qgis.select_features_by_ids(feature_type, expr, layers=class_object.layers)
-
-    if feature_id == 'null':
-        message = "You need to enter a feature id"
-        tools_qt.show_info_box(message)
-        return
-
-    # Iterate over all layers of the group
-    for layer in class_object.layers[feature_type]:
-        if layer.selectedFeatureCount() > 0:
-            # Get selected features of the layer
-            features = layer.selectedFeatures()
-            for feature in features:
-                # Append 'feature_id' into the list
-                selected_id = feature.attribute(field_id)
-                if selected_id not in class_object.ids:
-                    class_object.ids.append(selected_id)
-        if feature_id not in class_object.ids:
-            # If feature id doesn't exist in list -> add
-            class_object.ids.append(str(feature_id))
-
-    # Set expression filter with features in the list
-    expr_filter = f'"{field_id}" IN (  '
-    for i in range(len(class_object.ids)):
-        expr_filter += f"'{class_object.ids[i]}', "
-    expr_filter = expr_filter[:-2] + ")"
-
-    # Check expression
-    (is_valid, expr) = tools_qt.check_expression_filter(expr_filter)
-    if not is_valid:
-        return
-
-    # Select features with previous filter
-    # Build a list of feature id's and select them
-    for layer in class_object.layers[feature_type]:
-        it = layer.getFeatures(QgsFeatureRequest(expr))
-        id_list = [i.id() for i in it]
-        if len(id_list) > 0:
-            layer.selectByIds(id_list)
-
-    # Reload contents of table 'tbl_xxx_xxx_@feature_type'
-    if query:
-        _insert_feature_psector(dialog, feature_type, ids=class_object.ids)
-        layers = remove_selection(True, class_object.layers)
-        class_object.layers = layers
-    else:
-        load_tablename(dialog, table_object, feature_type, expr_filter)
-        tools_qt.set_lazy_init(table_object, lazy_widget=lazy_widget, lazy_init_function=lazy_init_function)
-
-    # Update list
-    class_object.list_ids[feature_type] = class_object.ids
-    enable_feature_type(dialog, table_object, ids=class_object.ids)
-    connect_signal_selection_changed(class_object, dialog, table_object, feature_type)
 
 
 def remove_selection(remove_groups=True, layers=None):
@@ -3031,19 +2746,6 @@ def fill_tableview_rows(widget, field):
     return widget
 
 
-def set_calendar_from_user_param(dialog, widget, table_name, value, parameter):
-    """ Executes query and set QDateEdit """
-
-    sql = (f"SELECT {value} FROM {table_name}"
-           f" WHERE parameter = '{parameter}' AND cur_user = current_user")
-    row = tools_db.get_row(sql)
-    if row and row[0]:
-        date = QDate.fromString(row[0].replace('/', '-'), 'yyyy-MM-dd')
-    else:
-        date = QDate.currentDate()
-    tools_qt.set_calendar(dialog, widget, date)
-
-
 def load_tablename(dialog, table_object, feature_type, expr_filter):
     """ Reload @widget with contents of @tablename applying selected @expr_filter """
 
@@ -3148,39 +2850,6 @@ def set_multi_completer_widget(tablenames: list, widget, fields_id: list, add_id
     tools_qt.set_completer_rows(widget, rows)
 
 
-def set_dates_from_to(widget_from, widget_to, table_name, field_from, field_to, max_back_date=None, max_fwd_date=None):
-    """
-    Builds query to populate @widget_from & @widget_to dates
-        :param widget_from:
-        :param widget_to:
-        :param table_name:
-        :param field_from:
-        :param field_to:
-        :param max_back_date: a PostgreSQL valid interval (eg. '1 year')
-        :param max_fwd_date: a PostgreSQL valid interval (eg. '1 year')
-    """
-
-    min_sql = f"MIN(LEAST({field_from}, {field_to}))"
-    max_sql = f"MAX(GREATEST({field_from}, {field_to}))"
-    if max_back_date:
-        min_sql = f"GREATEST({min_sql}, now() - interval '{max_back_date}')"
-    if max_fwd_date:
-        max_sql = f"LEAST({max_sql}, now() + interval '{max_fwd_date}')"
-
-    sql = f"SELECT {min_sql}, {max_sql} FROM {table_name}"
-    row = tools_db.get_row(sql)
-    current_date = QDate.currentDate()
-    if row:
-        if row[0]:
-            widget_from.setDate(row[0])
-        else:
-            widget_from.setDate(current_date)
-        if row[1]:
-            widget_to.setDate(row[1])
-        else:
-            widget_to.setDate(current_date)
-
-
 def manage_close(dialog, table_object, cur_active_layer=None, single_tool_mode=None, layers=None):
     """ Close dialog and disconnect snapping """
 
@@ -3203,130 +2872,6 @@ def manage_close(dialog, table_object, cur_active_layer=None, single_tool_mode=N
     close_dialog(dialog)
 
     return layers
-
-
-def delete_records(class_object, dialog, table_object, query=False, lazy_widget=None, lazy_init_function=None, extra_field=None):
-    """ Delete selected elements of the table """
-
-    tools_qgis.disconnect_signal_selection_changed()
-    feature_type = get_signal_change_tab(dialog)
-    if type(table_object) is str:
-        widget_name = f"tbl_{table_object}_x_{feature_type}"
-        widget = tools_qt.get_widget(dialog, widget_name)
-        if not widget:
-            message = "Widget not found"
-            tools_qgis.show_warning(message, parameter=widget_name)
-            return
-    elif type(table_object) is QTableView:
-        widget = table_object
-    else:
-        msg = "Table_object is not a table name or QTableView"
-        tools_log.log_info(msg)
-        return
-
-    # Control when QTableView is void or has no model
-    try:
-        # Get selected rows
-        selected_list = widget.selectionModel().selectedRows()
-    except AttributeError:
-        selected_list = []
-
-    if len(selected_list) == 0:
-        message = "Any record selected"
-        tools_qt.show_info_box(message)
-        return
-
-    if query:
-        full_list = widget.model()
-        for x in range(0, full_list.rowCount()):
-            class_object.ids.append(widget.model().record(x).value(f"{feature_type}_id"))
-    else:
-        class_object.ids = class_object.list_ids[feature_type]
-
-    field_id = feature_type + "_id"
-
-    del_id = []
-    inf_text = ""
-    list_id = ""
-    for i in range(0, len(selected_list)):
-        row = selected_list[i].row()
-        id_feature = widget.model().record(row).value(field_id)
-        inf_text += f"{id_feature}, "
-        list_id += f"'{id_feature}', "
-        del_id.append(id_feature)
-    inf_text = inf_text[:-2]
-    list_id = list_id[:-2]
-    message = "Are you sure you want to delete these records?"
-    title = "Delete records"
-    answer = tools_qt.show_question(message, title, inf_text)
-    if answer:
-        for el in del_id:
-            class_object.ids.remove(el)
-    else:
-        return
-
-    expr_filter = None
-    expr = None
-    if len(class_object.ids) > 0:
-
-        # Set expression filter with features in the list
-        expr_filter = f'"{field_id}" IN ('
-        for i in range(len(class_object.ids)):
-            expr_filter += f"'{class_object.ids[i]}', "
-        expr_filter = expr_filter[:-2] + ")"
-
-        # Check expression
-        (is_valid, expr) = tools_qt.check_expression_filter(expr_filter)  # @UnusedVariable
-        if not is_valid:
-            return
-
-    # Update model of the widget with selected expr_filter
-    if query:
-        state = None
-        if extra_field is not None and len(selected_list) == 1:
-            state = widget.model().record(selected_list[0].row()).value(extra_field)
-        _delete_feature_psector(dialog, feature_type, list_id, state)
-        load_tableview_psector(dialog, feature_type)
-    else:
-        load_tablename(dialog, table_object, feature_type, expr_filter)
-        tools_qt.set_lazy_init(table_object, lazy_widget=lazy_widget, lazy_init_function=lazy_init_function)
-
-    # Select features with previous filter
-    # Build a list of feature id's and select them
-    tools_qgis.select_features_by_ids(feature_type, expr, layers=class_object.layers)
-
-    if query:
-        class_object.layers = remove_selection(layers=class_object.layers)
-
-    # Update list
-    class_object.list_ids[feature_type] = class_object.ids
-    enable_feature_type(dialog, table_object, ids=class_object.ids)
-    connect_signal_selection_changed(class_object, dialog, table_object, query)
-
-
-def get_parent_layers_visibility():
-    """ Get layer visibility to restore when dialog is closed
-    :return: example: {<QgsMapLayer: 'Arc' (postgres)>: True, <QgsMapLayer: 'Node' (postgres)>: False,
-                       <QgsMapLayer: 'Connec' (postgres)>: True, <QgsMapLayer: 'Element' (postgres)>: False}
-    """
-
-    layers_visibility = {}
-    for layer_name in ["v_edit_arc", "v_edit_node", "v_edit_connec", "v_edit_element", "v_edit_gully"]:
-        layer = tools_qgis.get_layer_by_tablename(layer_name)
-        if layer:
-            layers_visibility[layer] = tools_qgis.is_layer_visible(layer)
-
-    return layers_visibility
-
-
-def restore_parent_layers_visibility(layers):
-    """ Receive a dictionary with the layer and if it has to be active or not
-    :param layers: example: {<QgsMapLayer: 'Arc' (postgres)>: True, <QgsMapLayer: 'Node' (postgres)>: False,
-                             <QgsMapLayer: 'Connec' (postgres)>: True, <QgsMapLayer: 'Element' (postgres)>: False}
-    """
-
-    for layer, visibility in layers.items():
-        tools_qgis.set_layer_visible(layer, False, visibility)
 
 
 def create_rubberband(canvas, geometry_type=1):
@@ -3448,29 +2993,6 @@ def manage_user_config_folder(user_folder_dir):
 
     except Exception as e:
         tools_log.log_warning(f"manage_user_config_folder: {e}")
-
-
-def check_old_userconfig(user_folder_dir):
-    """ Function to transfer user configuration from version 3.5.023 or older to new `.../core/` folder """
-
-    # Move all files in old config folder to new core config folder
-    old_folder_path = f"{user_folder_dir}{os.sep}config"
-    if os.path.exists(old_folder_path):
-        for file in os.listdir(old_folder_path):
-            old = f"{old_folder_path}{os.sep}{file}"
-            new = f"{user_folder_dir}{os.sep}core{os.sep}config{os.sep}{file}"
-            if os.path.exists(new):
-                os.remove(new)
-            os.rename(old, new)
-        os.removedirs(old_folder_path)
-
-    # Remove old log folder
-    old_folder_path = f"{user_folder_dir}{os.sep}log"
-    if os.path.exists(old_folder_path):
-        for file in os.listdir(old_folder_path):
-            path = f"{old_folder_path}{os.sep}{file}"
-            os.remove(path)
-        os.removedirs(old_folder_path)
 
 
 def user_params_to_userconfig():
@@ -3676,21 +3198,6 @@ def get_vertex_flag(default_value):
     return vertex_flag
 
 
-def get_sysversion_addparam():
-    """ Gets addparam field from table sys_version """
-
-    if not tools_db.check_column('sys_version', 'addparam'):
-        return None
-
-    sql = f"SELECT addparam FROM sys_version ORDER BY id DESC limit 1"
-    row = tools_db.get_row(sql, is_admin=True)
-
-    if row:
-        return row[0]
-
-    return None
-
-
 def reset_position_dialog(show_message=False, plugin='core', file_name='session'):
     """ Reset position dialog x/y """
 
@@ -3800,56 +3307,7 @@ def _get_parser_from_filename(filename):
 
 # endregion
 
-
-def fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields):
-    """ Put filter widgets into layout and set headers into QTableView """
-
-    complet_list = _get_list(complet_result, '', '', widgetname, 'form_feature', linkedobject)
-    print("complet_list")
-    print(complet_list)
-    tab_name = 'main'
-    if complet_list is False:
-        return False, False
-    for field in complet_list['body']['data']['fields']:
-        if 'hidden' in field and field['hidden']: continue
-        short_name = f'{tab_name}_{field["widgetname"]}'
-        widget = dialog.findChild(QTableView, short_name)
-        if widget is None: continue
-        widget = add_tableview_header(widget, field)
-        widget = fill_tableview_rows(widget, field)
-        widget = set_tablemodel_config(dialog, widget, short_name, 1, True)
-        tools_qt.set_tableview_config(widget, edit_triggers=QTableView.DoubleClicked)
-
-    widget_list = []
-    widget_list.extend(dialog.findChildren(QComboBox, QRegularExpression(f"{tab_name}_")))
-    widget_list.extend(dialog.findChildren(QTableView, QRegularExpression(f"{tab_name}_")))
-    widget_list.extend(dialog.findChildren(QLineEdit, QRegularExpression(f"{tab_name}_")))
-    widget_list.extend(dialog.findChildren(QSpinBox, QRegularExpression(f"{tab_name}_")))
-    widget_list.extend(
-        dialog.findChildren(QgsDateTimeEdit, QRegularExpression(f"{tab_name}_")))
-    return complet_list, widget_list
-
-
-def _get_list(complet_result, form_name='', filter_fields='', widgetname='', formtype='',
-              linkedobject=''):
-
-    form = f'"formName":"{form_name}", "tabName":"main", "widgetname":"{widgetname}", "formtype":"{formtype}"'
-    feature = f'"tableName":"{linkedobject}"'
-    filter_fields = ''
-    body = create_body(form, feature, filter_fields)
-    json_result = execute_procedure('gw_fct_getlist', body)
-    if json_result is None or json_result['status'] == 'Failed':
-        return False
-    complet_list = json_result
-    if not complet_list:
-        return False
-
-    return complet_list
-
-# startregion
-# Info buttons
-
-
+# region
 def set_filter_listeners(complet_result, dialog, widget_list, columnname, widgetname, feature_id=None):
     """
     functions called in -> widget.textChanged.connect(partial(getattr(tools_backend_calls, widgetfunction), **kwargs))
