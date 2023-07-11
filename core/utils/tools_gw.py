@@ -36,8 +36,6 @@ from ..ui.main_window import GwMainWindow
 from ..ui.docker import GwDocker
 from ..ui.ui_manager import GwSelectorUi
 from . import tools_backend_calls
-from ..utils.select_manager import GwSelectManager
-from ..utils.snap_manager import GwSnapManager
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt, tools_log, tools_os, tools_db
 from ...lib.tools_qt import GwHyperLinkLabel, GwHyperLinkLineEdit
@@ -2376,48 +2374,8 @@ def manage_layer_manager(json_result, sql=None):
                 if prev_layer:
                     global_vars.iface.setActiveLayer(prev_layer)
 
-        # Set snnaping options
-        if 'snnaping' in layermanager:
-            snapper_manager = GwSnapManager(global_vars.iface)
-            for layer_name in layermanager['snnaping']:
-                layer = tools_qgis.get_layer_by_tablename(layer_name)
-                if layer:
-                    QgsProject.instance().blockSignals(True)
-                    segment_flag = get_vertex_flag(2)
-                    layer_settings = snapper_manager.config_snap_to_layer(layer, QgsPointLocator.All, True)
-                    if layer_settings:
-                        layer_settings.setTypeFlag(segment_flag)
-                        layer_settings.setTolerance(15)
-                        layer_settings.setEnabled(True)
-                    else:
-                        layer_settings = QgsSnappingConfig.IndividualLayerSettings(True, segment_flag, 15, 1)
-                    snapping_config = snapper_manager.get_snapping_options()
-                    snapping_config.setIndividualLayerSettings(layer, layer_settings)
-                    QgsProject.instance().blockSignals(False)
-                    QgsProject.instance().snappingConfigChanged.emit(snapping_config)
-            snapper_manager.set_snap_mode()
-            del snapper_manager
-
     except Exception as e:
         tools_qt.manage_exception(None, f"{type(e).__name__}: {e}", sql, global_vars.schema_name)
-
-
-def selection_init(class_object, dialog, table_object, query=False):
-    """ Set canvas map tool to an instance of class 'GwSelectManager' """
-
-    try:
-        class_object.feature_type = get_signal_change_tab(dialog, excluded_layers=class_object.excluded_layers)
-    except AttributeError:
-        # In case the dialog has no tab
-        pass
-
-    if class_object.feature_type in ('all', None):
-        class_object.feature_type = 'arc'
-
-    select_manager = GwSelectManager(class_object, table_object, dialog, query)
-    global_vars.canvas.setMapTool(select_manager)
-    cursor = get_cursor_multiple_selection()
-    global_vars.canvas.setCursor(cursor)
 
 
 def selection_changed(class_object, dialog, table_object, query=False, lazy_widget=None, lazy_init_function=None):
@@ -2525,16 +2483,6 @@ def remove_selection(remove_groups=True, layers=None):
     global_vars.canvas.refresh()
 
     return layers
-
-
-def connect_signal_selection_changed(class_object, dialog, table_object, query=False):
-    """ Connect signal selectionChanged """
-
-    try:
-        global_vars.canvas.selectionChanged.connect(
-            partial(selection_changed, class_object, dialog, table_object, query))
-    except Exception as e:
-        tools_log.log_info(f"connect_signal_selection_changed: {e}")
 
 
 def docker_dialog(dialog):
