@@ -46,128 +46,12 @@ def check_table(tablename, schemaname=None):
     return row
 
 
-def check_view(viewname, schemaname=None):
-    """ Check if selected view exists in selected schema """
-
-    if schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-
-    schemaname = schemaname.replace('"', '')
-    sql = ("SELECT * FROM pg_views "
-           "WHERE schemaname = %s AND viewname = %s ")
-    params = [schemaname, viewname]
-    row = get_row(sql, log_info=False, params=params)
-    return row
-
-
-def check_column(tablename, columname, schemaname=None):
-    """ Check if @columname exists table @schemaname.@tablename """
-
-    if schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-
-    schemaname = schemaname.replace('"', '')
-    sql = ("SELECT * FROM information_schema.columns "
-           "WHERE table_schema = %s AND table_name = %s AND column_name = %s")
-    params = [schemaname, tablename, columname]
-    row = get_row(sql, log_info=False, params=params)
-    return row
-
-
 def check_role(role_name, is_admin=None):
     """ Check if @role_name exists """
 
     sql = f"SELECT * FROM pg_roles WHERE rolname = '{role_name}'"
     row = get_row(sql, log_info=False, is_admin=is_admin)
     return row
-
-
-def check_role_user(role_name, username=None):
-    """ Check if current user belongs to @role_name """
-
-    # Check both @role_name and @username exists
-    if not check_role(role_name):
-        return False
-
-    if username is None:
-        username = global_vars.current_user
-
-    if not check_role(username):
-        return False
-
-    sql = ("SELECT pg_has_role('" + username + "', '" + role_name + "', 'MEMBER');")
-    row = get_row(sql)
-    if row:
-        return row[0]
-    else:
-        return False
-
-
-def check_super_user(username=None):
-    """ Returns True if @username is a superuser """
-
-    if username is None:
-        username = global_vars.current_user
-
-    if not check_role(username):
-        return False
-
-    sql = f"SELECT usesuper FROM pg_user WHERE usename = '{username}'"
-    row = get_row(sql)
-    if row:
-        return row[0]
-    else:
-        return False
-
-
-def check_postgis_version():
-
-    sql = f"SELECT name FROM pg_available_extensions WHERE name = 'postgis'"
-    row = get_row(sql)
-    if row:
-        return row[0]
-    else:
-        return False
-
-
-def check_pg_extension(extension):
-
-    sql = f"SELECT name FROM pg_available_extensions WHERE name = '{extension}'"
-    row = get_row(sql)
-    if row:
-        return row[0]
-    else:
-        return False
-
-
-def get_current_user():
-    """ Get current user connected to database """
-
-    if global_vars.current_user:
-        return global_vars.current_user
-
-    sql = "SELECT current_user"
-    row = get_row(sql)
-    cur_user = ""
-    if row:
-        cur_user = str(row[0])
-    global_vars.current_user = cur_user
-    return cur_user
-
-
-def get_columns_list(tablename, schemaname=None):
-    """ Return list of all columns in @tablename """
-
-    if schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-
-    schemaname = schemaname.replace('"', '')
-    sql = ("SELECT column_name FROM information_schema.columns "
-           "WHERE table_schema = %s AND table_name = %s "
-           "ORDER BY ordinal_position")
-    params = [schemaname, tablename]
-    column_names = get_rows(sql, params=params)
-    return column_names
 
 
 def get_srid(tablename, schemaname=None):
@@ -395,36 +279,6 @@ def execute_sql(sql, log_sql=False, log_error=False, commit=True, filepath=None,
         return False
 
     return True
-
-
-def cancel_pid(pid):
-    """ Cancel one process by pid """
-    return global_vars.dao.cancel_pid(pid)
-
-
-def execute_returning(sql, log_sql=False, log_error=False, commit=True, is_thread=False, show_exception=True):
-    """ Execute SQL. Check its result in log tables, and show it to the user """
-
-    if log_sql:
-        tools_log.log_db(sql, stack_level_increase=1)
-    value = global_vars.dao.execute_returning(sql, commit)
-    global_vars.session_vars['last_error'] = global_vars.dao.last_error
-    if not value:
-        if log_error:
-            tools_log.log_info(sql, stack_level_increase=1)
-        if show_exception and not is_thread:
-            tools_qt.manage_exception_db(global_vars.session_vars['last_error'], sql)
-        return False
-
-    return value
-
-
-def set_search_path(schema_name):
-    """ Set parameter search_path for current QGIS project """
-
-    sql = f"SET search_path = {schema_name}, public;"
-    execute_sql(sql)
-    global_vars.dao.set_search_path = sql
 
 
 def check_function(function_name, schema_name=None, commit=True, aux_conn=None):
