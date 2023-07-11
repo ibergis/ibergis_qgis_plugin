@@ -83,45 +83,6 @@ class GwToolboxReportsUi(GwDialog, FORM_CLASS):
 
 
 # region ADMIN
-FORM_CLASS = _get_ui_class('admin_addfields.ui', 'admin')
-class GwAdminFieldsUi(GwDialog, FORM_CLASS):
-    pass
-
-FORM_CLASS = _get_ui_class('admin_credentials.ui', 'admin')
-class GwCredentialsUi(GwDialog, FORM_CLASS):
-
-    def __init__(self):
-
-        super().__init__()
-        self.txt_pass.setClearButtonEnabled(True)
-        icon_path = os.path.dirname(__file__) + os.sep + '..' + os.sep + '..' + os.sep + 'icons' + os.sep + 'dialog' + os.sep + '24x24' + os.sep + 'eye_open.png'
-        self.action = QAction("show")
-        if os.path.exists(icon_path):
-            icon = QIcon(icon_path)
-            self.action = QAction(icon, "show")
-        self.action.triggered.connect(self.show_pass)
-        self.txt_pass.addAction(self.action, QLineEdit.TrailingPosition)
-
-
-    def show_pass(self):
-
-        icon_path = ""
-        text = ""
-        if self.txt_pass.echoMode() == 0:
-            self.txt_pass.setEchoMode(QLineEdit.Password)
-            icon_path = os.path.dirname(
-                __file__) + os.sep + '..' + os.sep + '..' + os.sep + 'icons' + os.sep + 'dialogs' + os.sep + '24x24' + os.sep + 'eye_open.png'
-            text = "Show password"
-        elif self.txt_pass.echoMode() == 2:
-            self.txt_pass.setEchoMode(QLineEdit.Normal)
-            icon_path = os.path.dirname(
-                __file__) + os.sep + '..' + os.sep + '..' + os.sep + 'icons' + os.sep + 'dialogs' + os.sep + '24x24' + os.sep + 'eye_close.png'
-            text = "Hide password"
-        if os.path.exists(icon_path):
-            icon = QIcon(icon_path)
-            self.action.setIcon(icon)
-            self.action.setText(text)
-
 FORM_CLASS = _get_ui_class('admin_dbproject.ui', 'admin')
 class GwAdminDbProjectUi(GwMainWindow, FORM_CLASS):
     pass
@@ -130,33 +91,10 @@ FORM_CLASS = _get_ui_class('admin_gisproject.ui', 'admin')
 class GwAdminGisProjectUi(GwMainWindow, FORM_CLASS):
     pass
 
-FORM_CLASS = _get_ui_class('admin_importinp.ui', 'admin')
-class GwAdminImportUi(GwDialog, FORM_CLASS):
-    pass
-
-FORM_CLASS = _get_ui_class('admin_projectinfo.ui', 'admin')
-class GwAdminProjectInfoUi(GwMainWindow, FORM_CLASS):
-    pass
-
-FORM_CLASS = _get_ui_class('admin_renameproj.ui', 'admin')
-class GwAdminRenameProjUi(GwMainWindow, FORM_CLASS):
-    pass
-
-FORM_CLASS = _get_ui_class('admin_sysfields.ui', 'admin')
-class GwAdminSysFieldsUi(GwDialog, FORM_CLASS):
-    pass
-
 FORM_CLASS = _get_ui_class('admin_ui.ui', 'admin')
 class GwAdminUi(GwMainWindow, FORM_CLASS):
     dlg_closed = QtCore.pyqtSignal()
 
-FORM_CLASS = _get_ui_class('admin_visitclass.ui', 'admin')
-class GwAdminVisitClassUi(GwDialog, FORM_CLASS):
-    pass
-
-FORM_CLASS = _get_ui_class('admin_visitparam.ui', 'admin')
-class GwAdminVisitParamUi(GwDialog, FORM_CLASS):
-    pass
 
 FORM_CLASS = _get_ui_class('toolbox.ui', 'utilities')
 class GwToolboxUi(GwDialog, FORM_CLASS):
