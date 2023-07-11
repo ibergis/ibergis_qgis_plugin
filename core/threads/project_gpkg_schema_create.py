@@ -97,16 +97,6 @@ class GwGpkgCreateSchemaTask(GwTask):
         if self.timer:
             self.timer.stop()
 
-        # if self.finish_execution['import_data']:
-        #     tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_import_data', prefix=False)
-        #     msg = ("The base schema have been correctly executed."
-        #            "\nNow will start the import process. It is experimental and it may crash."
-        #            "\nIf this happens, please notify it by send a e-mail to info@giswater.org.")
-        #     tools_qt.show_info_box(msg, "Info")
-        #     self.admin.execute_import_inp_data(self.params['project_name_schema'], self.params['project_type'])
-        # else:
-        # self.admin.manage_process_result(self.params['project_name_schema'], self.params['project_type'],
-        #                                      is_test=self.is_test)
         self.admin.manage_process_result()
         self.setProgress(100)
 
@@ -121,8 +111,6 @@ class GwGpkgCreateSchemaTask(GwTask):
         """ Main common execution """
 
         gpkg = self.params['gpkg']
-        # exec_last_process = self.params['exec_last_process']
-        # project_name_schema = self.params['project_name_schema']
         project_locale = self.params['project_locale']
         project_srid = self.params['project_srid']
 
@@ -135,15 +123,7 @@ class GwGpkgCreateSchemaTask(GwTask):
         if (not status and self.admin.dev_commit is False) or self.isCanceled():
             return False
 
-        # status = self.admin.load_locale()
-        # if (not status and self.admin.dev_commit is False) or self.isCanceled():
-        #     return False
-
         status = True
-        # if exec_last_process:
-        #     tools_log.log_info("Execute function 'gw_fct_admin_schema_lastprocess'")
-        #     status = self.admin.execute_last_process(True, project_name_schema, self.admin.schema_type,
-        #                                              project_locale, project_srid)
 
         if (not status and self.admin.dev_commit is False) or self.isCanceled():
             return False
@@ -154,7 +134,6 @@ class GwGpkgCreateSchemaTask(GwTask):
     def custom_execution(self):
         """ Custom execution """
 
-        # project_type = self.params['project_type']
         example_data = self.params['example_data']
 
         tools_log.log_info("Execute 'custom_execution'")
@@ -162,12 +141,6 @@ class GwGpkgCreateSchemaTask(GwTask):
         self.admin.total_sql_files = 100
         self.admin.progress_ratio = 1.0
 
-
-        # if self.admin.rdb_import_data.isChecked():
-        #     self.finish_execution['import_data'] = True
-        # elif self.admin.rdb_sample.isChecked() and example_data:
-        #     tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
-        #     self.admin.load_sample_data(project_type=project_type)
         if self.admin.rdb_sample.isChecked() and example_data:
             tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
             self.admin.load_sample_data()
@@ -180,7 +153,6 @@ class GwGpkgCreateSchemaTask(GwTask):
 
         total_sql_files = 0
         dict_process = {}
-        # list_process = ['load_base', 'load_locale']
         list_process = ['load_base']
 
         for process_name in list_process:
@@ -216,24 +188,11 @@ class GwGpkgCreateSchemaTask(GwTask):
 
         dict_folders = {}
         if process_name == 'load_base':
-            # dict_folders[os.path.join(self.admin.folder_utils, self.admin.file_pattern_ddl)] = 0
-            # dict_folders[os.path.join(self.admin.folder_utils, self.admin.file_pattern_dml)] = 0
-            # dict_folders[os.path.join(self.admin.folder_utils, self.admin.file_pattern_fct)] = 0
-            # dict_folders[os.path.join(self.admin.folder_utils, self.admin.file_pattern_ftrg)] = 0
             dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_sys_gpkg)] = 0
             dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_ddl)] = 0
-            # dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_ddlrule)] = 0
             dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_dml)] = 0
-            # dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_tablect)] = 0
-            # dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_fct)] = 0
             dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_rtree)] = 0
             dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_trg)] = 0
-            # dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_ftrg)] = 0
-            # dict_folders[os.path.join(self.admin.folder_utils, self.admin.file_pattern_tablect)] = 0
-            # dict_folders[os.path.join(self.admin.folder_utils, self.admin.file_pattern_ddlrule)] = 0
-
-        elif process_name == 'load_locale':
-            dict_folders[self.admin.folder_locale] = 0
 
         return dict_folders
 
