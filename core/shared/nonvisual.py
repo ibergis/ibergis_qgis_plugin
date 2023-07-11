@@ -35,15 +35,12 @@ class GwNonVisual:
 
         self.plugin_dir = global_vars.plugin_dir
         self.iface = global_vars.iface
-        self.schema_name = global_vars.schema_name
         self.canvas = global_vars.canvas
         self.dialog = None
         self.manager_dlg = None
-        self.dict_views = {'ws': {'v_edit_inp_curve': 'curves', 'v_edit_inp_pattern': 'patterns',
-                                  'v_edit_inp_controls': 'controls', 'v_edit_inp_rules': 'rules'},
-                           'ud': {'v_edit_inp_curve': 'curves', 'v_edit_inp_pattern': 'patterns',
-                                  'v_edit_inp_timeseries': 'timeseries', 'v_edit_inp_controls': 'controls',
-                                  'inp_lid': 'lids'}}
+        self.dict_views = {'v_edit_inp_curve': 'curves', 'v_edit_inp_pattern': 'patterns',
+                           'v_edit_inp_timeseries': 'timeseries', 'v_edit_inp_controls': 'controls',
+                           'inp_lid': 'lids'}
         self.dict_ids = {'v_edit_inp_curve': 'id', 'v_edit_inp_curve_value': 'curve_id',
                          'v_edit_inp_pattern': 'pattern_id', 'v_edit_inp_pattern_value': 'pattern_id',
                          'v_edit_inp_controls': 'id',
@@ -84,7 +81,6 @@ class GwNonVisual:
         self.manager_dlg.finished.connect(partial(tools_gw.close_dialog, self.manager_dlg))
         self.manager_dlg.btn_print.clicked.connect(partial(self._print_object))
         self.manager_dlg.chk_active.stateChanged.connect(partial(self._filter_active, self.manager_dlg))
-
         self.manager_dlg.main_tab.currentChanged.connect(partial(self._manage_tabs_changed))
         self.manager_dlg.main_tab.currentChanged.connect(partial(self._filter_active, self.manager_dlg, None))
         self._manage_tabs_changed()
@@ -96,8 +92,7 @@ class GwNonVisual:
     def _manage_tabs_manager(self):
         """ Creates and populates manager tabs """
 
-        dict_views_project = self.dict_views[global_vars.project_type]
-
+        dict_views_project = self.dict_views
         for key in dict_views_project.keys():
             qtableview = QTableView()
             qtableview.setObjectName(f"tbl_{dict_views_project[key]}")
@@ -140,11 +135,8 @@ class GwNonVisual:
     def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.NoEditTriggers, expr=None):
         """ Fills manager table """
 
-        if self.schema_name not in table_name:
-            table_name = self.schema_name + "." + table_name
-
         # Set model
-        model = QSqlTableModel(db=global_vars.qgis_db_credentials)
+        model = QSqlTableModel(db=global_vars.db_qsql)
         model.setTable(table_name)
         model.setEditStrategy(QSqlTableModel.OnFieldChange)
         model.setSort(0, 0)
@@ -164,7 +156,7 @@ class GwNonVisual:
         # Set widget & model properties
         tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=set_edit_triggers,
                                       sectionResizeMode=0, stretchLastSection=False)
-        tools_gw.set_tablemodel_config(self.manager_dlg, widget, f"{table_name[len(f'{self.schema_name}.'):]}")
+        tools_gw.set_tablemodel_config(self.manager_dlg, widget, table_name)
 
         # Sort the table by feature id
         model.sort(1, 0)
@@ -209,7 +201,6 @@ class GwNonVisual:
 
         table = dialog.main_tab.currentWidget()
         function_name = table.property('function')
-
         getattr(self, function_name)()
 
 
