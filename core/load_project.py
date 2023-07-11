@@ -18,7 +18,7 @@ from .utils import tools_gw
 from .threads.project_layers_config import GwProjectLayersConfig
 from .threads.project_check import GwProjectCheckTask
 from .. import global_vars
-from ..lib import tools_qgis, tools_log, tools_db, tools_qt, tools_os
+from ..lib import tools_qgis, tools_log, tools_db, tools_qt, tools_os, tools_gpkgdao
 
 
 class GwLoadProject(QObject):
@@ -48,8 +48,8 @@ class GwLoadProject(QObject):
         if not self._check_project(show_warning):
             return
 
-        # Force commit before opening project and set new database connection
-        if not self._check_database_connection(show_warning):
+        # Set database connection to Geopackage file
+        if not self._check_database_connection():
             return
 
         # TODO: Get SRID from table node
@@ -149,8 +149,35 @@ class GwLoadProject(QObject):
         return True
 
 
-    def _check_database_connection(self, show_warning, force_commit=False):
-        """ TODO: Set new database connection. If force_commit=True then force commit before opening project """
+    def _check_database_connection(self):
+        """ Set database connection to Geopackage file """
+
+        # Create object to manage GPKG database connection
+        gpkg_dao = tools_gpkgdao.GwGpkgDao()
+        global_vars.gpkg_dao = gpkg_dao
+
+        # Define filepath of configuration GPKG
+        filename = "config.gpkg"
+        db_filepath = os.path.join(global_vars.plugin_dir, "samples", filename)
+        tools_log.log_info(db_filepath)
+        if not os.path.exists(db_filepath):
+            tools_log.log_info(f"File not found: {db_filepath}")
+            return False
+
+        # Set DB connection
+        tools_log.log_info(f"Set database connection")
+        status, global_vars.db_qsql = global_vars.gpkg_dao.init_qsql_db(db_filepath, global_vars.plugin_name)
+        if not status:
+            last_error = global_vars.gpkg_dao.last_error
+            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            return False
+        status = global_vars.gpkg_dao.init_db(db_filepath)
+        if not status:
+            last_error = global_vars.gpkg_dao.last_error
+            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
+            return False
+
+        tools_log.log_info(f"Database connection successful")
         return True
 
 
