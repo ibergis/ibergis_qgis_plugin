@@ -205,13 +205,7 @@ class Drain(QObject):
         # Initialize parsers of configuration files: init, session, giswater, user_params
         tools_gw.initialize_parsers()
 
-        # Check if user has config files 'init' and 'session' and its parameters (only those without prefix)
-        try:
-            tools_gw.check_old_userconfig(global_vars.user_folder_dir)
-        except Exception as e:
-            # This may happen if the user doesn't have permission to move/delete files
-            msg = "Exception while moving/deleting old user config files"
-            tools_log.log_warning(msg, parameter=e)
+        # Load all the variables from user_params.config to their respective user config files
         tools_gw.user_params_to_userconfig()
 
         # Set logger parameters min_log_level and log_limit_characters
@@ -224,9 +218,6 @@ class Drain(QObject):
         python_enable_console = tools_gw.get_config_parser('system', 'enable_python_console', 'project', 'drain')
         if python_enable_console == 'TRUE':
             tools_qgis.enable_python_console()
-
-        # Set init parameter 'exec_procedure_max_retries'
-        # global_vars.exec_procedure_max_retries = int(tools_gw.get_config_parser('system', 'exec_procedure_max_retries', 'user', 'init', False))
 
         # Create the GwSignalManager
         self._create_signal_manager()
