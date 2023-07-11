@@ -5,24 +5,17 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
-import json
 import os
-import re
-import sys
-import mmap
 from functools import partial
 from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.PyQt.QtCore import QSettings, Qt, QDate, QTimer
+from qgis.PyQt.QtCore import QSettings, QDate, QTimer
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtSql import QSqlTableModel, QSqlQueryModel
-from qgis.PyQt.QtWidgets import QRadioButton, QPushButton, QAbstractItemView, QTextEdit, QFileDialog, \
-    QLineEdit, QWidget, QComboBox, QLabel, QCheckBox, QScrollArea, QSpinBox, QAbstractButton, QHeaderView, QListView, \
-    QFrame, QScrollBar, QDoubleSpinBox, QPlainTextEdit, QGroupBox, QTableView, QDockWidget, QGridLayout
+from qgis.PyQt.QtWidgets import QRadioButton, QAbstractItemView, QLineEdit, QComboBox, QLabel, QTableView, QDockWidget
 from qgis.core import QgsProject, QgsApplication, QgsMessageLog
-from qgis.gui import QgsDateTimeEdit
 from qgis.utils import reloadPlugin
 
 from .gis_file_create import GwGisFileCreate
@@ -30,7 +23,6 @@ from ..threads.task import GwTask
 from ..ui.ui_manager import GwAdminUi, GwAdminDbProjectUi, GwAdminGisProjectUi
 from ..utils import tools_gw
 from ... import global_vars
-from .i18n_generator import GwI18NGenerator
 from ...lib import tools_qt, tools_qgis, tools_log, tools_db, tools_os, tools_gpkgdao
 from ..ui.docker import GwDocker
 from ..threads.project_gpkg_schema_create import GwGpkgCreateSchemaTask
