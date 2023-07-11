@@ -8,6 +8,8 @@ or (at your option) any later version.
 import os
 import sqlite3
 
+from qgis.PyQt.QtSql import QSqlDatabase
+
 
 class GwGpkgDao(object):
 
@@ -17,10 +19,11 @@ class GwGpkgDao(object):
         self.db_filepath = None
         self.conn = None
         self.cursor = None
+        self.db_qsql = None
 
 
     def init_db(self, filename):
-        """ Initializes database connection """
+        """ Initializes database connection (sqlite3) """
 
         if filename is None:
             self.last_error = f"Database file path is not set"
@@ -125,4 +128,20 @@ class GwGpkgDao(object):
             status = False
         finally:
             return status
+
+
+    def init_qsql_db(self, filepath, plugin_name):
+        """ Initializes database connection (QSqlDatabase) """
+
+        # Add the GeoPackage database to QSqlDatabase
+        db_qsql = QSqlDatabase.addDatabase("QSQLITE", plugin_name)
+        db_qsql.setDatabaseName(filepath)
+        db_qsql.open()
+        status = db_qsql.isOpen()
+        if not status:
+            error = db_qsql.lastError()
+            self.last_error = error.text()
+
+        self.db_qsql = db_qsql
+        return status, db_qsql
 
