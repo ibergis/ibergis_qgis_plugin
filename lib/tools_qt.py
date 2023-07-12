@@ -644,7 +644,7 @@ def check_expression_filter(expr_filter, log_info=False):
 
 
 def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableModel.OnManualSubmit,
-               sort_order=Qt.AscendingOrder):
+               sort_order=Qt.AscendingOrder, db=global_vars.db_qsql_data):
     """ Set a model with selected filter. Attach that model to selected table
     :param qtable: tableview where set the model (QTableView)
     :param table_name: database table name or view name (String)
@@ -654,11 +654,9 @@ def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableMode
     :return:
     """
 
-    if global_vars.schema_name and global_vars.schema_name not in table_name:
-        table_name = f"{global_vars.schema_name}.{table_name}"
 
     # Set model
-    model = QSqlTableModel(db=global_vars.qgis_db_credentials)
+    model = QSqlTableModel(db=global_vars.db_qsql_data)
     model.setTable(table_name)
     model.setEditStrategy(edit_strategy)
     model.setSort(0, sort_order)

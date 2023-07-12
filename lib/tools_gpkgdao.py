@@ -130,11 +130,11 @@ class GwGpkgDao(object):
             return status
 
 
-    def init_qsql_db(self, filepath, plugin_name):
+    def init_qsql_db(self, filepath, database_name):
         """ Initializes database connection (QSqlDatabase) """
 
         # Add the GeoPackage database to QSqlDatabase
-        db_qsql = QSqlDatabase.addDatabase("QSQLITE", plugin_name)
+        db_qsql = QSqlDatabase.addDatabase("QSQLITE", database_name)
         db_qsql.setDatabaseName(filepath)
         db_qsql.open()
         status = db_qsql.isOpen()
