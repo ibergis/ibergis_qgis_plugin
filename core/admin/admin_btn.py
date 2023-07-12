@@ -7,6 +7,9 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 import os
 from functools import partial
+
+from PyQt5.QtWidgets import QFileDialog
+from qgis._core import QgsSettings
 from sip import isdeleted
 from time import time
 from datetime import timedelta
@@ -43,6 +46,8 @@ class GwAdminButton:
         self.canvas = global_vars.canvas
         self.project_type = None
         self.project_epsg = None
+        self.gpkg_name = None
+        self.project_path = None
         self.dlg_readsql = None
         self.dlg_info = None
         self.dlg_readsql_create_project = None
@@ -60,11 +65,13 @@ class GwAdminButton:
     def init_sql(self, set_database_connection=False, username=None, show_dialog=True):
         """ Button 100: Execute SQL. Info show info """
 
+        # Connect to sqlite database
+        self.gpkg_dao = tools_gpkgdao.GwGpkgDao()
         # Populate combo connections
-        default_connection = self._populate_combo_connections()
+        default_gpkg = self._populate_combo_connections()
 
         settings = QSettings()
-        settings.beginGroup(f"providers/ogr/GPKG/connections/{default_connection}")
+        settings.beginGroup(f"providers/ogr/GPKG/connections/{default_gpkg}")
         self.is_service = settings.value('service')
 
 
@@ -74,27 +81,67 @@ class GwAdminButton:
         self.status_ko = QPixmap(f"{self.icon_folder}status_ko.png")
         self.status_no_update = QPixmap(f"{self.icon_folder}status_not_updated.png")
 
-        # Connect to sqlite database
-        self.gpkg_dao = tools_gpkgdao.GwGpkgDao()
+
 
         # Create the dialog and signals
         self._init_show_database()
         self._info_show_database(username=username, show_dialog=show_dialog)
 
 
-    def create_project_data_schema(self, project_name_schema=None, project_srid=None,
+    def _check_database_connection(self, db_filepath):
+        """ Set database connection to Geopackage file """
+
+        # Create object to manage GPKG database connection
+        gpkg_dao = tools_gpkgdao.GwGpkgDao()
+        global_vars.gpkg_dao = gpkg_dao
+
+        # Define filepath of GPKG
+        # db_filepath = os.path.join(global_vars.plugin_dir, "samples", filename)
+        # tools_log.log_info(db_filepath)
+        if not os.path.exists(db_filepath):
+            tools_log.log_info(f"File path NOT found: {db_filepath}")
+            return False
+
+        # Set DB connection
+        tools_log.log_info(f"Set database connection")
+        status, global_vars.db_qsql = global_vars.gpkg_dao.init_qsql_db(db_filepath, global_vars.plugin_name)
+        if not status:
+            last_error = global_vars.gpkg_dao.last_error
+            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            return False
+        status = global_vars.gpkg_dao.init_db(db_filepath)
+        if not status:
+            last_error = global_vars.gpkg_dao.last_error
+            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
+            return False
+
+        tools_log.log_info(f"Database connection successful")
+        return True
+
+    def create_project_data_schema(self, project_srid=None,
                                    project_locale=None, is_test=False, example_data=True):
         """"""
+
+        gpkg_name = tools_qt.get_text(self.dlg_readsql_create_project, 'gpkg_name', return_string_null=False)
+        project_path = tools_qt.get_text(self.dlg_readsql_create_project, 'data_path', return_string_null=False)
+
         if project_srid is None:
             project_srid = tools_qt.get_text(self.dlg_readsql_create_project, 'srid_id')
         if project_locale is None:
             project_locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
 
+        print("NAME: ", gpkg_name, "PROJECT PATH; ", project_path)
+
+        if not gpkg_name or not project_path:
+            tools_qt.show_info_box("Please fill all empty fields.")
+            return
+
         # Set class variables
+        self.gpkg_name = gpkg_name
+        self.project_path = project_path
         self.schema_type = 'dev'
         self.project_epsg = project_srid
         self.locale = project_locale
-        self.gpkg = tools_qt.get_text(self.dlg_readsql, 'cmb_connection')
 
         # Save in settings
         locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
@@ -106,7 +153,7 @@ class GwAdminButton:
         if not answer:
             return
 
-        tools_log.log_info(f"Create schema of type '{self.schema_type}': '{self.gpkg}'")
+        tools_log.log_info(f"Creating GPKG {self.gpkg_name}'")
 
         if self.rdb_sample.isChecked():
 
@@ -388,7 +435,7 @@ class GwAdminButton:
     def _populate_combo_connections(self):
         """ Fill the combo with the connections that exist in QGis """
 
-        s = QSettings()
+        s = QgsSettings()
         s.beginGroup("providers/ogr/GPKG/connections")
         default_connection = s.value('selected')
         connections = s.childGroups()
@@ -931,19 +978,7 @@ class GwAdminButton:
 
         self.filter_srid = self.dlg_readsql_create_project.findChild(QLineEdit, 'srid_id')
         tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, '25831')
-        self.tbl_srid = self.dlg_readsql_create_project.findChild(QTableView, 'tbl_srid')
-        self.tbl_srid.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.model_srid = QSqlQueryModel()
-        self.tbl_srid.setModel(self.model_srid)
-        self.tbl_srid.clicked.connect(partial(self._set_selected_srid))
-
-
-    def _set_selected_srid(self):
-
-        selected_list = self.tbl_srid.selectionModel().selectedRows()
-        selected_row = selected_list[0].row()
-        srid = self.tbl_srid.model().record(selected_row).value("SRID")
-        tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, srid)
+        tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, '25831')
 
 
     def _set_info_project(self):
@@ -1025,6 +1060,7 @@ class GwAdminButton:
         self.dlg_readsql_create_project.btn_close.clicked.connect(
             partial(self._close_dialog_admin, self.dlg_readsql_create_project))
         self.cmb_locale.currentIndexChanged.connect(partial(self._update_locale))
+        self.dlg_readsql_create_project.btn_push_path.clicked.connect(partial(self._select_path))
 
 
     def _open_create_project(self):
@@ -1041,6 +1077,19 @@ class GwAdminButton:
         self.dlg_readsql_create_project.setWindowTitle(f"Create Project - {self.connection_name}")
         tools_gw.open_dialog(self.dlg_readsql_create_project, dlg_name='admin_dbproject')
 
+    def _select_path(self):
+        """ Select file path"""
+
+        path = tools_qt.get_text(self.dlg_readsql_create_project, 'data_file')
+        if path is None or path == '':
+            path = self.plugin_dir
+
+        if not os.path.exists(path):
+            folder_path = os.path.dirname(__file__)
+
+        message = tools_qt.tr("Select GPKG path")
+        file_path = QFileDialog.getExistingDirectory(None, message)
+        self.dlg_readsql_create_project.data_path.setText(file_path)
 
     def _execute_files(self, filedir, i18n=False, no_ct=False, utils_schema_name=None, set_progress_bar=False):
         """"""
