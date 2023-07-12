@@ -69,28 +69,28 @@ class GwDscenarioManagerButton(GwAction):
         tools_gw.load_settings(self.dlg_dscenario_manager)
 
         # Manage btn create
-        self._manage_btn_create()
+        # self._manage_btn_create()
 
         # Apply filter validator
-        self.filter_name = self.dlg_dscenario_manager.findChild(QLineEdit, 'txt_name')
-        reg_exp = QRegExp('([^"\'\\\\])*')  # Don't allow " or ' or \ because it breaks the query
-        self.filter_name.setValidator(QRegExpValidator(reg_exp))
+        # self.filter_name = self.dlg_dscenario_manager.findChild(QLineEdit, 'txt_name')
+        # reg_exp = QRegExp('([^"\'\\\\])*')  # Don't allow " or ' or \ because it breaks the query
+        # self.filter_name.setValidator(QRegExpValidator(reg_exp))
 
         # Fill table
         self.tbl_dscenario = self.dlg_dscenario_manager.findChild(QTableView, 'tbl_dscenario')
         self._fill_manager_table()
 
         # Connect main dialog signals
-        self.dlg_dscenario_manager.txt_name.textChanged.connect(partial(self._fill_manager_table))
-        self.dlg_dscenario_manager.btn_duplicate.clicked.connect(partial(self._duplicate_selected_dscenario))
-        self.dlg_dscenario_manager.btn_update.clicked.connect(partial(self._open_toolbox_function, 3042))
-        self.dlg_dscenario_manager.btn_delete.clicked.connect(partial(self._delete_selected_dscenario))
-        self.dlg_dscenario_manager.btn_delete.clicked.connect(partial(tools_gw.refresh_selectors))
-        self.tbl_dscenario.doubleClicked.connect(self._open_dscenario)
+        # self.dlg_dscenario_manager.txt_name.textChanged.connect(partial(self._fill_manager_table))
+        # self.dlg_dscenario_manager.btn_duplicate.clicked.connect(partial(self._duplicate_selected_dscenario))
+        # self.dlg_dscenario_manager.btn_update.clicked.connect(partial(self._open_toolbox_function, 3042))
+        # self.dlg_dscenario_manager.btn_delete.clicked.connect(partial(self._delete_selected_dscenario))
+        # self.dlg_dscenario_manager.btn_delete.clicked.connect(partial(tools_gw.refresh_selectors))
+        # self.tbl_dscenario.doubleClicked.connect(self._open_dscenario)
 
         self.dlg_dscenario_manager.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_dscenario_manager))
         self.dlg_dscenario_manager.finished.connect(partial(tools_gw.save_settings, self.dlg_dscenario_manager))
-        self.dlg_dscenario_manager.finished.connect(partial(self.save_user_values))
+        # self.dlg_dscenario_manager.finished.connect(partial(self.save_user_values))
 
         # Open dialog
         tools_gw.open_dialog(self.dlg_dscenario_manager, 'dscenario_manager')
@@ -121,26 +121,10 @@ class GwDscenarioManagerButton(GwAction):
     def _fill_manager_table(self, filter_name=""):
         """ Fill dscenario manager table with data from v_ui_cat_dscenario """
 
-        complet_list = self._get_list("v_ui_cat_dscenario", filter_name)
-
-        if complet_list is False:
-            return False, False
-        for field in complet_list['body']['data']['fields']:
-            if field.get('hidden'): continue
-            model = self.tbl_dscenario.model()
-            if model is None:
-                model = QStandardItemModel()
-                self.tbl_dscenario.setModel(model)
-            model.removeRows(0, model.rowCount())
-
-            if field['value']:
-                self.tbl_dscenario = tools_gw.add_tableview_header(self.tbl_dscenario, field)
-                self.tbl_dscenario = tools_gw.fill_tableview_rows(self.tbl_dscenario, field)
-        # TODO: config_form_tableview
-        # widget = tools_gw.set_tablemodel_config(self.dlg_dscenario_manager, self.tbl_dscenario, 'tbl_dscenario', 1, True)
-        tools_qt.set_tableview_config(self.tbl_dscenario)
-
-        return complet_list
+        table_object = "cat_scenario"
+        message = tools_qt.fill_table(self.tbl_dscenario, f"{table_object}")
+        if message:
+            tools_qgis.show_warning(message)
 
 
     def _manage_btn_create(self):
