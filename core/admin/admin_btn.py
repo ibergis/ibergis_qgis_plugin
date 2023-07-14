@@ -10,6 +10,7 @@ import threading
 from functools import partial
 
 from PyQt5.QtWidgets import QFileDialog
+from osgeo import gdal
 from qgis._core import QgsSettings
 from sip import isdeleted
 from time import time
@@ -38,6 +39,8 @@ class GwAdminButton:
         """ Class to control toolbar 'om_ws' """
 
         # Initialize instance attributes
+        self.gpkg_full_path = None
+        self.dict_folders_process =  {}
         self.iface = global_vars.iface
         self.settings = global_vars.giswater_settings
         self.plugin_dir = global_vars.plugin_dir
@@ -85,7 +88,6 @@ class GwAdminButton:
     def create_project_data_schema(self, project_srid=None,
                                    project_locale=None, is_test=False, example_data=True):
         """"""
-        print(f"Thread id accept: {threading.get_ident()}")
         gpkg_name = tools_qt.get_text(self.dlg_readsql_create_project, 'gpkg_name', return_string_null=False)
         project_path = tools_qt.get_text(self.dlg_readsql_create_project, 'data_path', return_string_null=False)
 
@@ -94,7 +96,6 @@ class GwAdminButton:
         if project_locale is None:
             project_locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
 
-        print("NAME: ", gpkg_name, "PROJECT PATH; ", project_path)
 
         if not gpkg_name or not project_path:
             tools_qt.show_info_box("Please fill all empty fields.")
@@ -119,36 +120,35 @@ class GwAdminButton:
 
         tools_log.log_info(f"Creating GPKG {self.gpkg_name}'")
 
-        if self.rdb_sample.isChecked():
+        tools_log.log_info(f"'Create schema' execute function 'def create_gpkg'")
+        self.create_gpkg()
+        tools_log.log_info(f"'Create schema' execute function 'def _check_database_connection'")
+        connection_status = self._check_database_connection(self.gpkg_full_path)
+        if not connection_status:
+            tools_log.log_info("Function _check_database_connection returned False")
+            return False
+        tools_log.log_info(f"'Create schema' execute function 'def main_execution'")
+        status = self.create_schema_main_execution()
+        if not status:
+            tools_log.log_info("Function main_execution returned False")
+            return False
+        tools_log.log_info(f"'Create schema' execute function 'def custom_execution'")
+        self.create_schema_custom_execution()
+        return True
 
-            if self.locale != 'en_US' or str(self.project_epsg) != '25831':
-                msg = ("This functionality is only allowed with the locality 'en_US' and SRID 25831."
-                       "\nDo you want change it and continue?")
-                result = tools_qt.show_question(msg, "Info Message", force_action=True)
-                if result:
-                    self.project_epsg = '25831'
-                    project_srid = '25831'
-                    self.locale = 'en_US'
-                    project_locale = 'en_US'
-                    # self.folder_locale = os.path.join(self.sql_dir, 'i18n', project_locale)
-                    tools_qt.set_widget_text(self.dlg_readsql_create_project, 'srid_id', '25831')
-                    tools_qt.set_combo_value(self.cmb_locale, 'en_US', 0)
-                else:
-                    return
-
-        self.error_count = 0
-        # Set background task 'GwCreateSchemaTask'
-        self.t0 = time()
-        self.timer = QTimer()
-        self.timer.timeout.connect(partial(self._calculate_elapsed_time, self.dlg_readsql_create_project))
-
-        self.timer.start(1000)
-        description = f"Create Geopackage schema"
-        params = {'is_test': is_test, 'gpkg_name': self.gpkg_name, 'project_path': self.project_path, 'project_locale': project_locale,
-                  'project_srid': project_srid, 'example_data': example_data}
-        self.task_create_schema = GwGpkgCreateSchemaTask(self, description, params, timer=self.timer)
-        QgsApplication.taskManager().addTask(self.task_create_schema)
-        QgsApplication.taskManager().triggerTask(self.task_create_schema)
+    # self.error_count = 0
+        # # Set background task 'GwCreateSchemaTask'
+        # self.t0 = time()
+        # self.timer = QTimer()
+        # self.timer.timeout.connect(partial(self._calculate_elapsed_time, self.dlg_readsql_create_project))
+        #
+        # self.timer.start(1000)
+        # description = f"Create Geopackage schema"
+        # params = {'is_test': is_test, 'gpkg_name': self.gpkg_name, 'project_path': self.project_path, 'project_locale': project_locale,
+        #           'project_srid': project_srid, 'example_data': example_data}
+        # self.task_create_schema = GwGpkgCreateSchemaTask(self, description, params, timer=self.timer)
+        # QgsApplication.taskManager().addTask(self.task_create_schema)
+        # QgsApplication.taskManager().triggerTask(self.task_create_schema)
 
 
     def manage_process_result(self, is_test=False, is_utils=False, dlg=None):
@@ -212,16 +212,15 @@ class GwAdminButton:
 
         return result
 
-    def cancel_task(self):
-        if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
-            self.task_create_schema.cancel()
+    # def cancel_task(self):
+    #     if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
+    #         self.task_create_schema.cancel()
 
     def init_dialog_create_project(self, project_type=None):
         """ Initialize dialog (only once) """
 
         self.dlg_readsql_create_project = GwAdminDbProjectUi()
         tools_gw.load_settings(self.dlg_readsql_create_project)
-        self.dlg_readsql_create_project.btn_cancel_task.hide()
 
         # Find Widgets in form
         self.rdb_sample = self.dlg_readsql_create_project.findChild(QRadioButton, 'rdb_sample')
@@ -705,7 +704,6 @@ class GwAdminButton:
     def _set_signals_create_project(self):
         """"""
 
-        self.dlg_readsql_create_project.btn_cancel_task.clicked.connect(self.cancel_task)
         self.dlg_readsql_create_project.btn_accept.clicked.connect(partial(self.create_project_data_schema))
         self.dlg_readsql_create_project.btn_close.clicked.connect(
             partial(self._close_dialog_admin, self.dlg_readsql_create_project))
@@ -758,23 +756,17 @@ class GwAdminButton:
         # else:
         #     schema_name = self.schema.replace('"', '')
         if self.project_epsg:
-            tools_log.log_info(f"Test 2")
             self.project_epsg = str(self.project_epsg).replace('"', '')
         else:
-            tools_log.log_info(f"Test 3")
             msg = "There is no project selected or it is not valid. Please check the first tab..."
             tools_log.log_warning(msg)
-        tools_log.log_info(f"Test 4")
         for file in filelist:
             if ".sql" in file:
-                tools_log.log_info(f"Test 5")
                 if (no_ct is True and "tablect.sql" not in file) or no_ct is False:
-                    tools_log.log_info(f"Test 6")
                     tools_log.log_info(os.path.join(filedir, file))
                     self.current_sql_file += 1
                     status = self._read_execute_file(filedir, file, self.project_epsg, set_progress_bar)
                     if not status and self.dev_commit is False:
-                        tools_log.log_info(f"Test 7")
                         return False
 
         return status
@@ -782,20 +774,19 @@ class GwAdminButton:
 
     def _read_execute_file(self, filedir, file, schema_name, project_epsg, set_progress_bar=False):
         """"""
-        tools_log.log_info(f"Test 8")
         status = False
         f = None
         try:
 
             # Manage progress bar
-            if set_progress_bar:
-                if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
-                    self.progress_value = int(float(self.current_sql_file / self.total_sql_files) * 100)
-                    self.progress_value = int(self.progress_value * self.progress_ratio)
-                    self.task_create_schema.set_progress(self.progress_value)
-
-            if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema) and self.task_create_schema.isCanceled():
-                return False
+            # if set_progress_bar:
+            #     if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
+            #         self.progress_value = int(float(self.current_sql_file / self.total_sql_files) * 100)
+            #         self.progress_value = int(self.progress_value * self.progress_ratio)
+            #         self.task_create_schema.set_progress(self.progress_value)
+            #
+            # if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema) and self.task_create_schema.isCanceled():
+            #     return False
 
             # gpkg_path = self.project_path + "/" + self.gpkg_name + ".gpkg"
             # connection_status = self._check_database_connection(gpkg_path)
@@ -806,10 +797,9 @@ class GwAdminButton:
             filepath = os.path.join(filedir, file)
             f = open(filepath, 'r', encoding="utf8")
             if f:
-                print(f"Thread id admin: {threading.get_ident()}")
                 # f_to_read = str(f.read().replace("SCHEMA_NAME", schema_name).replace("SRID_VALUE", project_epsg))
                 f_to_read = str(f.read())
-                status = self.gpkg_dao.execute_sql(str(f_to_read))
+                status = self.gpkg_dao.execute_script_sql(str(f_to_read))
                 tools_log.log_info(f"LAST ERROR: ,{self.gpkg_dao.last_error}")
                 if status is False:
                     self.error_count = self.error_count + 1
@@ -818,9 +808,9 @@ class GwAdminButton:
                     if self.dev_commit is False:
                         global_vars.dao.rollback()
 
-                    if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
-                        self.task_create_schema.db_exception = (global_vars.session_vars['last_error'], str(f_to_read), filepath)
-                        self.task_create_schema.cancel()
+                    # if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
+                    #     self.task_create_schema.db_exception = (global_vars.session_vars['last_error'], str(f_to_read), filepath)
+                    #     self.task_create_schema.cancel()
 
                     return False
 
@@ -830,14 +820,51 @@ class GwAdminButton:
             tools_log.log_info(str(e))
             if self.dev_commit is False:
                 global_vars.dao.rollback()
-            if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
-                self.task_create_schema.cancel()
+            # if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
+            #     self.task_create_schema.cancel()
             status = False
 
         finally:
             if f:
                 f.close()
             return status
+
+    def create_schema_main_execution(self):
+        """ Main common execution """
+
+        self.progress_ratio = 0.8
+        tools_log.log_info(f"Task 'Create schema' execute function 'def calculate_number_of_files'")
+        self.total_sql_files = self.calculate_number_of_files()
+        tools_log.log_info(f"Number of SQL files 'TOTAL': {self.total_sql_files}")
+
+        status = self.load_base(self.dict_folders_process['load_base'])
+        if not status and self.dev_commit is False:
+            return False
+
+        status = True
+
+        if not status and self.dev_commit is False:
+            return False
+
+        return True
+
+
+    def create_schema_custom_execution(self):
+        """ Custom execution """
+
+        # example_data = self.params['example_data']
+
+        tools_log.log_info("Execute 'custom_execution'")
+        self.current_sql_file = 85
+        self.total_sql_files = 100
+        self.progress_ratio = 1.0
+
+        if self.rdb_sample.isChecked():
+            tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
+            self.load_sample_data()
+        elif self.rdb_data.isChecked():
+            tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
+
 
     def _check_database_connection(self, db_filepath):
         """ Set database connection to Geopackage file """
@@ -852,21 +879,82 @@ class GwAdminButton:
 
         # Set DB connection
         tools_log.log_info(f"Set database connection")
-        status, global_vars.db_qsql = self.gpkg_dao.init_qsql_db(db_filepath, global_vars.plugin_name)
-        if not status:
-            last_error = self.gpkg_dao.last_error
-            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
-            return False
         status = self.gpkg_dao.init_db(db_filepath)
         if not status:
             last_error = self.gpkg_dao.last_error
             tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
+            return False
+        status, global_vars.db_qsql = self.gpkg_dao.init_qsql_db(db_filepath, global_vars.plugin_name)
+        if not status:
+            last_error = self.gpkg_dao.last_error
+            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
             return False
 
         tools_log.log_info(f"Database connection successful")
         print("Database connection successful")
         return True
 
+    def create_gpkg(self):
+        """ Create Geopackage """
+        gpkg_name = self.gpkg_name
+        path = self.project_path
+        # project_locale = self.params['project_locale']
+        # project_srid = self.params['project_srid']
+
+        self.gpkg_full_path = path + "/" + gpkg_name + ".gpkg"
+
+        driver = gdal.GetDriverByName('GPKG')
+        dataset = driver.Create(self.gpkg_full_path, 0, 0, 0, gdal.GDT_Unknown)
+        del dataset
+
+    def calculate_number_of_files(self):
+        """ Calculate total number of SQL to execute """
+
+        total_sql_files = 0
+        dict_process = {}
+        list_process = ['load_base']
+
+        for process_name in list_process:
+            tools_log.log_info(
+                f"Task 'Create schema' execute function 'def get_number_of_files_process' with parameters: '{process_name}'")
+            dict_folders, total = self.get_number_of_files_process(process_name)
+            total_sql_files += total
+            tools_log.log_info(f"Number of SQL files '{process_name}': {total}")
+            dict_process[process_name] = total
+            self.dict_folders_process[process_name] = dict_folders
+
+        return total_sql_files
+
+    def get_number_of_files_process(self, process_name: str):
+        """ Calculate number of files of all folders of selected @process_name """
+
+        tools_log.log_info(
+            f"Task 'Create schema' execute function 'def get_folders_process' with parameters: '{process_name}'")
+        dict_folders = self.get_folders_process(process_name)
+        if dict_folders is None:
+            return dict_folders, 0
+
+        number_of_files = 0
+        for folder in dict_folders.keys():
+            file_count = sum(len(files) for _, _, files in os.walk(folder))
+            number_of_files += file_count
+            dict_folders[folder] = file_count
+
+        return dict_folders, number_of_files
+
+    def get_folders_process(self, process_name):
+        """ Get list of folders related with this @process_name """
+
+        dict_folders = {}
+        if process_name == 'load_base':
+            dict_folders[os.path.join(self.folder_software, self.file_pattern_sys_gpkg)] = 0
+            dict_folders[os.path.join(self.folder_software, self.file_pattern_ddl)] = 0
+            dict_folders[os.path.join(self.folder_software, self.file_pattern_dml)] = 0
+            dict_folders[os.path.join(self.folder_software, self.file_pattern_rtree)] = 0
+            dict_folders[os.path.join(self.folder_software, self.file_pattern_trg)] = 0
+
+        return dict_folders
+    
     def _manage_result_message(self, status, msg_ok=None, msg_error=None, parameter=None):
         """ Manage message depending result @status """
 
