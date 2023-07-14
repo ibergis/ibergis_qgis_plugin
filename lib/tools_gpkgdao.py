@@ -129,6 +129,20 @@ class GwGpkgDao(object):
         finally:
             return status
 
+    def execute_script_sql(self, sql, commit=True):
+        """ Execute selected query """
+
+        self.last_error = None
+        status = True
+        try:
+            cursor = self.get_cursor()
+            cursor.executescript(sql)
+        except Exception as e:
+            self.last_error = e
+            status = False
+        finally:
+            return status
+
 
     def init_qsql_db(self, filepath, database_name):
         """ Initializes database connection (QSqlDatabase) """
