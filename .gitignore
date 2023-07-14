@@ -15,3 +15,5 @@ __pycache__
 .idea/*.iml
 resources/templates/*.gpkg-shm
 resources/templates/*.gpkg-wal
+samples/test_*
+samples/*.qgs~
