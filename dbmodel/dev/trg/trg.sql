@@ -10,7 +10,6 @@ This version of Giswater is provided by Giswater Association
 -- TRIGGERS FOR SYS GPKG TABLESPACE
 -- ----------------------------------------
 
-CREATE TRIGGER "trigger_delete_feature_count_sys_selector" AFTER DELETE ON "sys_selector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sys_selector'); END;
 CREATE TRIGGER "trigger_delete_feature_count_sys_parameter" AFTER DELETE ON "sys_parameter" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sys_parameter'); END;
 CREATE TRIGGER "trigger_delete_feature_count_sys_typevalue" AFTER DELETE ON "sys_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sys_typevalue'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_scenario" AFTER DELETE ON "cat_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_scenario'); END;
@@ -31,7 +30,6 @@ CREATE TRIGGER "trigger_delete_feature_count_edge" AFTER DELETE ON "edge" BEGIN 
 CREATE TRIGGER "trigger_delete_feature_count_vertex" AFTER DELETE ON "vertex" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vertex'); END;
 CREATE TRIGGER "trigger_delete_feature_count_raingage" AFTER DELETE ON "raingage" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('raingage'); END;
 
-CREATE TRIGGER "trigger_insert_feature_count_sys_selector" AFTER INSERT ON "sys_selector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sys_selector'); END;
 CREATE TRIGGER "trigger_insert_feature_count_sys_parameter" AFTER INSERT ON "sys_parameter" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sys_parameter'); END;
 CREATE TRIGGER "trigger_insert_feature_count_sys_typevalue" AFTER INSERT ON "sys_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sys_typevalue'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_scenario" AFTER INSERT ON "cat_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_scenario'); END;

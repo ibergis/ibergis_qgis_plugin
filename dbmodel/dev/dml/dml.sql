@@ -9,7 +9,6 @@ This version of Giswater is provided by Giswater Association
 -- INSERTS INTO SYS GPKG TABLES
 -- ---------------------------
 
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_selector', 'attributes', 'sys_selector', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_parameter', 'attributes', 'sys_parameter', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_typevalue', 'attributes', 'sys_typevalue', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_scenario', 'attributes', 'cat_scenario', '', 0, 0, 0, 0, 0, 0);
