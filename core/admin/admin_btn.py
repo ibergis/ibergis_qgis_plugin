@@ -6,31 +6,26 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-import threading
 from functools import partial
 
 from PyQt5.QtWidgets import QFileDialog
 from osgeo import gdal
-from qgis._core import QgsSettings
 from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.PyQt.QtCore import QSettings, QDate, QTimer
+from qgis.PyQt.QtCore import QDate
 from qgis.PyQt.QtGui import QPixmap
-from qgis.PyQt.QtSql import QSqlTableModel, QSqlQueryModel
-from qgis.PyQt.QtWidgets import QRadioButton, QAbstractItemView, QLineEdit, QComboBox, QLabel, QTableView, QDockWidget
-from qgis.core import QgsProject, QgsApplication, QgsMessageLog
+from qgis.PyQt.QtWidgets import QRadioButton, QLineEdit, QComboBox, QLabel
+from qgis.core import QgsProject
 from qgis.utils import reloadPlugin
 
 from .gis_file_create import GwGisFileCreate
-from ..threads.task import GwTask
 from ..ui.ui_manager import GwAdminUi, GwAdminDbProjectUi, GwAdminGisProjectUi
 from ..utils import tools_gw
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_db, tools_os, tools_gpkgdao
 from ..ui.docker import GwDocker
-from ..threads.project_gpkg_schema_create import GwGpkgCreateSchemaTask
 
 
 class GwAdminButton:

@@ -8,17 +8,15 @@ or (at your option) any later version.
 import os
 from functools import partial
 
-from qgis.core import QgsProject, QgsApplication, QgsSnappingUtils
-from qgis.PyQt.QtCore import QObject, Qt
+from qgis.core import QgsProject, QgsSnappingUtils
+from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtWidgets import QToolBar, QActionGroup, QDockWidget, QApplication, QDialog
 
 from .models.plugin_toolbar import GwPluginToolbar
 from .toolbars import buttons
 from .utils import tools_gw
-from .threads.project_layers_config import GwProjectLayersConfig
-from .threads.project_check import GwProjectCheckTask
 from .. import global_vars
-from ..lib import tools_qgis, tools_log, tools_db, tools_qt, tools_os, tools_gpkgdao
+from ..lib import tools_qgis, tools_log, tools_qt, tools_os, tools_gpkgdao
 
 
 class GwLoadProject(QObject):
