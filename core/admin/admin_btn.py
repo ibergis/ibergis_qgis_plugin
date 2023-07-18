@@ -126,29 +126,20 @@ class GwAdminButton:
         connection_status = self._check_database_connection(self.gpkg_full_path)
         if not connection_status:
             tools_log.log_info("Function _check_database_connection returned False")
-            return False
+            return
         tools_log.log_info(f"'Create schema' execute function 'def main_execution'")
         status = self.create_schema_main_execution()
         if not status:
             tools_log.log_info("Function main_execution returned False")
-            return False
-        tools_log.log_info(f"'Create schema' execute function 'def custom_execution'")
-        self.create_schema_custom_execution()
-        return True
+            return
+        else:
+            tools_qt.show_info_box("Geopackage created succesfully.")
+            tools_gw.close_dialog(self.dlg_readsql_create_project)
+        # TO DO: Example data
+        # tools_log.log_info(f"'Create schema' execute function 'def custom_execution'")
+        # self.create_schema_custom_execution()
 
-    # self.error_count = 0
-        # # Set background task 'GwCreateSchemaTask'
-        # self.t0 = time()
-        # self.timer = QTimer()
-        # self.timer.timeout.connect(partial(self._calculate_elapsed_time, self.dlg_readsql_create_project))
-        #
-        # self.timer.start(1000)
-        # description = f"Create Geopackage schema"
-        # params = {'is_test': is_test, 'gpkg_name': self.gpkg_name, 'project_path': self.project_path, 'project_locale': project_locale,
-        #           'project_srid': project_srid, 'example_data': example_data}
-        # self.task_create_schema = GwGpkgCreateSchemaTask(self, description, params, timer=self.timer)
-        # QgsApplication.taskManager().addTask(self.task_create_schema)
-        # QgsApplication.taskManager().triggerTask(self.task_create_schema)
+
 
 
     def manage_process_result(self, is_test=False, is_utils=False, dlg=None):
@@ -157,18 +148,8 @@ class GwAdminButton:
         status = (self.error_count == 0)
         self._manage_result_message(status, parameter="Create project")
         if status:
-            # self.gpkg_dao.commit()
             if is_utils is False:
                 self._close_dialog_admin(self.dlg_readsql_create_project)
-        #     if not is_test:
-        #         self._populate_data_schema_name(self.cmb_project_type)
-        #         self._manage_utils()
-        #         if project_name is not None and is_utils is False:
-        #             tools_qt.set_widget_text(self.dlg_readsql, 'cmb_project_type', project_type)
-        #             tools_qt.set_widget_text(self.dlg_readsql, self.dlg_readsql.project_schema_name, project_name)
-        #             self._set_info_project()
-        # else:
-        #     global_vars.dao.rollback()
             # Reset count error variable to 0
             self.error_count = 0
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
@@ -627,8 +608,6 @@ class GwAdminButton:
 
         self.filter_srid = self.dlg_readsql_create_project.findChild(QLineEdit, 'srid_id')
         tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, '25831')
-        tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, '25831')
-
 
     def _set_info_project(self):
         """"""
@@ -736,7 +715,7 @@ class GwAdminButton:
         file_path = QFileDialog.getExistingDirectory(None, message)
         self.dlg_readsql_create_project.data_path.setText(file_path)
 
-    def _execute_files(self, filedir, i18n=False, no_ct=False, utils_schema_name=None, set_progress_bar=False):
+    def _execute_files(self, filedir, i18n=False, no_ct=False, set_progress_bar=False):
         """"""
 
         if not os.path.exists(filedir):
@@ -745,16 +724,9 @@ class GwAdminButton:
 
         tools_log.log_info(f"Processing folder: {filedir}")
         filelist = sorted(os.listdir(filedir))
-        tools_log.log_info(f"Filelist sorted")
 
         status = True
-        # if utils_schema_name:
-        #     schema_name = utils_schema_name
-        # elif self.schema is None:
-        #     schema_name = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.project_schema_name)
-        #     schema_name = schema_name.replace('"', '')
-        # else:
-        #     schema_name = self.schema.replace('"', '')
+
         if self.project_epsg:
             self.project_epsg = str(self.project_epsg).replace('"', '')
         else:
@@ -772,46 +744,23 @@ class GwAdminButton:
         return status
 
 
-    def _read_execute_file(self, filedir, file, schema_name, project_epsg, set_progress_bar=False):
+    def _read_execute_file(self, filedir, file, project_epsg):
         """"""
         status = False
         f = None
         try:
-
-            # Manage progress bar
-            # if set_progress_bar:
-            #     if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
-            #         self.progress_value = int(float(self.current_sql_file / self.total_sql_files) * 100)
-            #         self.progress_value = int(self.progress_value * self.progress_ratio)
-            #         self.task_create_schema.set_progress(self.progress_value)
-            #
-            # if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema) and self.task_create_schema.isCanceled():
-            #     return False
-
-            # gpkg_path = self.project_path + "/" + self.gpkg_name + ".gpkg"
-            # connection_status = self._check_database_connection(gpkg_path)
-            # if not connection_status:
-            #     tools_log.log_info("Function _check_database_connection returned False")
-            #     return False
-
             filepath = os.path.join(filedir, file)
             f = open(filepath, 'r', encoding="utf8")
             if f:
-                # f_to_read = str(f.read().replace("SCHEMA_NAME", schema_name).replace("SRID_VALUE", project_epsg))
                 f_to_read = str(f.read())
                 status = self.gpkg_dao.execute_script_sql(str(f_to_read))
-                tools_log.log_info(f"LAST ERROR: ,{self.gpkg_dao.last_error}")
+                #tools_log.log_info(f"LAST ERROR: ,{self.gpkg_dao.last_error}")
                 if status is False:
                     self.error_count = self.error_count + 1
                     tools_log.log_info(f"_read_execute_file error {filepath}")
                     tools_log.log_info(f"Message: {global_vars.session_vars['last_error']}")
                     if self.dev_commit is False:
                         global_vars.dao.rollback()
-
-                    # if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
-                    #     self.task_create_schema.db_exception = (global_vars.session_vars['last_error'], str(f_to_read), filepath)
-                    #     self.task_create_schema.cancel()
-
                     return False
 
         except Exception as e:
@@ -820,8 +769,6 @@ class GwAdminButton:
             tools_log.log_info(str(e))
             if self.dev_commit is False:
                 global_vars.dao.rollback()
-            # if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
-            #     self.task_create_schema.cancel()
             status = False
 
         finally:
