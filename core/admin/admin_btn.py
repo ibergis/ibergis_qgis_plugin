@@ -216,8 +216,8 @@ class GwAdminButton:
         self.cmb_locale = self.dlg_readsql_create_project.findChild(QComboBox, 'cmb_locale')
 
         # Populate combo with all locales
-        filename = "config.sqlite"
-        db_filepath = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}gis{os.sep}{filename}"
+        filename = "config.gpkg"
+        db_filepath = f"{global_vars.plugin_dir}{os.sep}samples{os.sep}{filename}"
         tools_log.log_info(db_filepath)
         if os.path.exists(db_filepath):
             status = self.gpkg_dao.init_db(db_filepath)
