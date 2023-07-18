@@ -12,7 +12,6 @@ import os
 import random
 import re
 import sys
-import sqlite3
 
 if 'nt' in sys.builtin_module_names:
     import ctypes
@@ -25,10 +24,9 @@ from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QFrame, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, \
     QToolButton, QWidget, QApplication, QDockWidget
-from qgis.core import Qgis, QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
-    QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsPointLocator, \
-    QgsSnappingConfig, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsFieldConstraints, \
-    QgsEditorWidgetSetup, QgsRasterLayer
+from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
+    QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
+    QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer
 from qgis.gui import QgsDateTimeEdit, QgsRubberBand
 
 from ..ui.dialog import GwDialog
@@ -480,7 +478,7 @@ def reset_feature_list():
 
 
 def get_signal_change_tab(dialog, excluded_layers=[]):
-    """ Set feature_type and layer depending selected tab """
+    """ Set feature_type and layer depending on selected tab """
 
     tab_idx = dialog.tab_feature.currentIndex()
     tab_name = {'tab_arc': 'arc', 'tab_node': 'node', 'tab_connec': 'connec', 'tab_gully': 'gully',
@@ -520,13 +518,13 @@ def set_completer_feature_id(widget, feature_type, viewname):
         completer.setModel(model)
 
 
-def add_layer_database(tablename=None, the_geom="the_geom", field_id="id", group="GW Layers", sub_group=None, style_id="-1", alias=None, sub_sub_group=None):
+def add_layer_database(tablename=None, the_geom="the_geom", field_id="id", group="GW Layers", sub_group=None,
+                       style_id="-1", alias=None, sub_sub_group=None):
     """
     Put selected layer into TOC
         :param tablename: Postgres table name (String)
         :param the_geom: Geometry field of the table (String)
         :param field_id: Field id of the table (String)
-        :param child_layers: List of layers (StringList)
         :param group: Name of the group that will be created in the toc (String)
         :param style_id: Id of the style we want to load (integer or String)
     """
@@ -1460,6 +1458,7 @@ def get_values(dialog, widget, _json=None, ignore_editability=False):
 
 
 def add_checkbox(**kwargs):
+
     dialog = kwargs.get('dialog')
     field = kwargs.get('field')
     is_tristate = kwargs.get('is_tristate')
@@ -2902,26 +2901,6 @@ def manage_current_selections_docker(result, open=False):
             global_vars.iface.addDockWidget(Qt.LeftDockWidgetArea, global_vars.session_vars['current_selections'])
 
 
-def create_sqlite_conn(file_name):
-    """ Creates an sqlite connection to a file """
-
-    status = False
-    cursor = None
-    try:
-        db_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}gis{os.sep}{file_name}.sqlite"
-        tools_log.log_info(db_path)
-        if os.path.exists(db_path):
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            status = True
-        else:
-            tools_log.log_warning("Config database file not found", parameter=db_path)
-    except Exception as e:
-        tools_log.log_warning(str(e))
-
-    return status, cursor
-
-
 def manage_user_config_folder(user_folder_dir):
     """ Check if user config folder exists. If not create empty files init.config and session.config """
 
@@ -3112,40 +3091,6 @@ def hide_widgets_form(dialog, dlg_name):
                 widget.setVisible(False)
 
 
-# region compatibility QGIS version functions
-
-def set_snapping_type(layer_settings, value):
-
-    if Qgis.QGIS_VERSION_INT < 31200:
-        layer_settings.setType(value)
-    elif Qgis.QGIS_VERSION_INT >= 31200:
-        layer_settings.setTypeFlag(value)
-
-
-def get_segment_flag(default_value):
-
-    if Qgis.QGIS_VERSION_INT >= 32600:
-        segment_flag = Qgis.SnappingType.Segment
-    elif Qgis.QGIS_VERSION_INT >= 31200:
-        segment_flag = QgsSnappingConfig.SnappingTypes.SegmentFlag
-    else:
-        segment_flag = default_value
-
-    return segment_flag
-
-
-def get_vertex_flag(default_value):
-
-    if Qgis.QGIS_VERSION_INT >= 32600:
-        vertex_flag = Qgis.SnappingType.Vertex
-    elif Qgis.QGIS_VERSION_INT >= 31200:
-        vertex_flag = QgsSnappingConfig.SnappingTypes.VertexFlag
-    else:
-        vertex_flag = default_value
-
-    return vertex_flag
-
-
 def reset_position_dialog(show_message=False, plugin='core', file_name='session'):
     """ Reset position dialog x/y """
 
@@ -3171,8 +3116,6 @@ def reset_position_dialog(show_message=False, plugin='core', file_name='session'
     except Exception as e:
         tools_log.log_warning(f"set_config_parser exception [{type(e).__name__}]: {e}")
         return
-
-# endregion
 
 
 # region private functions
