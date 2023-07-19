@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>458</width>
-    <height>269</height>
+    <height>501</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,6 +72,16 @@
        <string>Project schema Settings</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="0">
+        <widget class="QLabel" name="lbl_path">
+         <property name="text">
+          <string>Path:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout"/>
+       </item>
        <item row="5" column="0">
         <widget class="QLabel" name="lbl_filter">
          <property name="text">
@@ -79,38 +89,11 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="lbl_gpkg">
-         <property name="text">
-          <string>GPKG Name:</string>
-         </property>
-        </widget>
+       <item row="3" column="1" colspan="2">
+        <widget class="QComboBox" name="cmb_locale"/>
        </item>
        <item row="1" column="1">
         <widget class="QLineEdit" name="data_path"/>
-       </item>
-       <item row="7" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="lbl_locale">
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
-         <property name="text">
-          <string>Locale:</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="lbl_path">
-         <property name="text">
-          <string>Path:</string>
-         </property>
-        </widget>
        </item>
        <item row="1" column="2">
         <widget class="QPushButton" name="btn_push_path">
@@ -119,16 +102,7 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1" colspan="2">
-        <widget class="QComboBox" name="cmb_locale"/>
-       </item>
-       <item row="0" column="1" colspan="2">
-        <widget class="QLineEdit" name="gpkg_name"/>
-       </item>
-       <item row="5" column="1" colspan="2">
-        <widget class="QLineEdit" name="srid_id"/>
-       </item>
-       <item row="6" column="1" colspan="2">
+       <item row="7" column="1" colspan="2">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QRadioButton" name="rdb_data">
@@ -149,6 +123,35 @@
          </item>
         </layout>
        </item>
+       <item row="5" column="1" colspan="2">
+        <widget class="QLineEdit" name="srid_id"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lbl_gpkg">
+         <property name="text">
+          <string>GPKG Name:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="lbl_locale">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>Locale:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="2">
+        <widget class="QLineEdit" name="gpkg_name"/>
+       </item>
+       <item row="6" column="1" colspan="2">
+        <widget class="QTableView" name="tbl_srid"/>
+       </item>
       </layout>
       <zorder>cmb_locale</zorder>
       <zorder>srid_id</zorder>
@@ -159,6 +162,7 @@
       <zorder>data_path</zorder>
       <zorder>lbl_path</zorder>
       <zorder>btn_push_path</zorder>
+      <zorder>tbl_srid</zorder>
      </widget>
     </item>
     <item row="6" column="0">

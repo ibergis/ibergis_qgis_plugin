@@ -8,7 +8,9 @@ or (at your option) any later version.
 import os
 from functools import partial
 
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
+from PyQt5.QtWidgets import QFileDialog, QTableView, QAbstractItemView
 from osgeo import gdal
 from sip import isdeleted
 from time import time
@@ -80,16 +82,12 @@ class GwAdminButton:
 
 
 
-    def create_project_data_schema(self, project_srid=None,
-                                   project_locale=None, is_test=False, example_data=True):
+    def create_project_data_schema(self):
         """"""
         gpkg_name = tools_qt.get_text(self.dlg_readsql_create_project, 'gpkg_name', return_string_null=False)
         project_path = tools_qt.get_text(self.dlg_readsql_create_project, 'data_path', return_string_null=False)
-
-        if project_srid is None:
-            project_srid = tools_qt.get_text(self.dlg_readsql_create_project, 'srid_id')
-        if project_locale is None:
-            project_locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
+        project_srid = tools_qt.get_text(self.dlg_readsql_create_project, 'srid_id')
+        project_locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
 
 
         if not gpkg_name or not project_path:
@@ -113,6 +111,12 @@ class GwAdminButton:
         if not answer:
             return
 
+        #Check if srid value is valid
+        if self.last_srids is None:
+            msg = "This SRID value does not exist on Database. Please select a diferent one."
+            tools_qt.show_info_box(msg, "Info")
+            return
+
         tools_log.log_info(f"Creating GPKG {self.gpkg_name}'")
 
         tools_log.log_info(f"'Create schema' execute function 'def create_gpkg'")
@@ -124,17 +128,19 @@ class GwAdminButton:
             return
         tools_log.log_info(f"'Create schema' execute function 'def main_execution'")
         status = self.create_schema_main_execution()
+
         if not status:
             tools_log.log_info("Function main_execution returned False")
             return
+
+        tools_log.log_info(f"'Create schema' execute function 'def custom_execution'")
+        status_custom = self.create_schema_custom_execution()
+
+        if not status_custom:
+            tools_log.log_info("Function custom_execution returned False")
+            return
         else:
-            tools_qt.show_info_box("Geopackage created succesfully.")
-            tools_gw.close_dialog(self.dlg_readsql_create_project)
-        # TO DO: Example data
-        # tools_log.log_info(f"'Create schema' execute function 'def custom_execution'")
-        # self.create_schema_custom_execution()
-
-
+            tools_qt.show_info_box("Geopackage created successfully.")
 
 
     def manage_process_result(self, is_test=False, is_utils=False, dlg=None):
@@ -188,10 +194,6 @@ class GwAdminButton:
 
         return result
 
-    # def cancel_task(self):
-    #     if hasattr(self, 'task_create_schema') and not isdeleted(self.task_create_schema):
-    #         self.task_create_schema.cancel()
-
     def init_dialog_create_project(self, project_type=None):
         """ Initialize dialog (only once) """
 
@@ -232,6 +234,9 @@ class GwAdminButton:
         self.dlg_readsql_create_project.key_escape.connect(
             partial(tools_gw.close_dialog, self.dlg_readsql_create_project, False))
 
+        # Populate tbl_srid
+        self._filter_srid_changed()
+
         # Set signals
         self._set_signals_create_project()
 
@@ -270,8 +275,8 @@ class GwAdminButton:
     def load_sample_data(self, project_type="dev"):
 
         #global_vars.dao.commit()
-        folder = os.path.join(self.folder_software, project_type)
-        status = self._execute_files(folder, set_progress_bar=True)
+        folder_example = os.path.join(self.sql_dir, "example")
+        status = self._execute_files(folder_example, set_progress_bar=True)
         if not status and self.dev_commit is False:
             return False
 
@@ -597,12 +602,60 @@ class GwAdminButton:
 
         tools_qt.fill_combo_values(self.dlg_readsql.project_schema_name, result_list, 1)
 
-
     def _manage_srid(self):
         """ Manage SRID configuration """
 
         self.filter_srid = self.dlg_readsql_create_project.findChild(QLineEdit, 'srid_id')
         tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, '25831')
+        self.tbl_srid = self.dlg_readsql_create_project.findChild(QTableView, 'tbl_srid')
+        self.tbl_srid.setSelectionBehavior(QAbstractItemView.SelectRows)
+        # self.model_srid = QSqlQueryModel()
+        # self.tbl_srid.setModel(self.model_srid)
+        self.tbl_srid.clicked.connect(partial(self._set_selected_srid))
+
+    def _set_selected_srid(self, index):
+        model = self.tbl_srid.model()
+        row = index.row()
+        srid = model.data(model.index(row, 0), Qt.DisplayRole)
+        tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, srid)
+
+        # selected_list = self.tbl_srid.selectionModel().selectedRows()
+        # selected_row = selected_list[0].row()
+        # srid = self.tbl_srid.model().record(selected_row).value("SRID")
+        # tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, srid)
+
+
+    def _filter_srid_changed(self):
+        """"""
+
+        filter_value = tools_qt.get_text(self.dlg_readsql_create_project, self.filter_srid)
+        if filter_value == 'null':
+            filter_value = ''
+        sql = ("SELECT srid  as " + '"SRID"' + ",description as " + '"Description"' +
+                "FROM srs WHERE CAST(srid AS TEXT) LIKE '" + str(filter_value))
+
+        sql += "%' order by srs_id DESC"
+
+        self.last_srids = self.gpkg_dao.get_rows(sql);
+
+
+        print("ROWS: ", self.last_srids)
+
+        self.model_srid = QStandardItemModel(self.tbl_srid)
+        self.model_srid.setHorizontalHeaderLabels(['SRID', 'Description'])
+
+        # Populate the model with the data from the SQL query
+        for row in self.last_srids:
+            srid_item = QStandardItem(str(row[0]))
+            description_item = QStandardItem(row[1])
+            self.model_srid.appendRow([srid_item, description_item])
+
+        # Set the model for the QTableView
+        self.tbl_srid.setModel(self.model_srid)
+
+        self.tbl_srid.setColumnWidth(0, 100)
+        self.tbl_srid.setColumnWidth(1, 300)
+        self.tbl_srid.horizontalHeader().setStretchLastSection(True)
 
     def _set_info_project(self):
         """"""
@@ -683,6 +736,8 @@ class GwAdminButton:
             partial(self._close_dialog_admin, self.dlg_readsql_create_project))
         self.cmb_locale.currentIndexChanged.connect(partial(self._update_locale))
         self.dlg_readsql_create_project.btn_push_path.clicked.connect(partial(self._select_path))
+        self.filter_srid.textChanged.connect(partial(self._filter_srid_changed))
+
 
 
     def _open_create_project(self):
@@ -732,7 +787,8 @@ class GwAdminButton:
                 if (no_ct is True and "tablect.sql" not in file) or no_ct is False:
                     tools_log.log_info(os.path.join(filedir, file))
                     self.current_sql_file += 1
-                    status = self._read_execute_file(filedir, file, self.project_epsg, set_progress_bar)
+                    status = self._read_execute_file(filedir, file, self.project_epsg)
+                    print("PROJECT EPSG 2: ",self.project_epsg)
                     if not status and self.dev_commit is False:
                         return False
 
@@ -747,9 +803,9 @@ class GwAdminButton:
             filepath = os.path.join(filedir, file)
             f = open(filepath, 'r', encoding="utf8")
             if f:
-                f_to_read = str(f.read())
+                f_to_read = str(f.read().replace("SRID_VALUE", self.project_epsg))
                 status = self.gpkg_dao.execute_script_sql(str(f_to_read))
-                #tools_log.log_info(f"LAST ERROR: ,{self.gpkg_dao.last_error}")
+                tools_log.log_info(f"LAST ERROR: ,{self.gpkg_dao.last_error}")
                 if status is False:
                     self.error_count = self.error_count + 1
                     tools_log.log_info(f"_read_execute_file error {filepath}")
@@ -803,17 +859,14 @@ class GwAdminButton:
 
         if self.rdb_sample.isChecked():
             tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
-            self.load_sample_data()
+            return self.load_sample_data()
         elif self.rdb_data.isChecked():
             tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
+            return True
 
 
     def _check_database_connection(self, db_filepath):
         """ Set database connection to Geopackage file """
-
-        # Create object to manage GPKG database connection
-        # gpkg_dao = tools_gpkgdao.GwGpkgDao()
-        # global_vars.gpkg_dao = gpkg_dao
 
         if not os.path.exists(db_filepath):
             tools_log.log_info(f"File path NOT found: {db_filepath}")
@@ -896,7 +949,7 @@ class GwAdminButton:
             dict_folders[os.path.join(self.folder_software, self.file_pattern_trg)] = 0
 
         return dict_folders
-    
+
     def _manage_result_message(self, status, msg_ok=None, msg_error=None, parameter=None):
         """ Manage message depending result @status """
 
