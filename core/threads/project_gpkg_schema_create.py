@@ -52,13 +52,12 @@ class GwGpkgCreateSchemaTask(GwTask):
         self.dict_folders_process = {}
         self.admin.total_sql_files = 0
         self.admin.current_sql_file = 0
-        self.admin.progress_value = 0
-        tools_log.log_info(f"Task 'Create schema' execute function 'def main_execution'")
+        tools_log.log_info(f"Create schema: Executing function 'main_execution'")
         status = self.main_execution()
         if not status:
             tools_log.log_info("Function main_execution returned False")
             return False
-        tools_log.log_info(f"Task 'Create schema' execute function 'def custom_execution'")
+        tools_log.log_info(f"Create schema: Executing function 'custom_execution'")
         self.custom_execution()
         return True
 
@@ -114,33 +113,19 @@ class GwGpkgCreateSchemaTask(GwTask):
         project_locale = self.params['project_locale']
         project_srid = self.params['project_srid']
 
-        self.admin.progress_ratio = 0.8
-        tools_log.log_info(f"Task 'Create schema' execute function 'def calculate_number_of_files'")
+        tools_log.log_info(f"Create schema: Executing function 'calculate_number_of_files'")
         self.admin.total_sql_files = self.calculate_number_of_files()
         tools_log.log_info(f"Number of SQL files 'TOTAL': {self.admin.total_sql_files}")
-
         status = self.admin.load_base(self.dict_folders_process['load_base'])
         if (not status and self.admin.dev_commit is False) or self.isCanceled():
             return False
-
-        status = True
-
-        if (not status and self.admin.dev_commit is False) or self.isCanceled():
-            return False
-
-        return True
 
 
     def custom_execution(self):
         """ Custom execution """
 
         example_data = self.params['example_data']
-
         tools_log.log_info("Execute 'custom_execution'")
-        self.admin.current_sql_file = 85
-        self.admin.total_sql_files = 100
-        self.admin.progress_ratio = 1.0
-
         if self.admin.rdb_sample.isChecked() and example_data:
             tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
             self.admin.load_sample_data()
@@ -156,7 +141,7 @@ class GwGpkgCreateSchemaTask(GwTask):
         list_process = ['load_base']
 
         for process_name in list_process:
-            tools_log.log_info(f"Task 'Create schema' execute function 'def get_number_of_files_process' with parameters: '{process_name}'")
+            tools_log.log_info(f"Create schema: Executing function get_number_of_files_process('{process_name}')")
             dict_folders, total = self.get_number_of_files_process(process_name)
             total_sql_files += total
             tools_log.log_info(f"Number of SQL files '{process_name}': {total}")
@@ -169,7 +154,7 @@ class GwGpkgCreateSchemaTask(GwTask):
     def get_number_of_files_process(self, process_name: str):
         """ Calculate number of files of all folders of selected @process_name """
 
-        tools_log.log_info(f"Task 'Create schema' execute function 'def get_folders_process' with parameters: '{process_name}'")
+        tools_log.log_info(f"Create schema: Executing function get_folders_process('{process_name}')")
         dict_folders = self.get_folders_process(process_name)
         if dict_folders is None:
             return dict_folders, 0

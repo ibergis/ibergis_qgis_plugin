@@ -42,15 +42,12 @@ class GwAdminButton:
         self.gpkg_name = None
         self.project_path = None
         self.dlg_readsql = None
-        self.dlg_info = None
         self.dlg_readsql_create_project = None
-        self.project_type_selected = None
         self.schema_type = None
         self.form_enabled = True
         self.total_sql_files = 0    # Total number of SQL files to process
         self.current_sql_file = 0   # Current number of SQL file
         self.gpkg_dao = None
-        self.gpkg = None
 
 
     def init_sql(self, set_database_connection=False, username=None, show_dialog=True):
@@ -93,13 +90,7 @@ class GwAdminButton:
         locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
         tools_gw.set_config_parser('btn_admin', 'project_locale', f'{locale}', prefix=False)
 
-        msg = "This process will take time (few minutes). Are you sure to continue?"
-        title = "Create example"
-        answer = tools_qt.show_question(msg, title)
-        if not answer:
-            return
-
-        #Check if srid value is valid
+        # Check if srid value is valid
         if self.last_srids is None:
             msg = "This SRID value does not exist on Database. Please select a diferent one."
             tools_qt.show_info_box(msg, "Info")
@@ -391,13 +382,6 @@ class GwAdminButton:
     def _open_form_create_gis_project(self):
         """"""
 
-        # Check if exist schema
-        # schema_name = tools_qt.get_text(self.dlg_readsql, 'project_schema_name')
-        # if schema_name is None:
-        #     msg = "In order to create a qgis project you have to create a schema first ."
-        #     tools_qt.show_info_box(msg)
-        #     return
-
         # Create GIS project dialog
         self.dlg_create_gis_project = GwAdminGisProjectUi()
         tools_gw.load_settings(self.dlg_create_gis_project)
@@ -597,7 +581,7 @@ class GwAdminButton:
             if f:
                 f_to_read = str(f.read().replace("SRID_VALUE", self.project_epsg))
                 status = self.gpkg_dao.execute_script_sql(str(f_to_read))
-                tools_log.log_info(f"LAST ERROR: ,{self.gpkg_dao.last_error}")
+                tools_log.log_info(f"Database error: {self.gpkg_dao.last_error}")
                 if status is False:
                     self.error_count = self.error_count + 1
                     tools_log.log_info(f"_read_execute_file error {filepath}")
@@ -692,8 +676,7 @@ class GwAdminButton:
         list_process = ['load_base']
 
         for process_name in list_process:
-            tools_log.log_info(
-                f"Task 'Create schema' execute function 'def get_number_of_files_process' with parameters: '{process_name}'")
+            tools_log.log_info(f"Create schema: Executing function get_number_of_files_process('{process_name}')")
             dict_folders, total = self.get_number_of_files_process(process_name)
             total_sql_files += total
             tools_log.log_info(f"Number of SQL files '{process_name}': {total}")
@@ -706,8 +689,7 @@ class GwAdminButton:
     def get_number_of_files_process(self, process_name: str):
         """ Calculate number of files of all folders of selected @process_name """
 
-        tools_log.log_info(
-            f"Task 'Create schema' execute function 'def get_folders_process' with parameters: '{process_name}'")
+        tools_log.log_info(f"Create schema: Executing function get_folders_process('{process_name}')")
         dict_folders = self.get_folders_process(process_name)
         if dict_folders is None:
             return dict_folders, 0
