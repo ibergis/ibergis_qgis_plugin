@@ -16,6 +16,12 @@ CREATE TABLE sys_selector (
     value integer CHECK (typeof(value)='integer' OR value=NULL)
 );
 
+CREATE TABLE config_param_user (
+	parameter_id integer primary key,	
+	parameter text CHECK (typeof(parameter)='text' OR parameter=NULL),
+		value text CHECK (typeof(value)='text' OR value=NULL)
+);
+
 CREATE TABLE sys_parameter (
     parameter_id integer PRIMARY KEY,
     parameter text CHECK (typeof(parameter)='text' OR parameter=NULL),
