@@ -22,7 +22,7 @@ class GwGpkgDao(object):
         self.db_qsql = None
 
 
-    def init_db(self, filename):
+    def init_db(self, filename, enable_spatial=True):
         """ Initializes database connection (sqlite3) """
 
         if filename is None:
@@ -35,6 +35,10 @@ class GwGpkgDao(object):
         self.db_filepath = filename
         try:
             self.conn = sqlite3.connect(filename)
+            if enable_spatial:
+                self.conn.enable_load_extension(True)
+                self.conn.execute("SELECT load_extension('mod_spatialite')")
+                self.conn.enable_load_extension(False)
             self.cursor = self.get_cursor()
             status = True
         except Exception as e:
