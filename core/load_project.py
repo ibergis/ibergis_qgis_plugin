@@ -73,9 +73,6 @@ class GwLoadProject(QObject):
         global_vars.plugin_name = tools_qgis.get_plugin_metadata('name', 'drain', global_vars.plugin_dir)
         tools_qt.manage_translation(global_vars.plugin_name)
 
-        # Get 'utils_use_gw_snapping' parameter
-        global_vars.use_gw_snapping = False
-
         # Manage actions of the different plugin_toolbars
         self._manage_toolbars()
 

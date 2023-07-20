@@ -45,20 +45,16 @@ dao = None                              # Instance of class GwPgDao. Found in "/
 dao_db_credentials = None               # Credentials used to establish the connection with PostgreSql. Saving {db, schema, table, service, host, port, user, password, sslmode}
 gpkg_dao_data = None                    # Instance of class GwGpkgDao. Found in "/lib/tools_gpkg.py"
 gpkg_dao_config = None                  # Instance of class GwGpkgDao. Found in "/lib/tools_gpkg.py"
-notify = None                           # Instance of class GwNotify. Found in "/core/threads/notify.py"
 project_vars = {}                       # Project variables from QgsProject related to Giswater
 project_vars['info_type'] = None        # gwInfoType
 project_vars['add_schema'] = None       # gwAddSchema
 project_vars['main_schema'] = None      # gwMainSchema
 project_vars['project_role'] = None     # gwProjectRole
 project_vars['project_type'] = None     # gwProjectType
-use_gw_snapping = True                  # Parameter from config_param_system, if false Giswater will not manage snapping configuration
-# load_project_menu = None
 # endregion
 
 
 # region global user variables (values are initialized on load project without changes during session)
-shortcut_keys = []                      # An instance of used shortcut_keys for Giswater menu. This keys are configurated on file "init.config" from user config path "/user/AppData/Roaming/Giswater/"
 user_level = {                          # An instance used to know user level and user level configuration
     'level': None,                      # initial=1, normal=2, expert=3
     'showquestion': None,               # Used for show help (default config show for level 1 and 2)
@@ -67,7 +63,6 @@ user_level = {                          # An instance used to know user level an
     'showadminadvanced': None,          # Manage advanced tab, fields manager tab and sample dev radio button from admin
 }
 date_format = None                      # Display format of the dates allowed in the forms: dd/MM/yyyy or dd-MM-yyyy or yyyy/MM/dd or yyyy-MM-dd
-feature_cat = None                      # Dictionary to keep every record of table 'cat_feature'. Stored here to avoid executing gw_fct_getcatfeaturevalues multiple times
 # endregion
 
 

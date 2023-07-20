@@ -125,14 +125,6 @@ class Drain(QObject):
                 global_vars.logger.close_logger()
         except Exception as e:
             tools_log.log_info(f"Exception in unload when global_vars.logger.close_logger(): {e}")
-        try:
-            # Unlisten notify channel and stop thread
-            if hasattr(global_vars, 'notify'):
-                list_channels = ['desktop', global_vars.current_user]
-                if global_vars.notify:
-                    global_vars.notify.stop_listening(list_channels)
-        except Exception as e:
-            tools_log.log_info(f"Exception in unload when global_vars.notify.stop_listening(list_channels): {e}")
 
         try:
             # Check if project is current loaded and remove giswater action from PluginMenu and Toolbars
