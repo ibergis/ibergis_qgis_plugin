@@ -13,47 +13,6 @@ from .. import global_vars
 from . import tools_log, tools_qt, tools_qgis, tools_pgdao, tools_os
 
 
-def create_list_for_completer(sql):
-    """
-    Prepare a list with the necessary items for the completer
-        :param sql: Query to be executed, where will we get the list of items (string)
-        :return: list_items: List with the result of the query executed (List) ["item1","item2","..."]
-    """
-
-    rows = get_rows(sql)
-    list_items = []
-    if rows:
-        for row in rows:
-            list_items.append(str(row[0]))
-    return list_items
-
-
-def check_table(tablename, schemaname=None):
-    """ Check if selected table exists in selected schema """
-
-    if schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-        if schemaname in (None, 'null', ''):
-            get_layer_source_from_credentials('prefer')
-            schemaname = global_vars.schema_name
-            if schemaname in (None, 'null', ''):
-                return None
-
-    schemaname = schemaname.replace('"', '')
-    sql = "SELECT * FROM pg_tables WHERE schemaname = %s AND tablename = %s"
-    params = [schemaname, tablename]
-    row = get_row(sql, log_info=False, params=params)
-    return row
-
-
-def check_role(role_name, is_admin=None):
-    """ Check if @role_name exists """
-
-    sql = f"SELECT * FROM pg_roles WHERE rolname = '{role_name}'"
-    row = get_row(sql, log_info=False, is_admin=is_admin)
-    return row
-
-
 def get_srid(tablename, schemaname=None):
     """ Find SRID of selected @tablename """
 
@@ -88,24 +47,6 @@ def set_database_connection():
         return False, not_version, layer_source
 
     return True, not_version, layer_source
-
-
-def check_db_connection():
-    """ Check database connection. Reconnect if needed """
-
-    opened = True
-    try:
-        was_closed = global_vars.dao.check_connection()
-        if was_closed:
-            tools_log.log_warning(f"Database connection was closed and reconnected")
-            opened = global_vars.qgis_db_credentials.open()
-            if not opened:
-                msg = global_vars.qgis_db_credentials.lastError().databaseText()
-                tools_log.log_warning(f"Database connection error (QSqlDatabase): {msg}")
-    except Exception as e:
-        tools_log.log_warning(f"check_db_connection Exception: {e}")
-    finally:
-        return opened
 
 
 def get_pg_version():

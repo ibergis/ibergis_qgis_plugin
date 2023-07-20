@@ -2219,41 +2219,7 @@ def manage_json_return(json_result, sql, rubber_band=None, i=None):
         tools_qgis.clean_layer_group_from_toc('GW Temporal Layers')
 
 
-def get_project_info(schemaname=None):
-    """ Get project information from table 'sys_version' """
-
-    project_info_dict = None
-    if schemaname is None and global_vars.schema_name is None:
-        return None
-    elif schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-
-    tablename = "sys_version"
-    exists = tools_db.check_table(tablename, schemaname)
-    if not exists:
-        tools_qgis.show_warning(f"Table not found: '{tablename}'")
-        return None
-
-    sql = (f"SELECT lower(project_type), epsg, giswater, language "
-           f"FROM {schemaname}.{tablename} "
-           f"ORDER BY id DESC LIMIT 1")
-    row = tools_db.get_row(sql)
-    if row:
-        project_info_dict = {'project_type': row[0],
-                             'project_epsg': row[1],
-                             'project_version': row[2],
-                             'project_language': row[3],
-                             }
-
-    return project_info_dict
-
-
 def get_config_value(parameter='', columns='value', table='config_param_user', sql_added=None, log_info=True):
-
-    tools_db.check_db_connection()
-    if not tools_db.check_table(table):
-        tools_log.log_warning(f"Table not found: {table}")
-        return None
 
     sql = f"SELECT {columns} FROM {table} WHERE parameter = '{parameter}' "
     if sql_added:
