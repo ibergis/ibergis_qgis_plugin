@@ -275,6 +275,7 @@ class GwAdminButton:
         if gpkg_file is None or gpkg_file == 'null':
             tools_qgis.show_warning("GKPG file path name not set")
             return
+
         # qgis_file_type = self.dlg_create_gis_project.cmb_roletype.currentIndex()
         # tools_gw.set_config_parser('btn_admin', 'qgis_file_type', qgis_file_type, prefix=False)
         tools_gw.set_config_parser('btn_admin', 'qgis_file_path', gis_folder, prefix=False)
@@ -289,23 +290,15 @@ class GwAdminButton:
         project_type = tools_qt.get_text(self.dlg_readsql, 'cmb_project_type')
         schema_name = tools_qt.get_text(self.dlg_readsql, 'project_schema_name')
 
-        # Get roletype and export password
-        # roletype = tools_qt.get_text(self.dlg_create_gis_project, 'cmb_roletype')
-        # export_passwd = tools_qt.is_checked(self.dlg_create_gis_project, 'chk_export_passwd')
-
-        # if export_passwd:
-        #     msg = "Credentials will be stored in GIS project file"
-        #     tools_qt.show_info_box(msg, "Warning")
-
         # Generate QGIS project
-        self._generate_qgis_project(gis_folder, gis_file, project_type, schema_name)
+        self._generate_qgis_project(gis_folder, gis_file, gpkg_file, self.project_epsg)
 
 
-    def _generate_qgis_project(self, gis_folder, gis_file, project_type, schema_name):
+    def _generate_qgis_project(self, gis_folder, gis_file, gpkg_file, srid):
         """ Generate QGIS project """
 
         gis = GwGisFileCreate(self.plugin_dir)
-        result, qgs_path = gis.gis_project_database(gis_folder, gis_file, project_type, schema_name)
+        result, qgs_path = gis.gis_project_database(gis_folder, gis_file, gpkg_file, srid)
 
         self._close_dialog_admin(self.dlg_create_gis_project)
         self._close_dialog_admin(self.dlg_readsql)
