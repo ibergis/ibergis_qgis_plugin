@@ -8,7 +8,7 @@ This version of Giswater is provided by Giswater Association
 -- -----------------
 -- CONFIG_PARAM_USER
 -- -----------------
-/*
+
 INSERT INTO config_param_user (parameter_id, "parameter", value) VALUES(1, 'project_name', 'swmm_iber');
 INSERT INTO config_param_user (parameter_id, "parameter", value) VALUES(2, 'project_descript', 'This is the description of the project.');
 INSERT INTO config_param_user (parameter_id, "parameter", value) VALUES(3, 'project_user', 'user');
@@ -59,7 +59,7 @@ INSERT INTO config_param_user (parameter_id, "parameter", value) VALUES(47, 'plg
 INSERT INTO config_param_user (parameter_id, "parameter", value) VALUES(48, 'plg_swmm_result_dis2', NULL);
 INSERT INTO config_param_user (parameter_id, "parameter", value) VALUES(49, 'plg_swmm_result_dis3', NULL);
 INSERT INTO config_param_user (parameter_id, "parameter", value) VALUES(50, 'plg_swmm_result_dis4', NULL);
-*/
+
 -- ------------
 -- CAT_SCENARIO
 -- ------------
