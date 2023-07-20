@@ -11,18 +11,18 @@ from .. import global_vars
 from . import tools_log, tools_qt
 
 
-
-def get_row(sql, log_info=True, log_sql=False, commit=True, params=None, aux_conn=None, is_admin=None, is_thread=False):
+def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_thread=False):
     """ Execute SQL. Check its result in log tables, and show it to the user """
 
     if global_vars.dao is None:
         tools_log.log_warning("The connection to the database is broken.", parameter=sql)
         return None
-    sql = _get_sql(sql, log_sql, params)
+    if log_sql:
+        tools_log.log_db(sql, bold='b', stack_level_increase=2)
     row = global_vars.dao.get_row(sql, commit, aux_conn=aux_conn)
     global_vars.session_vars['last_error'] = global_vars.dao.last_error
 
-    if not row and not is_admin:
+    if not row:
         # Check if any error has been raised
         if global_vars.session_vars['last_error'] and not is_thread:
             tools_qt.manage_exception_db(global_vars.session_vars['last_error'], sql)
@@ -32,13 +32,14 @@ def get_row(sql, log_info=True, log_sql=False, commit=True, params=None, aux_con
     return row
 
 
-def get_rows(sql, log_info=True, log_sql=False, commit=True, params=None, add_empty_row=False, is_thread=False):
+def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False, is_thread=False):
     """ Execute SQL. Check its result in log tables, and show it to the user """
 
     if global_vars.dao is None:
         tools_log.log_warning("The connection to the database is broken.", parameter=sql)
         return None
-    sql = _get_sql(sql, log_sql, params)
+    if log_sql:
+        tools_log.log_db(sql, bold='b', stack_level_increase=2)
     rows = None
     rows2 = global_vars.dao.get_rows(sql, commit)
     global_vars.session_vars['last_error'] = global_vars.dao.last_error
@@ -107,18 +108,3 @@ def get_uri():
 
     return uri
 
-# region private functions
-
-
-def _get_sql(sql, log_sql=False, params=None):
-    """ Generate SQL with params. Useful for debugging """
-
-    if params:
-        sql = global_vars.dao.mogrify(sql, params)
-    if log_sql:
-        tools_log.log_db(sql, bold='b', stack_level_increase=2)
-
-    return sql
-
-
-# endregion
