@@ -80,7 +80,6 @@ session_vars['dialog_docker'] = None       # An instance of GwDocker from "/core
 session_vars['info_docker'] = None         # An instance of current status of the info docker form configured by user. Can be True or False
 session_vars['docker_type'] = None         # An instance of current status of the docker form configured by user. Can be configured "qgis_info_docker" and "qgis_form_docker"
 session_vars['current_selections'] = None  # An instance of the current selections docker.
-session_vars['logged_status'] = None       # An instance of connection status. Can be True or False
 snappers = []                              # A list of all the snapper managers, used to disable them in 'Reset plugin' action
 active_rubberbands = []                    # A list of all active rubber bands, used to disable them in 'Reset plugin' action
 active_signals = {}                        # A dictionary containing all connected signals, first key is dlg_name/file_name, then there are all the signal names.

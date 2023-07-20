@@ -76,7 +76,6 @@ def set_database_connection():
 
     global_vars.dao = None
     global_vars.session_vars['last_error'] = None
-    global_vars.session_vars['logged_status'] = False
     global_vars.current_user = None
 
     layer_source, not_version = get_layer_source_from_credentials('prefer')
@@ -87,8 +86,6 @@ def set_database_connection():
             return False, not_version, layer_source
     else:
         return False, not_version, layer_source
-
-    global_vars.session_vars['logged_status'] = True
 
     return True, not_version, layer_source
 
