@@ -36,7 +36,7 @@ data_epsg = None                        # SRID retrieved from QGIS project layer
 project_epsg = None                     # EPSG of QGIS project
 logger = None                           # Instance of class GwLogger. Found in "/lib/tools_log.py"
 signal_manager = None                   # Instance of class GwSignalManager. Found in "/core/utils/signal_manager.py"
-giswater_settings = None                # Instance of class QSettings. QGIS settings related to Giswater variables such as toolbars and checkable actions
+plugin_settings = None                  # Instance of class QSettings. QGIS settings related to plugin variables such as toolbars and checkable actions
 current_user = None                     # Current user connected with PostgreSql
 qgis_db_credentials = None              # Instance of class QSqlDatabase (QPSQL) used to manage QTableView widgets
 db_qsql_data = None                     # Instance of class QSqlDatabase (QSQLITE) used to manage QTableView widgets
@@ -94,12 +94,12 @@ def init_global(p_iface, p_canvas, p_plugin_dir, p_plugin_name, p_user_folder_di
     user_folder_dir = p_user_folder_dir
 
 
-def init_giswater_settings(setting_file):
+def init_plugin_settings(setting_file):
     """ Function to set Giswater settings: stored in the registry (on Windows) or .ini file (on Unix) """
 
-    global giswater_settings
-    giswater_settings = QSettings(setting_file, QSettings.IniFormat)
-    giswater_settings.setIniCodec(sys.getfilesystemencoding())
+    global plugin_settings
+    plugin_settings = QSettings(setting_file, QSettings.IniFormat)
+    plugin_settings.setIniCodec(sys.getfilesystemencoding())
 
 
 def init_qgis_settings(p_plugin_name):

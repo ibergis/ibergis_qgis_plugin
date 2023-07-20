@@ -188,7 +188,7 @@ class Drain(QObject):
             return False
 
         # Set plugin and QGIS settings: stored in the registry (on Windows) or .ini file (on Unix)
-        global_vars.init_giswater_settings(setting_file)
+        global_vars.init_plugin_settings(setting_file)
         global_vars.init_qgis_settings(self.plugin_name)
 
         # Check if user config folder exists
