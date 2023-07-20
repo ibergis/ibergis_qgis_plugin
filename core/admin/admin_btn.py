@@ -360,24 +360,11 @@ class GwAdminButton:
         self.dlg_create_gis_project.btn_close.clicked.connect(partial(self._close_dialog_admin, self.dlg_create_gis_project))
         self.dlg_create_gis_project.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_create_gis_project))
 
-
         # Set shortcut keys
         self.dlg_create_gis_project.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_create_gis_project))
 
         # Open MainWindow
-        tools_gw.open_dialog(self.dlg_create_gis_project, dlg_name='admin_gisproject')
-
-
-    def _load_sql(self, path_folder, no_ct=False, utils_schema_name=None, set_progress_bar=False):
-        """"""
-
-        for (path, ficheros, archivos) in os.walk(path_folder):
-            status = self._execute_files(path, no_ct=no_ct, utils_schema_name=utils_schema_name,
-                                         set_progress_bar=set_progress_bar)
-            if not status:
-                return False
-
-        return True
+        tools_gw.open_dialog(self.dlg_create_gis_project, 'admin_gisproject')
 
 
     """ Functions execute process """
@@ -505,7 +492,7 @@ class GwAdminButton:
         self.dlg_create_gis_project.txt_gis_gpkg.setText(file_gpkg)
 
 
-    def _execute_files(self, filedir, i18n=False, no_ct=False, set_progress_bar=False):
+    def _execute_files(self, filedir):
         """"""
 
         if not os.path.exists(filedir):
