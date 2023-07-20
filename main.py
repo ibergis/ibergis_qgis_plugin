@@ -311,7 +311,7 @@ class Drain(QObject):
 
         main_toolbutton.setDefaultAction(self.action)
         admin_button = GwAdminButton()
-        self.action.triggered.connect(partial(admin_button.init_sql, True))
+        self.action.triggered.connect(partial(admin_button.init_sql))
 
 
     def _unset_info_button(self):

@@ -10,7 +10,7 @@ from functools import partial
 from osgeo import gdal
 
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QPixmap, QStandardItemModel, QStandardItem
+from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.PyQt.QtWidgets import QRadioButton, QLineEdit, QComboBox, QFileDialog, QTableView, QAbstractItemView
 from qgis.core import QgsProject
 from qgis.utils import reloadPlugin
@@ -19,24 +19,21 @@ from .gis_file_create import GwGisFileCreate
 from ..ui.ui_manager import GwAdminUi, GwAdminDbProjectUi, GwAdminGisProjectUi
 from ..utils import tools_gw
 from ... import global_vars
-from ...lib import tools_qt, tools_qgis, tools_log, tools_db, tools_os, tools_gpkgdao
+from ...lib import tools_qt, tools_qgis, tools_log, tools_os, tools_gpkgdao
 from ..ui.docker import GwDocker
 
 
 class GwAdminButton:
 
     def __init__(self):
-        """ Class to control toolbar 'om_ws' """
+        """ Class to control action 'Admin' """
 
-        # Initialize instance attributes
         self.gpkg_full_path = None
         self.dict_folders_process =  {}
         self.iface = global_vars.iface
-        self.settings = global_vars.giswater_settings
         self.plugin_dir = global_vars.plugin_dir
         self.schema_name = global_vars.schema_name
         self.plugin_version, self.message = tools_qgis.get_plugin_version()
-        self.canvas = global_vars.canvas
         self.project_type = None
         self.project_epsg = None
         self.gpkg_name = None
@@ -50,21 +47,14 @@ class GwAdminButton:
         self.gpkg_dao = None
 
 
-    def init_sql(self, set_database_connection=False, username=None, show_dialog=True):
+    def init_sql(self):
         """ Button 100: Execute SQL. Info show info """
 
         # Connect to sqlite database
         self.gpkg_dao = tools_gpkgdao.GwGpkgDao()
 
-        # Set label status connection
-        self.icon_folder = f"{self.plugin_dir}{os.sep}icons{os.sep}dialogs{os.sep}20x20{os.sep}"
-        self.status_ok = QPixmap(f"{self.icon_folder}status_ok.png")
-        self.status_ko = QPixmap(f"{self.icon_folder}status_ko.png")
-        self.status_no_update = QPixmap(f"{self.icon_folder}status_not_updated.png")
-
         # Create the dialog and signals
         self._init_show_database()
-        self._info_show_database(username=username, show_dialog=show_dialog)
 
 
     def create_project_data_schema(self):
@@ -98,26 +88,26 @@ class GwAdminButton:
 
         tools_log.log_info(f"Creating GPKG {self.gpkg_name}'")
 
-        tools_log.log_info(f"'Create schema' execute function 'def create_gpkg'")
+        tools_log.log_info(f"Create schema: Executing function 'create_gpkg'")
         self.create_gpkg()
-        tools_log.log_info(f"'Create schema' execute function 'def _check_database_connection'")
+        tools_log.log_info(f"'Create schema: Executing function '_check_database_connection'")
         connection_status = self._check_database_connection(self.gpkg_full_path)
         if not connection_status:
             tools_log.log_info("Function _check_database_connection returned False")
             return
-        tools_log.log_info(f"'Create schema' execute function 'def main_execution'")
+        tools_log.log_info(f"Create schema: Executing function 'main_execution'")
         status = self.create_schema_main_execution()
         if not status:
             tools_log.log_info("Function main_execution returned False")
             return
 
-        tools_log.log_info(f"'Create schema' execute function 'def custom_execution'")
+        tools_log.log_info(f"Create schema: Executing function 'custom_execution'")
         status_custom = self.create_schema_custom_execution()
         if not status_custom:
             tools_log.log_info("Function custom_execution returned False")
             return
         else:
-            tools_qt.show_info_box("Geopackage created successfully.")
+            tools_qt.show_info_box("Geopackage created successfully")
 
 
     def manage_process_result(self, is_test=False, is_utils=False, dlg=None):
@@ -233,7 +223,6 @@ class GwAdminButton:
         if self.schema_name is not None and self.project_type is not None:
             self.folder_software = os.path.join(self.sql_dir, self.project_type)
         else:
-            # self.folder_software = ""
             self.folder_software = os.path.join(self.sql_dir, "dev")
 
         # Check if user have commit permissions
@@ -253,6 +242,15 @@ class GwAdminButton:
         # Set shortcut keys
         self.dlg_readsql.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_readsql))
 
+        self.message_update = ''
+        self.error_count = 0
+
+        # Set title
+        window_title = f'Drain ({self.plugin_version})'
+        self.dlg_readsql.setWindowTitle(window_title)
+
+        self._manage_docker()
+
 
     def _set_signals(self):
         """ Set signals. Function has to be executed only once (during form initialization) """
@@ -262,62 +260,6 @@ class GwAdminButton:
         self.dlg_readsql.btn_gis_create.clicked.connect(partial(self._open_form_create_gis_project))
         self.dlg_readsql.dlg_closed.connect(partial(self._save_custom_sql_path, self.dlg_readsql))
         self.dlg_readsql.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_readsql))
-
-
-    def _info_show_database(self, connection_status=True, username=None, show_dialog=False):
-        """"""
-
-        self.message_update = ''
-        self.error_count = 0
-        self.schema = None
-
-        # Get database connection user and role
-        self.username = username
-
-        # Set title
-        window_title = f'Drain ({self.plugin_version})'
-        self.dlg_readsql.setWindowTitle(window_title)
-
-        self.form_enabled = True
-        message = ''
-
-        if connection_status is False:
-            self.form_enabled = False
-            message = 'There is an error in the configuration of the pgservice file, ' \
-                      'please check it or consult your administrator'
-            ignore_widgets =  ['cmb_connection', 'btn_gis_create', 'cmb_project_type', 'project_schema_name']
-            tools_qt.enable_dialog(self.dlg_readsql, False, ignore_widgets)
-            self.dlg_readsql.lbl_status.setPixmap(self.status_ko)
-            tools_qt.set_widget_text(self.dlg_readsql, 'lbl_status_text', message)
-            tools_qt.set_widget_text(self.dlg_readsql, 'lbl_schema_name', '')
-            self.dlg_readsql.btn_gis_create.setEnabled(False)
-            self._manage_docker()
-            return
-
-        elif connection_status is False:
-            self.form_enabled = False
-            msg = "Connection Failed. Please, check connection parameters"
-            tools_qgis.show_message(msg, 1)
-            tools_qt.enable_dialog(self.dlg_readsql, False, 'cmb_connection')
-            self.dlg_readsql.lbl_status.setPixmap(self.status_ko)
-            tools_qt.set_widget_text(self.dlg_readsql, 'lbl_status_text', msg)
-            tools_qt.set_widget_text(self.dlg_readsql, 'lbl_schema_name', '')
-            self._manage_docker()
-            return
-
-        if not tools_db.check_role(self.username, is_admin=True) and not show_dialog:
-            tools_log.log_warning(f"User not found: {self.username}")
-            return
-
-        if self.form_enabled is False:
-            ignore_widgets =  ['cmb_connection', 'btn_gis_create', 'cmb_project_type', 'project_schema_name']
-            tools_qt.enable_dialog(self.dlg_readsql, False, ignore_widgets)
-            self.dlg_readsql.lbl_status.setPixmap(self.status_ko)
-            tools_qt.set_widget_text(self.dlg_readsql, 'lbl_status_text', message)
-            tools_qt.set_widget_text(self.dlg_readsql, 'lbl_schema_name', '')
-
-        if show_dialog:
-            self._manage_docker()
 
 
     def _gis_create_project(self):
@@ -438,7 +380,6 @@ class GwAdminButton:
     def _close_dialog_admin(self, dlg):
         """ Close dialog """
         tools_gw.close_dialog(dlg, delete_dlg=False)
-        self.schema = None
 
 
     def _update_locale(self):
@@ -476,9 +417,7 @@ class GwAdminButton:
                 "FROM srs WHERE CAST(srid AS TEXT) LIKE '" + str(filter_value))
         sql += "%' order by srs_id DESC"
 
-        self.last_srids = self.gpkg_dao.get_rows(sql);
-        print("ROWS: ", self.last_srids)
-
+        self.last_srids = self.gpkg_dao.get_rows(sql)
         self.model_srid = QStandardItemModel(self.tbl_srid)
         self.model_srid.setHorizontalHeaderLabels(['SRID', 'Description'])
 
@@ -649,7 +588,6 @@ class GwAdminButton:
             return False
 
         tools_log.log_info(f"Database connection successful")
-        print("Database connection successful")
         return True
 
 
