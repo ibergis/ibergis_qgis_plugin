@@ -271,7 +271,6 @@ def close_dialog(dlg, delete_dlg=True, plugin='core'):
     """ Close dialog """
 
     save_settings(dlg, plugin=plugin)
-    global_vars.session_vars['last_focus'] = None
     dlg.close()
     if delete_dlg:
         try:
