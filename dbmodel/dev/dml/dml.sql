@@ -63,4 +63,4 @@ INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('element', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('edge', 'geom', 'LINESTRING', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('vertex', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('raingage', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
+INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('raingage', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
