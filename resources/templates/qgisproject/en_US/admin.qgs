@@ -8,9 +8,9 @@
     <spatialrefsys nativeFormat="Wkt">
       <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
       <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-      <srsid>2104</srsid>
-      <srid>25831</srid>
-      <authid>EPSG:25831</authid>
+      <srsid>__SRSID__</srsid>
+      <srid>__SRID__</srid>
+      <authid>__AUTHID__</authid>
       <description></description>
       <projectionacronym>utm</projectionacronym>
       <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -21,47 +21,47 @@
     <customproperties>
       <Option/>
     </customproperties>
-    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="vertex_3e409f41_64c4_4129_94c1_c18071edbe16" legend_exp="" checked="Qt::Checked" name="vertex" legend_split_behavior="0" source="./sample.gpkg|layername=vertex" expanded="1">
+    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="vertex_3e409f41_64c4_4129_94c1_c18071edbe16" legend_exp="" checked="Qt::Checked" name="vertex" legend_split_behavior="0" source="__DATASOURCE__|layername=vertex" expanded="1">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="roof_feb4bb33_f6a5_479a_80af_678d323da507" legend_exp="" checked="Qt::Checked" name="roof" legend_split_behavior="0" source="./sample.gpkg|layername=roof" expanded="1">
+    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="roof_feb4bb33_f6a5_479a_80af_678d323da507" legend_exp="" checked="Qt::Checked" name="roof" legend_split_behavior="0" source="__DATASOURCE__|layername=roof" expanded="1">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="raingage_15641779_e871_4fac_b86b_a357f0e5858e" legend_exp="" checked="Qt::Checked" name="raingage" legend_split_behavior="0" source="./sample.gpkg|layername=raingage" expanded="1">
+    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="raingage_15641779_e871_4fac_b86b_a357f0e5858e" legend_exp="" checked="Qt::Checked" name="raingage" legend_split_behavior="0" source="__DATASOURCE__|layername=raingage" expanded="1">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="manzone_8cee9108_d316_48e6_b819_a9d95a2c43f7" legend_exp="" checked="Qt::Checked" name="manzone" legend_split_behavior="0" source="./sample.gpkg|layername=manzone" expanded="1">
+    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="manzone_8cee9108_d316_48e6_b819_a9d95a2c43f7" legend_exp="" checked="Qt::Checked" name="manzone" legend_split_behavior="0" source="__DATASOURCE__|layername=manzone" expanded="1">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="losszone_535ac739_fca0_47ba_a363_446d632931e3" legend_exp="" checked="Qt::Checked" name="losszone" legend_split_behavior="0" source="./sample.gpkg|layername=losszone" expanded="1">
+    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="losszone_535ac739_fca0_47ba_a363_446d632931e3" legend_exp="" checked="Qt::Checked" name="losszone" legend_split_behavior="0" source="__DATASOURCE__|layername=losszone" expanded="1">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="element_b5ee11bc_8afe_4e8b_8020_b51e9adca6c0" legend_exp="" checked="Qt::Checked" name="element" legend_split_behavior="0" source="./sample.gpkg|layername=element" expanded="1">
+    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="element_b5ee11bc_8afe_4e8b_8020_b51e9adca6c0" legend_exp="" checked="Qt::Checked" name="element" legend_split_behavior="0" source="__DATASOURCE__|layername=element" expanded="1">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="edge_46ce9938_da06_47d2_92ab_227af798cbd2" legend_exp="" checked="Qt::Checked" name="edge" legend_split_behavior="0" source="./sample.gpkg|layername=edge" expanded="1">
+    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="edge_46ce9938_da06_47d2_92ab_227af798cbd2" legend_exp="" checked="Qt::Checked" name="edge" legend_split_behavior="0" source="__DATASOURCE__|layername=edge" expanded="1">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="config_param_user_4e6f846f_973e_4462_a4f7_66a7b7c02955" legend_exp="" checked="Qt::Checked" name="config_param_user" legend_split_behavior="0" source="./sample.gpkg|layername=config_param_user" expanded="1">
+    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="config_param_user_4e6f846f_973e_4462_a4f7_66a7b7c02955" legend_exp="" checked="Qt::Checked" name="config_param_user" legend_split_behavior="0" source="__DATASOURCE__|layername=config_param_user" expanded="1">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="cat_scenario_00c23d5f_9ec5_4ba8_a167_838717ac44eb" legend_exp="" checked="Qt::Checked" name="cat_scenario" legend_split_behavior="0" source="./sample.gpkg|layername=cat_scenario" expanded="1">
+    <layer-tree-layer providerKey="ogr" patch_size="-1,-1" id="cat_scenario_00c23d5f_9ec5_4ba8_a167_838717ac44eb" legend_exp="" checked="Qt::Checked" name="cat_scenario" legend_split_behavior="0" source="__DATASOURCE__|layername=cat_scenario" expanded="1">
       <customproperties>
         <Option/>
       </customproperties>
@@ -102,9 +102,9 @@
       <spatialrefsys nativeFormat="Wkt">
         <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
         <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-        <srsid>2104</srsid>
-        <srid>25831</srid>
-        <authid>EPSG:25831</authid>
+        <srsid>__SRSID__</srsid>
+        <srid>__SRID__</srid>
+        <authid>__AUTHID__</authid>
         <description>ETRS89 / UTM zone 31N</description>
         <projectionacronym>utm</projectionacronym>
         <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -173,9 +173,9 @@
       <spatialrefsys nativeFormat="Wkt">
         <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
         <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-        <srsid>2104</srsid>
-        <srid>25831</srid>
-        <authid>EPSG:25831</authid>
+        <srsid>__SRSID__</srsid>
+        <srid>__SRID__</srid>
+        <authid>__AUTHID__</authid>
         <description>ETRS89 / UTM zone 31N</description>
         <projectionacronym>utm</projectionacronym>
         <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -215,7 +215,7 @@
   <projectlayers>
     <maplayer legendPlaceholderImage="" minScale="1e+08" wkbType="NoGeometry" hasScaleBasedVisibilityFlag="0" readOnly="0" type="vector" maxScale="0" styleCategories="AllStyleCategories" refreshOnNotifyEnabled="0" geometry="No geometry" autoRefreshTime="0" refreshOnNotifyMessage="" autoRefreshEnabled="0">
       <id>cat_scenario_00c23d5f_9ec5_4ba8_a167_838717ac44eb</id>
-      <datasource>./sample.gpkg|layername=cat_scenario</datasource>
+      <datasource>__DATASOURCE__|layername=cat_scenario</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -506,7 +506,7 @@
     </maplayer>
     <maplayer legendPlaceholderImage="" minScale="1e+08" wkbType="NoGeometry" hasScaleBasedVisibilityFlag="0" readOnly="0" type="vector" maxScale="0" styleCategories="AllStyleCategories" refreshOnNotifyEnabled="0" geometry="No geometry" autoRefreshTime="0" refreshOnNotifyMessage="" autoRefreshEnabled="0">
       <id>config_param_user_4e6f846f_973e_4462_a4f7_66a7b7c02955</id>
-      <datasource>./sample.gpkg|layername=config_param_user</datasource>
+      <datasource>__DATASOURCE__|layername=config_param_user</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -795,7 +795,7 @@
     </maplayer>
     <maplayer refreshOnNotifyEnabled="0" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" autoRefreshEnabled="0" simplifyAlgorithm="0" refreshOnNotifyMessage="" styleCategories="AllStyleCategories" autoRefreshTime="0" simplifyDrawingTol="1" readOnly="0" simplifyDrawingHints="1" minScale="100000000" labelsEnabled="0" maxScale="0" geometry="Line" simplifyMaxScale="1" wkbType="LineString" symbologyReferenceScale="-1" type="vector" legendPlaceholderImage="">
       <id>edge_46ce9938_da06_47d2_92ab_227af798cbd2</id>
-      <datasource>./sample.gpkg|layername=edge</datasource>
+      <datasource>__DATASOURCE__|layername=edge</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -804,9 +804,9 @@
         <spatialrefsys nativeFormat="Wkt">
           <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
           <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-          <srsid>2104</srsid>
-          <srid>25831</srid>
-          <authid>EPSG:25831</authid>
+          <srsid>__SRSID__</srsid>
+          <srid>__SRID__</srid>
+          <authid>__AUTHID__</authid>
           <description>ETRS89 / UTM zone 31N</description>
           <projectionacronym>utm</projectionacronym>
           <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -827,9 +827,9 @@
           <spatialrefsys nativeFormat="Wkt">
             <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
             <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-            <srsid>2104</srsid>
-            <srid>25831</srid>
-            <authid>EPSG:25831</authid>
+            <srsid>__SRSID__</srsid>
+            <srid>__SRID__</srid>
+            <authid>__AUTHID__</authid>
             <description>ETRS89 / UTM zone 31N</description>
             <projectionacronym>utm</projectionacronym>
             <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -1176,7 +1176,7 @@
         <ymax>41.35074893828326026</ymax>
       </wgs84extent>
       <id>element_b5ee11bc_8afe_4e8b_8020_b51e9adca6c0</id>
-      <datasource>./sample.gpkg|layername=element</datasource>
+      <datasource>__DATASOURCE__|layername=element</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1185,9 +1185,9 @@
         <spatialrefsys nativeFormat="Wkt">
           <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
           <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-          <srsid>2104</srsid>
-          <srid>25831</srid>
-          <authid>EPSG:25831</authid>
+          <srsid>__SRSID__</srsid>
+          <srid>__SRID__</srid>
+          <authid>__AUTHID__</authid>
           <description>ETRS89 / UTM zone 31N</description>
           <projectionacronym>utm</projectionacronym>
           <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -1208,9 +1208,9 @@
           <spatialrefsys nativeFormat="Wkt">
             <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
             <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-            <srsid>2104</srsid>
-            <srid>25831</srid>
-            <authid>EPSG:25831</authid>
+            <srsid>__SRSID__</srsid>
+            <srid>__SRID__</srid>
+            <authid>__AUTHID__</authid>
             <description>ETRS89 / UTM zone 31N</description>
             <projectionacronym>utm</projectionacronym>
             <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -1628,7 +1628,7 @@
     </maplayer>
     <maplayer refreshOnNotifyEnabled="0" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" autoRefreshEnabled="0" simplifyAlgorithm="0" refreshOnNotifyMessage="" styleCategories="AllStyleCategories" autoRefreshTime="0" simplifyDrawingTol="1" readOnly="0" simplifyDrawingHints="1" minScale="100000000" labelsEnabled="0" maxScale="0" geometry="Polygon" simplifyMaxScale="1" wkbType="MultiPolygon" symbologyReferenceScale="-1" type="vector" legendPlaceholderImage="">
       <id>losszone_535ac739_fca0_47ba_a363_446d632931e3</id>
-      <datasource>./sample.gpkg|layername=losszone</datasource>
+      <datasource>__DATASOURCE__|layername=losszone</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1637,9 +1637,9 @@
         <spatialrefsys nativeFormat="Wkt">
           <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
           <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-          <srsid>2104</srsid>
-          <srid>25831</srid>
-          <authid>EPSG:25831</authid>
+          <srsid>__SRSID__</srsid>
+          <srid>__SRID__</srid>
+          <authid>__AUTHID__</authid>
           <description>ETRS89 / UTM zone 31N</description>
           <projectionacronym>utm</projectionacronym>
           <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -1660,9 +1660,9 @@
           <spatialrefsys nativeFormat="Wkt">
             <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
             <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-            <srsid>2104</srsid>
-            <srid>25831</srid>
-            <authid>EPSG:25831</authid>
+            <srsid>__SRSID__</srsid>
+            <srid>__SRID__</srid>
+            <authid>__AUTHID__</authid>
             <description>ETRS89 / UTM zone 31N</description>
             <projectionacronym>utm</projectionacronym>
             <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -2081,7 +2081,7 @@
         <ymax>41.34989560917203733</ymax>
       </wgs84extent>
       <id>manzone_8cee9108_d316_48e6_b819_a9d95a2c43f7</id>
-      <datasource>./sample.gpkg|layername=manzone</datasource>
+      <datasource>__DATASOURCE__|layername=manzone</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2090,9 +2090,9 @@
         <spatialrefsys nativeFormat="Wkt">
           <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
           <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-          <srsid>2104</srsid>
-          <srid>25831</srid>
-          <authid>EPSG:25831</authid>
+          <srsid>__SRSID__</srsid>
+          <srid>__SRID__</srid>
+          <authid>__AUTHID__</authid>
           <description>ETRS89 / UTM zone 31N</description>
           <projectionacronym>utm</projectionacronym>
           <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -2113,9 +2113,9 @@
           <spatialrefsys nativeFormat="Wkt">
             <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
             <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-            <srsid>2104</srsid>
-            <srid>25831</srid>
-            <authid>EPSG:25831</authid>
+            <srsid>__SRSID__</srsid>
+            <srid>__SRID__</srid>
+            <authid>__AUTHID__</authid>
             <description>ETRS89 / UTM zone 31N</description>
             <projectionacronym>utm</projectionacronym>
             <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -2467,7 +2467,7 @@
     </maplayer>
     <maplayer refreshOnNotifyEnabled="0" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" autoRefreshEnabled="0" simplifyAlgorithm="0" refreshOnNotifyMessage="" styleCategories="AllStyleCategories" autoRefreshTime="0" simplifyDrawingTol="1" readOnly="0" simplifyDrawingHints="1" minScale="100000000" labelsEnabled="0" maxScale="0" geometry="Polygon" simplifyMaxScale="1" wkbType="MultiPolygon" symbologyReferenceScale="-1" type="vector" legendPlaceholderImage="">
       <id>raingage_15641779_e871_4fac_b86b_a357f0e5858e</id>
-      <datasource>./sample.gpkg|layername=raingage</datasource>
+      <datasource>__DATASOURCE__|layername=raingage</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2476,9 +2476,9 @@
         <spatialrefsys nativeFormat="Wkt">
           <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
           <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-          <srsid>2104</srsid>
-          <srid>25831</srid>
-          <authid>EPSG:25831</authid>
+          <srsid>__SRSID__</srsid>
+          <srid>__SRID__</srid>
+          <authid>__AUTHID__</authid>
           <description>ETRS89 / UTM zone 31N</description>
           <projectionacronym>utm</projectionacronym>
           <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -2499,9 +2499,9 @@
           <spatialrefsys nativeFormat="Wkt">
             <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
             <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-            <srsid>2104</srsid>
-            <srid>25831</srid>
-            <authid>EPSG:25831</authid>
+            <srsid>__SRSID__</srsid>
+            <srid>__SRID__</srid>
+            <authid>__AUTHID__</authid>
             <description>ETRS89 / UTM zone 31N</description>
             <projectionacronym>utm</projectionacronym>
             <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -2832,7 +2832,7 @@
         <ymax>41.34894355160282231</ymax>
       </wgs84extent>
       <id>roof_feb4bb33_f6a5_479a_80af_678d323da507</id>
-      <datasource>./sample.gpkg|layername=roof</datasource>
+      <datasource>__DATASOURCE__|layername=roof</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2841,9 +2841,9 @@
         <spatialrefsys nativeFormat="Wkt">
           <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
           <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-          <srsid>2104</srsid>
-          <srid>25831</srid>
-          <authid>EPSG:25831</authid>
+          <srsid>__SRSID__</srsid>
+          <srid>__SRID__</srid>
+          <authid>__AUTHID__</authid>
           <description>ETRS89 / UTM zone 31N</description>
           <projectionacronym>utm</projectionacronym>
           <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -2864,9 +2864,9 @@
           <spatialrefsys nativeFormat="Wkt">
             <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
             <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-            <srsid>2104</srsid>
-            <srid>25831</srid>
-            <authid>EPSG:25831</authid>
+            <srsid>__SRSID__</srsid>
+            <srid>__SRID__</srid>
+            <authid>__AUTHID__</authid>
             <description>ETRS89 / UTM zone 31N</description>
             <projectionacronym>utm</projectionacronym>
             <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -3285,7 +3285,7 @@
         <ymax>41.35074893828326026</ymax>
       </wgs84extent>
       <id>vertex_3e409f41_64c4_4129_94c1_c18071edbe16</id>
-      <datasource>./sample.gpkg|layername=vertex</datasource>
+      <datasource>__DATASOURCE__|layername=vertex</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -3294,9 +3294,9 @@
         <spatialrefsys nativeFormat="Wkt">
           <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
           <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-          <srsid>2104</srsid>
-          <srid>25831</srid>
-          <authid>EPSG:25831</authid>
+          <srsid>__SRSID__</srsid>
+          <srid>__SRID__</srid>
+          <authid>__AUTHID__</authid>
           <description>ETRS89 / UTM zone 31N</description>
           <projectionacronym>utm</projectionacronym>
           <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -3317,9 +3317,9 @@
           <spatialrefsys nativeFormat="Wkt">
             <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
             <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-            <srsid>2104</srsid>
-            <srid>25831</srid>
-            <authid>EPSG:25831</authid>
+            <srsid>__SRSID__</srsid>
+            <srid>__SRID__</srid>
+            <authid>__AUTHID__</authid>
             <description>ETRS89 / UTM zone 31N</description>
             <projectionacronym>utm</projectionacronym>
             <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
@@ -3810,9 +3810,9 @@
       <spatialrefsys nativeFormat="Wkt">
         <wkt>PROJCRS["ETRS89 / UTM zone 31N",BASEGEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble",MEMBER["European Terrestrial Reference Frame 1989"],MEMBER["European Terrestrial Reference Frame 1990"],MEMBER["European Terrestrial Reference Frame 1991"],MEMBER["European Terrestrial Reference Frame 1992"],MEMBER["European Terrestrial Reference Frame 1993"],MEMBER["European Terrestrial Reference Frame 1994"],MEMBER["European Terrestrial Reference Frame 1996"],MEMBER["European Terrestrial Reference Frame 1997"],MEMBER["European Terrestrial Reference Frame 2000"],MEMBER["European Terrestrial Reference Frame 2005"],MEMBER["European Terrestrial Reference Frame 2014"],ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[0.1]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4258]],CONVERSION["UTM zone 31N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",3,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Engineering survey, topographic mapping."],AREA["Europe between 0°E and 6°E: Andorra; Belgium - onshore and offshore; Denmark - offshore; Germany - offshore; Jan Mayen - offshore; Norway including Svalbard - onshore and offshore; Spain - onshore and offshore."],BBOX[37,0,82.45,6.01]],ID["EPSG",25831]]</wkt>
         <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
-        <srsid>2104</srsid>
-        <srid>25831</srid>
-        <authid>EPSG:25831</authid>
+        <srsid>__SRSID__</srsid>
+        <srid>__SRID__</srid>
+        <authid>__AUTHID__</authid>
         <description>ETRS89 / UTM zone 31N</description>
         <projectionacronym>utm</projectionacronym>
         <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
