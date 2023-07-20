@@ -575,24 +575,23 @@ class GwAdminButton:
 
         status = False
         f = None
+        filepath = os.path.join(filedir, file)
         try:
-            filepath = os.path.join(filedir, file)
             f = open(filepath, 'r', encoding="utf8")
             if f:
-                f_to_read = str(f.read().replace("SRID_VALUE", self.project_epsg))
+                f_to_read = str(f.read().replace("<SRID_VALUE>", self.project_epsg))
                 status = self.gpkg_dao.execute_script_sql(str(f_to_read))
-                tools_log.log_info(f"Database error: {self.gpkg_dao.last_error}")
                 if status is False:
                     self.error_count = self.error_count + 1
-                    tools_log.log_info(f"_read_execute_file error {filepath}")
-                    tools_log.log_info(f"Message: {global_vars.session_vars['last_error']}")
+                    tools_log.log_info(f"Error executing file: {filepath}")
+                    tools_log.log_info(f"Database error: {self.gpkg_dao.last_error}")
                     if self.dev_commit is False:
                         global_vars.dao.rollback()
                     return False
 
         except Exception as e:
             self.error_count = self.error_count + 1
-            tools_log.log_info(f"_read_execute_file exception: {file}")
+            tools_log.log_info(f"Exception executing file: {filepath}")
             tools_log.log_info(str(e))
             if self.dev_commit is False:
                 global_vars.dao.rollback()
