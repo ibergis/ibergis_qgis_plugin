@@ -126,7 +126,7 @@ class GwAdminButton:
                 tools_gw.close_dialog(dlg)
 
 
-    def init_dialog_create_project(self, project_type=None):
+    def init_dialog_create_project(self):
         """ Initialize dialog (only once) """
 
         self.dlg_readsql_create_project = GwAdminDbProjectUi()
@@ -271,11 +271,15 @@ class GwAdminButton:
             tools_qgis.show_warning("GIS folder not set")
             return
 
-        qgis_file_type = self.dlg_create_gis_project.cmb_roletype.currentIndex()
-        tools_gw.set_config_parser('btn_admin', 'qgis_file_type', qgis_file_type, prefix=False)
+        gpkg_file = tools_qt.get_text(self.dlg_create_gis_project, "txt_gis_gpkg")
+        if gpkg_file is None or gpkg_file == 'null':
+            tools_qgis.show_warning("GKPG file path name not set")
+            return
+        # qgis_file_type = self.dlg_create_gis_project.cmb_roletype.currentIndex()
+        # tools_gw.set_config_parser('btn_admin', 'qgis_file_type', qgis_file_type, prefix=False)
         tools_gw.set_config_parser('btn_admin', 'qgis_file_path', gis_folder, prefix=False)
-        qgis_file_export = self.dlg_create_gis_project.chk_export_passwd.isChecked()
-        tools_gw.set_config_parser('btn_admin', 'qgis_file_export', qgis_file_export, prefix=False)
+        # qgis_file_export = self.dlg_create_gis_project.chk_export_passwd.isChecked()
+        # tools_gw.set_config_parser('btn_admin', 'qgis_file_export', qgis_file_export, prefix=False)
 
         gis_file = tools_qt.get_text(self.dlg_create_gis_project, 'txt_gis_file')
         if gis_file is None or gis_file == 'null':
@@ -286,23 +290,22 @@ class GwAdminButton:
         schema_name = tools_qt.get_text(self.dlg_readsql, 'project_schema_name')
 
         # Get roletype and export password
-        roletype = tools_qt.get_text(self.dlg_create_gis_project, 'cmb_roletype')
-        export_passwd = tools_qt.is_checked(self.dlg_create_gis_project, 'chk_export_passwd')
+        # roletype = tools_qt.get_text(self.dlg_create_gis_project, 'cmb_roletype')
+        # export_passwd = tools_qt.is_checked(self.dlg_create_gis_project, 'chk_export_passwd')
 
-        if export_passwd:
-            msg = "Credentials will be stored in GIS project file"
-            tools_qt.show_info_box(msg, "Warning")
+        # if export_passwd:
+        #     msg = "Credentials will be stored in GIS project file"
+        #     tools_qt.show_info_box(msg, "Warning")
 
         # Generate QGIS project
-        self._generate_qgis_project(gis_folder, gis_file, project_type, schema_name, export_passwd, roletype)
+        self._generate_qgis_project(gis_folder, gis_file, project_type, schema_name)
 
 
-    def _generate_qgis_project(self, gis_folder, gis_file, project_type, schema_name, export_passwd, roletype):
+    def _generate_qgis_project(self, gis_folder, gis_file, project_type, schema_name):
         """ Generate QGIS project """
 
         gis = GwGisFileCreate(self.plugin_dir)
-        result, qgs_path = gis.gis_project_database(gis_folder, gis_file, project_type, schema_name, export_passwd,
-                                                    roletype)
+        result, qgs_path = gis.gis_project_database(gis_folder, gis_file, project_type, schema_name)
 
         self._close_dialog_admin(self.dlg_create_gis_project)
         self._close_dialog_admin(self.dlg_readsql)
@@ -329,14 +332,14 @@ class GwAdminButton:
         tools_gw.load_settings(self.dlg_create_gis_project)
 
         # Set default values
-        qgis_file_type = tools_gw.get_config_parser('btn_admin', 'qgis_file_type', "user", "session", prefix=False,
-                                                    force_reload=True)
-        if qgis_file_type is not None:
-            try:
-                qgis_file_type = int(qgis_file_type)
-                self.dlg_create_gis_project.cmb_roletype.setCurrentIndex(qgis_file_type)
-            except Exception:
-                pass
+        # qgis_file_type = tools_gw.get_config_parser('btn_admin', 'qgis_file_type', "user", "session", prefix=False,
+        #                                             force_reload=True)
+        # if qgis_file_type is not None:
+        #     try:
+        #         qgis_file_type = int(qgis_file_type)
+        #         self.dlg_create_gis_project.cmb_roletype.setCurrentIndex(qgis_file_type)
+        #     except Exception:
+        #         pass
         # schema_name = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.project_schema_name)
         # tools_qt.set_widget_text(self.dlg_create_gis_project, 'txt_gis_file', schema_name)
         qgis_file_path = tools_gw.get_config_parser('btn_admin', 'qgis_file_path', "user", "session", prefix=False,
@@ -344,17 +347,19 @@ class GwAdminButton:
         if qgis_file_path is None:
             qgis_file_path = os.path.expanduser("~")
         tools_qt.set_widget_text(self.dlg_create_gis_project, 'txt_gis_folder', qgis_file_path)
-        qgis_file_export = tools_gw.get_config_parser('btn_admin', 'qgis_file_export', "user", "session", prefix=False,
-                                                      force_reload=True)
-        qgis_file_export = tools_os.set_boolean(qgis_file_export, False)
-        self.dlg_create_gis_project.chk_export_passwd.setChecked(qgis_file_export)
+        # qgis_file_export = tools_gw.get_config_parser('btn_admin', 'qgis_file_export', "user", "session", prefix=False,
+        #                                               force_reload=True)
+        # qgis_file_export = tools_os.set_boolean(qgis_file_export, False)
+        # self.dlg_create_gis_project.chk_export_passwd.setChecked(qgis_file_export)
 
         # Set listeners
         self.dlg_create_gis_project.btn_gis_folder.clicked.connect(
             partial(tools_qt.get_folder_path, self.dlg_create_gis_project, "txt_gis_folder"))
+        self.dlg_create_gis_project.btn_gis_gpkg.clicked.connect(partial(self._select_file_gpkg))
         self.dlg_create_gis_project.btn_accept.clicked.connect(partial(self._gis_create_project))
         self.dlg_create_gis_project.btn_close.clicked.connect(partial(self._close_dialog_admin, self.dlg_create_gis_project))
         self.dlg_create_gis_project.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_create_gis_project))
+
 
         # Set shortcut keys
         self.dlg_create_gis_project.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_create_gis_project))
@@ -480,6 +485,24 @@ class GwAdminButton:
         message = tools_qt.tr("Select GPKG path")
         file_path = QFileDialog.getExistingDirectory(None, message)
         self.dlg_readsql_create_project.data_path.setText(file_path)
+
+
+    def _select_file_gpkg(self):
+        """ Select GPKG file """
+
+        file_gpkg = tools_qt.get_text(self.dlg_create_gis_project, 'txt_gis_gpkg')
+        # Set default value if necessary
+        if file_gpkg is None or file_gpkg == '':
+            file_gpkg = self.plugin_dir
+
+        # Get directory of that file
+        folder_path = os.path.dirname(file_gpkg)
+        if not os.path.exists(folder_path):
+            folder_path = os.path.dirname(__file__)
+        os.chdir(folder_path)
+        message = tools_qt.tr("Select GPKG file")
+        file_gpkg, filter_ = QFileDialog.getOpenFileName(None, message, "", '*.gpkg')
+        self.dlg_create_gis_project.txt_gis_gpkg.setText(file_gpkg)
 
 
     def _execute_files(self, filedir, i18n=False, no_ct=False, set_progress_bar=False):
