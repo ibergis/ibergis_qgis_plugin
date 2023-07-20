@@ -235,10 +235,6 @@ def save_current_tab(dialog, tab_widget, selector_name):
 def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_widgets=False):
     """ Open dialog """
 
-    # Check database connection before opening dialog
-    if dlg_name != 'admin_credentials' and dlg_name != 'admin_ui':
-        return
-
     # Manage translate
     if dlg_name:
         tools_qt.manage_translation(dlg_name, dlg)
