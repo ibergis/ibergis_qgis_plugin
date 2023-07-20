@@ -236,7 +236,7 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_wi
     """ Open dialog """
 
     # Check database connection before opening dialog
-    if (dlg_name != 'admin_credentials' and dlg_name != 'admin_ui') and not tools_db.check_db_connection():
+    if dlg_name != 'admin_credentials' and dlg_name != 'admin_ui':
         return
 
     # Manage translate
@@ -403,35 +403,6 @@ def refresh_legend():
                 ln.setData(current_state, Qt.CheckStateRole)
 
 
-def get_cursor_multiple_selection():
-    """ Set cursor for multiple selection """
-
-    path_cursor = os.path.join(global_vars.plugin_dir, f"icons{os.sep}dialogs{os.sep}20x20", '201.png')
-    if os.path.exists(path_cursor):
-        cursor = QCursor(QPixmap(path_cursor))
-    else:
-        cursor = QCursor(Qt.ArrowCursor)
-
-    return cursor
-
-
-def hide_parent_layers(excluded_layers=[]):
-    """ Hide generic layers """
-
-    layers_changed = {}
-    list_layers = ["v_edit_arc", "v_edit_node", "v_edit_connec", "v_edit_element"]
-    if global_vars.project_type == 'ud':
-        list_layers.append("v_edit_gully")
-
-    for layer_name in list_layers:
-        layer = tools_qgis.get_layer_by_tablename(layer_name)
-        if layer and layer_name not in excluded_layers:
-            layers_changed[layer] = tools_qgis.is_layer_visible(layer)
-            tools_qgis.set_layer_visible(layer)
-
-    return layers_changed
-
-
 def draw_by_json(complet_result, rubber_band, margin=None, reset_rb=True, color=QColor(255, 0, 0, 100), width=3):
 
     try:
@@ -475,23 +446,6 @@ def reset_feature_list():
     list_ids = {'arc': [], 'node': [], 'connec': [], 'gully': [], 'element': []}
 
     return ids, list_ids
-
-
-def get_signal_change_tab(dialog, excluded_layers=[]):
-    """ Set feature_type and layer depending on selected tab """
-
-    tab_idx = dialog.tab_feature.currentIndex()
-    tab_name = {'tab_arc': 'arc', 'tab_node': 'node', 'tab_connec': 'connec', 'tab_gully': 'gully',
-                'tab_elem': 'element'}
-
-    feature_type = tab_name.get(dialog.tab_feature.widget(tab_idx).objectName(), 'arc')
-    hide_parent_layers(excluded_layers=excluded_layers)
-    viewname = f"v_edit_{feature_type}"
-
-    # Adding auto-completion to a QLineEdit
-    set_completer_feature_id(dialog.feature_id, feature_type, viewname)
-    global_vars.iface.actionPan().trigger()
-    return feature_type
 
 
 def set_completer_feature_id(widget, feature_type, viewname):
