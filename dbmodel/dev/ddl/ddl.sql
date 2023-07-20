@@ -19,7 +19,7 @@ CREATE TABLE sys_selector (
 CREATE TABLE config_param_user (
 	parameter_id integer primary key,	
 	parameter text CHECK (typeof(parameter)='text' OR parameter=NULL),
-		value text CHECK (typeof(value)='text' OR value=NULL)
+	value text CHECK (typeof(value)='text' OR value=NULL)
 );
 
 CREATE TABLE sys_parameter (
@@ -188,7 +188,9 @@ CREATE TABLE vertex (
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     source text CHECK (typeof(source)='text' OR source=NULL),
-    elevation real CHECK (typeof(elevation)='real' OR elevation=NULL)
+    elevation real CHECK (typeof(elevation)='real' OR elevation=NULL),
+	latitude real CHECK (typeof(latitude)='real' OR latitude=NULL),
+	longitude real CHECK (typeof(longitude)='real' OR longitude=NULL)
 );
 
 CREATE TABLE raingage (
