@@ -5,6 +5,14 @@ as published by the Free Software Foundation, either version 3 of the License, o
 This version of Giswater is provided by Giswater Association
 */
 
+-- ------------
+-- SYS_SELECTOR
+-- ------------
+INSERT INTO sys_selector (selector_id, "parameter", value) VALUES(1, 'Parameter 1', 4);
+INSERT INTO sys_selector (selector_id, "parameter", value) VALUES(2, 'Parameter 2', 6);
+INSERT INTO sys_selector (selector_id, "parameter", value) VALUES(3, 'Parameter 3', 8);
+
+
 -- -----------------
 -- CONFIG_PARAM_USER
 -- -----------------
