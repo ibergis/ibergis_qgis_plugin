@@ -72,24 +72,6 @@ class GwGpkgDao(object):
         return cursor
 
 
-    def check_cursor(self):
-        """ Check if cursor is closed """
-
-        status = True
-        if self.cursor.closed:
-            self.init_db()
-            status = not self.cursor.closed
-
-        return status
-
-
-    def cursor_execute(self, sql):
-        """ Check if cursor is closed before execution """
-
-        if self.check_cursor():
-            self.cursor.execute(sql)
-
-
     def get_rows(self, sql, commit=False):
         """ Get multiple rows from selected query """
 
@@ -111,7 +93,7 @@ class GwGpkgDao(object):
         self.last_error = None
         row = None
         try:
-            self.cursor_execute(sql)
+            self.cursor.execute(sql)
             row = self.cursor.fetchone()
         except Exception as e:
             self.last_error = e
