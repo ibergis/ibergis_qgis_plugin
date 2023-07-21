@@ -87,26 +87,26 @@ INSERT INTO roof (fid, geom, sector_id, scenario_id, name, "source", descript, s
 -- --------
 -- RAINGAGE
 -- --------
-INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(1, ST_GeomFromText('POINT (418499.32586 4577984.1279)'), 1, NULL, NULL, 0, NULL);
-INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(2, ST_GeomFromText('POINT (418514.66676 4577826.24041)'), 1, NULL, NULL, 0, NULL);
-INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(3, ST_GeomFromText('POINT (418621.93156 4577837.83709)'), 1, NULL, NULL, 0, NULL);
-INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(4, ST_GeomFromText('POINT (418300.46364 4577700.13302)'), 1, NULL, NULL, 0, NULL);
-INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(5, ST_GeomFromText('POINT (418372.19842 4578065.64219)'), 1, NULL, NULL, 0, NULL);
-INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(6, ST_GeomFromText('POINT (418237.32817 4577964.23285)'), 1, NULL, NULL, 0, NULL);
-INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(7, ST_GeomFromText('POINT (418633.26916 4577750.97882)'), 1, NULL, NULL, 0, NULL);
+INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(1, ST_GeomFromText('POINT (418499.32586 4577984.1279)', <SRID_VALUE>), 1, NULL, NULL, 0, NULL);
+INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(2, ST_GeomFromText('POINT (418514.66676 4577826.24041)', <SRID_VALUE>), 1, NULL, NULL, 0, NULL);
+INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(3, ST_GeomFromText('POINT (418621.93156 4577837.83709)', <SRID_VALUE>), 1, NULL, NULL, 0, NULL);
+INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(4, ST_GeomFromText('POINT (418300.46364 4577700.13302)', <SRID_VALUE>), 1, NULL, NULL, 0, NULL);
+INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(5, ST_GeomFromText('POINT (418372.19842 4578065.64219)', <SRID_VALUE>), 1, NULL, NULL, 0, NULL);
+INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(6, ST_GeomFromText('POINT (418237.32817 4577964.23285)', <SRID_VALUE>), 1, NULL, NULL, 0, NULL);
+INSERT INTO raingage (fid, geom, sector_id, descript, name, rain_type, timeseries_id) VALUES(7, ST_GeomFromText('POINT (418633.26916 4577750.97882)', <SRID_VALUE>), 1, NULL, NULL, 0, NULL);
 
 -- ----
 -- EDGE
 -- ----
-INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(1, ST_GeomFromText('LINESTRING (418470.11819 4577865.43944, 418473.49737 4577846.94189)'), 1, NULL, NULL, 4717, 8168);
-INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(2, ST_GeomFromText('LINESTRING (418473.51486 4577846.84616, 418476.91153 4577828.25287)'), 1, NULL, NULL, 929, 2659);
-INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(3, ST_GeomFromText('LINESTRING (418470.11819 4577865.43944, 418474.16432 4577870.54197)'), 1, NULL, NULL, 8168, 8169);
-INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(4, ST_GeomFromText('LINESTRING (418474.16432 4577870.54197, 418530.50217 4577874.06092)'), 1, NULL, NULL, 7430, 8169);
-INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(5, ST_GeomFromText('LINESTRING (418530.50217 4577874.06092, 418555.03496 4577875.59328)'), 1, NULL, NULL, 7430, 8554);
-INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(6, ST_GeomFromText('LINESTRING (418461.08877 4577869.34935, 418460.1429 4577865.2884)'), 1, NULL, NULL, 226, 419);
-INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(7, ST_GeomFromText('LINESTRING (418460.1429 4577865.2884, 418466.65169 4577829.24666)'), 1, NULL, NULL, 419, 8039);
-INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(8, ST_GeomFromText('LINESTRING (418461.08877 4577869.34935, 418454.66911 4577869.15124)'), 1, NULL, NULL, 226, 8000);
-INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(9, ST_GeomFromText('LINESTRING (418454.66911 4577869.15124, 418410.13492 4577861.49231)'), 1, NULL, NULL, 5267, 8000);
+INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(1, ST_GeomFromText('LINESTRING (418470.11819 4577865.43944, 418473.49737 4577846.94189)', <SRID_VALUE>), 1, NULL, NULL, 4717, 8168);
+INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(2, ST_GeomFromText('LINESTRING (418473.51486 4577846.84616, 418476.91153 4577828.25287)', <SRID_VALUE>), 1, NULL, NULL, 929, 2659);
+INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(3, ST_GeomFromText('LINESTRING (418470.11819 4577865.43944, 418474.16432 4577870.54197)', <SRID_VALUE>), 1, NULL, NULL, 8168, 8169);
+INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(4, ST_GeomFromText('LINESTRING (418474.16432 4577870.54197, 418530.50217 4577874.06092)', <SRID_VALUE>), 1, NULL, NULL, 7430, 8169);
+INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(5, ST_GeomFromText('LINESTRING (418530.50217 4577874.06092, 418555.03496 4577875.59328)', <SRID_VALUE>), 1, NULL, NULL, 7430, 8554);
+INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(6, ST_GeomFromText('LINESTRING (418461.08877 4577869.34935, 418460.1429 4577865.2884)',<SRID_VALUE>) 1, NULL, NULL, 226, 419);
+INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(7, ST_GeomFromText('LINESTRING (418460.1429 4577865.2884, 418466.65169 4577829.24666)',<SRID_VALUE>) 1, NULL, NULL, 419, 8039);
+INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(8, ST_GeomFromText('LINESTRING (418461.08877 4577869.34935, 418454.66911 4577869.15124)',<SRID_VALUE>) 1, NULL, NULL, 226, 8000);
+INSERT INTO edge (fid, geom, sector_id, scenario_id, "source", vertex_id1, vertex_id2) VALUES(9, ST_GeomFromText('LINESTRING (418454.66911 4577869.15124, 418410.13492 4577861.49231)',<SRID_VALUE>) 1, NULL, NULL, 5267, 8000);
 
 
 
