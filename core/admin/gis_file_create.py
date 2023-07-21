@@ -71,7 +71,6 @@ class GwGisFileCreate:
         with open(qgs_path) as f:
             content = f.read()
 
-        # TODO: Replace spatialrefsys, extent parameters, connection parameters
         content = self._replace_spatial_parameters(self.layer_source['srid'], content)
         content = self._replace_extent_parameters(content)
         content = self._replace_connection_parameters(content, self.layer_source['gpkg_filepath'])
@@ -96,14 +95,16 @@ class GwGisFileCreate:
     def _replace_spatial_parameters(self, srid, content):
 
         aux = content
-        sql = (f"SELECT 2104 as srs_id, srid, auth_name || ':' || auth_srid as auth_id "
-               f"FROM spatial_ref_sys "
+        sql = (f"SELECT srid, auth_name || ':' || auth_id as auth_id "
+               f"FROM srs "
                f"WHERE srid = '{srid}'")
-        row = global_vars.gpkg_dao_data.get_row(sql)
+        row = global_vars.gpkg_dao_config.get_row(sql)
         if row:
             aux = aux.replace("__SRSID__", str(row[0]))
-            aux = aux.replace("__SRID__", str(row[1]))
-            aux = aux.replace("__AUTHID__", row[2])
+            aux = aux.replace("__SRID__", str(row[0]))
+            aux = aux.replace("__AUTHID__", row[1])
+        else:
+            tools_log.log_info(f"Database error: {global_vars.gpkg_dao_config.last_error}")
 
         return aux
 
@@ -112,32 +113,33 @@ class GwGisFileCreate:
 
         aux = content
         table_name = "vertex"
-        geom_name = "the_geom"
-        sql = (f"SELECT ST_XMax(gometries) AS xmax, ST_XMin(gometries) AS xmin, "
-               f"ST_YMax(gometries) AS ymax, ST_YMin(gometries) AS ymin "
-               f"FROM "
-               f"(SELECT ST_Collect({geom_name}) AS gometries FROM {table_name}) AS foo")
+        sql = (f"SELECT MAX(latitude) as xmax, MIN(latitude) as xmin, MAX(longitude) as ymax, MIN(longitude) as ymin "
+               f"FROM {table_name}")
         row = global_vars.gpkg_dao_data.get_row(sql)
         if row:
-            valor = row["xmin"]
-            if valor is None:
-                valor = -1.555992
-            aux = aux.replace("__XMIN__", str(valor))
 
-            valor = row["ymin"]
-            if valor is None:
-                valor = -1.000000
-            aux = aux.replace("__YMIN__", str(valor))
-
-            valor = row["xmax"]
+            valor = row[0]
             if valor is None:
                 valor = 1.555992
             aux = aux.replace("__XMAX__", str(valor))
 
-            valor = row["ymax"]
+            valor = row[1]
+            if valor is None:
+                valor = -1.555992
+            aux = aux.replace("__XMIN__", str(valor))
+
+            valor = row[2]
             if valor is None:
                 valor = 1.000000
             aux = aux.replace("__YMAX__", str(valor))
+
+            valor = row[3]
+            if valor is None:
+                valor = -1.000000
+            aux = aux.replace("__YMIN__", str(valor))
+
+        else:
+            tools_log.log_info(f"Database error: {global_vars.gpkg_dao_data.last_error}")
 
         return aux
 
