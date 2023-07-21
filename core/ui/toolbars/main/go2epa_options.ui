@@ -48,10 +48,10 @@
                </property>
                <layout class="QGridLayout" name="gridLayout_3" rowstretch="0" columnstretch="0,0">
                 <item row="0" column="0">
-                 <layout class="QGridLayout" name="lyt_general_1" rowstretch="0" columnstretch="0"/>
+                 <layout class="QGridLayout" name="lyt_options_1" rowstretch="0" columnstretch="0"/>
                 </item>
                 <item row="0" column="1">
-                 <layout class="QGridLayout" name="lyt_general_2"/>
+                 <layout class="QGridLayout" name="lyt_options_2"/>
                 </item>
                </layout>
               </widget>
@@ -63,10 +63,10 @@
                </property>
                <layout class="QGridLayout" name="gridLayout_6">
                 <item row="0" column="1">
-                 <layout class="QGridLayout" name="lyt_hydraulics_2"/>
+                 <layout class="QGridLayout" name="lyt_result_2"/>
                 </item>
                 <item row="0" column="0">
-                 <layout class="QGridLayout" name="lyt_hydraulics_1"/>
+                 <layout class="QGridLayout" name="lyt_result_1"/>
                 </item>
                </layout>
               </widget>

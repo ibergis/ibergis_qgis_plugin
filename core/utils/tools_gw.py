@@ -33,7 +33,7 @@ from ..ui.dialog import GwDialog
 from ..ui.main_window import GwMainWindow
 from ..ui.docker import GwDocker
 from ..ui.ui_manager import GwSelectorUi
-from . import tools_backend_calls
+from . import tools_backend_calls, tools_fct
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt, tools_log, tools_os, tools_db
 from ...lib.tools_qt import GwHyperLinkLabel, GwHyperLinkLineEdit
@@ -357,7 +357,7 @@ def create_body(form='', feature='', filter_fields='', extras=None):
     info_type = info_types.get(global_vars.project_vars['info_type'])
     lang = QSettings().value('locale/globalLocale', QLocale().name())
 
-    client = f'$${{"client":{{"device":4, "lang":"{lang}"'
+    client = f'{{"client":{{"device":4, "lang":"{lang}"'
     if info_type is not None:
         client += f', "infoType":{info_type}'
     if global_vars.project_epsg is not None:
@@ -371,7 +371,7 @@ def create_body(form='', feature='', filter_fields='', extras=None):
     data = f'"data":{{{filter_fields}, {page_info}'
     if extras is not None:
         data += ', ' + extras
-    data += f'}}}}$$'
+    data += f'}}}}'
     body = "" + client + form + feature + data
 
     return body
@@ -1948,47 +1948,51 @@ def execute_procedure(function_name, parameters=None, schema_name=None, commit=T
 
     # Check if function exists
     if check_function:
-        row = tools_db.check_function(function_name, schema_name, commit, aux_conn=aux_conn)
-        if row in (None, ''):
-            tools_qgis.show_warning("Function not found in database", parameter=function_name)
+        exists = tools_os.check_python_function(tools_fct, function_name)
+        if not exists:
+            tools_qgis.show_warning("Function not found in tools_fct", parameter=function_name)
             return None
 
+    if type(parameters) == str:
+        parameters = json.loads(parameters)
+    json_result = getattr(tools_fct, function_name)(parameters)
+
     # Manage schema_name and parameters
-    if schema_name:
-        sql = f"SELECT {schema_name}.{function_name}("
-    elif schema_name is None and global_vars.schema_name:
-        sql = f"SELECT {global_vars.schema_name}.{function_name}("
-    else:
-        sql = f"SELECT {function_name}("
-    if parameters:
-        sql += f"{parameters}"
-    sql += f");"
+    # if schema_name:
+    #     sql = f"SELECT {schema_name}.{function_name}("
+    # elif schema_name is None and global_vars.schema_name:
+    #     sql = f"SELECT {global_vars.schema_name}.{function_name}("
+    # else:
+    #     sql = f"SELECT {function_name}("
+    # if parameters:
+    #     sql += f"{parameters}"
+    # sql += f");"
 
     # Get log_sql for developers
     dev_log_sql = get_config_parser('log', 'log_sql', "user", "init", False)
     if dev_log_sql in ("True", "False"):
         log_sql = tools_os.set_boolean(dev_log_sql)
 
-    # Execute database function
-    row = tools_db.get_row(sql, commit=commit, log_sql=log_sql, aux_conn=aux_conn)
-    if not row or not row[0]:
-        tools_log.log_warning(f"Function error: {function_name}")
-        tools_log.log_warning(sql)
-        return None
-
-    # Get json result
-    json_result = row[0]
-    if log_sql:
-        tools_log.log_db(json_result, header="SERVER RESPONSE")
+    # # Execute database function
+    # row = tools_db.get_row(sql, commit=commit, log_sql=log_sql, aux_conn=aux_conn)
+    # if not row or not row[0]:
+    #     tools_log.log_warning(f"Function error: {function_name}")
+    #     tools_log.log_warning(sql)
+    #     return None
+    #
+    # # Get json result
+    # json_result = row[0]
+    # if log_sql:
+    #     tools_log.log_db(json_result, header="SERVER RESPONSE")
 
     # All functions called from python should return 'status', if not, something has probably failed in postrgres
     if 'status' not in json_result:
-        manage_json_exception(json_result, sql)
+        manage_json_exception(json_result)
         return False
 
     # If failed, manage exception
     if json_result.get('status') == 'Failed':
-        manage_json_exception(json_result, sql, is_thread=is_thread)
+        manage_json_exception(json_result, is_thread=is_thread)
         return json_result
 
     try:
@@ -1998,7 +2002,7 @@ def execute_procedure(function_name, parameters=None, schema_name=None, commit=T
         pass
 
     if not is_thread:
-        manage_json_response(json_result, sql, rubber_band)
+        manage_json_response(json_result, rubber_band=rubber_band)
 
     return json_result
 

@@ -439,7 +439,9 @@ class GwGo2EpaButton(GwAction):
 
         form = '"formName":"epaoptions"'
         body = tools_gw.create_body(form=form)
-        json_result = tools_gw.execute_procedure('gw_fct_getconfig', body)
+        json_result = tools_gw.execute_procedure('getconfig', body)
+        print("JSON RESULT")
+        print(f"{json_result}")
         if not json_result or json_result['status'] == 'Failed':
             return False
 
