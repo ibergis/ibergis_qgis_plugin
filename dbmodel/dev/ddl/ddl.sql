@@ -48,16 +48,28 @@ CREATE TABLE cat_scenario (
     active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
-CREATE TABLE inp_curves (
+CREATE TABLE inp_curve (
     curve_id integer PRIMARY KEY,
+    code text check (typeof(code)='text' or typeof(code)=null),
+    name text check (typeof(name)='text' or typeof(name)=null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
+    scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
+    source text check (typeof(source)='text' or typeof(source)=null),
+    descript text check (typeof(descript)='text' or typeof(descript)=null),
     active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
-CREATE TABLE inp_curves_value (
+CREATE TABLE inp_curve_value (
     curve_id integer PRIMARY KEY,
-    xval real CHECK (typeof(xval)='real' OR xval=NULL),
-    yval real CHECK (typeof(yval)='real' OR yval=NULL)
+    code text check (typeof(code)='text' or typeof(code)=null),
+    name text check (typeof(name)='text' or typeof(name)=null),
+    sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
+    scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
+    source text check (typeof(source)='text' or typeof(source)=null),
+    descript text check (typeof(descript)='text' or typeof(descript)=null),
+    xcoord real CHECK (typeof(xcoord)='real' OR xcoord=NULL),
+    ycoord real CHECK (typeof(ycoord)='real' OR ycoord=NULL),
+    active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
 CREATE TABLE inp_timeseries (
