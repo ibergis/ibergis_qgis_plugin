@@ -92,10 +92,10 @@
   <mapcanvas name="theMapCanvas" annotationsVisible="1">
     <units>meters</units>
     <extent>
-      <xmin>417829.43865846050903201</xmin>
-      <ymin>4577303.53648417256772518</ymin>
-      <xmax>419112.17063464189413935</xmax>
-      <ymax>4578180.50866934843361378</ymax>
+      <xmin>__XMIN__</xmin>
+      <ymin>__YMIN__</ymin>
+      <xmax>__XMAX__</xmax>
+      <ymax>__YMAX__</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -1164,16 +1164,16 @@
     </maplayer>
     <maplayer refreshOnNotifyEnabled="0" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" autoRefreshEnabled="0" simplifyAlgorithm="0" refreshOnNotifyMessage="" styleCategories="AllStyleCategories" autoRefreshTime="0" simplifyDrawingTol="1" readOnly="0" simplifyDrawingHints="1" minScale="100000000" labelsEnabled="0" maxScale="0" geometry="Polygon" simplifyMaxScale="1" wkbType="MultiPolygon" symbologyReferenceScale="-1" type="vector" legendPlaceholderImage="">
       <extent>
-        <xmin>418173.15625</xmin>
-        <ymin>4577334.5</ymin>
-        <xmax>418768.5625</xmax>
-        <ymax>4578149.5</ymax>
+        <xmin>__XMIN__</xmin>
+        <ymin>__YMIN__</ymin>
+        <xmax>__XMAX__</xmax>
+        <ymax>__YMAX__</ymax>
       </extent>
       <wgs84extent>
-        <xmin>2.0218501829692368</xmin>
-        <ymin>41.34334847093540333</ymin>
-        <xmax>2.0290756846173208</xmax>
-        <ymax>41.35074893828326026</ymax>
+        <xmin>__XMIN__</xmin>
+        <ymin>__YMIN__</ymin>
+        <xmax>__XMAX__</xmax>
+        <ymax>__YMAX__</ymax>
       </wgs84extent>
       <id>element_b5ee11bc_8afe_4e8b_8020_b51e9adca6c0</id>
       <datasource>__DATASOURCE__|layername=element</datasource>
@@ -2069,16 +2069,16 @@
     </maplayer>
     <maplayer refreshOnNotifyEnabled="0" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" autoRefreshEnabled="0" simplifyAlgorithm="0" refreshOnNotifyMessage="" styleCategories="AllStyleCategories" autoRefreshTime="0" simplifyDrawingTol="1" readOnly="0" simplifyDrawingHints="1" minScale="100000000" labelsEnabled="0" maxScale="0" geometry="Polygon" simplifyMaxScale="1" wkbType="MultiPolygon" symbologyReferenceScale="-1" type="vector" legendPlaceholderImage="">
       <extent>
-        <xmin>418322.15625</xmin>
-        <ymin>4577588.5</ymin>
-        <xmax>418701.875</xmax>
-        <ymax>4578055.5</ymax>
+        <xmin>__XMIN__</xmin>
+        <ymin>__YMIN__</ymin>
+        <xmax>__XMAX__</xmax>
+        <ymax>__YMAX__</ymax>
       </extent>
       <wgs84extent>
-        <xmin>2.02364371544654897</xmin>
-        <ymin>41.34565121299450396</ymin>
-        <xmax>2.02824469496357995</xmax>
-        <ymax>41.34989560917203733</ymax>
+        <xmin>__XMIN__</xmin>
+        <ymin>__YMIN__</ymin>
+        <xmax>__XMAX__</xmax>
+        <ymax>__YMAX__</ymax>
       </wgs84extent>
       <id>manzone_8cee9108_d316_48e6_b819_a9d95a2c43f7</id>
       <datasource>__DATASOURCE__|layername=manzone</datasource>
@@ -2820,16 +2820,16 @@
     </maplayer>
     <maplayer refreshOnNotifyEnabled="0" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" autoRefreshEnabled="0" simplifyAlgorithm="0" refreshOnNotifyMessage="" styleCategories="AllStyleCategories" autoRefreshTime="0" simplifyDrawingTol="1" readOnly="0" simplifyDrawingHints="1" minScale="100000000" labelsEnabled="0" maxScale="0" geometry="Polygon" simplifyMaxScale="1" wkbType="MultiPolygon" symbologyReferenceScale="-1" type="vector" legendPlaceholderImage="">
       <extent>
-        <xmin>418382.40625</xmin>
-        <ymin>4577684</ymin>
-        <xmax>418683.21875</xmax>
-        <ymax>4577950</ymax>
+        <xmin>__XMIN__</xmin>
+        <ymin>__YMIN__</ymin>
+        <xmax>__XMAX__</xmax>
+        <ymax>__YMAX__</ymax>
       </extent>
       <wgs84extent>
-        <xmin>2.02437801479724877</xmin>
-        <ymin>41.34651742941667152</ymin>
-        <xmax>2.02800893568452922</xmax>
-        <ymax>41.34894355160282231</ymax>
+        <xmin>__XMIN__</xmin>
+        <ymin>__YMIN__</ymin>
+        <xmax>__XMAX__</xmax>
+        <ymax>__YMAX__</ymax>
       </wgs84extent>
       <id>roof_feb4bb33_f6a5_479a_80af_678d323da507</id>
       <datasource>__DATASOURCE__|layername=roof</datasource>
@@ -3273,16 +3273,16 @@
     </maplayer>
     <maplayer refreshOnNotifyEnabled="0" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" autoRefreshEnabled="0" simplifyAlgorithm="0" refreshOnNotifyMessage="" styleCategories="AllStyleCategories" autoRefreshTime="0" simplifyDrawingTol="1" readOnly="0" simplifyDrawingHints="1" minScale="100000000" labelsEnabled="0" maxScale="0" geometry="Point" simplifyMaxScale="1" wkbType="Point" symbologyReferenceScale="-1" type="vector" legendPlaceholderImage="">
       <extent>
-        <xmin>418173.15625</xmin>
-        <ymin>4577334.5</ymin>
-        <xmax>418768.5625</xmax>
-        <ymax>4578149.5</ymax>
+        <xmin>__XMIN__</xmin>
+        <ymin>__YMIN__</ymin>
+        <xmax>__XMAX__</xmax>
+        <ymax>__YMAX__</ymax>
       </extent>
       <wgs84extent>
-        <xmin>2.0218501829692368</xmin>
-        <ymin>41.34334847093540333</ymin>
-        <xmax>2.0290756846173208</xmax>
-        <ymax>41.35074893828326026</ymax>
+        <xmin>__XMIN__</xmin>
+        <ymin>__YMIN__</ymin>
+        <xmax>__XMAX__</xmax>
+        <ymax>__YMAX__</ymax>
       </wgs84extent>
       <id>vertex_3e409f41_64c4_4129_94c1_c18071edbe16</id>
       <datasource>__DATASOURCE__|layername=vertex</datasource>
