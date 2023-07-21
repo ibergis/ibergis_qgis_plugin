@@ -73,17 +73,27 @@ CREATE TABLE inp_curve_value (
 );
 
 CREATE TABLE inp_timeseries (
-    timser_id integer PRIMARY KEY,
+    timeseries_id integer PRIMARY KEY,
+    timeseries text check (typeof(timeseries)='text' or typeof(timeseries)=null),
+    code text check (typeof(code)='text' or typeof(code)=null),
     name text CHECK (typeof(name)='text' OR name=NULL),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
+    scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
+    source text check (typeof(source)='text' or typeof(source)=null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    timser_type text CHECK (typeof(timser_type)='text' OR timser_type=NULL),
+    timeseries_type text CHECK (typeof(timeseries_type)='text' OR timeseries_type=NULL),
     active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
 CREATE TABLE inp_timeseries_value (
-    rid integer PRIMARY KEY,
-    timser_id text CHECK (typeof(timser_id)='text' OR timser_id=NULL),
+    timeseriesval_id integer PRIMARY KEY,
+    timeseries text check (typeof(timeseries)='text' or typeof(timeseries)=null),
+    code text check (typeof(code)='text' or typeof(code)=null),
+    name text CHECK (typeof(name)='text' OR name=NULL),
+    sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
+    scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
+    source text check (typeof(source)='text' or typeof(source)=null),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL),
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     val real CHECK (typeof(val)='real' OR val=NULL)
