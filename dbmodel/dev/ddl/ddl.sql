@@ -100,14 +100,6 @@ CREATE TABLE polygon (
     descript text CHECK (typeof(descript)='text' OR descript=NULL)
 );
 
-CREATE TABLE point (
-    fid integer PRIMARY KEY,
-    geom geometry,
-    sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
-    scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
-    elevation real CHECK (typeof(elevation)='real' OR elevation = NULL)
-);
-
 CREATE TABLE manzone (
     fid integer PRIMARY KEY,
     manzone_id integer CHECK (typeof(manzone_id)='integer' OR manzone_id=NULL),

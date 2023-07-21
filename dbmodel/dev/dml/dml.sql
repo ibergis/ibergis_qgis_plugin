@@ -25,7 +25,6 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 
 
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('polygon', 'features', 'polygon', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('point', 'features', 'point', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('manzone', 'features', 'manzone', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('losszone', 'features', 'losszone', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('roof', 'features', 'roof', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -50,7 +49,6 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_landuses',
 
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('polygon', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('point', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('manzone', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('losszone', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('roof', 0);
@@ -60,7 +58,6 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vertex', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('raingage', 0);
 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('polygon', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('point', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('manzone', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('losszone', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('roof', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
