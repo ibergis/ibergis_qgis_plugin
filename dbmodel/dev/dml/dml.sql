@@ -13,8 +13,6 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('config_param_user', 'attributes', 'config_param_user', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('edit_typevalue', 'attributes', 'edit_typevalue', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_scenario', 'attributes', 'cat_scenario', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_landuses', 'attributes', 'inp_landuses', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_landuses_value', 'attributes', 'inp_landuses_value', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_curves', 'attributes', 'inp_curves', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_curves_value', 'attributes', 'inp_curves_value', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_timeseries', 'attributes', 'inp_timeseries', '',  0, 0, 0, 0, 0, 0);
@@ -37,8 +35,6 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_selector',
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('config_param_user', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('edit_typevalue', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_scenario', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_landuses', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_landuses_value', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_curves', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_curves_value', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_timeseries', 0);

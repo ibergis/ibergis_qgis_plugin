@@ -48,14 +48,6 @@ CREATE TABLE cat_scenario (
     active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
-CREATE TABLE inp_landuses (
-    landuses_id  integer PRIMARY KEY,
-    scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
-    manning real CHECK (typeof(manning)='real' OR manning=NULL),
-    active  boolean CHECK (typeof(active) IN (0,1,NULL))
-);
-
 CREATE TABLE inp_curves (
     curve_id integer PRIMARY KEY,
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
