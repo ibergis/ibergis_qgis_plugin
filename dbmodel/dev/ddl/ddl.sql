@@ -22,6 +22,16 @@ CREATE TABLE config_param_user (
 	value text CHECK (typeof(value)='text' OR value=NULL)
 );
 
+CREATE TABLE cat_landuses (
+	landuses_id integer primary key,
+	name text check (typeof(name)='text' or typeof(name)=null),
+	sector_id check (typeof(sector_id)='integer' or typeof(sector_id)= null),
+	scenario_id check (typeof(scenario_id)='integer' or typeof(scenario_id)= null),
+	manning real check (typeof(manning)='real' or typeof(manning)=null),
+	descript text check (typeof(descript)='text' or typeof(descript)=null),
+	active boolean check (typeof(active) in (0,1, null))
+);
+
 CREATE TABLE sys_parameter (
     parameter_id integer PRIMARY KEY,
     parameter text CHECK (typeof(parameter)='text' OR parameter=NULL),

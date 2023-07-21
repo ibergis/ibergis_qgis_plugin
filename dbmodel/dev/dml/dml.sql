@@ -21,6 +21,8 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_timeseries_value', 'attributes', 'inp_timeseries_value', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_losses', 'attributes', 'inp_losses', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_losses_values', 'attributes', 'inp_losses_values', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_landuses', 'attributes', 'cat_landuses', '', 0, 0, 0, 0, 0, 0);
+
 
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('polygon', 'features', 'polygon', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('point', 'features', 'point', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -44,6 +46,8 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_timeseries
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_timeseries_value', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_losses', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_losses_values', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_landuses', 0);
+
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('polygon', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('point', 0);
