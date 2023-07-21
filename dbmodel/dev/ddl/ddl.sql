@@ -32,13 +32,7 @@ CREATE TABLE cat_landuses (
 	active boolean check (typeof(active) in (0,1, null))
 );
 
-CREATE TABLE sys_parameter (
-    parameter_id integer PRIMARY KEY,
-    parameter text CHECK (typeof(parameter)='text' OR parameter=NULL),
-    value text CHECK (typeof(value)='text' OR value=NULL)
-);
-
-CREATE TABLE sys_typevalue (
+CREATE TABLE edit_typevalue (
     typevalue_id integer PRIMARY KEY,
     typevalue text CHECK (typeof(typevalue)='text' OR typevalue=NULL),
     id text CHECK (typeof(id)='text' OR id=NULL),

@@ -11,8 +11,8 @@ This version of Giswater is provided by Giswater Association
 -- ----------------------------------------
 
 CREATE TRIGGER "trigger_delete_feature_count_sys_selector" AFTER DELETE ON "sys_selector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sys_selector'); END;
-CREATE TRIGGER "trigger_delete_feature_count_sys_parameter" AFTER DELETE ON "sys_parameter" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sys_parameter'); END;
-CREATE TRIGGER "trigger_delete_feature_count_sys_typevalue" AFTER DELETE ON "sys_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sys_typevalue'); END;
+CREATE TRIGGER "trigger_delete_feature_count_config_param_user" AFTER DELETE ON "config_param_user" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_param_user'); END;
+CREATE TRIGGER "trigger_delete_feature_count_edit_typevalue" AFTER DELETE ON "edit_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('edit_typevalue'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_scenario" AFTER DELETE ON "cat_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_scenario'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_landuses" AFTER DELETE ON "inp_landuses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_landuses'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_curves" AFTER DELETE ON "inp_curves" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_curves'); END;
@@ -32,8 +32,8 @@ CREATE TRIGGER "trigger_delete_feature_count_vertex" AFTER DELETE ON "vertex" BE
 CREATE TRIGGER "trigger_delete_feature_count_raingage" AFTER DELETE ON "raingage" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('raingage'); END;
 
 CREATE TRIGGER "trigger_insert_feature_count_sys_selector" AFTER INSERT ON "sys_selector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sys_selector'); END;
-CREATE TRIGGER "trigger_insert_feature_count_sys_parameter" AFTER INSERT ON "sys_parameter" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sys_parameter'); END;
-CREATE TRIGGER "trigger_insert_feature_count_sys_typevalue" AFTER INSERT ON "sys_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sys_typevalue'); END;
+CREATE TRIGGER "trigger_insert_feature_count_config_param_user" AFTER INSERT ON "config_param_user" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('config_param_user'); END;
+CREATE TRIGGER "trigger_insert_feature_count_edit_typevalue" AFTER INSERT ON "edit_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('edit_typevalue'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_scenario" AFTER INSERT ON "cat_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_scenario'); END;
 CREATE TRIGGER "trigger_insert_feature_count_inp_landuses" AFTER INSERT ON "inp_landuses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_landuses'); END;
 CREATE TRIGGER "trigger_insert_feature_count_inp_curves" AFTER INSERT ON "inp_curves" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_curves'); END;

@@ -10,8 +10,8 @@ This version of Giswater is provided by Giswater Association
 -- ---------------------------
 
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_selector', 'attributes', 'sys_selector', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_parameter', 'attributes', 'sys_parameter', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_typevalue', 'attributes', 'sys_typevalue', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('config_param_user', 'attributes', 'config_param_user', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('edit_typevalue', 'attributes', 'edit_typevalue', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_scenario', 'attributes', 'cat_scenario', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_landuses', 'attributes', 'inp_landuses', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_landuses_value', 'attributes', 'inp_landuses_value', '', 0, 0, 0, 0, 0, 0);
@@ -35,8 +35,8 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('raingage', 'features', 'raingage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_selector', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_parameter', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_typevalue', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('config_param_user', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('edit_typevalue', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_scenario', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_landuses', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_landuses_value', 0);
