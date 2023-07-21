@@ -105,34 +105,37 @@ CREATE TABLE inp_timeseries_value (
 -- ----------------------
 CREATE TABLE polygon (
     fid integer PRIMARY KEY,
-    pol_id integer CHECK (typeof(pol_id)='integer' OR pol_id=NULL),
-    geom geometry,
+    code text CHECK (typeof(code)= 'text' OR code=NULL),
+    name text CHECK (typeof(name)='text' OR name=NULL),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
+    source text CHECK (typeof(source)='text' OR source=NULL),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL),
     dmax real CHECK (typeof(dmax)='real' OR dmax=NULL),
     structured boolean CHECK (typeof(structured) IN (0,1,NULL)),
-    descript text CHECK (typeof(descript)='text' OR descript=NULL)
+    geom geometry
 );
 
 CREATE TABLE manzone (
     fid integer PRIMARY KEY,
-    manzone_id integer CHECK (typeof(manzone_id)='integer' OR manzone_id=NULL),
-    geom geometry,
+    code text CHECK (typeof(code)= 'text' OR code=NULL),
+    name text CHECK (typeof(name)='text' OR name=NULL),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
     source text CHECK (typeof(source)='text' OR source=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
+    manzone_id integer CHECK (typeof(manzone_id)='integer' OR manzone_id=NULL),
     land_use integer CHECK (typeof(land_use)='integer' OR land_use=NULL),
-    custom_manning real CHECK (typeof(custom_manning)='real' OR custom_manning=NULL)
+    custom_manning real CHECK (typeof(custom_manning)='real' OR custom_manning=NULL),
+    geom geometry
 );
 
 CREATE TABLE losszone (
     fid integer PRIMARY KEY,
-    geom geometry,
+    code text CHECK (typeof(code)= 'text' OR code=NULL),
+    name text CHECK (typeof(name)='text' OR name=NULL),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
     source text CHECK (typeof(source)='text' OR source=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     losslin_aparam real CHECK (typeof(losslin_aparam)='real' OR losslin_aparam=NULL),
@@ -142,15 +145,16 @@ CREATE TABLE losszone (
     losshort_aparam real CHECK (typeof(losshort_aparam)='real' OR losshort_aparam=NULL),
     losshort_bparam real CHECK (typeof(losshort_bparam)='real' OR losshort_bparam=NULL),
     lossgreen_aparam real CHECK (typeof(lossgreen_aparam)='real' OR lossgreen_aparam=NULL),
-    lossgreen_bparam real CHECK (typeof(lossgreen_bparam)='real' OR lossgreen_bparam=NULL)
+    lossgreen_bparam real CHECK (typeof(lossgreen_bparam)='real' OR lossgreen_bparam=NULL),
+    geom geometry
 );
 
 CREATE TABLE roof (
     fid integer PRIMARY KEY,
-    geom geometry,
+    code text CHECK (typeof(code)= 'text' OR code=NULL),
+    name text CHECK (typeof(name)='text' OR name=NULL),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
     source text CHECK (typeof(source)='text' OR source=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     slope real CHECK (typeof(slope)='real' OR slope=NULL),
@@ -160,18 +164,21 @@ CREATE TABLE roof (
     outlet_id integer CHECK (typeof(outlet_id)='integer' OR outlet_id=NULL),
     totalvol real CHECK (typeof(totalvol)='real' OR totalvol=NULL),
     inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
-    lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL)
+    lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
+    geom geometry
 );
 
 CREATE TABLE element (
     fid integer PRIMARY KEY,
-    geom geometry,
+    code text CHECK (typeof(code)= 'text' OR code=NULL),
+    name text CHECK (typeof(name)='text' OR name=NULL),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
+    source text CHECK (typeof(source)='text' OR source=NULL),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL),
     manzone_id integer CHECK (typeof(manzone_id)='integer' OR manzone_id=NULL),
     losszone_id integer NULL CHECK (typeof(losszone_id)='integer' OR losszone_id=NULL),
     roof_id integer CHECK (typeof(roof_id)='integer' OR roof_id=NULL),
-    source text CHECK (typeof(source)='text' OR source=NULL),
     vertex_id1 real CHECK (typeof(vertex_id1)='real' OR vertex_id1=NULL),
     vertex_id2 real CHECK (typeof(vertex_id2)='real' OR vertex_id2=NULL),
     vertex_id3 real CHECK (typeof(vertex_id3)='real' OR vertex_id3=NULL),
@@ -179,38 +186,48 @@ CREATE TABLE element (
     ini_vx real CHECK (typeof(ini_vx)='real' OR ini_vx=NULL),
     ini_vy real CHECK (typeof(ini_vy)='real' OR ini_vy=NULL),
     ini_type real CHECK (typeof(ini_type)='real' OR ini_type=NULL),
-    ini_value real CHECK (typeof(ini_value)='real' OR ini_value=NULL)
+    ini_value real CHECK (typeof(ini_value)='real' OR ini_value=NULL),
+    geom geometry
 );
 
 CREATE TABLE edge (
     fid integer PRIMARY KEY,
-    geom geometry,
+ 	code text CHECK (typeof(code)= 'text' OR code=NULL),
+    name text CHECK (typeof(name)='text' OR name=NULL),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     source text CHECK (typeof(source)='text' OR source=NULL),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL),
     vertex_id1 integer CHECK (typeof(vertex_id1)='integer' OR vertex_id1=NULL),
-    vertex_id2 integer CHECK (typeof(vertex_id2)='integer' OR vertex_id2=NULL)
+    vertex_id2 integer CHECK (typeof(vertex_id2)='integer' OR vertex_id2=NULL),
+    geom geometry
 );
 
 CREATE TABLE vertex (
     fid integer PRIMARY KEY,
-    geom geometry,
+    code text CHECK (typeof(code)= 'text' OR code=NULL),
+    name text CHECK (typeof(name)='text' OR name=NULL),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     source text CHECK (typeof(source)='text' OR source=NULL),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL),
     elevation real CHECK (typeof(elevation)='real' OR elevation=NULL),
 	latitude real CHECK (typeof(latitude)='real' OR latitude=NULL),
-	longitude real CHECK (typeof(longitude)='real' OR longitude=NULL)
+	longitude real CHECK (typeof(longitude)='real' OR longitude=NULL),
+	geom geometry
 );
 
 CREATE TABLE raingage (
     fid integer PRIMARY KEY,
-    geom geometry,
-    sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
+    code text CHECK (typeof(code)= 'text' OR code=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
+    sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
+    scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
+    source text CHECK (typeof(source)='text' OR source=NULL),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL),
     rain_type boolean CHECK (typeof(rain_type) IN (0,1,NULL)),
-    timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL)
+    timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL),
+    geom geometry
 );
 
 
