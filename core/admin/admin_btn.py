@@ -77,8 +77,11 @@ class GwAdminButton:
         self.locale = project_locale
 
         # Save in settings
-        locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
-        tools_gw.set_config_parser('btn_admin', 'project_locale', f'{locale}', prefix=False)
+        tools_gw.set_config_parser('btn_admin', 'gpkg_name', f'{self.gpkg_name}', prefix=False)
+        tools_gw.set_config_parser('btn_admin', 'project_path', f'{self.project_path}', prefix=False)
+        tools_gw.set_config_parser('btn_admin', 'project_srid', f'{self.project_epsg}', prefix=False)
+        tools_gw.set_config_parser('btn_admin', 'project_locale', f'{self.locale}', prefix=False)
+
 
         # Check if srid value is valid
         if self.last_srids is None:
@@ -135,13 +138,22 @@ class GwAdminButton:
         # Find Widgets in form
         self.rdb_sample = self.dlg_readsql_create_project.findChild(QRadioButton, 'rdb_sample')
         self.rdb_data = self.dlg_readsql_create_project.findChild(QRadioButton, 'rdb_data')
+        self.txt_gpkg_name = self.dlg_readsql_create_project.findChild(QLineEdit, 'gpkg_name')
+        self.txt_data_path = self.dlg_readsql_create_project.findChild(QLineEdit, 'data_path')
+        self.cmb_locale = self.dlg_readsql_create_project.findChild(QComboBox, 'cmb_locale')
+        self.txt_srid = self.dlg_readsql_create_project.findChild(QLineEdit, 'srid_id'
+                                                                             '')
+        # Load user values
+        self.txt_gpkg_name.setText(tools_gw.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
+                                                             False, force_reload=True))
+        self.txt_data_path.setText(tools_gw.get_config_parser('btn_admin', 'project_path', "user", "session",
+                                                              False, force_reload=True))
+        self.txt_srid.setText(tools_gw.get_config_parser('btn_admin', 'project_srid', "user", "session",
+                                                              False, force_reload=True))
 
         # TODO: do and call listener for buton + table -> temp_csv
         # Manage SRID
         self._manage_srid()
-
-        # Get combo locale
-        self.cmb_locale = self.dlg_readsql_create_project.findChild(QComboBox, 'cmb_locale')
 
         # Populate combo with all locales
         filename = "config.gpkg"
@@ -171,7 +183,6 @@ class GwAdminButton:
         # Set signals
         self._set_signals_create_project()
 
-
     # region 'Create Project'
 
     def load_base(self, dict_folders):
@@ -194,7 +205,6 @@ class GwAdminButton:
         return True
 
     # endregion
-
 
     # region private functions
 
@@ -276,19 +286,13 @@ class GwAdminButton:
             tools_qgis.show_warning("GKPG file path name not set")
             return
 
-        # qgis_file_type = self.dlg_create_gis_project.cmb_roletype.currentIndex()
-        # tools_gw.set_config_parser('btn_admin', 'qgis_file_type', qgis_file_type, prefix=False)
         tools_gw.set_config_parser('btn_admin', 'qgis_file_path', gis_folder, prefix=False)
-        # qgis_file_export = self.dlg_create_gis_project.chk_export_passwd.isChecked()
-        # tools_gw.set_config_parser('btn_admin', 'qgis_file_export', qgis_file_export, prefix=False)
+        tools_gw.set_config_parser('btn_admin', 'gpkg_file_path', gpkg_file, prefix=False)
 
         gis_file = tools_qt.get_text(self.dlg_create_gis_project, 'txt_gis_file')
         if gis_file is None or gis_file == 'null':
             tools_qgis.show_warning("GIS file name not set")
             return
-
-        project_type = tools_qt.get_text(self.dlg_readsql, 'cmb_project_type')
-        schema_name = tools_qt.get_text(self.dlg_readsql, 'project_schema_name')
 
         # Generate QGIS project
         self._generate_qgis_project(gis_folder, gis_file, gpkg_file, self.project_epsg)
@@ -325,25 +329,14 @@ class GwAdminButton:
         tools_gw.load_settings(self.dlg_create_gis_project)
 
         # Set default values
-        # qgis_file_type = tools_gw.get_config_parser('btn_admin', 'qgis_file_type', "user", "session", prefix=False,
-        #                                             force_reload=True)
-        # if qgis_file_type is not None:
-        #     try:
-        #         qgis_file_type = int(qgis_file_type)
-        #         self.dlg_create_gis_project.cmb_roletype.setCurrentIndex(qgis_file_type)
-        #     except Exception:
-        #         pass
-        # schema_name = tools_qt.get_text(self.dlg_readsql, self.dlg_readsql.project_schema_name)
-        # tools_qt.set_widget_text(self.dlg_create_gis_project, 'txt_gis_file', schema_name)
         qgis_file_path = tools_gw.get_config_parser('btn_admin', 'qgis_file_path', "user", "session", prefix=False,
                                                     force_reload=True)
         if qgis_file_path is None:
             qgis_file_path = os.path.expanduser("~")
         tools_qt.set_widget_text(self.dlg_create_gis_project, 'txt_gis_folder', qgis_file_path)
-        # qgis_file_export = tools_gw.get_config_parser('btn_admin', 'qgis_file_export', "user", "session", prefix=False,
-        #                                               force_reload=True)
-        # qgis_file_export = tools_os.set_boolean(qgis_file_export, False)
-        # self.dlg_create_gis_project.chk_export_passwd.setChecked(qgis_file_export)
+        gpkg_file_path = tools_gw.get_config_parser('btn_admin', 'gpkg_file_path', "user", "session", prefix=False,
+                                                       force_reload=True)
+        tools_qt.set_widget_text(self.dlg_create_gis_project, 'txt_gis_gpkg', gpkg_file_path)
 
         # Set listeners
         self.dlg_create_gis_project.btn_gis_folder.clicked.connect(
@@ -521,7 +514,7 @@ class GwAdminButton:
         try:
             f = open(filepath, 'r', encoding="utf8")
             if f:
-                f_to_read = str(f.read().replace("<SRID_VALUE>", self.project_epsg))
+                f_to_read = str(f.read().replace("<SRID_VALUE>", project_epsg))
                 status = self.gpkg_dao.execute_script_sql(str(f_to_read))
                 if status is False:
                     self.error_count = self.error_count + 1
@@ -599,8 +592,6 @@ class GwAdminButton:
 
         gpkg_name = self.gpkg_name
         path = self.project_path
-        # project_locale = self.params['project_locale']
-        # project_srid = self.params['project_srid']
 
         self.gpkg_full_path = path + "/" + gpkg_name + ".gpkg"
         driver = gdal.GetDriverByName('GPKG')
