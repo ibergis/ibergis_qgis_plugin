@@ -32,15 +32,6 @@ CREATE TABLE cat_landuses (
 	active boolean check (typeof(active) in (0,1, null))
 );
 
-CREATE TABLE edit_typevalue (
-    typevalue_id integer PRIMARY KEY,
-    typevalue text CHECK (typeof(typevalue)='text' OR typevalue=NULL),
-    id text CHECK (typeof(id)='text' OR id=NULL),
-    idval text CHECK (typeof(idval)='text' OR idval=NULL),
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    active boolean CHECK (typeof(active) IN (0,1,NULL))
-);
-
 CREATE TABLE cat_scenario (
     scenario_id integer PRIMARY KEY,
     name text CHECK (typeof(name)='text' OR name=NULL),
