@@ -113,7 +113,7 @@ class GwGisFileCreate:
 
         aux = content
         table_name = "vertex"
-        sql = (f"SELECT MAX(latitude) as xmax, MIN(latitude) as xmin, MAX(longitude) as ymax, MIN(longitude) as ymin "
+        sql = (f"SELECT ST_MaxX(geom), ST_MinX(geom), ST_MaxY(geom), ST_MinY(geom) "
                f"FROM {table_name}")
         row = global_vars.gpkg_dao_data.get_row(sql)
         if row:
