@@ -39,7 +39,7 @@ class GwAdminButton:
         self.gpkg_name = None
         self.project_path = None
         self.dlg_readsql = None
-        self.dlg_readsql_create_project = None
+        self.dlg_readsql = None
         self.schema_type = None
         self.form_enabled = True
         self.total_sql_files = 0    # Total number of SQL files to process
@@ -60,10 +60,10 @@ class GwAdminButton:
     def create_project_data_schema(self):
         """"""
 
-        gpkg_name = tools_qt.get_text(self.dlg_readsql_create_project, 'gpkg_name', return_string_null=False)
-        project_path = tools_qt.get_text(self.dlg_readsql_create_project, 'data_path', return_string_null=False)
-        project_srid = tools_qt.get_text(self.dlg_readsql_create_project, 'srid_id')
-        project_locale = tools_qt.get_combo_value(self.dlg_readsql_create_project, self.cmb_locale, 0)
+        gpkg_name = tools_qt.get_text(self.dlg_readsql, 'gpkg_name', return_string_null=False)
+        project_path = tools_qt.get_text(self.dlg_readsql, 'data_path', return_string_null=False)
+        project_srid = tools_qt.get_text(self.dlg_readsql, 'srid_id')
+        project_locale = tools_qt.get_combo_value(self.dlg_readsql, self.cmb_locale, 0)
 
         if not gpkg_name or not project_path:
             tools_qt.show_info_box("Please fill all empty fields.")
@@ -112,6 +112,19 @@ class GwAdminButton:
         else:
             tools_qt.show_info_box("Geopackage created successfully")
 
+        self.change_tab()
+
+
+    def change_tab(self):
+        self.dlg_readsql.tabWidget.setCurrentIndex(1)
+        gpkg_name = tools_gw.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
+                                                              False, force_reload=True)
+        gpkg_path = tools_gw.get_config_parser('btn_admin', 'project_path', "user", "session",
+                                                              False, force_reload=True)
+        self.dlg_readsql.txt_gis_file.setText(gpkg_name)
+        self.dlg_readsql.txt_gis_gpkg.setText(f"{gpkg_path}/{gpkg_name}.gpkg")
+        self.dlg_readsql.txt_gis_folder.setText(gpkg_path)
+
 
     def manage_process_result(self, is_test=False, is_utils=False, dlg=None):
         """"""
@@ -120,7 +133,7 @@ class GwAdminButton:
         self._manage_result_message(status, parameter="Create project")
         if status:
             if is_utils is False:
-                self._close_dialog_admin(self.dlg_readsql_create_project)
+                self._close_dialog_admin(self.dlg_readsql)
             # Reset count error variable to 0
             self.error_count = 0
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
@@ -132,16 +145,13 @@ class GwAdminButton:
     def init_dialog_create_project(self):
         """ Initialize dialog (only once) """
 
-        self.dlg_readsql_create_project = GwAdminDbProjectUi()
-        tools_gw.load_settings(self.dlg_readsql_create_project)
-
         # Find Widgets in form
-        self.rdb_sample = self.dlg_readsql_create_project.findChild(QRadioButton, 'rdb_sample')
-        self.rdb_data = self.dlg_readsql_create_project.findChild(QRadioButton, 'rdb_data')
-        self.txt_gpkg_name = self.dlg_readsql_create_project.findChild(QLineEdit, 'gpkg_name')
-        self.txt_data_path = self.dlg_readsql_create_project.findChild(QLineEdit, 'data_path')
-        self.cmb_locale = self.dlg_readsql_create_project.findChild(QComboBox, 'cmb_locale')
-        self.txt_srid = self.dlg_readsql_create_project.findChild(QLineEdit, 'srid_id'
+        self.rdb_sample = self.dlg_readsql.findChild(QRadioButton, 'rdb_sample')
+        self.rdb_data = self.dlg_readsql.findChild(QRadioButton, 'rdb_data')
+        self.txt_gpkg_name = self.dlg_readsql.findChild(QLineEdit, 'gpkg_name')
+        self.txt_data_path = self.dlg_readsql.findChild(QLineEdit, 'data_path')
+        self.cmb_locale = self.dlg_readsql.findChild(QComboBox, 'cmb_locale')
+        self.txt_srid = self.dlg_readsql.findChild(QLineEdit, 'srid_id'
                                                                              '')
         # Load user values
         self.txt_gpkg_name.setText(tools_gw.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
@@ -174,8 +184,8 @@ class GwAdminButton:
             tools_log.log_warning(f"Database not found: {db_filepath}")
 
         # Set shortcut keys
-        self.dlg_readsql_create_project.key_escape.connect(
-            partial(tools_gw.close_dialog, self.dlg_readsql_create_project, False))
+        self.dlg_readsql.key_escape.connect(
+            partial(tools_gw.close_dialog, self.dlg_readsql, False))
 
         # Populate tbl_srid
         self._filter_srid_changed()
@@ -259,29 +269,32 @@ class GwAdminButton:
         window_title = f'Drain ({self.plugin_version})'
         self.dlg_readsql.setWindowTitle(window_title)
 
-        self._manage_docker()
+        tools_gw.open_dialog(self.dlg_readsql, 'admin_ui')
+
+        self.init_dialog_create_project()
+
+        self._open_form_create_gis_project()
 
 
     def _set_signals(self):
         """ Set signals. Function has to be executed only once (during form initialization) """
 
-        self.dlg_readsql.btn_close.clicked.connect(partial(self._close_dialog_admin, self.dlg_readsql))
-        self.dlg_readsql.btn_schema_create.clicked.connect(partial(self._open_create_project))
-        self.dlg_readsql.btn_gis_create.clicked.connect(partial(self._open_form_create_gis_project))
+        self.dlg_readsql.btn_gpkg_close.clicked.connect(partial(self._close_dialog_admin, self.dlg_readsql))
+        self.dlg_readsql.btn_qgis_close.clicked.connect(partial(self._close_dialog_admin, self.dlg_readsql))
         self.dlg_readsql.dlg_closed.connect(partial(self._save_custom_sql_path, self.dlg_readsql))
         self.dlg_readsql.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_readsql))
 
-
+            
     def _gis_create_project(self):
         """"""
 
         # Get gis folder, gis file, project type and schema
-        gis_folder = tools_qt.get_text(self.dlg_create_gis_project, 'txt_gis_folder')
+        gis_folder = tools_qt.get_text(self.dlg_readsql, 'txt_gis_folder')
         if gis_folder is None or gis_folder == 'null':
             tools_qgis.show_warning("GIS folder not set")
             return
 
-        gpkg_file = tools_qt.get_text(self.dlg_create_gis_project, "txt_gis_gpkg")
+        gpkg_file = tools_qt.get_text(self.dlg_readsql, "txt_gis_gpkg")
         if gpkg_file is None or gpkg_file == 'null':
             tools_qgis.show_warning("GKPG file path name not set")
             return
@@ -289,7 +302,7 @@ class GwAdminButton:
         tools_gw.set_config_parser('btn_admin', 'qgis_file_path', gis_folder, prefix=False)
         tools_gw.set_config_parser('btn_admin', 'gpkg_file_path', gpkg_file, prefix=False)
 
-        gis_file = tools_qt.get_text(self.dlg_create_gis_project, 'txt_gis_file')
+        gis_file = tools_qt.get_text(self.dlg_readsql, 'txt_gis_file')
         if gis_file is None or gis_file == 'null':
             tools_qgis.show_warning("GIS file name not set")
             return
@@ -304,7 +317,7 @@ class GwAdminButton:
         gis = GwGisFileCreate(self.plugin_dir)
         result, qgs_path = gis.gis_project_database(gis_folder, gis_file, gpkg_file, srid)
 
-        self._close_dialog_admin(self.dlg_create_gis_project)
+        self._close_dialog_admin(self.dlg_readsql)
         self._close_dialog_admin(self.dlg_readsql)
         if result:
             self._open_project(qgs_path)
@@ -324,33 +337,26 @@ class GwAdminButton:
     def _open_form_create_gis_project(self):
         """"""
 
-        # Create GIS project dialog
-        self.dlg_create_gis_project = GwAdminGisProjectUi()
-        tools_gw.load_settings(self.dlg_create_gis_project)
-
         # Set default values
         qgis_file_path = tools_gw.get_config_parser('btn_admin', 'qgis_file_path', "user", "session", prefix=False,
                                                     force_reload=True)
         if qgis_file_path is None:
             qgis_file_path = os.path.expanduser("~")
-        tools_qt.set_widget_text(self.dlg_create_gis_project, 'txt_gis_folder', qgis_file_path)
+        tools_qt.set_widget_text(self.dlg_readsql, 'txt_gis_folder', qgis_file_path)
         gpkg_file_path = tools_gw.get_config_parser('btn_admin', 'gpkg_file_path', "user", "session", prefix=False,
                                                        force_reload=True)
-        tools_qt.set_widget_text(self.dlg_create_gis_project, 'txt_gis_gpkg', gpkg_file_path)
+        tools_qt.set_widget_text(self.dlg_readsql, 'txt_gis_gpkg', gpkg_file_path)
 
         # Set listeners
-        self.dlg_create_gis_project.btn_gis_folder.clicked.connect(
-            partial(tools_qt.get_folder_path, self.dlg_create_gis_project, "txt_gis_folder"))
-        self.dlg_create_gis_project.btn_gis_gpkg.clicked.connect(partial(self._select_file_gpkg))
-        self.dlg_create_gis_project.btn_accept.clicked.connect(partial(self._gis_create_project))
-        self.dlg_create_gis_project.btn_close.clicked.connect(partial(self._close_dialog_admin, self.dlg_create_gis_project))
-        self.dlg_create_gis_project.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_create_gis_project))
+        self.dlg_readsql.btn_gis_folder.clicked.connect(
+            partial(tools_qt.get_folder_path, self.dlg_readsql, "txt_gis_folder"))
+        self.dlg_readsql.btn_gis_gpkg.clicked.connect(partial(self._select_file_gpkg))
+        self.dlg_readsql.btn_qgis_accept.clicked.connect(partial(self._gis_create_project))
+        self.dlg_readsql.btn_qgis_close.clicked.connect(partial(self._close_dialog_admin, self.dlg_readsql))
+        self.dlg_readsql.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_readsql))
 
         # Set shortcut keys
-        self.dlg_create_gis_project.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_create_gis_project))
-
-        # Open MainWindow
-        tools_gw.open_dialog(self.dlg_create_gis_project, 'admin_gisproject')
+        self.dlg_readsql.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_readsql))
 
 
     """ Functions execute process """
@@ -370,9 +376,9 @@ class GwAdminButton:
     def _manage_srid(self):
         """ Manage SRID configuration """
 
-        self.filter_srid = self.dlg_readsql_create_project.findChild(QLineEdit, 'srid_id')
-        tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, '25831')
-        self.tbl_srid = self.dlg_readsql_create_project.findChild(QTableView, 'tbl_srid')
+        self.filter_srid = self.dlg_readsql.findChild(QLineEdit, 'srid_id')
+        tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, '25831')
+        self.tbl_srid = self.dlg_readsql.findChild(QTableView, 'tbl_srid')
         self.tbl_srid.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tbl_srid.clicked.connect(partial(self._set_selected_srid))
 
@@ -382,13 +388,13 @@ class GwAdminButton:
         model = self.tbl_srid.model()
         row = index.row()
         srid = model.data(model.index(row, 0), Qt.DisplayRole)
-        tools_qt.set_widget_text(self.dlg_readsql_create_project, self.filter_srid, srid)
+        tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, srid)
 
 
     def _filter_srid_changed(self):
         """"""
 
-        filter_value = tools_qt.get_text(self.dlg_readsql_create_project, self.filter_srid)
+        filter_value = tools_qt.get_text(self.dlg_readsql, self.filter_srid)
         if filter_value == 'null':
             filter_value = ''
         sql = ("SELECT srid  as " + '"SRID"' + ",description as " + '"Description"' +
@@ -425,30 +431,20 @@ class GwAdminButton:
     def _set_signals_create_project(self):
         """"""
 
-        self.dlg_readsql_create_project.btn_accept.clicked.connect(partial(self.create_project_data_schema))
-        self.dlg_readsql_create_project.btn_close.clicked.connect(
-            partial(self._close_dialog_admin, self.dlg_readsql_create_project))
+        self.dlg_readsql.btn_gpkg_accept.clicked.connect(partial(self.create_project_data_schema))
+        self.dlg_readsql.btn_gpkg_close.clicked.connect(
+            partial(self._close_dialog_admin, self.dlg_readsql))
         self.cmb_locale.currentIndexChanged.connect(partial(self._update_locale))
-        self.dlg_readsql_create_project.btn_push_path.clicked.connect(partial(self._select_path))
+        self.dlg_readsql.btn_push_path.clicked.connect(partial(self._select_path))
         self.filter_srid.textChanged.connect(partial(self._filter_srid_changed))
 
 
-    def _open_create_project(self):
-        """"""
-
-        # Create dialog and signals
-        if self.dlg_readsql_create_project is None:
-            self.init_dialog_create_project()
-
-        # Open dialog
-        self.dlg_readsql_create_project.setWindowTitle(f"Create new Geopackage")
-        tools_gw.open_dialog(self.dlg_readsql_create_project, dlg_name='admin_dbproject')
 
 
     def _select_path(self):
         """ Select file path"""
 
-        path = tools_qt.get_text(self.dlg_readsql_create_project, 'data_file')
+        path = tools_qt.get_text(self.dlg_readsql, 'data_file')
         if path is None or path == '':
             path = self.plugin_dir
 
@@ -457,13 +453,13 @@ class GwAdminButton:
 
         message = tools_qt.tr("Select GPKG path")
         file_path = QFileDialog.getExistingDirectory(None, message)
-        self.dlg_readsql_create_project.data_path.setText(file_path)
+        self.dlg_readsql.data_path.setText(file_path)
 
 
     def _select_file_gpkg(self):
         """ Select GPKG file """
 
-        file_gpkg = tools_qt.get_text(self.dlg_create_gis_project, 'txt_gis_gpkg')
+        file_gpkg = tools_qt.get_text(self.dlg_readsql, 'txt_gis_gpkg')
         # Set default value if necessary
         if file_gpkg is None or file_gpkg == '':
             file_gpkg = self.plugin_dir
@@ -475,7 +471,7 @@ class GwAdminButton:
         os.chdir(folder_path)
         message = tools_qt.tr("Select GPKG file")
         file_gpkg, filter_ = QFileDialog.getOpenFileName(None, message, "", '*.gpkg')
-        self.dlg_create_gis_project.txt_gis_gpkg.setText(file_gpkg)
+        self.dlg_readsql.txt_gis_gpkg.setText(file_gpkg)
 
 
     def _execute_files(self, filedir):
@@ -674,23 +670,6 @@ class GwAdminButton:
         if folder_path == "null":
             folder_path = None
         tools_gw.set_config_parser("btn_admin", "custom_sql_path", f"{folder_path}", "user", "session")
-
-
-    def _manage_docker(self):
-        """ Puts the dialog in a docker, depending on the user configuration """
-
-        try:
-            tools_gw.close_docker('admin_position')
-            global_vars.session_vars['docker_type'] = 'qgis_form_docker'
-            global_vars.session_vars['dialog_docker'] = GwDocker()
-            global_vars.session_vars['dialog_docker'].dlg_closed.connect(partial(tools_gw.close_docker, 'admin_position'))
-            tools_gw.manage_docker_options('admin_position')
-            tools_gw.docker_dialog(self.dlg_readsql)
-            self.dlg_readsql.dlg_closed.connect(partial(tools_gw.close_docker, 'admin_position'))
-            tools_gw.open_dialog(self.dlg_readsql, dlg_name='admin_ui')
-        except Exception as e:
-            tools_log.log_info(str(e))
-            tools_gw.open_dialog(self.dlg_readsql, dlg_name='admin_ui')
 
 
     # endregion
