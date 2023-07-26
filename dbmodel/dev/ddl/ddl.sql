@@ -42,7 +42,7 @@ CREATE TABLE cat_scenario (
 
 CREATE TABLE cat_grate (
     gratecat_id integer primary key,
-    gratecat text check (typeof(gratecat) = 'text' or greatcat = null),
+    gratecat text check (typeof(gratecat) = 'text' or gratecat = null),
     length real check (typeof(length) = 'real' or length = null),
     width real check (typeof(width) = 'real' or width = null),
     a_param real check (typeof(a_param) = 'real' or a_param = null),
