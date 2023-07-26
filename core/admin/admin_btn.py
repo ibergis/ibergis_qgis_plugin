@@ -16,7 +16,7 @@ from qgis.core import QgsProject
 from qgis.utils import reloadPlugin
 
 from .gis_file_create import GwGisFileCreate
-from ..ui.ui_manager import GwAdminUi, GwAdminDbProjectUi, GwAdminGisProjectUi
+from ..ui.ui_manager import GwAdminUi
 from ..utils import tools_gw
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_os, tools_gpkgdao
@@ -39,9 +39,7 @@ class GwAdminButton:
         self.gpkg_name = None
         self.project_path = None
         self.dlg_readsql = None
-        self.dlg_readsql = None
         self.schema_type = None
-        self.form_enabled = True
         self.total_sql_files = 0    # Total number of SQL files to process
         self.current_sql_file = 0   # Current number of SQL file
         self.gpkg_dao = None
@@ -126,7 +124,7 @@ class GwAdminButton:
         self.dlg_readsql.txt_gis_folder.setText(gpkg_path)
 
 
-    def manage_process_result(self, is_test=False, is_utils=False, dlg=None):
+    def manage_process_result(self, is_utils=False, dlg=None):
         """"""
 
         status = (self.error_count == 0)
@@ -151,8 +149,7 @@ class GwAdminButton:
         self.txt_gpkg_name = self.dlg_readsql.findChild(QLineEdit, 'gpkg_name')
         self.txt_data_path = self.dlg_readsql.findChild(QLineEdit, 'data_path')
         self.cmb_locale = self.dlg_readsql.findChild(QComboBox, 'cmb_locale')
-        self.txt_srid = self.dlg_readsql.findChild(QLineEdit, 'srid_id'
-                                                                             '')
+        self.txt_srid = self.dlg_readsql.findChild(QLineEdit, 'srid_id')
         # Load user values
         self.txt_gpkg_name.setText(tools_gw.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
                                                              False, force_reload=True))
@@ -161,7 +158,6 @@ class GwAdminButton:
         self.txt_srid.setText(tools_gw.get_config_parser('btn_admin', 'project_srid', "user", "session",
                                                               False, force_reload=True))
 
-        # TODO: do and call listener for buton + table -> temp_csv
         # Manage SRID
         self._manage_srid()
 
@@ -193,8 +189,6 @@ class GwAdminButton:
         # Set signals
         self._set_signals_create_project()
 
-    # region 'Create Project'
-
     def load_base(self, dict_folders):
         """"""
 
@@ -213,10 +207,6 @@ class GwAdminButton:
             return False
 
         return True
-
-    # endregion
-
-    # region private functions
 
     def _init_show_database(self):
         """ Initialization code of the form (to be executed only once) """
@@ -257,7 +247,7 @@ class GwAdminButton:
         self.cmb_connection = self.dlg_readsql.findChild(QComboBox, 'cmb_connection')
 
         # Set Listeners
-        self._set_signals()
+        self.dlg_readsql.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_readsql))
 
         # Set shortcut keys
         self.dlg_readsql.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_readsql))
@@ -274,15 +264,6 @@ class GwAdminButton:
         self.init_dialog_create_project()
 
         self._open_form_create_gis_project()
-
-
-    def _set_signals(self):
-        """ Set signals. Function has to be executed only once (during form initialization) """
-
-        self.dlg_readsql.btn_gpkg_close.clicked.connect(partial(self._close_dialog_admin, self.dlg_readsql))
-        self.dlg_readsql.btn_qgis_close.clicked.connect(partial(self._close_dialog_admin, self.dlg_readsql))
-        self.dlg_readsql.dlg_closed.connect(partial(self._save_custom_sql_path, self.dlg_readsql))
-        self.dlg_readsql.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_readsql))
 
             
     def _gis_create_project(self):
@@ -359,7 +340,6 @@ class GwAdminButton:
         self.dlg_readsql.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_readsql))
 
 
-    """ Functions execute process """
 
     def _close_dialog_admin(self, dlg):
         """ Close dialog """
@@ -437,8 +417,6 @@ class GwAdminButton:
         self.cmb_locale.currentIndexChanged.connect(partial(self._update_locale))
         self.dlg_readsql.btn_push_path.clicked.connect(partial(self._select_path))
         self.filter_srid.textChanged.connect(partial(self._filter_srid_changed))
-
-
 
 
     def _select_path(self):
@@ -662,14 +640,3 @@ class GwAdminButton:
         sql = f"SELECT locale as id, name as idval FROM locales WHERE active = 1"
         rows = self.gpkg_dao.get_rows(sql)
         return rows
-
-
-    def _save_custom_sql_path(self, dialog):
-
-        folder_path = tools_qt.get_text(dialog, "custom_path_folder")
-        if folder_path == "null":
-            folder_path = None
-        tools_gw.set_config_parser("btn_admin", "custom_sql_path", f"{folder_path}", "user", "session")
-
-
-    # endregion
