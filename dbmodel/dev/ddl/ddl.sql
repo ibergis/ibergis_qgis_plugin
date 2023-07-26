@@ -537,7 +537,6 @@ CREATE TABLE inp_raingage (
     form_type text check (typeof(form_type) = 'text' or form_type = null),
     intvl text check (typeof(intvl) = 'text' or intvl = null),
     scf real check (typeof(scf) = 'real' or scf = null),
-    source text check (typeof(source) = 'text' or source = null),
     timser_id text check (typeof(timser_id) = 'text' or timser_id = null),
     fname text check (typeof(fname) = 'text' or fname = null),
     sta text check (typeof(sta) = 'text' or sta = null),
