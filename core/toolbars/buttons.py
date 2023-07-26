@@ -7,6 +7,7 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 
 # Main
+from .main.selector_button import GwSelectorButton
 from .main.go2epa_button import GwGo2EpaButton
 from .main.dscenario_manager_btn import GwDscenarioManagerButton
 from .main.nonvisual_manager_button import GwNonVisualManagerButton
