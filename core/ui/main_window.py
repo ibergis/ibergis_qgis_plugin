@@ -45,7 +45,7 @@ class GwMainWindow(QMainWindow):
 
         # Set window icon
         icon_folder = f"{global_vars.plugin_dir}{os.sep}icons"
-        icon_path = f"{icon_folder}{os.sep}dialogs{os.sep}20x20{os.sep}giswater.png"
+        icon_path = f"{icon_folder}{os.sep}dialogs{os.sep}20x20{os.sep}drain.png"
         giswater_icon = QIcon(icon_path)
         self.setWindowIcon(giswater_icon)
 
