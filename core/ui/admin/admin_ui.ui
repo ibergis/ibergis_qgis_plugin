@@ -30,7 +30,7 @@
           <item row="0" column="0">
            <widget class="QGroupBox" name="grb_projectschema">
             <property name="title">
-             <string>Project schema Settings</string>
+             <string>Project geopackage settings</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_2">
              <item row="1" column="0">

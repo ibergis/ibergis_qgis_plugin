@@ -76,14 +76,6 @@ class GwToolboxReportsUi(GwDialog, FORM_CLASS):
 
 
 # region ADMIN
-FORM_CLASS = _get_ui_class('admin_dbproject.ui', 'admin')
-class GwAdminDbProjectUi(GwMainWindow, FORM_CLASS):
-    pass
-
-FORM_CLASS = _get_ui_class('admin_gisproject.ui', 'admin')
-class GwAdminGisProjectUi(GwMainWindow, FORM_CLASS):
-    pass
-
 FORM_CLASS = _get_ui_class('admin_ui.ui', 'admin')
 class GwAdminUi(GwMainWindow, FORM_CLASS):
     dlg_closed = QtCore.pyqtSignal()
