@@ -40,6 +40,15 @@ CREATE TABLE cat_scenario (
     active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
+CREATE TABLE cat_grate (
+    gratecat_id integer primary key,
+    greatcat text check (typeof(greatcat) = 'text' or greatcat = null),
+    length real check (typeof(length) = 'real' or length = null),
+    width real check (typeof(width) = 'real' or width = null),
+    a_param real check (typeof(a_param) = 'real' or a_param = null),
+    b_param real check (typeof(b_param) = 'real' or b_param = null)
+);
+
 CREATE TABLE inp_curve (
     curve_id integer PRIMARY KEY,
     code text check (typeof(code)='text' or typeof(code)=null),
@@ -226,6 +235,47 @@ CREATE TABLE raingage (
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     rain_type boolean CHECK (typeof(rain_type) IN (0,1,NULL)),
     timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL),
+    annotation text check (typeof(annotation) = 'text' or annotation = null),
+    geom geometry
+);
+
+CREATE TABLE link (
+    fid integer primary key,
+    code text check (typeof(code) = 'text' or code = null),
+    name text check (typeof(name) = 'text' or name = null),
+    sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
+    scenario_d integer check (typeof(scenario_d) = 'integer' or scenario_d = null),
+    source text check (typeof(source) = 'text' or source = null),
+    descript text check (typeof(descript) = 'text' or descript = null),
+    feature_type text check (typeof(feature_type) = 'text' or feature_type = null),
+    feature_id text check (typeof(feature_id) = 'text' or feature_id = null),
+    exit_type text check (typeof(exit_type) = 'text' or exit_type = null),
+    exit_id text check (typeof(exit_id) = 'text' or exit_id = null),
+    annotation text check (typeof(annotation) = 'text' or annotation = null),
+    geom geometry
+);
+
+CREATE TABLE gully (
+    fid integer primary key,
+    code text check (typeof(code) = 'text' or code = null),
+    name text check (typeof(name) = 'text' or name = null),
+    sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
+    scenario_d integer check (typeof(scenario_d) = 'integer' or scenario_d = null),
+    source text check (typeof(source) = 'text' or source = null),
+    descript text check (typeof(descript) = 'text' or descript = null),
+    outlet_type text check (typeof(outlet_type) = 'text' or outlet_type = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    top_elev real check (typeof(top_elev) = 'real' or top_elev = null),
+    custom_top_elev real check (typeof(custom_top_elev) = 'real' or custom_top_elev = null),
+    gratecat_id text check (typeof(gratecat_id) = 'text' or gratecat_id = null),
+    custom_width real check (typeof(custom_width) = 'real' or custom_width = null),
+    custom_length real check (typeof(custom_length) = 'real' or custom_length = null),
+    method text check (typeof(method) = 'text' or method = null),
+    weir_cd real check (typeof(weir_cd) = 'real' or weir_cd = null),
+    orifice_cd real check (typeof(orifice_cd) = 'real' or orifice_cd = null),
+    custom_a_param real check (typeof(custom_a_param) = 'real' or custom_a_param = null),
+    custom_b_param real check (typeof(custom_b_param) = 'real' or custom_b_param = null),
+    efficiency real check (typeof(efficiency) = 'real' or efficiency = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry
 );

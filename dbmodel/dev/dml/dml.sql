@@ -20,7 +20,7 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_losses', 'attributes', 'inp_losses', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_losses_values', 'attributes', 'inp_losses_values', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_landuses', 'attributes', 'cat_landuses', '', 0, 0, 0, 0, 0, 0);
-
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_grate', 'attributes', 'cat_grate', '', 0, 0, 0, 0, 0, 0);
 
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('polygon', 'features', 'polygon', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('manzone', 'features', 'manzone', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -41,6 +41,10 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, max_y, srs_id) VALUES('inp_storage', 'features', 'inp_storage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, max_y, srs_id) VALUES('inp_junction', 'features', 'inp_junction', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, max_y, srs_id) VALUES('inp_raingage', 'features', 'inp_raingage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, max_y, srs_id) VALUES('link', 'features', 'link', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, max_y, srs_id) VALUES('gully', 'features', 'gully', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+
+
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_selector', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('config_param_user', 0);
@@ -53,7 +57,7 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_timeseries
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_losses', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_losses_values', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_landuses', 0);
-
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_grate', 0);
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('polygon', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('manzone', 0);
@@ -74,6 +78,10 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_divider', 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_storage', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_junction', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_raingage', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('link', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('gully', 0);
+
+
 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('polygon', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('manzone', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
@@ -94,3 +102,5 @@ INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('inp_storage', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('inp_junction', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('inp_raingage', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
+INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('link', 'geom', 'LINESTRING', <SRID_VALUE>, 0, 0);
+INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('gully', 'geom', 'POINT', <SRID_VALUE>, 0, 0);

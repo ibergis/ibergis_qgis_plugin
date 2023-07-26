@@ -30,3 +30,5 @@ CREATE VIRTUAL TABLE rtree_inp_divider_geom USING rtree (id, minx, maxx, miny, m
 CREATE VIRTUAL TABLE rtree_inp_storage_geom USING rtree (id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_inp_junction_geom USING rtree (id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_inp_raingage_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_link_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_gully_geom USING rtree (id, minx, maxx, miny, maxy);
