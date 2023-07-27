@@ -316,6 +316,24 @@ def concat_quoted_vals(text_line):
         text_line_new = text_line
     return text_line_new 
 
+
+def concat_annotations(text_line):
+    if not any(x.startswith(";") for x in text_line):
+        return text_line
+    
+    text_line_new = []
+    annotation = ''
+    for t_l in text_line:
+        if annotation:
+            annotation += f" {t_l}"
+        elif t_l.startswith(";"):
+            annotation = t_l
+        else:
+            text_line_new.append(t_l)
+    text_line_new.append(annotation)
+    return text_line_new
+
+
 def replace_nan_null(data):
     """replaces np.nan or asterisk with NULL"""
     if pd.isna(data):
@@ -368,8 +386,9 @@ def extract_sections_from_text(
     # exclude empty comments
     annot_dict = {k: v for k, v in annot_dict.items() if len(v) > 0}
     section_text = [x for x in section_text if not x.startswith(';')]  # delete annotations / descriptions
-    section_vals = [x.split() for x in section_text]
-    section_vals_clean = [concat_quoted_vals(x) for x in section_vals]
+    section_vals = (x.split() for x in section_text)
+    section_vals_quoted = (concat_quoted_vals(x) for x in section_vals)
+    section_vals_clean = [concat_annotations(x) for x in section_vals_quoted]
     inp_extracted = {
         'data': section_vals_clean,
         'status': ImportDataStatus.RAW,
