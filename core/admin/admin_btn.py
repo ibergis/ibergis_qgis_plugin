@@ -20,7 +20,6 @@ from ..ui.ui_manager import GwAdminUi
 from ..utils import tools_gw
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_os, tools_gpkgdao
-from ..ui.docker import GwDocker
 
 
 class GwAdminButton:
@@ -30,16 +29,12 @@ class GwAdminButton:
 
         self.gpkg_full_path = None
         self.dict_folders_process =  {}
-        self.iface = global_vars.iface
         self.plugin_dir = global_vars.plugin_dir
-        self.schema_name = global_vars.schema_name
         self.plugin_version, self.message = tools_qgis.get_plugin_version()
-        self.project_type = None
         self.project_epsg = None
         self.gpkg_name = None
         self.project_path = None
         self.dlg_readsql = None
-        self.schema_type = None
         self.total_sql_files = 0    # Total number of SQL files to process
         self.current_sql_file = 0   # Current number of SQL file
         self.gpkg_dao = None
@@ -70,7 +65,6 @@ class GwAdminButton:
         # Set class variables
         self.gpkg_name = gpkg_name
         self.project_path = project_path
-        self.schema_type = 'dev'
         self.project_epsg = project_srid
         self.locale = project_locale
 
@@ -80,7 +74,6 @@ class GwAdminButton:
         tools_gw.set_config_parser('btn_admin', 'project_srid', f'{self.project_epsg}', prefix=False)
         tools_gw.set_config_parser('btn_admin', 'project_locale', f'{self.locale}', prefix=False)
 
-
         # Check if srid value is valid
         if self.last_srids is None:
             msg = "This SRID value does not exist on Database. Please select a diferent one."
@@ -88,10 +81,9 @@ class GwAdminButton:
             return
 
         tools_log.log_info(f"Creating GPKG {self.gpkg_name}'")
-
         tools_log.log_info(f"Create schema: Executing function 'create_gpkg'")
         self.create_gpkg()
-        tools_log.log_info(f"'Create schema: Executing function '_check_database_connection'")
+        tools_log.log_info(f"Create schema: Executing function '_check_database_connection'")
         connection_status = self._check_database_connection(self.gpkg_full_path)
         if not connection_status:
             tools_log.log_info("Function _check_database_connection returned False")
@@ -107,13 +99,14 @@ class GwAdminButton:
         if not status_custom:
             tools_log.log_info("Function custom_execution returned False")
             return
-        else:
-            tools_qt.show_info_box("Geopackage created successfully")
+
+        tools_qt.show_info_box("Geopackage created successfully")
 
         self.change_tab()
 
 
     def change_tab(self):
+
         self.dlg_readsql.tabWidget.setCurrentIndex(1)
         gpkg_name = tools_gw.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
                                                               False, force_reload=True)
@@ -189,6 +182,7 @@ class GwAdminButton:
         # Set signals
         self._set_signals_create_project()
 
+
     def load_base(self, dict_folders):
         """"""
 
@@ -207,6 +201,7 @@ class GwAdminButton:
             return False
 
         return True
+
 
     def _init_show_database(self):
         """ Initialization code of the form (to be executed only once) """
@@ -230,10 +225,7 @@ class GwAdminButton:
         self.file_pattern_trg = "trg"
 
         # Declare all folders
-        if self.schema_name is not None and self.project_type is not None:
-            self.folder_software = os.path.join(self.sql_dir, self.project_type)
-        else:
-            self.folder_software = os.path.join(self.sql_dir, "dev")
+        self.folder_software = os.path.join(self.sql_dir, "dev")
 
         # Check if user have commit permissions
         self.dev_commit = tools_gw.get_config_parser('system', 'dev_commit', "project", "dev", False, force_reload=True)
@@ -297,8 +289,6 @@ class GwAdminButton:
 
         gis = GwGisFileCreate(self.plugin_dir)
         result, qgs_path = gis.gis_project_database(gis_folder, gis_file, gpkg_file, srid)
-
-        self._close_dialog_admin(self.dlg_readsql)
         self._close_dialog_admin(self.dlg_readsql)
         if result:
             self._open_project(qgs_path)
@@ -310,7 +300,7 @@ class GwAdminButton:
         project = QgsProject.instance()
         project.read(qgs_path)
 
-        # Load Giswater plugin
+        # Reload plugin
         file_name = os.path.basename(self.plugin_dir)
         reloadPlugin(f"{file_name}")
 
@@ -340,7 +330,6 @@ class GwAdminButton:
         self.dlg_readsql.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_readsql))
 
 
-
     def _close_dialog_admin(self, dlg):
         """ Close dialog """
         tools_gw.close_dialog(dlg, delete_dlg=False)
@@ -348,7 +337,7 @@ class GwAdminButton:
 
     def _update_locale(self):
         """"""
-        # TODO: Check this!
+        # TODO: Class variable foder_locale is unused
         cmb_locale = tools_qt.get_combo_value(self.dlg_readsql, self.cmb_locale, 0)
         self.folder_locale = os.path.join(self.sql_dir, 'i18n', cmb_locale)
 
@@ -396,16 +385,6 @@ class GwAdminButton:
         self.tbl_srid.setColumnWidth(0, 100)
         self.tbl_srid.setColumnWidth(1, 300)
         self.tbl_srid.horizontalHeader().setStretchLastSection(True)
-
-
-    def _process_folder(self, folderpath, filepattern=''):
-        """"""
-
-        try:
-            os.listdir(os.path.join(folderpath, filepattern))
-            return True
-        except Exception:
-            return False
 
 
     def _set_signals_create_project(self):
@@ -528,11 +507,12 @@ class GwAdminButton:
     def create_schema_custom_execution(self):
         """ Custom execution """
 
-        tools_log.log_info("Execute 'custom_execution'")
         if self.rdb_sample.isChecked():
+            tools_log.log_info("Execute 'custom_execution' (example data)")
             tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
             return self.load_sample_data()
         elif self.rdb_data.isChecked():
+            tools_log.log_info("Execute 'custom_execution' (empty data)")
             tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
             return True
 
