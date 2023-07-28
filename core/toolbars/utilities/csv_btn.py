@@ -17,7 +17,7 @@ from ..dialog import GwAction
 from ...ui.ui_manager import GwCsvUi
 from ...utils import tools_gw
 from .... import global_vars
-from ....lib import tools_qt, tools_log, tools_db, tools_qgis, tools_os
+from ....lib import tools_qt, tools_log, tools_qgis, tools_os
 
 
 class GwCSVButton(GwAction):
@@ -46,7 +46,6 @@ class GwCSVButton(GwAction):
         tools_gw.set_config_parser('btn_csv2pg', 'rb_space', f"{self.dlg_csv.rb_space.isChecked()}")
         tools_gw.set_config_parser('btn_csv2pg', 'rb_dec_comma', f"{self.dlg_csv.rb_dec_comma.isChecked()}")
         tools_gw.set_config_parser('btn_csv2pg', 'rb_dec_period', f"{self.dlg_csv.rb_dec_period.isChecked()}")
-
 
 
     # region private functions
@@ -99,42 +98,18 @@ class GwCSVButton(GwAction):
 
     def _populate_combos(self, combo, field_id, fields, table_name):
 
-        # Get role
-        roles_dict = {"role_basic": "'role_basic'",
-                      "role_om": "'role_basic', 'role_om'",
-                      "role_edit": "'role_basic', 'role_om', 'role_edit'",
-                      "role_epa": "'role_basic', 'role_om', 'role_edit', 'role_epa'",
-                      "role_master": "'role_basic', 'role_om', 'role_edit', 'role_epa', 'role_master'",
-                      "role_admin": "'role_basic', 'role_om', 'role_edit', 'role_epa', 'role_master', 'role_admin'"}
-
+        # TODO: Define query
         sql = (f"SELECT DISTINCT({field_id}), {fields}"
                f" FROM {table_name}"
-               f" JOIN sys_function ON function_name =  functionname"
-               f" WHERE sys_role IN ({roles_dict[global_vars.project_vars['project_role']]}) AND active is True ORDER BY orderby")
-
-        rows = tools_db.get_rows(sql)
-        if not rows:
-            message = "You do not have permission to execute this application"
-            self.dlg_csv.lbl_info.setText(tools_qt.tr(message))
-            self.dlg_csv.lbl_info.setStyleSheet("QLabel{color: red;}")
-
-            self.dlg_csv.cmb_import_type.setEnabled(False)
-            self.dlg_csv.txt_import.setEnabled(False)
-            self.dlg_csv.txt_file_csv.setEnabled(False)
-            self.dlg_csv.cmb_unicode_list.setEnabled(False)
-            self.dlg_csv.rb_comma.setEnabled(False)
-            self.dlg_csv.rb_semicolon.setEnabled(False)
-            self.dlg_csv.rb_space.setEnabled(False)
-            self.dlg_csv.btn_file_csv.setEnabled(False)
-            self.dlg_csv.tbl_csv.setEnabled(False)
-            self.dlg_csv.btn_accept.setEnabled(False)
-        else:
+               f" WHERE active is True ORDER BY orderby")
+        rows = global_vars.gpkg_dao_config.get_rows(sql)
+        if rows:
             tools_qt.fill_combo_values(combo, rows, 1, True, True, 1)
             self._update_info(self.dlg_csv)
 
 
     def _write_csv(self, dialog, temp_tablename):
-        """ Write csv in postgres and call gw_fct_utils_csv2pg function """
+        """ Write csv in postgres and execute PG function """
 
         self.save_settings_values()
         insert_status = True
@@ -159,10 +134,11 @@ class GwCSVButton(GwAction):
         if insert_status is False:
             return
 
+        # Execute PG function
+        # TODO: Migrate to GPKG
         extras = f'"importParam":"{label_aux}"'
         extras += f', "fid":"{fid_aux}"'
         body = tools_gw.create_body(extras=extras)
-
         result = tools_gw.execute_procedure(self.func_name, body)
         if not result:
             return
@@ -177,6 +153,7 @@ class GwCSVButton(GwAction):
 
     def _update_info(self, dialog):
         """ Update the tag according to item selected from cmb_import_type """
+
         try:
             dialog.lbl_info.setText(tools_qt.get_combo_value(self.dlg_csv, self.dlg_csv.cmb_import_type, 2))
         except Exception as e:
@@ -280,8 +257,8 @@ class GwCSVButton(GwAction):
         """ Delete records from temp_csv for current user and selected cat """
 
         sql = (f"DELETE FROM {temp_tablename} "
-               f"WHERE fid = '{fid_aux}' AND cur_user = current_user")
-        tools_db.execute_sql(sql)
+               f"WHERE fid = '{fid_aux}'")
+        global_vars.gpkg_dao_config.execute_sql(sql)
 
 
     def _get_delimiter(self, dialog):
@@ -336,10 +313,10 @@ class GwCSVButton(GwAction):
         elif dialog.rb_dec_period.isChecked():
             decimal_sep = '"."'
 
+        # TODO: Migrate to GPKG
         values = f'"separator": {decimal_sep}, "values":{(json.dumps(fields, ensure_ascii=False).encode(_unicode)).decode()}'
         body = tools_gw.create_body(extras=values)
         result = tools_gw.execute_procedure('gw_fct_setcsv', body)
-
         if result and result.get('status') == 'Accepted':
             return True
 
@@ -347,7 +324,7 @@ class GwCSVButton(GwAction):
 
 
     def _get_path(self, dialog):
-        """ Take the file path if exist. AND if not exit ask it """
+        """ Take the file path if exists. AND if not exit ask it """
 
         path = tools_qt.get_text(dialog, dialog.txt_file_csv)
         if path is None or path == 'null' or not os.path.exists(path):
@@ -372,23 +349,5 @@ class GwCSVButton(GwAction):
             unicode_row = [x for x in row]
             items = [QStandardItem(field) for field in unicode_row]
             model.appendRow(items)
-
-
-    def _get_rolenames(self):
-        """ Get list of rolenames of current user """
-
-        sql = ("SELECT rolname FROM pg_roles "
-               " WHERE pg_has_role(current_user, oid, 'member')")
-        rows = tools_db.get_rows(sql)
-        if not rows:
-            return None
-
-        roles = "("
-        for i in range(0, len(rows)):
-            roles += "'" + str(rows[i][0]) + "', "
-        roles = roles[:-2]
-        roles += ")"
-
-        return roles
 
     # endregion
