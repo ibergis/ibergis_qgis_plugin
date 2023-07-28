@@ -3072,7 +3072,7 @@ def _check_user_params(section, parameter, file_name, prefix=False):
         If it doesn't exist, it creates it and assigns 'None' as a default value
     """
 
-    if section == "i18n_generator" or parameter == "dev_commit":
+    if section == "i18n_generator":
         return
 
     # Check if the parameter needs the prefix or not

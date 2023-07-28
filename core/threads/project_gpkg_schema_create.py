@@ -117,7 +117,7 @@ class GwGpkgCreateSchemaTask(GwTask):
         self.admin.total_sql_files = self.calculate_number_of_files()
         tools_log.log_info(f"Number of SQL files 'TOTAL': {self.admin.total_sql_files}")
         status = self.admin.load_base(self.dict_folders_process['load_base'])
-        if (not status and self.admin.dev_commit is False) or self.isCanceled():
+        if not status or self.isCanceled():
             return False
 
 

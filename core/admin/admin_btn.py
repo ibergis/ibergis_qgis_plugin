@@ -19,7 +19,7 @@ from .gis_file_create import GwGisFileCreate
 from ..ui.ui_manager import GwAdminUi
 from ..utils import tools_gw
 from ... import global_vars
-from ...lib import tools_qt, tools_qgis, tools_log, tools_os, tools_gpkgdao
+from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao
 
 
 class GwAdminButton:
@@ -86,18 +86,17 @@ class GwAdminButton:
         tools_log.log_info(f"Create schema: Executing function '_check_database_connection'")
         connection_status = self._check_database_connection(self.gpkg_full_path)
         if not connection_status:
-            tools_log.log_info("Function _check_database_connection returned False")
+            tools_log.log_info("Function '_check_database_connection' returned False")
             return
         tools_log.log_info(f"Create schema: Executing function 'main_execution'")
         status = self.create_schema_main_execution()
         if not status:
-            tools_log.log_info("Function main_execution returned False")
+            tools_log.log_info("Function 'main_execution' returned False")
             return
-
         tools_log.log_info(f"Create schema: Executing function 'custom_execution'")
         status_custom = self.create_schema_custom_execution()
         if not status_custom:
-            tools_log.log_info("Function custom_execution returned False")
+            tools_log.log_info("Function 'custom_execution' returned False")
             return
 
         tools_qt.show_info_box("Geopackage created successfully")
@@ -188,7 +187,7 @@ class GwAdminButton:
 
         for folder in dict_folders.keys():
             status = self._execute_files(folder)
-            if not status and self.dev_commit is False:
+            if not status:
                 return False
         return True
 
@@ -197,10 +196,7 @@ class GwAdminButton:
 
         folder_example = os.path.join(self.sql_dir, "example")
         status = self._execute_files(folder_example)
-        if not status and self.dev_commit is False:
-            return False
-
-        return True
+        return status
 
 
     def _init_show_database(self):
@@ -226,10 +222,6 @@ class GwAdminButton:
 
         # Declare all folders
         self.folder_software = os.path.join(self.sql_dir, "dev")
-
-        # Check if user have commit permissions
-        self.dev_commit = tools_gw.get_config_parser('system', 'dev_commit', "project", "dev", False, force_reload=True)
-        self.dev_commit = tools_os.set_boolean(self.dev_commit)
 
         # Create dialog object
         self.dlg_readsql = GwAdminUi()
@@ -452,7 +444,7 @@ class GwAdminButton:
                 tools_log.log_info(os.path.join(filedir, file))
                 self.current_sql_file += 1
                 status = self._read_execute_file(filedir, file, self.project_epsg)
-                if not status and self.dev_commit is False:
+                if not status:
                     return False
 
         return status
@@ -471,18 +463,16 @@ class GwAdminButton:
                 status = self.gpkg_dao.execute_script_sql(str(f_to_read))
                 if status is False:
                     self.error_count = self.error_count + 1
-                    tools_log.log_info(f"Error executing file: {filepath}")
-                    tools_log.log_info(f"Database error: {self.gpkg_dao.last_error}")
-                    if self.dev_commit is False:
-                        global_vars.dao.rollback()
+                    msg = f"Error executing file: {file}\nDatabase error: {self.gpkg_dao.last_error}"
+                    tools_log.log_warning(msg)
+                    tools_qt.show_info_box(msg)
                     return False
 
         except Exception as e:
             self.error_count = self.error_count + 1
-            tools_log.log_info(f"Exception executing file: {filepath}")
-            tools_log.log_info(str(e))
-            if self.dev_commit is False:
-                global_vars.dao.rollback()
+            msg = f"Error executing file: {file}\n{str(e)}"
+            tools_log.log_warning(msg)
+            tools_qt.show_info_box(msg)
             status = False
 
         finally:
@@ -498,10 +488,7 @@ class GwAdminButton:
         self.total_sql_files = self.calculate_number_of_files()
         tools_log.log_info(f"Number of SQL files 'TOTAL': {self.total_sql_files}")
         status = self.load_base(self.dict_folders_process['load_base'])
-        if not status and self.dev_commit is False:
-            return False
-
-        return True
+        return status
 
 
     def create_schema_custom_execution(self):
@@ -529,12 +516,16 @@ class GwAdminButton:
         status = self.gpkg_dao.init_db(db_filepath)
         if not status:
             last_error = self.gpkg_dao.last_error
-            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
+            msg = f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}"
+            tools_log.log_warning(msg)
+            tools_qt.show_info_box(msg)
             return False
         status, global_vars.db_qsql = self.gpkg_dao.init_qsql_db(db_filepath, global_vars.plugin_name)
         if not status:
             last_error = self.gpkg_dao.last_error
-            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            msg = f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}"
+            tools_log.log_warning(msg)
+            tools_qt.show_info_box(msg)
             return False
 
         tools_log.log_info(f"Database connection successful")
