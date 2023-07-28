@@ -9,11 +9,10 @@ from functools import partial
 from sip import isdeleted
 
 from qgis.core import QgsProject
-from qgis.PyQt.QtGui import QRegExpValidator, QStandardItemModel, QCursor
+from qgis.PyQt.QtGui import QCursor
 from qgis.PyQt.QtSql import QSqlTableModel
-from qgis.PyQt.QtCore import QRegExp, QPoint
+from qgis.PyQt.QtCore import QPoint
 from qgis.PyQt.QtWidgets import QTableView, QAbstractItemView, QMenu, QCheckBox, QWidgetAction, QComboBox
-from qgis.PyQt.QtWidgets import QLineEdit
 
 from ..dialog import GwAction
 from ..utilities.toolbox_btn import GwToolBoxButton
@@ -289,7 +288,7 @@ class GwDscenarioManagerButton(GwAction):
             self.table_name = self.schema_name + "." + self.table_name
 
         # Set model
-        model = QSqlTableModel(db=global_vars.qgis_db_credentials)
+        model = QSqlTableModel(db=global_vars.db_qsql_data)
         model.setTable(self.table_name)
         model.setFilter(f"dscenario_id = {self.selected_dscenario_id}")
         model.setEditStrategy(QSqlTableModel.OnFieldChange)

@@ -1262,7 +1262,7 @@ def set_table_model(dialog, table_object, table_name, expr_filter):
         table_name = f"{global_vars.schema_name}.{table_name}"
 
     # Set a model with selected filter expression
-    model = QSqlTableModel(db=global_vars.qgis_db_credentials)
+    model = QSqlTableModel(db=global_vars.db_qsql_data)
     model.setTable(table_name)
     model.setEditStrategy(QSqlTableModel.OnManualSubmit)
     model.select()

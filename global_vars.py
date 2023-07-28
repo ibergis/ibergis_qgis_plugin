@@ -38,7 +38,6 @@ logger = None                           # Instance of class GwLogger. Found in "
 signal_manager = None                   # Instance of class GwSignalManager. Found in "/core/utils/signal_manager.py"
 plugin_settings = None                  # Instance of class QSettings. QGIS settings related to plugin variables such as toolbars and checkable actions
 current_user = None                     # Current user connected with PostgreSql
-qgis_db_credentials = None              # Instance of class QSqlDatabase (QPSQL) used to manage QTableView widgets
 db_qsql_data = None                     # Instance of class QSqlDatabase (QSQLITE) used to manage QTableView widgets
 db_qsql_config = None                   # Instance of class QSqlDatabase (QSQLITE) used to manage QTableView widgets
 dao = None                              # Instance of class GwPgDao. Found in "/lib/tools_db.py"

@@ -60,6 +60,7 @@ class GwNonVisual:
         # Execute method get_{object_name}
         getattr(self, f'get_{object_name.lower()}')()
 
+
     # region manager
     def manage_nonvisual(self):
         """ Opens Non-Visual objects manager. Called from 'Non-Visual object manager' button. """
@@ -136,7 +137,7 @@ class GwNonVisual:
         """ Fills manager table """
 
         # Set model
-        model = QSqlTableModel(db=global_vars.db_qsql)
+        model = QSqlTableModel(db=global_vars.db_qsql_data)
         model.setTable(table_name)
         model.setEditStrategy(QSqlTableModel.OnFieldChange)
         model.setSort(0, 0)
