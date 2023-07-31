@@ -43,10 +43,8 @@ class Feedback:
 feedback = Feedback()
 
 
-def inp2dict(readfile, crs_result):
-    import_parameters_dict = {
-        "crs_result": crs_result,
-    }
+def inp2dict(readfile):
+    import_parameters_dict = {}
 
     # reading input text file
     feedback.setProgressText("reading inp ...")
