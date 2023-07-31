@@ -24,6 +24,39 @@ _tables = (
             "Annotation": "annotation",
         },
     },
+    {
+        "table_name": "inp_subcatchment",
+        "section": "SUBCATCHMENTS",
+        "mapper": {
+            "Name": "code",
+            "RainGage": "rg_id",
+            "Outlet": "outlet_id",
+            "Area": "area",
+            "Imperv": "imperv",
+            "Width": "width",
+            "Slope": "slope",
+            "CurbLen": "clength",
+            "SnowPack": "snow_id",
+            "Annotation": "annotation",
+            "N_Imperv": "nimp",
+            "N_Perv": "nperv",
+            "S_Imperv": "simp",
+            "S_Perv": "sperv",
+            "PctZero": "zero",
+            "RouteTo": "routeto",
+            "PctRouted": "rted",
+            "CurveNum": "curveno",
+            "Conductiv": "conduct",
+            "DryTime": "drytime",
+            "InfMethod": "method",
+            "SuctHead": "suction",
+            "InitDef": "initdef",
+            "MaxRate": "maxrate",
+            "MinRate": "minrate",
+            "Decay": "decay",
+            "MaxInf": "maxinfl",
+        },
+    },
 )
 
 
@@ -62,9 +95,12 @@ def null2none(value):
 
 
 def qgsgeo2wkt(value):
-    if hasattr(value, "asWkt"):
-        return value.asWkt()
-    return None
+    if not hasattr(value, "asWkt"):
+        return None
+    # Checks if geometry is "Polygon" and converts to "Multipolygon"
+    if value.wkbType() == 3:
+        value.convertToMultiType()
+    return value.asWkt()
 
 
 def tables():
