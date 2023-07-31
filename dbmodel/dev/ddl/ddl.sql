@@ -122,7 +122,7 @@ create table sector (
     geom geometry
 );
 
-CREATE TABLE polygon (
+CREATE TABLE elem_polygon (
     fid integer PRIMARY KEY,
     code text CHECK (typeof(code)= 'text' OR code=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
@@ -135,7 +135,7 @@ CREATE TABLE polygon (
     geom geometry
 );
 
-CREATE TABLE manzone (
+CREATE TABLE elem_manzone (
     fid integer PRIMARY KEY,
     code text CHECK (typeof(code)= 'text' OR code=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
@@ -149,7 +149,7 @@ CREATE TABLE manzone (
     geom geometry
 );
 
-CREATE TABLE losszone (
+CREATE TABLE elem_losszone (
     fid integer PRIMARY KEY,
     code text CHECK (typeof(code)= 'text' OR code=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
@@ -168,7 +168,7 @@ CREATE TABLE losszone (
     geom geometry
 );
 
-CREATE TABLE roof (
+CREATE TABLE elem_roof (
     fid integer PRIMARY KEY,
     code text CHECK (typeof(code)= 'text' OR code=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
@@ -187,7 +187,7 @@ CREATE TABLE roof (
     geom geometry
 );
 
-CREATE TABLE element (
+CREATE TABLE elem_tin (
     fid integer PRIMARY KEY,
     code text CHECK (typeof(code)= 'text' OR code=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
@@ -209,7 +209,7 @@ CREATE TABLE element (
     geom geometry
 );
 
-CREATE TABLE edge (
+CREATE TABLE elem_edge (
     fid integer PRIMARY KEY,
  	code text CHECK (typeof(code)= 'text' OR code=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
@@ -222,7 +222,7 @@ CREATE TABLE edge (
     geom geometry
 );
 
-CREATE TABLE vertex (
+CREATE TABLE elem_vertex (
     fid integer PRIMARY KEY,
     code text CHECK (typeof(code)= 'text' OR code=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
@@ -236,7 +236,7 @@ CREATE TABLE vertex (
 	geom geometry
 );
 
-CREATE TABLE raingage (
+CREATE TABLE elem_raingage (
     fid integer PRIMARY KEY,
     code text CHECK (typeof(code)= 'text' OR code=NULL),
     name text CHECK (typeof(name)='text' OR name=NULL),
@@ -249,7 +249,7 @@ CREATE TABLE raingage (
     geom geometry
 );
 
-CREATE TABLE link (
+CREATE TABLE elem_link (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     name text check (typeof(name) = 'text' or name = null),
@@ -264,7 +264,7 @@ CREATE TABLE link (
     geom geometry
 );
 
-CREATE TABLE gully (
+CREATE TABLE elem_gully (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     name text check (typeof(name) = 'text' or name = null),
