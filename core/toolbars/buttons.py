@@ -14,6 +14,7 @@ from .main.nonvisual_manager_button import GwNonVisualManagerButton
 
 # Utilities
 from .utilities.csv_btn import GwCSVButton
+from .utilities.importinp_btn import GwImportINPButton
 from .utilities.toolbox_btn import GwToolBoxButton
 
 # ToC
