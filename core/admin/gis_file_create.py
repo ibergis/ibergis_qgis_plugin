@@ -112,8 +112,8 @@ class GwGisFileCreate:
     def _replace_extent_parameters(self, content):
 
         aux = content
-        table_name = "manzone"
-        sql = (f"SELECT ST_MaxX(geom), ST_MinX(geom), ST_MaxY(geom), ST_MinY(geom) "
+        table_name = "polygon"
+        sql = (f"SELECT max(ST_MaxX(geom)), min(ST_MinX(geom)), max(ST_MaxY(geom)), min(ST_MinY(geom)) "
                f"FROM {table_name}")
         row = global_vars.gpkg_dao_data.get_row(sql)
         if row:
