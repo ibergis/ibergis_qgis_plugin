@@ -55,7 +55,7 @@ class GwLoadProject(QObject):
         global_vars.project_type = "ud"
 
         # Removes all deprecated variables defined at drain.config
-        tools_gw.remove_deprecated_config_vars()
+        #tools_gw.remove_deprecated_config_vars()
 
         project_role = global_vars.project_vars.get('project_role')
         global_vars.project_vars['project_role'] = None
