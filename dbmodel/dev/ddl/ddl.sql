@@ -104,6 +104,18 @@ CREATE TABLE inp_timeseries_value (
 -- -----------
 -- GEOM TABLES
 -- -----------
+
+create table sector (
+    fid integer primary key,
+    code text check (typeof(code) = 'text' or code = null),
+    name text check (typeof(name) = 'text' or name = null),
+    sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
+    descript text check (typeof(descript) = 'text' or descript = null),
+    stylesheet text check (typeof(stylesheet) = 'text' or stylesheet = null),
+    active boolean check (typeof(active) in (0, 1, null)),
+    geom geometry
+);
+
 CREATE TABLE polygon (
     fid integer PRIMARY KEY,
     code text CHECK (typeof(code)= 'text' OR code=NULL),
