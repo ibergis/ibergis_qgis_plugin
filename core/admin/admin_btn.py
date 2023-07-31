@@ -82,7 +82,10 @@ class GwAdminButton:
 
         tools_log.log_info(f"Creating GPKG {self.gpkg_name}'")
         tools_log.log_info(f"Create schema: Executing function 'create_gpkg'")
-        self.create_gpkg()
+        create_gpkg_status = self.create_gpkg()
+        if not create_gpkg_status:
+            tools_qt.show_info_box("Geopackage already exists.")
+            return
         tools_log.log_info(f"Create schema: Executing function '_check_database_connection'")
         connection_status = self._check_database_connection(self.gpkg_full_path)
         if not connection_status:
@@ -539,9 +542,12 @@ class GwAdminButton:
         path = self.project_path
 
         self.gpkg_full_path = path + "/" + gpkg_name + ".gpkg"
+        if os.path.exists(self.gpkg_full_path):
+            return False
         driver = gdal.GetDriverByName('GPKG')
         dataset = driver.Create(self.gpkg_full_path, 0, 0, 0, gdal.GDT_Unknown)
         del dataset
+        return True
 
 
     def calculate_number_of_files(self):
