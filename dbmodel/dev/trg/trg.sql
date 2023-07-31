@@ -11,6 +11,8 @@ This version of Giswater is provided by Giswater Association
 -- ----------------------------------------
 
 CREATE TRIGGER "trigger_delete_feature_count_sys_selector" AFTER DELETE ON "sys_selector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sys_selector'); END;
+CREATE TRIGGER "trigger_delete_feature_count_selector_scenario" AFTER DELETE ON "selector_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_scenario'); END;
+CREATE TRIGGER "trigger_delete_feature_count_selector_sector" AFTER DELETE ON "selector_sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_sector'); END;
 CREATE TRIGGER "trigger_delete_feature_count_config_param_user" AFTER DELETE ON "config_param_user" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_param_user'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_scenario" AFTER DELETE ON "cat_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_scenario'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_curve" AFTER DELETE ON "inp_curve" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_curve'); END;
@@ -44,6 +46,8 @@ CREATE TRIGGER "trigger_delete_feature_count_link" AFTER DELETE ON "link" BEGIN 
 CREATE TRIGGER "trigger_delete_feature_count_gully" AFTER DELETE ON "gully" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('gully'); END;
 
 CREATE TRIGGER "trigger_insert_feature_count_sys_selector" AFTER INSERT ON "sys_selector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sys_selector'); END;
+CREATE TRIGGER "trigger_insert_feature_count_selector_sector" AFTER INSERT ON "selector_sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_sector'); END;
+CREATE TRIGGER "trigger_insert_feature_count_selector_scenarior" AFTER INSERT ON "selector_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_scenario'); END;
 CREATE TRIGGER "trigger_insert_feature_count_config_param_user" AFTER INSERT ON "config_param_user" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('config_param_user'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_scenario" AFTER INSERT ON "cat_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_scenario'); END;
 CREATE TRIGGER "trigger_insert_feature_count_inp_curve" AFTER INSERT ON "inp_curve" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_curve'); END;

@@ -16,6 +16,16 @@ CREATE TABLE sys_selector (
     value integer CHECK (typeof(value)='integer' OR value=NULL)
 );
 
+CREATE TABLE selector_sector (
+    sector_id integer primary key,
+    name text check (typeof(name) = 'text' or name = null)
+);
+
+CREATE TABLE selector_scenario (
+    scenario_id integer primary key,
+    name text check (typeof(name) = 'text' or name = null)
+);
+
 CREATE TABLE config_param_user (
 	parameter_id integer primary key,	
 	parameter text CHECK (typeof(parameter)='text' OR parameter=NULL),
