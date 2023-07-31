@@ -290,7 +290,7 @@ CREATE TABLE inp_conduit (
     descript text check (typeof(descript) = 'text' or descript = null),
     node1 text check (typeof(node1) = 'text' or node1 = null),
     node2 text check (typeof(node2) = 'text' or node2 = null),
-    gis_length real check (typeof(gis_length) = 'real' or gis_length = null),
+    shape text check (typeof(shape) = 'text' or shape = null),
     custom_length real check (typeof(custom_length) = 'real' or custom_length = null),
     matcat_id text check (typeof(matcat_id) = 'text' or matcat_id = null),
     custom_roughness real check (typeof(custom_roughness) = 'real' or custom_roughness = null),
