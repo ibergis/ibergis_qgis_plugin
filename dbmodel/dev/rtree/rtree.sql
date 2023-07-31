@@ -10,6 +10,7 @@ This version of Giswater is provided by Giswater Association
 -- -------------------------
 
 
+CREATE VIRTUAL TABLE rtree_sector_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_polygon_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_point_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_manzone_geom USING rtree(id, minx, maxx, miny, maxy);
