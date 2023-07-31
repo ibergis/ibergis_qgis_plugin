@@ -28,12 +28,17 @@ from .g_s_options import convert_options_format_for_import
 class Feedback:
     def setProgressText(self, txt):
         print(txt)
+
     def setProgress(self, int):
-        print(f"Progress: {int}%")
+        pass
+        # print(f"Progress: {int}%")
+
     def pushWarning(self, txt):
         print(txt)
+
     def isCanceled(self):
         return False
+
 
 feedback = Feedback()
 
