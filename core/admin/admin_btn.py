@@ -91,7 +91,7 @@ class GwAdminButton:
             tools_qt.show_info_box("Geopackage already exists.")
             return
         tools_log.log_info(f"Create schema: Executing function '_check_database_connection'")
-        connection_status = self._check_database_connection(self.gpkg_full_path)
+        connection_status = self._check_database_connection(self.gpkg_full_path, self.gpkg_name)
         if not connection_status:
             tools_log.log_info("Function '_check_database_connection' returned False")
             return
@@ -508,38 +508,65 @@ class GwAdminButton:
         if self.rdb_sample.isChecked():
             tools_log.log_info("Execute 'custom_execution' (example data)")
             tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
-            return self.load_sample_data()
+            load_sample = self.load_sample_data()
+            if not load_sample:
+                return
+            return self.populate_config_params()
         elif self.rdb_data.isChecked():
             tools_log.log_info("Execute 'custom_execution' (empty data)")
             tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
             return True
 
+    def populate_config_params(self):
+        """Populate table config_param_user"""
 
-    def _check_database_connection(self, db_filepath):
+        sql_select = f"SELECT rowid, id, vdefault FROM sys_param_user"
+        rows = self.gpkg_dao_config.get_rows(sql_select)
+
+        if not rows:
+            return False
+
+        for row in rows:
+            id = row[0]
+            param = row[1]
+            value = row[2]
+            sql_insert = f"INSERT INTO config_param_user (parameter_id, parameter, value) VALUES ({id},'{param}','{value}')"
+            try:
+                global_vars.gpkg_dao_data.execute_script_sql(sql_insert)
+            except Exception as e:
+                msg = f"Error executing SQL: {sql_insert}\nDatabase error: {global_vars.gpkg_dao_data.last_error}"
+                tools_log.log_warning(msg)
+                tools_qt.show_info_box(msg)
+                return False
+
+        return True
+
+
+
+    def _check_database_connection(self, db_filepath, database_name):
         """ Set database connection to Geopackage file """
 
-        global_vars.gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
-        global_vars.gpkg_dao_data = global_vars.gpkg_dao_data
+        # Create object to manage GPKG database connection
+        gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
+        global_vars.gpkg_dao_data = gpkg_dao_data
 
+
+        # Check if file path exists
         if not os.path.exists(db_filepath):
-            tools_log.log_info(f"File path NOT found: {db_filepath}")
+            tools_log.log_info(f"File not found: {db_filepath}")
             return False
 
         # Set DB connection
         tools_log.log_info(f"Set database connection")
+        status, global_vars.db_qsql_data = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
+        if not status:
+            last_error = global_vars.gpkg_dao_data.last_error
+            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            return False
         status = global_vars.gpkg_dao_data.init_db(db_filepath)
         if not status:
             last_error = global_vars.gpkg_dao_data.last_error
-            msg = f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}"
-            tools_log.log_warning(msg)
-            tools_qt.show_info_box(msg)
-            return False
-        status, global_vars.db_qsql = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, global_vars.plugin_name)
-        if not status:
-            last_error = global_vars.gpkg_dao_data.last_error
-            msg = f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}"
-            tools_log.log_warning(msg)
-            tools_qt.show_info_box(msg)
+            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
             return False
 
         tools_log.log_info(f"Database connection successful")
