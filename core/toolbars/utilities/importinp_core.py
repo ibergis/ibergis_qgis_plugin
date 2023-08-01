@@ -63,6 +63,185 @@ _tables = (
             "MaxInf": "maxinfl",
         },
     },
+    {
+        "table_name": "inp_outlet",
+        "section": "OUTLETS",
+        "mapper": {
+            "Name": "code",
+            "FromNode": "node1",
+            "ToNode": "node2",
+            # "InOffset": "",
+            # "RateCurve": "outlet_type",
+            "Qcoeff": "cd1",
+            "Qexpon": "cd2",
+            "FlapGate": "flap",
+            "CurveName": "curve_id",
+            "Annotation": "annotation",
+        },
+    },
+    {
+        "table_name": "inp_orifice",
+        "section": "ORIFICES",
+        "mapper": {
+            "Name": "code",
+            "FromNode": "node1",
+            "ToNode": "node2",
+            "Type": "ori_type",
+            "InOffset": "offsetval",
+            "Qcoeff": "cd1",
+            "FlapGate": "flap",
+            "CloseTime": "close_time",
+            "Annotation": "annotation",
+            "Shape": "shape",
+            "Height": "geom1",
+            "Width": "geom2",
+        },
+    },
+    {
+        "table_name": "inp_weir",
+        "section": "WEIRS",
+        "mapper": {
+            "Name": "code",
+            "FromNode": "node1",
+            "ToNode": "node2",
+            "Type": "weir_type",
+            # "CrestHeigh": "",
+            # "Qcoeff": "",
+            "FlapGate": "flap",
+            # "EndContrac": "",
+            # "EndCoeff": "",
+            "Surcharge": "surcharge",
+            "RoadWidth": "road_width",
+            "RoadSurf": "road_surf",
+            "CoeffCurve": "curve_id",
+            "Annotation": "annotation",
+            # "Height": "",
+            # "Length": "",
+            # "SideSlope": "",
+            # geom1
+            # geom2
+            # geom3
+            # elev
+            # custom_elev
+            # cd2
+            # ec
+        },
+    },
+    {
+        "table_name": "inp_pump",
+        "section": "PUMPS",
+        "mapper": {
+            "Name": "code",
+            "FromNode": "node1",
+            "ToNode": "node2",
+            "PumpCurve": "curve_id",
+            "Status": "state",
+            "Startup": "startup",
+            "Shutoff": "shutoff",
+            "Annotation": "annotation",
+        },
+    },
+    {
+        "table_name": "inp_outfall",
+        "section": "OUTFALLS",
+        "mapper": {
+            "Name": "code",
+            "Elevation": "elev",
+            # custom_elev
+            # timeser_id
+            "Type": "outfall_type",
+            "FixedStage": "stage",
+            "Curve_TS": "curve_id",
+            # "FlapGate": "gate",
+            "RouteTo": "routeto",
+            "Annotation": "annotation",
+        },
+    },
+    {
+        "table_name": "inp_divider",
+        "section": "DIVIDERS",
+        "mapper": {
+            "Name": "code",
+            "Elevation": "elev",
+            # custom_elev
+            # node_id
+            # "DivertLink": "",
+            "Type": "divider_type",
+            # "CutoffFlow": "",
+            "Curve": "curve_id",
+            # "WeirMinFlo": "qmin",
+            # "WeirMaxDep": "qmax",
+            # "WeirCoeff": "q0",
+            # "MaxDepth": "ymax",
+            # custom_ymax
+            # "InitDepth": "y0",
+            # "SurDepth": "ysur",
+            "Aponded": "apond",
+            "Annotation": "annotation",
+        },
+    },
+    {
+        "table_name": "inp_storage",
+        "section": "STORAGE",
+        "mapper": {
+            "Name": "code",
+            "Elevation": "elev",
+            # custom_elev
+            "MaxDepth": "ymax",
+            # custom_ymax
+            "InitDepth": "y0",
+            "Type": "storage_type",
+            "Curve": "curve_id",
+            # a1
+            # a2
+            # a0
+            # "Coeff": "",
+            # "Exponent": "",
+            # "Constant": "",
+            # "MajorAxis": "",
+            # "MinorAxis": "",
+            # "SideSlope": "",
+            # "SurfHeight": "",
+            "SurDepth": "ysur",
+            "Fevap": "fevap",
+            "Psi": "psi",
+            "Ksat": "ksat",
+            "IMD": "imd",
+            "Annotation": "annotation",
+        },
+    },
+    {
+        "table_name": "inp_junction",
+        "section": "JUNCTIONS",
+        "mapper": {
+            "Name": "code",
+            "Elevation": "elev",
+            # custom_elev
+            "MaxDepth": "ymax",
+            # custom_ymax
+            "InitDepth": "y0",
+            "SurDepth": "ysur",
+            "Aponded": "apond",
+            "Annotation": "annotation",
+        },
+    },
+    {
+        "table_name": "inp_raingage",
+        "section": "RAINGAGE",
+        "mapper": {
+            "Name": "code",
+            # rg_id
+            # "Format": "form_type",
+            "Interval": "intvl",
+            "SCF": "scf",
+            # "DataSource": "source",
+            "SeriesName": "timser_id",
+            "FileName": "fname",
+            "StationID": "sta",
+            "RainUnits": "units",
+            "Annotation": "annotation",
+        },
+    },
 )
 
 
