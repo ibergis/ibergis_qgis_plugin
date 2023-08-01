@@ -37,14 +37,14 @@ class GwAdminButton:
         self.dlg_readsql = None
         self.total_sql_files = 0    # Total number of SQL files to process
         self.current_sql_file = 0   # Current number of SQL file
-        self.gpkg_dao = None
+        self.gpkg_dao_config = None
 
 
     def init_sql(self):
         """ Button 100: Execute SQL. Info show info """
 
         # Connect to sqlite database
-        self.gpkg_dao = tools_gpkgdao.GwGpkgDao()
+        self.gpkg_dao_config = tools_gpkgdao.GwGpkgDao()
 
         # Create the dialog and signals
         self._init_show_database()
@@ -58,7 +58,7 @@ class GwAdminButton:
         project_srid = tools_qt.get_text(self.dlg_readsql, 'srid_id')
         project_locale = tools_qt.get_combo_value(self.dlg_readsql, self.cmb_locale, 0)
 
-        if not gpkg_name or not project_path:
+        if not gpkg_name or not project_path or not project_descript:
             tools_qt.show_info_box("Please fill all empty fields.")
             return
 
@@ -161,7 +161,7 @@ class GwAdminButton:
         db_filepath = f"{global_vars.plugin_dir}{os.sep}samples{os.sep}{filename}"
         tools_log.log_info(db_filepath)
         if os.path.exists(db_filepath):
-            status = self.gpkg_dao.init_db(db_filepath)
+            status = self.gpkg_dao_config.init_db(db_filepath)
             if status:
                 list_locale = self._select_active_locales()
                 tools_qt.fill_combo_values(self.cmb_locale, list_locale, 1)
@@ -169,7 +169,7 @@ class GwAdminButton:
                                                     force_reload=True)
                 tools_qt.set_combo_value(self.cmb_locale, locale, 0)
             else:
-                msg = self.gpkg_dao.last_error
+                msg = self.gpkg_dao_config.last_error
                 tools_log.log_warning(msg)
         else:
             tools_log.log_warning(f"Database not found: {db_filepath}")
@@ -365,7 +365,7 @@ class GwAdminButton:
                 "FROM srs WHERE CAST(srid AS TEXT) LIKE '" + str(filter_value))
         sql += "%' order by srs_id DESC"
 
-        self.last_srids = self.gpkg_dao.get_rows(sql)
+        self.last_srids = self.gpkg_dao_config.get_rows(sql)
         self.model_srid = QStandardItemModel(self.tbl_srid)
         self.model_srid.setHorizontalHeaderLabels(['SRID', 'Description'])
 
@@ -463,10 +463,10 @@ class GwAdminButton:
             f = open(filepath, 'r', encoding="utf8")
             if f:
                 f_to_read = str(f.read().replace("<SRID_VALUE>", project_epsg))
-                status = self.gpkg_dao.execute_script_sql(str(f_to_read))
+                status = global_vars.gpkg_dao_data.execute_script_sql(str(f_to_read))
                 if status is False:
                     self.error_count = self.error_count + 1
-                    msg = f"Error executing file: {file}\nDatabase error: {self.gpkg_dao.last_error}"
+                    msg = f"Error executing file: {file}\nDatabase error: {global_vars.gpkg_dao_data.last_error}"
                     tools_log.log_warning(msg)
                     tools_qt.show_info_box(msg)
                     return False
@@ -510,22 +510,25 @@ class GwAdminButton:
     def _check_database_connection(self, db_filepath):
         """ Set database connection to Geopackage file """
 
+        global_vars.gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
+        global_vars.gpkg_dao_data = global_vars.gpkg_dao_data
+
         if not os.path.exists(db_filepath):
             tools_log.log_info(f"File path NOT found: {db_filepath}")
             return False
 
         # Set DB connection
         tools_log.log_info(f"Set database connection")
-        status = self.gpkg_dao.init_db(db_filepath)
+        status = global_vars.gpkg_dao_data.init_db(db_filepath)
         if not status:
-            last_error = self.gpkg_dao.last_error
+            last_error = global_vars.gpkg_dao_data.last_error
             msg = f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}"
             tools_log.log_warning(msg)
             tools_qt.show_info_box(msg)
             return False
-        status, global_vars.db_qsql = self.gpkg_dao.init_qsql_db(db_filepath, global_vars.plugin_name)
+        status, global_vars.db_qsql = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, global_vars.plugin_name)
         if not status:
-            last_error = self.gpkg_dao.last_error
+            last_error = global_vars.gpkg_dao_data.last_error
             msg = f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}"
             tools_log.log_warning(msg)
             tools_qt.show_info_box(msg)
@@ -615,5 +618,6 @@ class GwAdminButton:
     def _select_active_locales(self):
 
         sql = f"SELECT locale as id, name as idval FROM locales WHERE active = 1"
-        rows = self.gpkg_dao.get_rows(sql)
+        rows = self.gpkg_dao_config.get_rows(sql)
         return rows
+
