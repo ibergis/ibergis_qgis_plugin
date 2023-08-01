@@ -27,6 +27,7 @@ class GwAdminButton:
     def __init__(self):
         """ Class to control action 'Admin' """
 
+        self.project_descript = None
         self.gpkg_full_path = None
         self.dict_folders_process =  {}
         self.plugin_dir = global_vars.plugin_dir
@@ -54,6 +55,7 @@ class GwAdminButton:
         """"""
 
         gpkg_name = tools_qt.get_text(self.dlg_readsql, 'gpkg_name', return_string_null=False)
+        project_descript = tools_qt.get_text(self.dlg_readsql, 'txt_description', return_string_null=False)
         project_path = tools_qt.get_text(self.dlg_readsql, 'data_path', return_string_null=False)
         project_srid = tools_qt.get_text(self.dlg_readsql, 'srid_id')
         project_locale = tools_qt.get_combo_value(self.dlg_readsql, self.cmb_locale, 0)
@@ -64,12 +66,14 @@ class GwAdminButton:
 
         # Set class variables
         self.gpkg_name = gpkg_name
+        self.project_descript = project_descript
         self.project_path = project_path
         self.project_epsg = project_srid
         self.locale = project_locale
 
         # Save in settings
         tools_gw.set_config_parser('btn_admin', 'gpkg_name', f'{self.gpkg_name}', prefix=False)
+        tools_gw.set_config_parser('btn_admin', 'project_description', f'{self.project_descript}', prefix=False)
         tools_gw.set_config_parser('btn_admin', 'project_path', f'{self.project_path}', prefix=False)
         tools_gw.set_config_parser('btn_admin', 'project_srid', f'{self.project_epsg}', prefix=False)
         tools_gw.set_config_parser('btn_admin', 'project_locale', f'{self.locale}', prefix=False)
@@ -142,12 +146,16 @@ class GwAdminButton:
         self.rdb_sample = self.dlg_readsql.findChild(QRadioButton, 'rdb_sample')
         self.rdb_data = self.dlg_readsql.findChild(QRadioButton, 'rdb_data')
         self.txt_gpkg_name = self.dlg_readsql.findChild(QLineEdit, 'gpkg_name')
+        self.txt_description = self.dlg_readsql.findChild(QLineEdit, 'txt_description')
         self.txt_data_path = self.dlg_readsql.findChild(QLineEdit, 'data_path')
         self.cmb_locale = self.dlg_readsql.findChild(QComboBox, 'cmb_locale')
         self.txt_srid = self.dlg_readsql.findChild(QLineEdit, 'srid_id')
+
         # Load user values
         self.txt_gpkg_name.setText(tools_gw.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
                                                              False, force_reload=True))
+        self.txt_description.setText(tools_gw.get_config_parser('btn_admin', 'project_description', "user", "session",
+                                                              False, force_reload=True))
         self.txt_data_path.setText(tools_gw.get_config_parser('btn_admin', 'project_path', "user", "session",
                                                               False, force_reload=True))
         self.txt_srid.setText(tools_gw.get_config_parser('btn_admin', 'project_srid', "user", "session",
