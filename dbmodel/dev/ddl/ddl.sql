@@ -33,59 +33,51 @@ CREATE TABLE config_param_user (
 );
 
 CREATE TABLE cat_landuses (
-	landuses_id integer primary key,
-	name text check (typeof(name)='text' or typeof(name)=null),
+	id integer primary key,
+	idval text check (typeof(idval)='text' or typeof(idval)=null),
 	sector_id check (typeof(sector_id)='integer' or typeof(sector_id)= null),
 	scenario_id check (typeof(scenario_id)='integer' or typeof(scenario_id)= null),
+    descript text check (typeof(descript)='text' or typeof(descript)=null),
 	manning real check (typeof(manning)='real' or typeof(manning)=null),
-	descript text check (typeof(descript)='text' or typeof(descript)=null),
 	active boolean check (typeof(active) in (0,1, null))
 );
 
 CREATE TABLE cat_scenario (
-    scenario_id integer PRIMARY KEY,
-    name text CHECK (typeof(name)='text' OR name=NULL),
+    id integer primary key,
+    idval text check (typeof(idval)='text' or typeof(idval)=null),
     sector_id check (typeof(sector_id)='integer' or typeof(sector_id)= null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    active boolean CHECK (typeof(active) IN (0,1,NULL))
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) --unique idval
 );
 
 CREATE TABLE cat_grate (
-    gratecat_id integer primary key,
-    gratecat text check (typeof(gratecat) = 'text' or gratecat = null),
+    id integer primary key,
+    idval text check (typeof(idval)='text' or typeof(idval)=null),
     length real check (typeof(length) = 'real' or length = null),
     width real check (typeof(width) = 'real' or width = null),
     a_param real check (typeof(a_param) = 'real' or a_param = null),
-    b_param real check (typeof(b_param) = 'real' or b_param = null)
+    b_param real check (typeof(b_param) = 'real' or b_param = null),
+    active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
-CREATE TABLE inp_curve (
-    curve_id integer PRIMARY KEY,
-    code text check (typeof(code)='text' or typeof(code)=null),
-    name text check (typeof(name)='text' or typeof(name)=null),
+CREATE TABLE cat_curve (
+    id integer primary key,
+    idval text check (typeof(idval)='text' or typeof(idval)=null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
     descript text check (typeof(descript)='text' or typeof(descript)=null),
     active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
-CREATE TABLE inp_curve_value (
-    curve_id integer PRIMARY KEY,
-    code text check (typeof(code)='text' or typeof(code)=null),
-    name text check (typeof(name)='text' or typeof(name)=null),
-    sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
-    scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
-    descript text check (typeof(descript)='text' or typeof(descript)=null),
+CREATE TABLE cat_curve_value (
+    id integer primary key,
     xcoord real CHECK (typeof(xcoord)='real' OR xcoord=NULL),
-    ycoord real CHECK (typeof(ycoord)='real' OR ycoord=NULL),
-    active boolean CHECK (typeof(active) IN (0,1,NULL))
+    ycoord real CHECK (typeof(ycoord)='real' OR ycoord=NULL)
 );
 
-CREATE TABLE inp_timeseries (
-    timeseries_id integer PRIMARY KEY,
-    timeseries text check (typeof(timeseries)='text' or typeof(timeseries)=null),
-    code text check (typeof(code)='text' or typeof(code)=null),
-    name text CHECK (typeof(name)='text' OR name=NULL),
+CREATE TABLE cat_timeseries (
+    id integer primary key,
+    idval text check (typeof(idval)='text' or typeof(idval)=null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -93,19 +85,14 @@ CREATE TABLE inp_timeseries (
     active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
 
-CREATE TABLE inp_timeseries_value (
-    timeseriesval_id integer PRIMARY KEY,
-    timeseries text check (typeof(timeseries)='text' or typeof(timeseries)=null),
-    code text check (typeof(code)='text' or typeof(code)=null),
-    name text CHECK (typeof(name)='text' OR name=NULL),
-    sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
-    scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
+CREATE TABLE cat_timeseries_value (
+    id integer primary key,
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-    val real CHECK (typeof(val)='real' OR val=NULL)
+    value real CHECK (typeof(value)='real' OR value=NULL)
 );
 
+--create cat_pattern
 
 -- -----------
 -- GEOM TABLES
@@ -113,32 +100,32 @@ CREATE TABLE inp_timeseries_value (
 
 create table sector (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
-    sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text check (typeof(descript) = 'text' or descript = null),
     stylesheet text check (typeof(stylesheet) = 'text' or stylesheet = null),
     active boolean check (typeof(active) in (0, 1, null)),
+    annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE elem_polygon (
+CREATE TABLE polygon (
     fid integer PRIMARY KEY,
-    code text CHECK (typeof(code)= 'text' OR code=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     dmax real CHECK (typeof(dmax)='real' OR dmax=NULL),
     structured boolean CHECK (typeof(structured) IN (0,1,NULL)),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE elem_manzone (
+CREATE TABLE manzone (
     fid integer PRIMARY KEY,
-    code text CHECK (typeof(code)= 'text' OR code=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -146,13 +133,13 @@ CREATE TABLE elem_manzone (
     land_use integer CHECK (typeof(land_use)='integer' OR land_use=NULL),
     custom_manning real CHECK (typeof(custom_manning)='real' OR custom_manning=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE elem_losszone (
+CREATE TABLE losszone (
     fid integer PRIMARY KEY,
-    code text CHECK (typeof(code)= 'text' OR code=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -165,13 +152,13 @@ CREATE TABLE elem_losszone (
     lossgreen_aparam real CHECK (typeof(lossgreen_aparam)='real' OR lossgreen_aparam=NULL),
     lossgreen_bparam real CHECK (typeof(lossgreen_bparam)='real' OR lossgreen_bparam=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE elem_roof (
+CREATE TABLE roof (
     fid integer PRIMARY KEY,
-    code text CHECK (typeof(code)= 'text' OR code=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -184,13 +171,13 @@ CREATE TABLE elem_roof (
     inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
     lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
 CREATE TABLE elem_tin (
     fid integer PRIMARY KEY,
-    code text CHECK (typeof(code)= 'text' OR code=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -206,26 +193,26 @@ CREATE TABLE elem_tin (
     ini_type real CHECK (typeof(ini_type)='real' OR ini_type=NULL),
     ini_value real CHECK (typeof(ini_value)='real' OR ini_value=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
 CREATE TABLE elem_edge (
     fid integer PRIMARY KEY,
- 	code text CHECK (typeof(code)= 'text' OR code=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     vertex_id1 integer CHECK (typeof(vertex_id1)='integer' OR vertex_id1=NULL),
     vertex_id2 integer CHECK (typeof(vertex_id2)='integer' OR vertex_id2=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
 CREATE TABLE elem_vertex (
     fid integer PRIMARY KEY,
-    code text CHECK (typeof(code)= 'text' OR code=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -233,26 +220,33 @@ CREATE TABLE elem_vertex (
 	latitude real CHECK (typeof(latitude)='real' OR latitude=NULL),
 	longitude real CHECK (typeof(longitude)='real' OR longitude=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-	geom geometry
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
+    geom geometry
 );
 
-CREATE TABLE elem_raingage (
+CREATE TABLE raingage (
     fid integer PRIMARY KEY,
-    code text CHECK (typeof(code)= 'text' OR code=NULL),
-    name text CHECK (typeof(name)='text' OR name=NULL),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     rain_type boolean CHECK (typeof(rain_type) IN (0,1,NULL)),
+    form_type text check (typeof(form_type) = 'text' or form_type = null),
     timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL),
+    rg_id text check (typeof(rg_id) = 'text' or rg_id = null),
+    intvl text check (typeof(intvl) = 'text' or intvl = null),
+    scf real check (typeof(scf) = 'real' or scf = null),
+    fname text check (typeof(fname) = 'text' or fname = null),
+    sta text check (typeof(sta) = 'text' or sta = null),
+    units text check (typeof(units) = 'text' or units = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE elem_link (
+CREATE TABLE link (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_d integer check (typeof(scenario_d) = 'integer' or scenario_d = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -261,12 +255,13 @@ CREATE TABLE elem_link (
     exit_type text check (typeof(exit_type) = 'text' or exit_type = null),
     exit_id text check (typeof(exit_id) = 'text' or exit_id = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE elem_gully (
+CREATE TABLE gully (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     name text check (typeof(name) = 'text' or name = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_d integer check (typeof(scenario_d) = 'integer' or scenario_d = null),
@@ -285,13 +280,13 @@ CREATE TABLE elem_gully (
     custom_b_param real check (typeof(custom_b_param) = 'real' or custom_b_param = null),
     efficiency real check (typeof(efficiency) = 'real' or efficiency = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_conduit (
+CREATE TABLE conduit (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -320,13 +315,13 @@ CREATE TABLE inp_conduit (
     flap text check (typeof(flap) = 'text' or flap = null),
     seepage real check (typeof(seepage) = 'real' or seepage = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_subcatchment ( 
+CREATE TABLE subcatchment ( 
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -356,13 +351,13 @@ CREATE TABLE inp_subcatchment (
     initdef real check (typeof(initdef) = 'real' or initdef = null),
     curveno real check (typeof(curveno) = 'real' or curveno = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_outlet (
+CREATE TABLE outlet (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name)='text' or name= null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id)='integer' or sector_id= null),
     scenario_id integer check (typeof(scenario_id)='integer' or scenario_id= null),
     descript text check (typeof(descript)='text' or descript= null),
@@ -374,13 +369,13 @@ CREATE TABLE inp_outlet (
     cd2 real check (typeof(cd2)='real' or cd2= null),
     curve_id real check (typeof(curve_id)='real' or curve_id= null),
     annotation real check (typeof(annotation)='real' or annotation= null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_orifice (
+CREATE TABLE orifice (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -395,13 +390,13 @@ CREATE TABLE inp_orifice (
     flap text check (typeof(flap) = 'text' or flap = null),
     close_time datetime check (typeof(close_time) = 'datetime' or close_time = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_weir (
+CREATE TABLE weir (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -421,13 +416,13 @@ CREATE TABLE inp_weir (
     road_surf real check (typeof(road_surf) = 'real' or road_surf = null),
     curve_id real check (typeof(curve_id) = 'real' or curve_id = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_pump (
+CREATE TABLE pump (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript  check (typeof(descript) = '' or descript = null),
@@ -438,13 +433,13 @@ CREATE TABLE inp_pump (
     startup rea check (typeof(startup) = 'rea' or startup = null),
     shutoff real check (typeof(shutoff) = 'real' or shutoff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_outfall (
+CREATE TABLE outfall (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -457,13 +452,13 @@ CREATE TABLE inp_outfall (
     curve_id text check (typeof(curve_id) = 'text' or curve_id = null),
     timeser_id text check (typeof(timeser_id) = 'text' or timeser_id = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_divider (
+CREATE TABLE divider (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -481,13 +476,13 @@ CREATE TABLE inp_divider (
     q0 real check (typeof(q0) = 'real' or q0 = null),
     qmax real check (typeof(qmax) = 'real' or qmax = null),
     annotation real check (typeof(annotation) = 'real' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_storage (
+CREATE TABLE storage (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -507,13 +502,13 @@ CREATE TABLE inp_storage (
     ksat real check (typeof(ksat) = 'real' or ksat = null),
     imd real check (typeof(imd) = 'real' or imd = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
-CREATE TABLE inp_junction (
+CREATE TABLE junction (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
+    fidval text check (typeof(fidval) = 'text' or fidval = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -525,24 +520,6 @@ CREATE TABLE inp_junction (
     ysur real check (typeof(ysur) = 'real' or ysur = null),
     apond real check (typeof(apond) = 'real' or apond = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
-);
-
-CREATE TABLE inp_raingage (
-    fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
-    sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
-    scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
-    descript text check (typeof(descript) = 'text' or descript = null),
-    rg_id text check (typeof(rg_id) = 'text' or rg_id = null),
-    form_type text check (typeof(form_type) = 'text' or form_type = null),
-    intvl text check (typeof(intvl) = 'text' or intvl = null),
-    scf real check (typeof(scf) = 'real' or scf = null),
-    timser_id text check (typeof(timser_id) = 'text' or timser_id = null),
-    fname text check (typeof(fname) = 'text' or fname = null),
-    sta text check (typeof(sta) = 'text' or sta = null),
-    units text check (typeof(units) = 'text' or units = null),
-    annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
