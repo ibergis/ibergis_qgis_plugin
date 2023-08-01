@@ -1,18 +1,31 @@
-import geopandas as gpd
 from pathlib import Path
 from . import importinp_core as core
 from ..dialog import GwAction
+from ...ui.ui_manager import GwImportInpUi
+from ...utils import tools_gw
 from ...utils.generate_swmm_inp import inp2dict
 from .... import global_vars
 
 
 class GwImportINPButton(GwAction):
-    """Button XX: ImportINP"""
+    """Button 42: ImportINP"""
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
     def clicked_event(self):
+        self.dlg_import = GwImportInpUi()
+        self.dlg_import.btn_ok.clicked.connect(self.import_file)
+        tools_gw.open_dialog(self.dlg_import, dlg_name="import")
+
+    def get_colums(self, table):
+        rows = global_vars.gpkg_dao_data.get_rows(
+            f"select name from pragma_table_info('{table}')"
+        )
+        columns = {row[0] for row in rows if row[0] not in ("fid", "geom")}
+        return columns
+
+    def import_file(self):
         inpfile = Path.home() / "Documents/drain/swmm.inp"
         gpkg_file = global_vars.gpkg_dao_data.db_filepath
         dicts = inp2dict(inpfile)
@@ -26,10 +39,3 @@ class GwImportINPButton(GwAction):
         )
         for row in rows:
             print(row)
-
-    def get_colums(self, table):
-        rows = global_vars.gpkg_dao_data.get_rows(
-            f"select name from pragma_table_info('{table}')"
-        )
-        columns = {row[0] for row in rows if row[0] not in ("fid", "geom")}
-        return columns

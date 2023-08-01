@@ -72,6 +72,9 @@ class GwCsvUi(GwDialog, FORM_CLASS):
 FORM_CLASS = _get_ui_class('toolbox_reports.ui', 'utilities')
 class GwToolboxReportsUi(GwDialog, FORM_CLASS):
     pass
+FORM_CLASS = _get_ui_class('import_inp.ui', 'utilities')
+class GwImportInpUi(GwDialog, FORM_CLASS):
+    pass
 # endregion
 
 
