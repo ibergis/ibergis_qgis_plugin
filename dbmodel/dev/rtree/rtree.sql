@@ -29,6 +29,5 @@ CREATE VIRTUAL TABLE rtree_outfall_geom USING rtree (id, minx, maxx, miny, maxy)
 CREATE VIRTUAL TABLE rtree_divider_geom USING rtree (id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_storage_geom USING rtree (id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_junction_geom USING rtree (id, minx, maxx, miny, maxy);
-CREATE VIRTUAL TABLE rtree_raingage_geom USING rtree (id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_link_geom USING rtree (id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_gully_geom USING rtree (id, minx, maxx, miny, maxy);
