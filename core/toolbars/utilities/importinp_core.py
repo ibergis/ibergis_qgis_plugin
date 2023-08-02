@@ -71,7 +71,7 @@ _tables = (
             "FromNode": "node1",
             "ToNode": "node2",
             # "InOffset": "",
-            # "RateCurve": "outlet_type",
+            "RateCurve": "outlet_type",
             "Qcoeff": "cd1",
             "Qexpon": "cd2",
             "FlapGate": "flap",
@@ -106,7 +106,7 @@ _tables = (
             "ToNode": "node2",
             "Type": "weir_type",
             # "CrestHeigh": "",
-            # "Qcoeff": "",
+            "Qcoeff": "cd2",
             "FlapGate": "flap",
             # "EndContrac": "",
             # "EndCoeff": "",
@@ -115,16 +115,9 @@ _tables = (
             "RoadSurf": "road_surf",
             "CoeffCurve": "curve_id",
             "Annotation": "annotation",
-            # "Height": "",
-            # "Length": "",
-            # "SideSlope": "",
-            # geom1
-            # geom2
-            # geom3
-            # elev
-            # custom_elev
-            # cd2
-            # ec
+            "Height": "elev",
+            "Length": "geom1",
+            "SideSlope": "geom3",
         },
     },
     {
@@ -147,12 +140,10 @@ _tables = (
         "mapper": {
             "Name": "code",
             "Elevation": "elev",
-            # custom_elev
-            # timeser_id
             "Type": "outfall_type",
             "FixedStage": "stage",
             "Curve_TS": "curve_id",
-            # "FlapGate": "gate",
+            "FlapGate": "gate",
             "RouteTo": "routeto",
             "Annotation": "annotation",
         },
@@ -163,19 +154,16 @@ _tables = (
         "mapper": {
             "Name": "code",
             "Elevation": "elev",
-            # custom_elev
-            # node_id
-            # "DivertLink": "",
+            "DivertLink": "node_id",
             "Type": "divider_type",
             # "CutoffFlow": "",
             "Curve": "curve_id",
-            # "WeirMinFlo": "qmin",
-            # "WeirMaxDep": "qmax",
-            # "WeirCoeff": "q0",
-            # "MaxDepth": "ymax",
-            # custom_ymax
-            # "InitDepth": "y0",
-            # "SurDepth": "ysur",
+            "WeirMinFlo": "qmin",
+            "WeirMaxDep": "qmax",
+            "WeirCoeff": "q0",
+            "MaxDepth": "ymax",
+            "InitDepth": "y0",
+            "SurDepth": "ysur",
             "Aponded": "apond",
             "Annotation": "annotation",
         },
@@ -186,18 +174,13 @@ _tables = (
         "mapper": {
             "Name": "code",
             "Elevation": "elev",
-            # custom_elev
             "MaxDepth": "ymax",
-            # custom_ymax
             "InitDepth": "y0",
             "Type": "storage_type",
             "Curve": "curve_id",
-            # a1
-            # a2
-            # a0
-            # "Coeff": "",
-            # "Exponent": "",
-            # "Constant": "",
+            "Coeff": "a1",
+            "Exponent": "a2",
+            "Constant": "a0",
             # "MajorAxis": "",
             # "MinorAxis": "",
             # "SideSlope": "",
@@ -216,9 +199,7 @@ _tables = (
         "mapper": {
             "Name": "code",
             "Elevation": "elev",
-            # custom_elev
             "MaxDepth": "ymax",
-            # custom_ymax
             "InitDepth": "y0",
             "SurDepth": "ysur",
             "Aponded": "apond",
@@ -230,11 +211,10 @@ _tables = (
         "section": "RAINGAGE",
         "mapper": {
             "Name": "code",
-            # rg_id
-            # "Format": "form_type",
+            "Format": "form_type",
             "Interval": "intvl",
             "SCF": "scf",
-            # "DataSource": "source",
+            "DataSource": "source",
             "SeriesName": "timser_id",
             "FileName": "fname",
             "StationID": "sta",
