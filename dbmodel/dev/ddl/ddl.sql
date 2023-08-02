@@ -27,8 +27,7 @@ CREATE TABLE selector_scenario (
 );
 
 CREATE TABLE config_param_user (
-	parameter_id integer primary key,	
-	parameter text CHECK (typeof(parameter)='text' OR parameter=NULL),
+	parameter_id text primary key,	
 	value text CHECK (typeof(value)='text' OR value=NULL)
 );
 
