@@ -100,7 +100,7 @@ CREATE TABLE cat_timeseries_value (
 
 create table sector (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text check (typeof(descript) = 'text' or descript = null),
     stylesheet text check (typeof(stylesheet) = 'text' or stylesheet = null),
@@ -112,7 +112,7 @@ create table sector (
 
 CREATE TABLE polygon (
     fid integer PRIMARY KEY,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -125,7 +125,7 @@ CREATE TABLE polygon (
 
 CREATE TABLE manzone (
     fid integer PRIMARY KEY,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -139,7 +139,7 @@ CREATE TABLE manzone (
 
 CREATE TABLE losszone (
     fid integer PRIMARY KEY,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -158,7 +158,7 @@ CREATE TABLE losszone (
 
 CREATE TABLE roof (
     fid integer PRIMARY KEY,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -177,7 +177,7 @@ CREATE TABLE roof (
 
 CREATE TABLE elem_tin (
     fid integer PRIMARY KEY,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -199,7 +199,7 @@ CREATE TABLE elem_tin (
 
 CREATE TABLE elem_edge (
     fid integer PRIMARY KEY,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -212,7 +212,7 @@ CREATE TABLE elem_edge (
 
 CREATE TABLE elem_vertex (
     fid integer PRIMARY KEY,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -226,7 +226,7 @@ CREATE TABLE elem_vertex (
 
 CREATE TABLE raingage (
     fid integer PRIMARY KEY,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
@@ -246,7 +246,7 @@ CREATE TABLE raingage (
 
 CREATE TABLE link (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_d integer check (typeof(scenario_d) = 'integer' or scenario_d = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -261,7 +261,7 @@ CREATE TABLE link (
 
 CREATE TABLE gully (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     name text check (typeof(name) = 'text' or name = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_d integer check (typeof(scenario_d) = 'integer' or scenario_d = null),
@@ -286,7 +286,7 @@ CREATE TABLE gully (
 
 CREATE TABLE conduit (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -321,7 +321,7 @@ CREATE TABLE conduit (
 
 CREATE TABLE subcatchment ( 
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -357,7 +357,7 @@ CREATE TABLE subcatchment (
 
 CREATE TABLE outlet (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id)='integer' or sector_id= null),
     scenario_id integer check (typeof(scenario_id)='integer' or scenario_id= null),
     descript text check (typeof(descript)='text' or descript= null),
@@ -375,7 +375,7 @@ CREATE TABLE outlet (
 
 CREATE TABLE orifice (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -396,7 +396,7 @@ CREATE TABLE orifice (
 
 CREATE TABLE weir (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -422,7 +422,7 @@ CREATE TABLE weir (
 
 CREATE TABLE pump (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript  check (typeof(descript) = '' or descript = null),
@@ -439,7 +439,7 @@ CREATE TABLE pump (
 
 CREATE TABLE outfall (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -458,7 +458,7 @@ CREATE TABLE outfall (
 
 CREATE TABLE divider (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -482,7 +482,7 @@ CREATE TABLE divider (
 
 CREATE TABLE storage (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
@@ -508,7 +508,7 @@ CREATE TABLE storage (
 
 CREATE TABLE junction (
     fid integer primary key,
-    fidval text check (typeof(fidval) = 'text' or fidval = null),
+    code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
