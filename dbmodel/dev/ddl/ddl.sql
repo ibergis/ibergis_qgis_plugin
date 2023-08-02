@@ -18,12 +18,12 @@ CREATE TABLE sys_selector (
 
 CREATE TABLE selector_sector (
     sector_id integer primary key,
-    name text check (typeof(name) = 'text' or name = null)
+    idval text unique check (typeof(idval)='text' or idval = not null),
 );
 
 CREATE TABLE selector_scenario (
     scenario_id integer primary key,
-    name text check (typeof(name) = 'text' or name = null)
+    idval text unique check (typeof(idval)='text' or idval = not null),
 );
 
 CREATE TABLE config_param_user (
@@ -61,7 +61,7 @@ CREATE TABLE cat_grate (
 
 CREATE TABLE cat_curve (
     id integer primary key,
-    idval text check (typeof(idval)='text' or typeof(idval)=null),
+    idval text unique check (typeof(idval)='text' or typeof(idval)=null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
     descript text check (typeof(descript)='text' or typeof(descript)=null),
@@ -70,6 +70,7 @@ CREATE TABLE cat_curve (
 
 CREATE TABLE cat_curve_value (
     id integer primary key,
+    idval text unique check (typeof(idval)='text' or idval = not null),
     xcoord real CHECK (typeof(xcoord)='real' OR xcoord=NULL),
     ycoord real CHECK (typeof(ycoord)='real' OR ycoord=NULL)
 );
@@ -86,6 +87,7 @@ CREATE TABLE cat_timeseries (
 
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
+    idval text unique check (typeof(idval)='text' or idval = not null),
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL)
