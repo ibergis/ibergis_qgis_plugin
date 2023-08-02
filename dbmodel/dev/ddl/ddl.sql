@@ -23,7 +23,7 @@ CREATE TABLE selector_sector (
 
 CREATE TABLE selector_scenario (
     scenario_id integer primary key,
-    idval text unique check (typeof(idval)='text' or idval = not null),
+    idval text unique check (typeof(idval)='text' or idval = not null)
 );
 
 CREATE TABLE config_param_user (
