@@ -18,7 +18,7 @@ CREATE TABLE sys_selector (
 
 CREATE TABLE selector_sector (
     sector_id integer primary key,
-    idval text unique check (typeof(idval)='text' or idval = not null),
+    idval text unique check (typeof(idval)='text' or idval = not null)
 );
 
 CREATE TABLE selector_scenario (
