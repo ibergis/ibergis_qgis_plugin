@@ -262,7 +262,6 @@ CREATE TABLE link (
 CREATE TABLE gully (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
-    name text check (typeof(name) = 'text' or name = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_d integer check (typeof(scenario_d) = 'integer' or scenario_d = null),
     descript text check (typeof(descript) = 'text' or descript = null),
