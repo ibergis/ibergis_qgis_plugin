@@ -1,10 +1,15 @@
+from functools import partial
 from pathlib import Path
+
+from qgis.PyQt.QtWidgets import QFileDialog
+
 from . import importinp_core as core
 from ..dialog import GwAction
 from ...ui.ui_manager import GwImportInpUi
 from ...utils import tools_gw
 from ...utils.generate_swmm_inp import inp2dict
 from .... import global_vars
+from ....lib import tools_qt
 
 
 class GwImportINPButton(GwAction):
@@ -15,27 +20,51 @@ class GwImportINPButton(GwAction):
 
     def clicked_event(self):
         self.dlg_import = GwImportInpUi()
-        self.dlg_import.btn_ok.clicked.connect(self.import_file)
-        tools_gw.open_dialog(self.dlg_import, dlg_name="import")
+        dlg = self.dlg_import
 
-    def get_colums(self, table):
+        tools_gw.load_settings(dlg)
+        self._set_initial_signals()
+        tools_gw.disable_tab_log(dlg)
+        tools_gw.open_dialog(dlg, dlg_name="import")
+
+    def _get_colums(self, table):
         rows = global_vars.gpkg_dao_data.get_rows(
             f"select name from pragma_table_info('{table}')"
         )
         columns = {row[0] for row in rows if row[0] not in ("fid", "geom")}
         return columns
 
-    def import_file(self):
+    def _get_file_dialog(self, widget):
+        # Check if selected file exists. Set default value if necessary
+        file_path = tools_qt.get_text(self.dlg_import, widget)
+        if file_path in (None, "null") or not Path(file_path).exists():
+            file_path = str(Path.home())
+
+        # Open dialog to select file
+        file_dialog = QFileDialog()
+        file_dialog.setFileMode(QFileDialog.ExistingFile)
+        msg = "Select file"
+        file_path = file_dialog.getOpenFileName(
+            parent=None, caption=tools_qt.tr(msg), directory=file_path
+        )[0]
+        if file_path:
+            tools_qt.set_widget_text(self.dlg_import, widget, str(file_path))
+
+    def _import_file(self):
         inpfile = Path.home() / "Documents/drain/swmm.inp"
         gpkg_file = global_vars.gpkg_dao_data.db_filepath
         dicts = inp2dict(inpfile)
-        columns = {table: self.get_colums(table) for table in core.tables()}
+        columns = {table: self._get_colums(table) for table in core.tables()}
         data = core.get_dataframes(dicts, columns, global_vars.data_epsg)
         for item in data:
+            print(f"Saving table {item['table']}")
             item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
 
-        rows = global_vars.gpkg_dao_data.get_rows(
-            "select * from inp_conduit where fid > 100 limit 5"
+    def _set_initial_signals(self):
+        dlg = self.dlg_import
+        dlg.btn_push_inp_input_file.clicked.connect(
+            partial(self._get_file_dialog, dlg.data_inp_input_file)
         )
-        for row in rows:
-            print(row)
+        dlg.btn_ok.clicked.connect(self._import_file)
+        dlg.btn_cancel.clicked.connect(dlg.reject)
+        dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
