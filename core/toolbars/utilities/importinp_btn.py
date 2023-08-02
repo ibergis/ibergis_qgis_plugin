@@ -23,6 +23,7 @@ class GwImportINPButton(GwAction):
         dlg = self.dlg_import
 
         tools_gw.load_settings(dlg)
+        self._load_user_values()
         self._set_initial_signals()
         tools_gw.disable_tab_log(dlg)
         tools_gw.open_dialog(dlg, dlg_name="import")
@@ -30,6 +31,7 @@ class GwImportINPButton(GwAction):
     def _execute_process(self):
         if not self._validate_inputs():
             return
+        self._save_user_values()
         self._import_file()
 
     def _get_colums(self, table):
@@ -64,6 +66,12 @@ class GwImportINPButton(GwAction):
             print(f"Saving table {item['table']}")
             item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
 
+    def _load_user_values(self):
+        self._user_values("load")
+
+    def _save_user_values(self):
+        self._user_values("save")
+
     def _set_initial_signals(self):
         dlg = self.dlg_import
         dlg.btn_push_inp_input_file.clicked.connect(
@@ -73,6 +81,27 @@ class GwImportINPButton(GwAction):
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
 
+    def _user_values(self, action):
+        txt_widgets = ["data_inp_input_file"]
+
+        for widget in txt_widgets:
+            if action == "load":
+                value = tools_gw.get_config_parser(
+                    "add_demand_check",
+                    widget,
+                    "user",
+                    "session",
+                )
+                tools_qt.set_widget_text(self.dlg_import, widget, value)
+            elif action == "save":
+                value = tools_qt.get_text(self.dlg_import, widget, False, False)
+                value = value.replace("%", "%%")
+                tools_gw.set_config_parser(
+                    "add_demand_check",
+                    widget,
+                    value,
+                )
+
     def _validate_inputs(self):
         dlg = self.dlg_import
 
@@ -80,6 +109,6 @@ class GwImportINPButton(GwAction):
         if not input_file or not Path(input_file).exists():
             tools_qt.show_info_box("You should select an input INP file!")
             return False
-        
+
         self.input_file = input_file
         return True
