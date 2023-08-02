@@ -116,7 +116,7 @@ CREATE TABLE polygon (
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    cellsize real CHECK (typeof(dmax)='real' OR dmax=NULL),
+    cellsize real CHECK (typeof(cellsize)='real' OR cellsize=NULL),
     structured boolean CHECK (typeof(structured) IN (0,1,NULL)),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
