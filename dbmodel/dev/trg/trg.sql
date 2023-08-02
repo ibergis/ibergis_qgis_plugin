@@ -25,6 +25,7 @@ CREATE TRIGGER "trigger_delete_feature_count_cat_pattern" AFTER DELETE ON "cat_p
 
 CREATE TRIGGER "trigger_delete_feature_count_sector" AFTER DELETE ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_delete_feature_count_polygon" AFTER DELETE ON "polygon"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('polygon'); END;
+CREATE TRIGGER "trigger_delete_feature_count_terrain" AFTER DELETE ON "terrain"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('terrain'); END;
 CREATE TRIGGER "trigger_delete_feature_count_manzone" AFTER DELETE ON "manzone"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('manzone'); END;
 CREATE TRIGGER "trigger_delete_feature_count_losszone" AFTER DELETE ON "losszone"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('losszone'); END;
 CREATE TRIGGER "trigger_delete_feature_count_roof" AFTER DELETE ON "roof" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('roof'); END;
@@ -60,6 +61,7 @@ CREATE TRIGGER "trigger_insert_feature_count_cat_pattern" AFTER INSERT ON "cat_p
 
 CREATE TRIGGER "trigger_insert_feature_count_sector" AFTER INSERT ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_insert_feature_count_polygon" AFTER INSERT ON "polygon"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('polygon'); END;
+CREATE TRIGGER "trigger_insert_feature_count_terrain" AFTER INSERT ON "terrain"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('terrain'); END;
 CREATE TRIGGER "trigger_insert_feature_count_manzone" AFTER INSERT ON "manzone"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('manzone'); END;
 CREATE TRIGGER "trigger_insert_feature_count_losszone" AFTER INSERT ON "losszone" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('losszone'); END;
 CREATE TRIGGER "trigger_insert_feature_count_roof" AFTER INSERT ON "roof" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('roof'); END;
@@ -83,6 +85,7 @@ CREATE TRIGGER "trigger_insert_feature_count_gully" AFTER INSERT ON "gully" BEGI
 
 CREATE TRIGGER "rtree_sector_geom_delete" AFTER DELETE ON "sector" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_sector_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_polygon_geom_delete" AFTER DELETE ON "polygon" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_polygon_geom" WHERE id= OLD."fid"; END;
+CREATE TRIGGER "rtree_terrain_geom_delete" AFTER DELETE ON "terrain" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_terrain_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_manzone_geom_delete" AFTER DELETE ON "manzone" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_manzone_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_losszone_geom_delete" AFTER DELETE ON "losszone" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_losszone_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_roof_geom_delete" AFTER DELETE ON "roof" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_roof_geom" WHERE id= OLD."fid"; END;
@@ -105,6 +108,7 @@ CREATE TRIGGER "rtree_gully_geom_delete" AFTER DELETE ON "gully" WHEN (old."geom
 
 CREATE TRIGGER "rtree_sector_geom_insert" AFTER INSERT ON "sector" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_polygon_geom_insert" AFTER INSERT ON "polygon" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_polygon_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
+CREATE TRIGGER "rtree_terrain_geom_insert" AFTER INSERT ON "terrain" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_terrain_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_manzone_geom_insert" AFTER INSERT ON "manzone" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_manzone_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_losszone_geom_insert" AFTER INSERT ON "losszone" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_losszone_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_roof_geom_insert" AFTER INSERT ON "roof" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_roof_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
@@ -127,6 +131,7 @@ CREATE TRIGGER "rtree_gully_geom_insert" AFTER INSERT ON "gully" WHEN (new."geom
 
 CREATE TRIGGER "rtree_sector_geom_update1" AFTER UPDATE OF "geom" ON "sector" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_polygon_geom_update1" AFTER UPDATE OF "geom" ON "polygon" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_polygon_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
+CREATE TRIGGER "rtree_terrain_geom_update1" AFTER UPDATE OF "geom" ON "terrain" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_terrain_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_manzone_geom_update1" AFTER UPDATE OF "geom" ON "manzone" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_manzone_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_losszone_geom_update1" AFTER UPDATE OF "geom" ON "losszone" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_losszone_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_roof_geom_update1" AFTER UPDATE OF "geom" ON "roof" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_roof_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
@@ -149,6 +154,7 @@ CREATE TRIGGER "rtree_gully_geom_update1" AFTER UPDATE OF "geom" ON "gully" WHEN
 
 CREATE TRIGGER "rtree_sector_geom_update2" AFTER UPDATE OF "geom" ON "sector" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_sector_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_polygon_geom_update2" AFTER UPDATE OF "geom" ON "polygon" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_polygon_geom" WHERE id= OLD."fid"; END;
+CREATE TRIGGER "rtree_terrain_geom_update2" AFTER UPDATE OF "geom" ON "terrain" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_terrain_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_manzone_geom_update2" AFTER UPDATE OF "geom" ON "manzone" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_manzone_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_losszone_geom_update2" AFTER UPDATE OF "geom" ON "losszone" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_losszone_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_roof_geom_update2" AFTER UPDATE OF "geom" ON "roof" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_roof_geom" WHERE id= OLD."fid"; END;
@@ -171,6 +177,7 @@ CREATE TRIGGER "rtree_gully_geom_update2" AFTER UPDATE OF "geom" ON "gully" WHEN
 
 CREATE TRIGGER "rtree_sector_geom_update3" AFTER UPDATE ON "sector" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_sector_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_polygon_geom_update3" AFTER UPDATE ON "polygon" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_polygon_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_polygon_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
+CREATE TRIGGER "rtree_terrain_geom_update3" AFTER UPDATE ON "terrain" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_terrain_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_terrain_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_manzone_geom_update3" AFTER UPDATE ON "manzone" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_manzone_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_manzone_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_losszone_geom_update3" AFTER UPDATE ON "losszone" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_losszone_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_losszone_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_roof_geom_update3" AFTER UPDATE ON "roof" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_roof_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_roof_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
@@ -193,6 +200,7 @@ CREATE TRIGGER "rtree_gully_geom_update3" AFTER UPDATE ON "gully" WHEN OLD."fid"
 
 CREATE TRIGGER "rtree_sector_geom_update4" AFTER UPDATE ON "sector" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_sector_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_polygon_geom_update4" AFTER UPDATE ON "polygon" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_polygon_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
+CREATE TRIGGER "rtree_terrain_geom_update4" AFTER UPDATE ON "terrain" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_terrain_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_manzone_geom_update4" AFTER UPDATE ON "manzone" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_manzone_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_losszone_geom_update4" AFTER UPDATE ON "losszone" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_losszone_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_roof_geom_update4" AFTER UPDATE ON "roof" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_roof_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
