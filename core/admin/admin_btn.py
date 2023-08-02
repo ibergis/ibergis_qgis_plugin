@@ -4,6 +4,8 @@ The program is free software: you can redistribute it and/or modify it under the
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
 """
+import time
+import getpass
 # -*- coding: utf-8 -*-
 import os
 from functools import partial
@@ -27,6 +29,7 @@ class GwAdminButton:
     def __init__(self):
         """ Class to control action 'Admin' """
 
+        self.project_params = {}
         self.project_descript = None
         self.gpkg_full_path = None
         self.dict_folders_process =  {}
@@ -70,6 +73,10 @@ class GwAdminButton:
         self.project_path = project_path
         self.project_epsg = project_srid
         self.locale = project_locale
+
+        log_suffix = '%Y%m%d %H:%M:%S'
+        self.project_params = {"project_name": self.gpkg_name, "project_descript": self.project_descript, "project_user": getpass.getuser(),
+                              "project_tstamp": str(time.strftime(log_suffix)),"project_version": self.plugin_version}
 
         # Save in settings
         tools_gw.set_config_parser('btn_admin', 'gpkg_name', f'{self.gpkg_name}', prefix=False)
@@ -520,27 +527,40 @@ class GwAdminButton:
     def populate_config_params(self):
         """Populate table config_param_user"""
 
-        sql_select = f"SELECT rowid, id, vdefault FROM sys_param_user"
+        sql_select = f"SELECT id, vdefault FROM sys_param_user"
         rows = self.gpkg_dao_config.get_rows(sql_select)
 
         if not rows:
             return False
 
         for row in rows:
-            id = row[0]
-            param = row[1]
-            value = row[2]
-            sql_insert = f"INSERT INTO config_param_user (parameter_id, parameter, value) VALUES ({id},'{param}','{value}')"
+            data = (row[0], row[1])
+            sql_insert = f"INSERT INTO config_param_user (parameter_id, value) VALUES (?,?)"
             try:
-                global_vars.gpkg_dao_data.execute_script_sql(sql_insert)
+                global_vars.gpkg_dao_data.execute_sql_placeholder(sql_insert, data)
             except Exception as e:
                 msg = f"Error executing SQL: {sql_insert}\nDatabase error: {global_vars.gpkg_dao_data.last_error}"
                 tools_log.log_warning(msg)
                 tools_qt.show_info_box(msg)
                 return False
 
+        self.populate_project_params()
+
         return True
 
+
+    def populate_project_params(self):
+        """Populate project params in config_param_user"""
+
+        for key, value in self.project_params.items():
+            sql = f"UPDATE config_param_user SET value = '{value}' WHERE parameter_id='{key}'"
+            try:
+                global_vars.gpkg_dao_data.execute_sql(sql)
+            except Exception as e:
+                msg = f"Error executing SQL: {sql}\nDatabase error: {global_vars.gpkg_dao_data.last_error}"
+                tools_log.log_warning(msg)
+                tools_qt.show_info_box(msg)
+                return False
 
 
     def _check_database_connection(self, db_filepath, database_name):
@@ -550,7 +570,6 @@ class GwAdminButton:
         gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
         global_vars.gpkg_dao_data = gpkg_dao_data
 
-
         # Check if file path exists
         if not os.path.exists(db_filepath):
             tools_log.log_info(f"File not found: {db_filepath}")
@@ -558,17 +577,16 @@ class GwAdminButton:
 
         # Set DB connection
         tools_log.log_info(f"Set database connection")
-        status, global_vars.db_qsql_data = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
-        if not status:
-            last_error = global_vars.gpkg_dao_data.last_error
-            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
-            return False
         status = global_vars.gpkg_dao_data.init_db(db_filepath)
         if not status:
             last_error = global_vars.gpkg_dao_data.last_error
             tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
             return False
-
+        status, global_vars.db_qsql_data = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
+        if not status:
+            last_error = global_vars.gpkg_dao_data.last_error
+            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            return False
         tools_log.log_info(f"Database connection successful")
         return True
 

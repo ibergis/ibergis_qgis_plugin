@@ -19,13 +19,13 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_curve_value', 'attributes', 'cat_curve_value', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_timeseries', 'attributes', 'cat_timeseries', '',  0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_timeseries_value', 'attributes', 'cat_timeseries_value', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_losses', 'attributes', 'cat_losses', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_losses_values', 'attributes', 'cat_losses_values', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_landuses', 'attributes', 'cat_landuses', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_grate', 'attributes', 'cat_grate', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_pattern', 'attributes', 'cat_pattern', '', 0, 0, 0, 0, 0, 0);
 
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sector', 'features', 'sector', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('polygon', 'features', 'polygon', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('terrain', 'features', 'terrain', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('manzone', 'features', 'manzone', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('losszone', 'features', 'losszone', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('roof', 'features', 'roof', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -36,7 +36,7 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('link', 'features', 'link', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('gully', 'features', 'gully', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('conduit', 'features', 'conduit', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('subcatchment', 'features', 'ubcatchment', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('subcatchment', 'features', 'subcatchment', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('outlet', 'features', 'outlet', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('orifice', 'features', 'orifice', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('weir', 'features', 'weir', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -59,13 +59,13 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_curve', 0)
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_curve_value', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_timeseries', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_timeseries_value', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_losses', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_losses_values', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_landuses', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_grate', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_pattern', 0);
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sector', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('polygon', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('terrain', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('manzone', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('losszone', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('roof', 0);
@@ -89,6 +89,7 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('junction', 0);
 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('sector', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('polygon', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
+INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('terrain', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('manzone', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('losszone', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('roof', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);

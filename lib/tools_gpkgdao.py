@@ -112,7 +112,27 @@ class GwGpkgDao(object):
         except Exception as e:
             self.last_error = e
             status = False
+            self.conn.rollback()
         finally:
+            if status:
+                self.conn.commit()
+            return status
+
+    def execute_sql_placeholder(self, sql, data, commit=True):
+        """ Execute selected query """
+
+        self.last_error = None
+        status = True
+        try:
+            cursor = self.get_cursor()
+            cursor.execute(sql, data)
+        except Exception as e:
+            self.last_error = e
+            status = False
+            self.conn.rollback()
+        finally:
+            if status:
+                self.conn.commit()
             return status
 
     def execute_script_sql(self, sql, commit=True):
