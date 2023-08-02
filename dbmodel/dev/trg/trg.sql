@@ -21,6 +21,7 @@ CREATE TRIGGER "trigger_delete_feature_count_cat_timeseries" AFTER DELETE ON "ca
 CREATE TRIGGER "trigger_delete_feature_count_cat_timeseries_value" AFTER DELETE ON "cat_timeseries_value" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_timeseries_value'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_landuses" AFTER DELETE ON "cat_landuses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_landuses'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_grate" AFTER DELETE ON "cat_grate" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_grate'); END;
+CREATE TRIGGER "trigger_delete_feature_count_cat_pattern" AFTER DELETE ON "cat_pattern" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_pattern'); END;
 
 CREATE TRIGGER "trigger_delete_feature_count_sector" AFTER DELETE ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_delete_feature_count_polygon" AFTER DELETE ON "polygon"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('polygon'); END;
@@ -55,6 +56,7 @@ CREATE TRIGGER "trigger_insert_feature_count_cat_timeseries" AFTER INSERT ON "ca
 CREATE TRIGGER "trigger_insert_feature_count_cat_timeseries_value" AFTER INSERT ON "cat_timeseries_value" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_timeseries_value'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_landuses" AFTER INSERT ON "cat_landuses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_landuses'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_grate" AFTER INSERT ON "cat_grate" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_grate'); END;
+CREATE TRIGGER "trigger_insert_feature_count_cat_pattern" AFTER INSERT ON "cat_pattern" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_pattern'); END;
 
 CREATE TRIGGER "trigger_insert_feature_count_sector" AFTER INSERT ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_insert_feature_count_polygon" AFTER INSERT ON "polygon"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('polygon'); END;

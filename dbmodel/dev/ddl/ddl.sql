@@ -92,7 +92,12 @@ CREATE TABLE cat_timeseries_value (
     value real CHECK (typeof(value)='real' OR value=NULL)
 );
 
---create cat_pattern
+CREATE TABLE cat_pattern (
+    id integer primary key,
+    idval text unique check (typeof(idval)='text' or idval = not null),
+    descript text check (typeof(descript) = 'text' or descript = null),
+    active boolean check (typeof(active) in (0, 1, null))
+);
 
 -- -----------
 -- GEOM TABLES

@@ -23,6 +23,7 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_losses_values', 'attributes', 'cat_losses_values', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_landuses', 'attributes', 'cat_landuses', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_grate', 'attributes', 'cat_grate', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_pattern', 'attributes', 'cat_pattern', '', 0, 0, 0, 0, 0, 0);
 
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sector', 'features', 'sector', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('polygon', 'features', 'polygon', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -63,6 +64,7 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_losses', 0
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_losses_values', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_landuses', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_grate', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_pattern', 0);
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sector', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('polygon', 0);
