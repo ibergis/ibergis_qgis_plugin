@@ -4,6 +4,8 @@ The program is free software: you can redistribute it and/or modify it under the
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
 """
+import time
+import getpass
 # -*- coding: utf-8 -*-
 import os
 from functools import partial
@@ -27,6 +29,7 @@ class GwAdminButton:
     def __init__(self):
         """ Class to control action 'Admin' """
 
+        self.project_params = {}
         self.project_descript = None
         self.gpkg_full_path = None
         self.dict_folders_process =  {}
@@ -70,6 +73,10 @@ class GwAdminButton:
         self.project_path = project_path
         self.project_epsg = project_srid
         self.locale = project_locale
+
+        log_suffix = '%Y%m%d %H:%M:%S'
+        self.project_params = {"project_name": self.gpkg_name, "project_descript": self.project_descript, "project_user": getpass.getuser(),
+                              "project_tstamp": str(time.strftime(log_suffix)),"project_version": self.plugin_version}
 
         # Save in settings
         tools_gw.set_config_parser('btn_admin', 'gpkg_name', f'{self.gpkg_name}', prefix=False)
@@ -541,6 +548,19 @@ class GwAdminButton:
 
         return True
 
+
+    def populate_project_params(self):
+        """Populate project params in config_param_user"""
+
+        for key, value in self.project_params.items():
+            sql = f"UPDATE config_param_user SET value = '{value}' WHERE parameter_id='{key}'"
+            try:
+                global_vars.gpkg_dao_data.execute_sql(sql)
+            except Exception as e:
+                msg = f"Error executing SQL: {sql}\nDatabase error: {global_vars.gpkg_dao_data.last_error}"
+                tools_log.log_warning(msg)
+                tools_qt.show_info_box(msg)
+                return False
 
 
     def _check_database_connection(self, db_filepath, database_name):
