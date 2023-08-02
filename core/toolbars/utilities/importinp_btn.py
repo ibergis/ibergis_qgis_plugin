@@ -27,6 +27,11 @@ class GwImportINPButton(GwAction):
         tools_gw.disable_tab_log(dlg)
         tools_gw.open_dialog(dlg, dlg_name="import")
 
+    def _execute_process(self):
+        if not self._validate_inputs():
+            return
+        self._import_file()
+
     def _get_colums(self, table):
         rows = global_vars.gpkg_dao_data.get_rows(
             f"select name from pragma_table_info('{table}')"
@@ -51,9 +56,8 @@ class GwImportINPButton(GwAction):
             tools_qt.set_widget_text(self.dlg_import, widget, str(file_path))
 
     def _import_file(self):
-        inpfile = Path.home() / "Documents/drain/swmm.inp"
         gpkg_file = global_vars.gpkg_dao_data.db_filepath
-        dicts = inp2dict(inpfile)
+        dicts = inp2dict(self.input_file)
         columns = {table: self._get_colums(table) for table in core.tables()}
         data = core.get_dataframes(dicts, columns, global_vars.data_epsg)
         for item in data:
@@ -65,6 +69,17 @@ class GwImportINPButton(GwAction):
         dlg.btn_push_inp_input_file.clicked.connect(
             partial(self._get_file_dialog, dlg.data_inp_input_file)
         )
-        dlg.btn_ok.clicked.connect(self._import_file)
+        dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
+
+    def _validate_inputs(self):
+        dlg = self.dlg_import
+
+        input_file = dlg.data_inp_input_file.toPlainText()
+        if not input_file or not Path(input_file).exists():
+            tools_qt.show_info_box("You should select an input INP file!")
+            return False
+        
+        self.input_file = input_file
+        return True
