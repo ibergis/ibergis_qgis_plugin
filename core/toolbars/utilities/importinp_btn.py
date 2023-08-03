@@ -17,6 +17,7 @@ class GwImportINPButton(GwAction):
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
+        self.feedback = Feedback()
 
     def clicked_event(self):
         self.dlg_import = GwImportInpUi()
@@ -32,8 +33,12 @@ class GwImportINPButton(GwAction):
         if not self._validate_inputs():
             return
         self._save_user_values()
-        db_filepath = global_vars.gpkg_dao_data.db_filepath
-        self.thread = GwImportInpTask("Import INP file", self.input_file, db_filepath)
+        self.thread = GwImportInpTask(
+            "Import INP file",
+            self.input_file,
+            global_vars.gpkg_dao_data.db_filepath,
+            self.feedback,
+        )
         QgsApplication.taskManager().addTask(self.thread)
 
     def _get_file_dialog(self, widget):
@@ -98,3 +103,18 @@ class GwImportINPButton(GwAction):
 
         self.input_file = input_file
         return True
+
+
+class Feedback:
+    def setProgressText(self, txt):
+        print(txt)
+
+    def setProgress(self, int):
+        pass
+        # print(f"Progress: {int}%")
+
+    def pushWarning(self, txt):
+        print(txt)
+
+    def isCanceled(self):
+        return False

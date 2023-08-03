@@ -24,26 +24,8 @@ from .g_s_links import get_inlet_from_inp
 from .g_s_nodes import get_hydrogrphs
 from .g_s_options import convert_options_format_for_import
 
-# FIXME: decide what to do with feedback
-class Feedback:
-    def setProgressText(self, txt):
-        print(txt)
 
-    def setProgress(self, int):
-        pass
-        # print(f"Progress: {int}%")
-
-    def pushWarning(self, txt):
-        print(txt)
-
-    def isCanceled(self):
-        return False
-
-
-feedback = Feedback()
-
-
-def inp2dict(readfile):
+def inp2dict(readfile, feedback):
     import_parameters_dict = {}
 
     # reading input text file

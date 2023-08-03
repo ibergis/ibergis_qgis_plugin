@@ -6,10 +6,11 @@ from ...lib.tools_gpkgdao import GwGpkgDao
 
 
 class GwImportInpTask(GwTask):
-    def __init__(self, description, input_file, gpkg_path):
+    def __init__(self, description, input_file, gpkg_path, feedback):
         super().__init__(description)
         self.input_file = input_file
         self.gpkg_path = gpkg_path
+        self.feedback = feedback
 
     def run(self):
         super().run()
@@ -29,12 +30,12 @@ class GwImportInpTask(GwTask):
 
     def _import_file(self):
         gpkg_file = self.dao.db_filepath
-        dicts = inp2dict(self.input_file)
+        dicts = inp2dict(self.input_file, self.feedback)
         columns = {table: self._get_colums(table) for table in core.tables()}
         data = core.get_dataframes(dicts, columns, global_vars.data_epsg)
         for item in data:
             if len(item["df"]) == 0:
-                print(f"Skipping empty table {item['table']}")
+                self.feedback.setProgressText(f"Skipping empty table {item['table']}")
                 continue
-            print(f"Saving table {item['table']}")
+            self.feedback.setProgressText(f"Saving table {item['table']}")
             item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
