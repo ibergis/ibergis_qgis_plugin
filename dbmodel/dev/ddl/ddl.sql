@@ -10,20 +10,14 @@ This version of Giswater is provided by Giswater Association
 -- NO-GEOM TABLES
 -----------------
 
-CREATE TABLE sys_selector (
-    selector_id integer PRIMARY KEY,
-    parameter text CHECK (typeof(parameter)='text' OR parameter=NULL),
-    value integer CHECK (typeof(value)='integer' OR value=NULL)
-);
+
 
 CREATE TABLE selector_sector (
-    sector_id integer primary key,
-    idval text unique check (typeof(idval)='text' or idval = not null)
+    sector_id integer primary key
 );
 
 CREATE TABLE selector_scenario (
-    scenario_id integer primary key,
-    idval text unique check (typeof(idval)='text' or idval = not null)
+    scenario_id integer primary key
 );
 
 CREATE TABLE config_param_user (
