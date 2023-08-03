@@ -2,6 +2,7 @@ from functools import partial
 from pathlib import Path
 
 from qgis.core import QgsApplication
+from qgis.PyQt.QtCore import pyqtSignal, QObject
 from qgis.PyQt.QtWidgets import QFileDialog
 
 from ..dialog import GwAction
@@ -39,6 +40,8 @@ class GwImportINPButton(GwAction):
             global_vars.gpkg_dao_data.db_filepath,
             self.feedback,
         )
+        self.thread.feedback.progressText.connect(self._set_progress_text)
+        self.thread.feedback.progress.connect(self.dlg_import.progress_bar.setValue)
         QgsApplication.taskManager().addTask(self.thread)
 
     def _get_file_dialog(self, widget):
@@ -71,6 +74,16 @@ class GwImportINPButton(GwAction):
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
+
+    def _set_progress_text(self, txt):
+        tools_gw.fill_tab_log(
+            self.dlg_import,
+            {"info": {"values": [{"message": txt}]}},
+            reset_text=False,
+            close=False,
+        )
+        sb = self.dlg_import.txt_infolog.verticalScrollBar()
+        sb.setValue(sb.maximum())
 
     def _user_values(self, action):
         txt_widgets = ["data_inp_input_file"]
@@ -105,16 +118,19 @@ class GwImportINPButton(GwAction):
         return True
 
 
-class Feedback:
+class Feedback(QObject):
+    progressText = pyqtSignal(str)
+    progress = pyqtSignal(int)
+
     def setProgressText(self, txt):
-        print(txt)
+        self.progressText.emit(txt)
 
     def setProgress(self, int):
-        pass
-        # print(f"Progress: {int}%")
+        self.progress.emit(int)
 
     def pushWarning(self, txt):
-        print(txt)
+        msg = "=" * 40 + "\n" + txt + "\n" + "=" * 40
+        self.progressText.emit(msg)
 
     def isCanceled(self):
         return False
