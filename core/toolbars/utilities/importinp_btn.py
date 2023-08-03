@@ -1,13 +1,13 @@
 from functools import partial
 from pathlib import Path
 
+from qgis.core import QgsApplication
 from qgis.PyQt.QtWidgets import QFileDialog
 
-from . import importinp_core as core
 from ..dialog import GwAction
+from ...threads.importinp import GwImportInpTask
 from ...ui.ui_manager import GwImportInpUi
 from ...utils import tools_gw
-from ...utils.generate_swmm_inp import inp2dict
 from .... import global_vars
 from ....lib import tools_qt
 
@@ -32,14 +32,9 @@ class GwImportINPButton(GwAction):
         if not self._validate_inputs():
             return
         self._save_user_values()
-        self._import_file()
-
-    def _get_colums(self, table):
-        rows = global_vars.gpkg_dao_data.get_rows(
-            f"select name from pragma_table_info('{table}')"
-        )
-        columns = {row[0] for row in rows if row[0] not in ("fid", "geom")}
-        return columns
+        db_filepath = global_vars.gpkg_dao_data.db_filepath
+        self.thread = GwImportInpTask("Import INP file", self.input_file, db_filepath)
+        QgsApplication.taskManager().addTask(self.thread)
 
     def _get_file_dialog(self, widget):
         # Check if selected file exists. Set default value if necessary
@@ -56,15 +51,6 @@ class GwImportINPButton(GwAction):
         )[0]
         if file_path:
             tools_qt.set_widget_text(self.dlg_import, widget, str(file_path))
-
-    def _import_file(self):
-        gpkg_file = global_vars.gpkg_dao_data.db_filepath
-        dicts = inp2dict(self.input_file)
-        columns = {table: self._get_colums(table) for table in core.tables()}
-        data = core.get_dataframes(dicts, columns, global_vars.data_epsg)
-        for item in data:
-            print(f"Saving table {item['table']}")
-            item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
 
     def _load_user_values(self):
         self._user_values("load")
