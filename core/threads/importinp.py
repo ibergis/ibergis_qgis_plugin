@@ -33,7 +33,8 @@ class GwImportInpTask(GwTask):
         dicts = inp2dict(self.input_file, self.feedback)
         columns = {table: self._get_colums(table) for table in core.tables()}
         data = core.get_dataframes(dicts, columns, global_vars.data_epsg)
-        for item in data:
+        for i, item in enumerate(data):
+            self.feedback.setProgress(i / len(data) * 100)
             if len(item["df"]) == 0:
                 self.feedback.setProgressText(f"Skipping empty table {item['table']}")
                 continue

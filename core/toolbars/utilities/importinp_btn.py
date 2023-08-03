@@ -40,8 +40,16 @@ class GwImportINPButton(GwAction):
             global_vars.gpkg_dao_data.db_filepath,
             self.feedback,
         )
+
+        # Set signals
+        self.dlg_import.btn_ok.setEnabled(False)
+        self.dlg_import.btn_cancel.clicked.disconnect()
+        self.dlg_import.btn_cancel.clicked.connect(self.thread.cancel)
         self.thread.feedback.progressText.connect(self._set_progress_text)
         self.thread.feedback.progress.connect(self.dlg_import.progress_bar.setValue)
+        self.thread.taskCompleted.connect(self._on_task_end)
+        self.thread.taskTerminated.connect(self._on_task_end)
+
         QgsApplication.taskManager().addTask(self.thread)
 
     def _get_file_dialog(self, widget):
@@ -62,6 +70,16 @@ class GwImportINPButton(GwAction):
 
     def _load_user_values(self):
         self._user_values("load")
+
+    def _on_task_end(self):
+        tools_gw.fill_tab_log(
+            self.dlg_import,
+            {"info": {"values": [{"message": "Task finished!"}]}},
+            reset_text=False,
+        )
+        sb = self.dlg_import.txt_infolog.verticalScrollBar()
+        sb.setValue(sb.maximum())
+        self.feedback.setProgress(100)
 
     def _save_user_values(self):
         self._user_values("save")
@@ -125,8 +143,8 @@ class Feedback(QObject):
     def setProgressText(self, txt):
         self.progressText.emit(txt)
 
-    def setProgress(self, int):
-        self.progress.emit(int)
+    def setProgress(self, value):
+        self.progress.emit(int(value))
 
     def pushWarning(self, txt):
         msg = "=" * 40 + "\n" + txt + "\n" + "=" * 40
