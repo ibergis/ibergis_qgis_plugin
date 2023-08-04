@@ -12,7 +12,7 @@ from ...lib import tools_log, tools_qt, tools_qgis
 from ... import global_vars
 
 
-class GwGisFileCreate:
+class DrGisFileCreate:
 
     def __init__(self, plugin_dir):
 
@@ -74,6 +74,7 @@ class GwGisFileCreate:
         content = self._replace_spatial_parameters(self.layer_source['srid'], content)
         content = self._replace_extent_parameters(content)
         content = self._replace_connection_parameters(content, self.layer_source['gpkg_filepath'])
+        content = self._replace_gpkg_path_var(content, self.layer_source['gpkg_filepath'])
 
         # Write contents and show message
         try:
@@ -147,6 +148,11 @@ class GwGisFileCreate:
     def _replace_connection_parameters(self, content, filename):
 
         content = content.replace("__DATASOURCE__", filename)
+        return content
+
+    def _replace_gpkg_path_var(self, content, path):
+
+        content = content.replace("__GPKGPATH__", path)
         return content
 
     # endregion

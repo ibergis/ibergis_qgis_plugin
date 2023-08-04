@@ -17,7 +17,7 @@ from qgis.PyQt.QtWidgets import QRadioButton, QLineEdit, QComboBox, QFileDialog,
 from qgis.core import QgsProject
 from qgis.utils import reloadPlugin
 
-from .gis_file_create import GwGisFileCreate
+from .gis_file_create import DrGisFileCreate
 from ..ui.ui_manager import GwAdminUi
 from ..utils import tools_gw
 from ... import global_vars
@@ -297,7 +297,7 @@ class GwAdminButton:
     def _generate_qgis_project(self, gis_folder, gis_file, gpkg_file, srid):
         """ Generate QGIS project """
 
-        gis = GwGisFileCreate(self.plugin_dir)
+        gis = DrGisFileCreate(self.plugin_dir)
         result, qgs_path = gis.gis_project_database(gis_folder, gis_file, gpkg_file, srid)
         self._close_dialog_admin(self.dlg_readsql)
         if result:

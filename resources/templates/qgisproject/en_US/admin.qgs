@@ -3715,6 +3715,14 @@
     <SpatialRefSys>
       <ProjectionsEnabled type="int">1</ProjectionsEnabled>
     </SpatialRefSys>
+	  <Variables>
+      <variableNames type="QStringList">
+        <value>project_gpkg_path</value>
+      </variableNames>
+      <variableValues type="QStringList">
+        <value>__GPKGPATH__</value>
+      </variableValues>
+    </Variables>
     <WCSLayers type="QStringList"/>
     <WCSUrl type="QString"></WCSUrl>
     <WFSLayers type="QStringList"/>
