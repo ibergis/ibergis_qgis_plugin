@@ -283,6 +283,7 @@ CREATE TABLE gully (
 
 CREATE TABLE inp_raingage (
     fid integer PRIMARY KEY,
+    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
@@ -303,6 +304,7 @@ CREATE TABLE inp_raingage (
 
 CREATE TABLE inp_conduit (
     fid integer primary key,
+    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -338,6 +340,7 @@ CREATE TABLE inp_conduit (
 
 CREATE TABLE inp_subcatchment ( 
     fid integer primary key,
+    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -392,6 +395,7 @@ CREATE TABLE inp_outlet (
 
 CREATE TABLE inp_orifice (
     fid integer primary key,
+    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -413,6 +417,7 @@ CREATE TABLE inp_orifice (
 
 CREATE TABLE inp_weir (
     fid integer primary key,
+    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -439,6 +444,7 @@ CREATE TABLE inp_weir (
 
 CREATE TABLE inp_pump (
     fid integer primary key,
+    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -456,6 +462,7 @@ CREATE TABLE inp_pump (
 
 CREATE TABLE inp_outfall (
     fid integer primary key,
+    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -475,13 +482,13 @@ CREATE TABLE inp_outfall (
 
 CREATE TABLE inp_divider (
     fid integer primary key,
+    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     custom_elev real check (typeof(custom_elev) = 'real' or custom_elev = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     ymax real check (typeof(ymax) = 'real' or ymax = null),
     custom_ymax real check (typeof(custom_ymax) = 'real' or custom_ymax = null),
     y0 real check (typeof(y0) = 'real' or y0 = null),
@@ -499,6 +506,7 @@ CREATE TABLE inp_divider (
 
 CREATE TABLE inp_storage (
     fid integer primary key,
+    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -525,6 +533,7 @@ CREATE TABLE inp_storage (
 
 CREATE TABLE inp_junction (
     fid integer primary key,
+    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),

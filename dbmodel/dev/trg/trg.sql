@@ -219,3 +219,17 @@ CREATE TRIGGER "rtree_inp_outfall_geom_update4" AFTER UPDATE ON "inp_outfall" WH
 CREATE TRIGGER "rtree_inp_divider_geom_update4" AFTER UPDATE ON "inp_divider" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_divider_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_inp_storage_geom_update4" AFTER UPDATE ON "inp_storage" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_storage_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_inp_junction_geom_update4" AFTER UPDATE ON "inp_junction" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_junction_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
+
+
+-----
+--create trigger "trigger_update_node_id_inp_raingage" after insert on "inp_raingage" BEGIN update inp_raingage set node_id = 'G'||fid; END;
+create trigger "trigger_update_arc_id_inp_conduit" after insert on "inp_conduit" BEGIN update inp_conduit set arc_id = 'C'||fid; END;
+--create trigger "trigger_update_node_id_inp_subcatchment" after insert on "inp_subcatchment" BEGIN update inp_subcatchment set node_id = 'H'||fid; END;
+create trigger "trigger_update_arc_id_inp_outlet" after insert on "inp_outlet" BEGIN update inp_outlet set arc_id = 'T'||fid; END;
+create trigger "trigger_update_arc_id_inp_orifice" after insert on "inp_orifice" BEGIN update inp_orifice set arc_id = 'R'||fid; END;
+create trigger "trigger_update_arc_id_inp_weir" after insert on "inp_weir" BEGIN update inp_weir set arc_id = 'W'||fid; END;
+create trigger "trigger_update_arc_id_inp_pump" after insert on "inp_pump" BEGIN update inp_pump set arc_id = 'P'||fid; END;
+create trigger "trigger_update_node_id_inp_outfall" after insert on "inp_outfall" BEGIN update inp_outfall set node_id = 'O'||fid; END;
+create trigger "trigger_update_node_id_inp_divider" after insert on "inp_divider" BEGIN update inp_divider set node_id = 'D'||fid; END;
+create trigger "trigger_update_node_id_inp_storage" after insert on "inp_storage" BEGIN update inp_storage set node_id = 'S'||fid; END;
+create trigger "trigger_update_node_id_inp_junction" after insert on "inp_junction" BEGIN update inp_junction set node_id = 'J'||fid; END;
