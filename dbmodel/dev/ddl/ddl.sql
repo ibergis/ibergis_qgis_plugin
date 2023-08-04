@@ -213,6 +213,7 @@ CREATE TABLE elem_tin (
 
 CREATE TABLE elem_edge (
     fid integer PRIMARY KEY,
+    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
@@ -226,6 +227,7 @@ CREATE TABLE elem_edge (
 
 CREATE TABLE elem_vertex (
     fid integer PRIMARY KEY,
+    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
@@ -240,6 +242,7 @@ CREATE TABLE elem_vertex (
 
 CREATE TABLE link (
     fid integer primary key,
+    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
