@@ -238,26 +238,6 @@ CREATE TABLE elem_vertex (
     geom geometry
 );
 
-CREATE TABLE raingage (
-    fid integer PRIMARY KEY,
-    code text check (typeof(code) = 'text' or code = null),
-    sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
-    scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    rain_type boolean CHECK (typeof(rain_type) IN (0,1,NULL)),
-    form_type text check (typeof(form_type) = 'text' or form_type = null),
-    timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL),
-    rg_id text check (typeof(rg_id) = 'text' or rg_id = null),
-    intvl text check (typeof(intvl) = 'text' or intvl = null),
-    scf real check (typeof(scf) = 'real' or scf = null),
-    fname text check (typeof(fname) = 'text' or fname = null),
-    sta text check (typeof(sta) = 'text' or sta = null),
-    units text check (typeof(units) = 'text' or units = null),
-    annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
-    geom geometry
-);
-
 CREATE TABLE link (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
@@ -297,7 +277,31 @@ CREATE TABLE gully (
     geom geometry
 );
 
-CREATE TABLE conduit (
+-- ----------
+-- INP TABLES
+-- ----------
+
+CREATE TABLE inp_raingage (
+    fid integer PRIMARY KEY,
+    code text check (typeof(code) = 'text' or code = null),
+    sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
+    scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL),
+    rain_type boolean CHECK (typeof(rain_type) IN (0,1,NULL)),
+    form_type text check (typeof(form_type) = 'text' or form_type = null),
+    timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL),
+    rg_id text check (typeof(rg_id) = 'text' or rg_id = null),
+    intvl text check (typeof(intvl) = 'text' or intvl = null),
+    scf real check (typeof(scf) = 'real' or scf = null),
+    fname text check (typeof(fname) = 'text' or fname = null),
+    sta text check (typeof(sta) = 'text' or sta = null),
+    units text check (typeof(units) = 'text' or units = null),
+    annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
+    geom geometry
+);
+
+CREATE TABLE inp_conduit (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
@@ -332,7 +336,7 @@ CREATE TABLE conduit (
     geom geometry
 );
 
-CREATE TABLE subcatchment ( 
+CREATE TABLE inp_subcatchment ( 
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
@@ -368,7 +372,7 @@ CREATE TABLE subcatchment (
     geom geometry
 );
 
-CREATE TABLE outlet (
+CREATE TABLE inp_outlet (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id)='integer' or sector_id= null),
@@ -386,7 +390,7 @@ CREATE TABLE outlet (
     geom geometry
 );
 
-CREATE TABLE orifice (
+CREATE TABLE inp_orifice (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
@@ -407,7 +411,7 @@ CREATE TABLE orifice (
     geom geometry
 );
 
-CREATE TABLE weir (
+CREATE TABLE inp_weir (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
@@ -433,7 +437,7 @@ CREATE TABLE weir (
     geom geometry
 );
 
-CREATE TABLE pump (
+CREATE TABLE inp_pump (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
@@ -450,7 +454,7 @@ CREATE TABLE pump (
     geom geometry
 );
 
-CREATE TABLE outfall (
+CREATE TABLE inp_outfall (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
@@ -469,7 +473,7 @@ CREATE TABLE outfall (
     geom geometry
 );
 
-CREATE TABLE divider (
+CREATE TABLE inp_divider (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
@@ -493,7 +497,7 @@ CREATE TABLE divider (
     geom geometry
 );
 
-CREATE TABLE storage (
+CREATE TABLE inp_storage (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
@@ -519,7 +523,7 @@ CREATE TABLE storage (
     geom geometry
 );
 
-CREATE TABLE junction (
+CREATE TABLE inp_junction (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
