@@ -20,6 +20,7 @@ class GwGpkgDao(object):
         self.conn = None
         self.cursor = None
         self.db_qsql = None
+        self.enable_spatial = None
 
 
     def init_db(self, filename, enable_spatial=True):
@@ -39,6 +40,7 @@ class GwGpkgDao(object):
                 self.conn.enable_load_extension(True)
                 self.conn.execute("SELECT load_extension('mod_spatialite')")
                 self.conn.enable_load_extension(False)
+                self.enable_spatial = True
             self.cursor = self.get_cursor()
             status = True
         except Exception as e:
@@ -59,6 +61,7 @@ class GwGpkgDao(object):
                 self.conn.close()
             del self.cursor
             del self.conn
+            self.enable_spatial = None
         except Exception as e:
             self.last_error = e
             status = False
@@ -165,3 +168,9 @@ class GwGpkgDao(object):
         self.db_qsql = db_qsql
         return status, db_qsql
 
+
+    def clone(self):
+        new_dao = GwGpkgDao()
+        if self.db_filepath:
+            new_dao.init_db(self.db_filepath, enable_spatial=self.enable_spatial)
+        return new_dao

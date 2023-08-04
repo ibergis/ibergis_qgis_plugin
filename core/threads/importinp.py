@@ -2,7 +2,6 @@ from . import importinp_core as core
 from .task import GwTask
 from ..utils.generate_swmm_inp import inp2dict
 from ... import global_vars
-from ...lib.tools_gpkgdao import GwGpkgDao
 
 
 class GwImportInpTask(GwTask):
@@ -15,8 +14,7 @@ class GwImportInpTask(GwTask):
     def run(self):
         super().run()
         try:
-            self.dao = GwGpkgDao()
-            self.dao.init_db(self.gpkg_path)
+            self.dao = global_vars.gpkg_dao_data.clone()
             self._import_file()
         except Exception as e:
             self.exception = e
