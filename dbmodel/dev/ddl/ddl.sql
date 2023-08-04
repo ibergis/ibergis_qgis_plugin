@@ -124,7 +124,7 @@ CREATE TABLE polygon (
     geom geometry
 );
 
-CREATE TABLE terrain (
+CREATE TABLE ground (
     fid integer PRIMARY KEY,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
@@ -137,7 +137,7 @@ CREATE TABLE terrain (
     geom geometry
 );
 
-CREATE TABLE manzone (
+CREATE TABLE ground_roughness (
     fid integer PRIMARY KEY,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
@@ -151,7 +151,7 @@ CREATE TABLE manzone (
     geom geometry
 );
 
-CREATE TABLE losszone (
+CREATE TABLE ground_losses (
     fid integer PRIMARY KEY,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
