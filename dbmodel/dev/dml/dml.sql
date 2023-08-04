@@ -9,7 +9,6 @@ This version of Giswater is provided by Giswater Association
 -- INSERTS INTO SYS GPKG TABLES
 -- ---------------------------
 
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_selector', 'attributes', 'sys_selector', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('selector_sector', 'attributes', 'selector_sector', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('selector_scenario', 'attributes', 'selector_scenario', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('config_param_user', 'attributes', 'config_param_user', '', 0, 0, 0, 0, 0, 0);
@@ -49,7 +48,6 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 
 
 
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_selector', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('selector_sector', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('selector_scenario', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('config_param_user', 0);
