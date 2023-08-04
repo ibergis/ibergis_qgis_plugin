@@ -1,8 +1,10 @@
+import datetime
 from functools import partial
 from pathlib import Path
+from time import time
 
 from qgis.core import QgsApplication
-from qgis.PyQt.QtCore import pyqtSignal, QObject
+from qgis.PyQt.QtCore import pyqtSignal, QObject, QTimer
 from qgis.PyQt.QtWidgets import QFileDialog
 
 from ..dialog import GwAction
@@ -50,6 +52,13 @@ class GwImportINPButton(GwAction):
         self.thread.taskCompleted.connect(self._on_task_end)
         self.thread.taskTerminated.connect(self._on_task_end)
 
+        # Timer
+        self.t0 = time()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self._on_timer_timeout)
+        self.timer.start(500)
+        self.dlg_import.rejected.connect(self.timer.stop)
+
         QgsApplication.taskManager().addTask(self.thread)
 
     def _get_file_dialog(self, widget):
@@ -80,6 +89,13 @@ class GwImportINPButton(GwAction):
         sb = self.dlg_import.txt_infolog.verticalScrollBar()
         sb.setValue(sb.maximum())
         self.feedback.setProgress(100)
+        self.timer.stop()
+
+    def _on_timer_timeout(self):
+        # Update timer
+        elapsed_time = time() - self.t0
+        text = str(datetime.timedelta(seconds=round(elapsed_time)))
+        self.dlg_import.lbl_timer.setText(text)
 
     def _save_user_values(self):
         self._user_values("save")
