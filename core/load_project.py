@@ -123,6 +123,7 @@ class GwLoadProject(QObject):
         global_vars.project_vars['main_schema'] = tools_qgis.get_project_variable('gwMainSchema')
         global_vars.project_vars['project_role'] = tools_qgis.get_project_variable('gwProjectRole')
         global_vars.project_vars['project_type'] = tools_qgis.get_project_variable('gwProjectType')
+        global_vars.project_vars['project_gpkg'] = tools_qgis.get_project_variable('project_gpkg_path')
 
 
     def _get_user_variables(self):
@@ -143,32 +144,6 @@ class GwLoadProject(QObject):
 
     def _check_database_connection(self):
         """ Set database connection to Geopackage file """
-
-        # Create object to manage GPKG database connection
-        gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
-        global_vars.gpkg_dao_data = gpkg_dao_data
-
-        # Define filepath of data GPKG
-        filename = "sample.gpkg"
-        db_filepath = os.path.join(global_vars.plugin_dir, "samples", filename)
-        tools_log.log_info(db_filepath)
-        if not os.path.exists(db_filepath):
-            tools_log.log_info(f"File not found: {db_filepath}")
-            return False
-
-        # Set DB connection
-        tools_log.log_info(f"Set database connection")
-        database_name = f"{global_vars.plugin_name}_data"
-        status, global_vars.db_qsql_data = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
-        if not status:
-            last_error = global_vars.gpkg_dao_data.last_error
-            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
-            return False
-        status = global_vars.gpkg_dao_data.init_db(db_filepath)
-        if not status:
-            last_error = global_vars.gpkg_dao_data.last_error
-            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
-            return False
 
         # Create object to manage GPKG database connection
         gpkg_dao_config = tools_gpkgdao.GwGpkgDao()
@@ -194,6 +169,39 @@ class GwLoadProject(QObject):
             last_error = global_vars.gpkg_dao_config.last_error
             tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
             return False
+
+        # Create object to manage GPKG database connection
+        gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
+        global_vars.gpkg_dao_data = gpkg_dao_data
+
+
+        # Define filepath of data GPKG
+        db_filepath =f"{global_vars.project_vars['project_gpkg']}"
+
+        if db_filepath is None:
+            filename = "sample.gpkg"
+            db_filepath = os.path.join(global_vars.plugin_dir, "samples", filename)
+
+        tools_log.log_info(db_filepath)
+        if not os.path.exists(db_filepath):
+            tools_log.log_info(f"File not found: {db_filepath}")
+            return False
+
+        # Set DB connection
+        tools_log.log_info(f"Set database connection")
+        database_name = f"{global_vars.plugin_name}_data"
+        status, global_vars.db_qsql_data = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
+        if not status:
+            last_error = global_vars.gpkg_dao_data.last_error
+            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            return False
+        status = global_vars.gpkg_dao_data.init_db(db_filepath)
+        if not status:
+            last_error = global_vars.gpkg_dao_data.last_error
+            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
+            return False
+
+
 
         tools_log.log_info(f"Database connection successful")
         return True
