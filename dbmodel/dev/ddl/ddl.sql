@@ -242,7 +242,7 @@ CREATE TABLE link (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
-    scenario_d integer check (typeof(scenario_d) = 'integer' or scenario_d = null),
+    scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     feature_type text check (typeof(feature_type) = 'text' or feature_type = null),
     feature_id text check (typeof(feature_id) = 'text' or feature_id = null),
@@ -255,12 +255,12 @@ CREATE TABLE link (
 
 CREATE TABLE gully (
     fid integer primary key,
+    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
-    scenario_d integer check (typeof(scenario_d) = 'integer' or scenario_d = null),
+    scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     outlet_type text check (typeof(outlet_type) = 'text' or outlet_type = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     top_elev real check (typeof(top_elev) = 'real' or top_elev = null),
     custom_top_elev real check (typeof(custom_top_elev) = 'real' or custom_top_elev = null),
     gratecat_id text check (typeof(gratecat_id) = 'text' or gratecat_id = null),
