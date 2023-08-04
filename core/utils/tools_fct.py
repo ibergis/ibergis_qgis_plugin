@@ -4,6 +4,8 @@ The program is free software: you can redistribute it and/or modify it under the
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
 """
+import json
+
 # -*- coding: utf-8 -*-
 from ... import global_vars
 from ...lib import tools_gpkgdao, tools_qgis, tools_qt, tools_db
@@ -73,6 +75,86 @@ def getconfig(p_input: dict) -> dict:
 
     v_return = _create_return(v_return, accepted=accepted)
     return v_return
+
+
+def getselectors(p_input: dict) -> dict:
+    accepted: bool = True
+    v_return: dict = {}
+    v_sql: str
+    v_message: str
+    v_raw_widgets: list
+    v_fields: list
+    v_raw_values: list
+    v_tabs = {
+        "tab_sector": {
+            "tabname": "tab_sector",
+            "label": "Sector",
+            "tooltip": "Sector",
+            "orderby": 1
+        },
+        "tab_dscenario": {
+            "tabname": "tab_dscenario",
+            "label": "Dscenario",
+            "tooltip": "Dscenario",
+            "orderby": 2
+        }
+    }
+
+    try:
+        # Input to JSON
+        input = json.loads((p_input))
+        print(p_input)
+
+        v_sql = f"SELECT value from config_param_user WHERE parameter_id like 'basic_selector_%'"
+        rows = global_vars.gpkg_dao_data.get_rows(v_sql)
+
+        for row in rows:
+            tab_json = json.loads(row[0].replace('/',''))
+            print("ROW   :" ,tab_json)
+            table = tab_json["table"]
+            selector = tab_json["selector"]
+            table_id = tab_json["table_id"]
+            label = tab_json["label"]
+            orderBy = tab_json["orderBy"]
+            manageAll = tab_json["manageAll"]
+            query_filter = tab_json["query_filter"]
+            #typeaheadFilter = tab_json["typeaheadFilter"]
+            typeaheadForced = tab_json["typeaheadForced"]
+
+
+            v_sql = f"SELECT * from {table}"
+            rows_f = global_vars.gpkg_dao_data.get_rows(v_sql)
+            print("ERROR:",global_vars.gpkg_dao_data.last_error)
+
+            for row in rows_f:
+                #print("ROW F: ", row)
+                print(row[0], row[1], row[2],row[3],row[4])
+            # format widgets as a json
+            # v_fields = []
+            # for row in v_raw_widgets:
+            #     fields_dict = {}
+
+
+        v_message ='{"level":111, "text":"Process done successfully"}'
+        for tab in v_tabs.values():
+            tabname = tab["tabname"]
+            parameter_id = f"basic_selector_{tabname}"
+
+        # return
+        # v_return["body"] = {"data": {}, "form": {}}
+        # v_return["body"]["form"]["formTabs"] = [
+        #     {
+        #         "fields": v_fields
+        #     }
+        # ]
+
+    except Exception as e:
+        print(f"EXCEPTION IN getselectors: {e}")
+        accepted = False
+
+    v_return = _create_return(v_return, accepted=accepted, message=v_message)
+    return v_return
+
 
 
 def _create_return(p_data: dict, accepted: bool = True, message: str = "") -> dict:
