@@ -242,7 +242,6 @@ CREATE TABLE elem_vertex (
 
 CREATE TABLE link (
     fid integer primary key,
-    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -258,7 +257,7 @@ CREATE TABLE link (
 
 CREATE TABLE gully (
     fid integer primary key,
-    node_id text unique,
+	gully_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -286,7 +285,6 @@ CREATE TABLE gully (
 
 CREATE TABLE inp_raingage (
     fid integer PRIMARY KEY,
-    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
@@ -343,7 +341,7 @@ CREATE TABLE inp_conduit (
 
 CREATE TABLE inp_subcatchment ( 
     fid integer primary key,
-    arc_id text unique,
+	subc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id) = 'integer' or sector_id = null),
     scenario_id integer check (typeof(scenario_id) = 'integer' or scenario_id = null),
@@ -380,6 +378,7 @@ CREATE TABLE inp_subcatchment (
 
 CREATE TABLE inp_outlet (
     fid integer primary key,
+    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer check (typeof(sector_id)='integer' or sector_id= null),
     scenario_id integer check (typeof(scenario_id)='integer' or scenario_id= null),
