@@ -20,7 +20,6 @@ class GwImportINPButton(GwAction):
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
-        self.feedback = Feedback()
 
     def clicked_event(self):
         self.dlg_import = GwImportInpUi()
@@ -33,6 +32,7 @@ class GwImportINPButton(GwAction):
         tools_gw.open_dialog(dlg, dlg_name="import")
 
     def _execute_process(self):
+        self.feedback = Feedback()
         if not self._validate_inputs():
             return
         self._save_user_values()
@@ -89,6 +89,7 @@ class GwImportINPButton(GwAction):
         sb = self.dlg_import.txt_infolog.verticalScrollBar()
         sb.setValue(sb.maximum())
         self.feedback.setProgress(100)
+        self.feedback = None
         self.timer.stop()
 
     def _on_timer_timeout(self):
