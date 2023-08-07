@@ -11,6 +11,10 @@ class GwImportInpTask(GwTask):
         self.gpkg_path = gpkg_path
         self.feedback = feedback
 
+    def cancel(self):
+        super().cancel()
+        self.feedback.cancel()
+
     def run(self):
         super().run()
         try:
@@ -29,8 +33,12 @@ class GwImportInpTask(GwTask):
     def _import_file(self):
         gpkg_file = self.dao.db_filepath
         dicts = inp2dict(self.input_file, self.feedback)
+        if self.isCanceled():
+            return
         columns = {table: self._get_colums(table) for table in core.tables()}
         data = core.get_dataframes(dicts, columns, global_vars.data_epsg)
+        if self.isCanceled():
+            return
         for i, item in enumerate(data):
             self.feedback.setProgress(i / len(data) * 100)
             if len(item["df"]) == 0:

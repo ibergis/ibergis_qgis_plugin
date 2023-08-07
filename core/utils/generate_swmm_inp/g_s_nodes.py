@@ -378,7 +378,7 @@ def create_point_from_x_y(sr, i, n, feedback):
     )
     feedback.setProgress(((i+1)/n)*100)
     if feedback.isCanceled():
-        pass
+        return
     return [sr['Name'], geom]
 
 def create_points_df(data, feedback):
@@ -394,6 +394,8 @@ def create_points_df(data, feedback):
             i,
             n,
             feedback) for i in data.index] # point geometries
+        if feedback.isCanceled():
+            return
         df_out = pd.DataFrame(all_geoms, columns=['Name', 'geometry']).set_index('Name')
     else:
         df_out = pd.DataFrame(columns = ['Name', 'geometry']).set_index('Name')

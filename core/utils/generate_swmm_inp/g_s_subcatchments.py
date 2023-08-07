@@ -147,6 +147,9 @@ def create_infiltr_df(infiltr_row, df_length, feedback):
     :param pd.Series infiltr_row
     """
     feedback.setProgress(int(infiltr_row.name / df_length * 100))
+    if feedback.isCanceled():
+        return
+    
     if infiltr_row['InfMethod'] in ['GREEN_AMPT', 'MODIFIED_GREEN_AMPT']:
         infiltr_row = infiltr_row.rename({
             'Param1': 'SuctHead',
@@ -219,7 +222,7 @@ def create_polygons_df(df_processed, dict_all_vals, feedback):
     len_itms = len(df_processed['Name'])
     for i, n in enumerate(df_processed['Name']):
         if feedback.isCanceled():
-            break
+            return
         polygons_created = polygons_created + [get_polygon_from_verts(n, dict_all_vals)]
         feedback.setProgress((i+1)/len_itms*95)
     polygons_created = pd.DataFrame(

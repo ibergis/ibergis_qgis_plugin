@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-from qgis.PyQt.QtCore import QCoreApplication
 from .g_s_defaults import (
     curve_cols_dict,
     def_sections_dict,
@@ -33,6 +32,8 @@ def inp2dict(readfile, feedback):
     feedback.setProgress(3)
     encodings = ["utf-8", "windows-1250", "windows-1252"]  # add more
     for e in encodings:
+        if feedback.isCanceled():
+            return
         try:
             with open(readfile, "r", encoding=e) as f:
                 inp_text = f.readlines()
@@ -74,6 +75,9 @@ def inp2dict(readfile, feedback):
             + "These sections will be ignored"
         )
 
+    if feedback.isCanceled():
+        return
+
     # dict for raw values for every section
     dict_all_vals = {
         k: extract_sections_from_text(inp_text, dict_search[k], k)
@@ -95,6 +99,9 @@ def inp2dict(readfile, feedback):
             df_options, import_parameters_dict, feedback
         )
         dict_res_table["OPTIONS"] = {"OPTIONS": df_options_converted}
+
+    if feedback.isCanceled():
+        return
 
     # inflows section
     section_name = "INFLOWS"
@@ -135,6 +142,9 @@ def inp2dict(readfile, feedback):
     pattern_cols = {
         k: list(v.keys()) for k, v in def_tables_dict["PATTERNS"]["tables"].items()
     }
+
+    if feedback.isCanceled():
+        return
 
     if "PATTERNS" in dict_all_vals.keys():
         section_name = "PATTERNS"
@@ -215,6 +225,9 @@ def inp2dict(readfile, feedback):
             )
     dict_res_table["PATTERNS"] = all_patterns
 
+    if feedback.isCanceled():
+        return
+
     # curves section
     if "CURVES" in dict_all_vals.keys():
         section_name = "CURVES"
@@ -249,6 +262,9 @@ def inp2dict(readfile, feedback):
                 [], curve_cols_dict[curve_type]
             )
     dict_res_table["CURVES"] = all_curves
+
+    if feedback.isCanceled():
+        return
 
     # quality section
     feedback.setProgressText("Preparing QUALITY parameters")
@@ -322,6 +338,9 @@ def inp2dict(readfile, feedback):
     all_time_series = adjust_column_types(all_time_series, ts_cols_dict)
     dict_res_table["TIMESERIES"] = {"TIMESERIES": all_time_series}
 
+    if feedback.isCanceled():
+        return
+
     # streets and inlets section
     if "STREETS" in dict_all_vals.keys() or "INLETS" in dict_all_vals.keys():
         section_name = "STREETS"
@@ -341,6 +360,9 @@ def inp2dict(readfile, feedback):
             street_data["INLETS"] = build_df_for_section("INLETS", dict_all_vals)
         street_data["INLET_USAGE"] = build_df_for_section("INLET_USAGE", dict_all_vals)
         dict_res_table["STREETS"] = street_data
+
+    if feedback.isCanceled():
+        return
 
     # transects in hec2 format
     if "TRANSECTS" in dict_all_vals.keys():
@@ -393,7 +415,7 @@ def inp2dict(readfile, feedback):
         all_tr_dats = []
         for i, x in enumerate(zip(tr_startp, tr_endp)):
             if feedback.isCanceled():
-                break
+                return
             val, dat = get_transects_data2(transects_list[x[0] : x[1]])
             all_tr_vals = all_tr_vals + val
             all_tr_dats = all_tr_dats + [dat]
@@ -426,15 +448,18 @@ def inp2dict(readfile, feedback):
         feedback.setProgress(95)
         dict_res_table["TRANSECTS"] = transects_dict
         feedback.setProgress(100)
+    
+    if feedback.isCanceled():
+        return
 
     # prepare sections with geometries
     feedback.setProgress(0)
     for section_name in def_sections_geoms_dict.keys():
-        if feedback.isCanceled():
-            break
         if section_name in dict_all_vals.keys():
             sect_list_import_handler(
                 section_name, dict_all_vals, "geodata", feedback, import_parameters_dict
             )
+        if feedback.isCanceled():
+            return
 
     return dict_all_vals, dict_res_table
