@@ -11,7 +11,6 @@ This version of Giswater is provided by Giswater Association
 
 
 CREATE VIRTUAL TABLE rtree_sector_geom USING rtree(id, minx, maxx, miny, maxy);
-CREATE VIRTUAL TABLE rtree_polygon_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_ground_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_ground_roughness_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_ground_losses_geom USING rtree(id, minx, maxx, miny, maxy);

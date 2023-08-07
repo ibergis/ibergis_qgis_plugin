@@ -23,7 +23,6 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_pattern', 'attributes', 'cat_pattern', '', 0, 0, 0, 0, 0, 0);
 
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sector', 'features', 'sector', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('polygon', 'features', 'polygon', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('ground', 'features', 'ground', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('ground_roughness', 'features', 'ground_roughness', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('ground_losses', 'features', 'ground_losses', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -62,7 +61,6 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_grate', 0)
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_pattern', 0);
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sector', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('polygon', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('ground', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('ground_roughness', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('ground_losses', 0);
@@ -86,7 +84,6 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_raingage',
 
 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('sector', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('polygon', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('ground', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('ground_roughness', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('ground_losses', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);

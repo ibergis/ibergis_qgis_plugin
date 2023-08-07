@@ -110,20 +110,6 @@ create table sector (
     geom geometry
 );
 
-CREATE TABLE polygon (
-    fid integer PRIMARY KEY,
-    code text check (typeof(code) = 'text' or code = null),
-    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
-    class text check (typeof(class) in ('ROOF', 'TERRAIN', NULL)),
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    cellsize real CHECK (typeof(cellsize)='real' OR cellsize=NULL),
-    structured boolean CHECK (typeof(structured) IN (0,1,NULL)),
-    annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
-    geom geometry
-);
-
 CREATE TABLE ground (
     fid integer PRIMARY KEY,
     code text check (typeof(code) = 'text' or code = null),
