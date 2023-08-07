@@ -119,7 +119,7 @@ def sect_list_import_handler(
                 if section_name == 'XSECTIONS':
                     df_join = adjust_xsection_df(df_join)
                 if section_name == 'INFILTRATION':
-                    df_join = df_join.apply(lambda x: create_infiltr_df(x), axis=1)
+                    df_join = df_join.apply(lambda x: create_infiltr_df(x, len(df_join), feedback), axis=1)
                 df_join = df_join.applymap(replace_nan_null)
                 data_dict['data'] = df_join.set_index('Name')
             dict_all_vals[section_name]['status'] = ImportDataStatus.PROCESSED

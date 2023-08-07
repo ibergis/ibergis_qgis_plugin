@@ -141,11 +141,12 @@ InfiltrDtypes = [
     'CurveNum'
 ]
    
-def create_infiltr_df(infiltr_row):
+def create_infiltr_df(infiltr_row, df_length, feedback):
     """
     creates a pd.DataFrame for infiltration values
     :param pd.Series infiltr_row
     """
+    feedback.setProgress(int(infiltr_row.name / df_length * 100))
     if infiltr_row['InfMethod'] in ['GREEN_AMPT', 'MODIFIED_GREEN_AMPT']:
         infiltr_row = infiltr_row.rename({
             'Param1': 'SuctHead',
