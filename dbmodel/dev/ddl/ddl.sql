@@ -27,61 +27,61 @@ CREATE TABLE config_param_user (
 
 CREATE TABLE cat_landuses (
 	id integer primary key,
-	idval text check (typeof(idval)='text' or typeof(idval)=null),
+	idval text check (typeof(idval)='text') NOT NULL,
 	sector_id check (typeof(sector_id)='integer' or typeof(sector_id)= null),
 	scenario_id check (typeof(scenario_id)='integer' or typeof(scenario_id)= null),
     descript text check (typeof(descript)='text' or typeof(descript)=null),
 	manning real check (typeof(manning)='real' or typeof(manning)=null),
-	active boolean check (typeof(active) in (0,1, null))
+	active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1 
 );
 
 CREATE TABLE cat_scenario (
     id integer primary key,
-    idval text check (typeof(idval)='text' or typeof(idval)=null),
+    idval text check (typeof(idval)='text') NOT NULL,
     sector_id check (typeof(sector_id)='integer' or typeof(sector_id)= null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    active boolean CHECK (typeof(active) IN (0,1,NULL)) --unique idval
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1 --unique idval
 );
 
 CREATE TABLE cat_grate (
     id integer primary key,
-    idval text check (typeof(idval)='text' or typeof(idval)=null),
+    idval text check (typeof(idval)='text') NOT NULL,
     length real check (typeof(length) = 'real' or length = null),
     width real check (typeof(width) = 'real' or width = null),
     a_param real check (typeof(a_param) = 'real' or a_param = null),
     b_param real check (typeof(b_param) = 'real' or b_param = null),
-    active boolean CHECK (typeof(active) IN (0,1,NULL))
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
 
 CREATE TABLE cat_curve (
     id integer primary key,
-    idval text unique check (typeof(idval)='text' or typeof(idval)=null),
+    idval text unique check (typeof(idval)='text') NOT NULL,
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
     descript text check (typeof(descript)='text' or typeof(descript)=null),
-    active boolean CHECK (typeof(active) IN (0,1,NULL))
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
 
 CREATE TABLE cat_curve_value (
     id integer primary key,
-    idval text unique check (typeof(idval)='text' or idval = not null),
+    idval text unique check (typeof(idval)='text') NOT NULL,
     xcoord real CHECK (typeof(xcoord)='real' OR xcoord=NULL),
     ycoord real CHECK (typeof(ycoord)='real' OR ycoord=NULL)
 );
 
 CREATE TABLE cat_timeseries (
     id integer primary key,
-    idval text check (typeof(idval)='text' or typeof(idval)=null),
+    idval text check (typeof(idval)='text') NOT NULL,
     sector_id integer CHECK (typeof(sector_id)='integer' OR sector_id=NULL),
     scenario_id integer check (typeof(scenario_id)='integer' or scenario_id=null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     timeseries_type text CHECK (typeof(timeseries_type)='text' OR timeseries_type=NULL),
-    active boolean CHECK (typeof(active) IN (0,1,NULL))
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
 
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
-    idval text unique check (typeof(idval)='text' or idval = not null),
+    idval text unique check (typeof(idval)='text') NOT NULL,
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL)
@@ -89,9 +89,9 @@ CREATE TABLE cat_timeseries_value (
 
 CREATE TABLE cat_pattern (
     id integer primary key,
-    idval text unique check (typeof(idval)='text' or idval = not null),
+    idval text unique check (typeof(idval)='text') NOT NULL,
     descript text check (typeof(descript) = 'text' or descript = null),
-    active boolean check (typeof(active) in (0, 1, null))
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT 1
 );
 
 -- -----------
@@ -104,7 +104,7 @@ create table sector (
     scenario_id integer CHECK (typeof(scenario_id)='integer' OR scenario_id=NULL),
     descript text check (typeof(descript) = 'text' or descript = null),
     stylesheet text check (typeof(stylesheet) = 'text' or stylesheet = null),
-    active boolean check (typeof(active) in (0, 1, null)),
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
