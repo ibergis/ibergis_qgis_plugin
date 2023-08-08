@@ -464,7 +464,7 @@ CREATE TABLE inp_orifice (
     offsetval real check (typeof(offsetval) = 'real' or offsetval = null),
     cd1 real check (typeof(cd1) = 'real' or cd1 = null),
     flap text check (typeof(flap) = 'text' or flap = null),
-    close_time datetime check (typeof(close_time) = 'datetime' or close_time = null),
+    close_time real check (typeof(close_time) = 'real' or close_time = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
