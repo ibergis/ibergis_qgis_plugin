@@ -82,75 +82,75 @@ def getselectors(p_input: dict) -> dict:
     v_return: dict = {}
     v_sql: str
     v_message: str
-    v_raw_widgets: list
+    v_fields_aux: {}
     v_fields: list
     v_raw_values: list
-    v_tabs = {
-        "tab_sector": {
-            "tabname": "tab_sector",
-            "label": "Sector",
-            "tooltip": "Sector",
-            "orderby": 1
-        },
-        "tab_dscenario": {
-            "tabname": "tab_dscenario",
-            "label": "Dscenario",
-            "tooltip": "Dscenario",
-            "orderby": 2
-        }
-    }
 
     try:
-        # Input to JSON
-        input = json.loads((p_input))
-        print(p_input)
 
-        v_sql = f"SELECT value from config_param_user WHERE parameter_id like 'basic_selector_%'"
+        v_return = _create_return(v_return, accepted=True, message="Process done successfully")
+        v_return["body"]["form"]["currentTab"] = "tab_scenario"
+        v_return["body"]["form"]["formTabs"] = []
+
+        v_sql = f"SELECT parameter_id, value from config_param_user WHERE parameter_id like 'basic_selector_%'"
         rows = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         for row in rows:
-            tab_json = json.loads(row[0].replace('/',''))
-            print("ROW   :" ,tab_json)
+            tab_json = json.loads(row[1].replace('/',''))
+            tabname = row[0].replace("basic_selector_", "")
+            tabLabel = tabname.replace("tab_", "")
             table = tab_json["table"]
             selector = tab_json["selector"]
             table_id = tab_json["table_id"]
+            selector_id = tab_json["selector_id"]
             label = tab_json["label"]
             orderBy = tab_json["orderBy"]
             manageAll = tab_json["manageAll"]
             query_filter = tab_json["query_filter"]
-            #typeaheadFilter = tab_json["typeaheadFilter"]
+            typeaheadFilter = tab_json.get("typeaheadFilter")
             typeaheadForced = tab_json["typeaheadForced"]
 
-
-            v_sql = f"SELECT * from {table}"
-            rows_f = global_vars.gpkg_dao_data.get_rows(v_sql)
+            v_sql = f"SELECT {table_id} as {table_id}, {label} AS label, {orderBy} AS orderBy, {orderBy} AS name," \
+                    f" cast({table_id} as text) AS widgetname, '{selector_id}' AS columnname, 'check' AS type, 'boolean' AS dataType, " \
+                    f" CASE WHEN {table_id} IN (SELECT * FROM {selector}) THEN 'true' ELSE 'false' END AS value" \
+                    f" from {table}"
+            column_names = [f'{table_id}', 'label', 'orderBy', 'name', 'widgetname', 'columnname', 'type',
+                            'dataType', 'value' ]
+            rows_fields = global_vars.gpkg_dao_data.get_rows(v_sql)
             print("ERROR:",global_vars.gpkg_dao_data.last_error)
 
-            for row in rows_f:
-                #print("ROW F: ", row)
-                print(row[0], row[1], row[2],row[3],row[4])
-            # format widgets as a json
-            # v_fields = []
-            # for row in v_raw_widgets:
-            #     fields_dict = {}
+            v_fields = []
+            for row in rows_fields:
+                widget_dict = {}
+                for i, value in enumerate(row):
+                    key = column_names[i]
+                    widget_dict[key] = value
+                v_fields.append(widget_dict)
 
 
-        v_message ='{"level":111, "text":"Process done successfully"}'
-        for tab in v_tabs.values():
-            tabname = tab["tabname"]
-            parameter_id = f"basic_selector_{tabname}"
+            v_fields_aux = {
+                'fields':v_fields,
+                'tabName':f'{tabname}',
+                'tableName':f'{selector}',
+                'tabLabel': f'{tabLabel.capitalize()}',
+                'tooltip': f'{tabLabel.capitalize()}',
+                'selectorType': 'selector_basic',
+                'manageAll': f'{manageAll}',
+                'selectionMode': 'keepPrevious',
+                'typeaheadForced':f'{typeaheadForced}'
+            }
 
-        # return
-        # v_return["body"] = {"data": {}, "form": {}}
-        # v_return["body"]["form"]["formTabs"] = [
-        #     {
-        #         "fields": v_fields
-        #     }
-        # ]
+            if typeaheadFilter:
+                v_fields_aux["typeaheadFilter"] = typeaheadFilter
+
+            v_return["body"]["form"]["formTabs"].append(v_fields_aux)
+
+        v_message="Process done succesfully."
 
     except Exception as e:
         print(f"EXCEPTION IN getselectors: {e}")
         accepted = False
+        v_message = f"{e}"
 
     v_return = _create_return(v_return, accepted=accepted, message=v_message)
     return v_return
