@@ -225,3 +225,12 @@ create trigger "trigger_update_node_id_inp_outfall" after insert on "inp_outfall
 create trigger "trigger_update_node_id_inp_divider" after insert on "inp_divider" BEGIN update inp_divider set node_id = 'D'||fid; END;
 create trigger "trigger_update_node_id_inp_storage" after insert on "inp_storage" BEGIN update inp_storage set node_id = 'S'||fid; END;
 create trigger "trigger_update_node_id_inp_junction" after insert on "inp_junction" BEGIN update inp_junction set node_id = 'J'||fid; END;
+
+
+
+
+-- -------------------
+-- ENABLE FOREIGN KEYS: enables insertion of data without using any restriction
+-- -------------------
+
+PRAGMA foreign_keys = ON;
