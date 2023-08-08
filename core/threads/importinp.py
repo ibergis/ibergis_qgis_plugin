@@ -40,7 +40,9 @@ class GwImportInpTask(GwTask):
         if self.isCanceled():
             return
         columns = {table: self._get_colums(table) for table in core.tables()}
-        data = core.get_dataframes(dicts, columns, global_vars.data_epsg)
+        data = core.get_dataframes(
+            dicts, self.sector_id, self.scenario_id, columns, global_vars.data_epsg
+        )
         if self.isCanceled():
             return
         for i, item in enumerate(data):
