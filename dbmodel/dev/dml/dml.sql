@@ -27,9 +27,9 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('ground_roughness', 'features', 'ground_roughness', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('ground_losses', 'features', 'ground_losses', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('roof', 'features', 'roof', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_tin', 'features', 'elem_tin', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_edge', 'features', 'elem_edge', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_vertex', 'features', 'elem_vertex', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_tin', 'features', 'mesh_tin', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_edge', 'features', 'mesh_edge', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_vertex', 'features', 'mesh_vertex', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('link', 'features', 'link', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('gully', 'features', 'gully', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_raingage', 'features', 'inp_raingage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
