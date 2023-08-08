@@ -26,6 +26,7 @@ class GwImportINPButton(GwAction):
         dlg = self.dlg_import
 
         tools_gw.load_settings(dlg)
+        self._fill_combos()
         self._load_user_values()
         self._set_initial_signals()
         tools_gw.disable_tab_log(dlg)
@@ -60,6 +61,17 @@ class GwImportINPButton(GwAction):
         self.dlg_import.rejected.connect(self.timer.stop)
 
         QgsApplication.taskManager().addTask(self.thread)
+
+    def _fill_combos(self):
+        # Sector
+        query = "SELECT DISTINCT code || ' - ' || descript, code FROM sector WHERE active = true"
+        rows = global_vars.gpkg_dao_data.get_rows(query)
+        tools_qt.fill_combo_values(self.dlg_import.cmb_sector, rows, add_empty=True)
+
+        # Scenario
+        query = "SELECT DISTINCT id || ' - ' || idval, id FROM cat_scenario WHERE active = true"
+        rows = global_vars.gpkg_dao_data.get_rows(query)
+        tools_qt.fill_combo_values(self.dlg_import.cmb_scenario, rows, add_empty=True)
 
     def _get_file_dialog(self, widget):
         # Check if selected file exists. Set default value if necessary
@@ -156,6 +168,7 @@ class GwImportINPButton(GwAction):
 class Feedback(QObject):
     progressText = pyqtSignal(str)
     progress = pyqtSignal(int)
+
     def __init__(self):
         super().__init__()
         self.canceled = False
