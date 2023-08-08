@@ -41,6 +41,8 @@ class GwImportINPButton(GwAction):
             "Import INP file",
             self.input_file,
             global_vars.gpkg_dao_data.db_filepath,
+            self.sector,
+            self.scenario,
             self.feedback,
         )
 

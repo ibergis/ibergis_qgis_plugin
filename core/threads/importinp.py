@@ -5,10 +5,14 @@ from ... import global_vars
 
 
 class GwImportInpTask(GwTask):
-    def __init__(self, description, input_file, gpkg_path, feedback):
+    def __init__(
+        self, description, input_file, gpkg_path, sector_id, scenario_id, feedback
+    ):
         super().__init__(description)
         self.input_file = input_file
         self.gpkg_path = gpkg_path
+        self.sector_id = sector_id
+        self.scenario_id = scenario_id
         self.feedback = feedback
 
     def cancel(self):
