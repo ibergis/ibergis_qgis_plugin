@@ -1,3 +1,5 @@
+import traceback
+
 from . import importinp_core as core
 from .task import GwTask
 from ..utils.generate_swmm_inp import inp2dict
@@ -24,8 +26,8 @@ class GwImportInpTask(GwTask):
         try:
             self.dao = global_vars.gpkg_dao_data.clone()
             self._import_file()
-        except Exception as e:
-            self.exception = e
+        except Exception:
+            self.exception = traceback.format_exc()
             return False
         return True
 
