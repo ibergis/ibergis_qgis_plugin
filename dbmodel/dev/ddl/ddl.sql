@@ -175,7 +175,7 @@ CREATE TABLE roof (
     geom geometry
 );
 
-CREATE TABLE elem_tin (
+CREATE TABLE mesh_tin (
     fid integer PRIMARY KEY,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
@@ -197,7 +197,7 @@ CREATE TABLE elem_tin (
     geom geometry
 );
 
-CREATE TABLE elem_edge (
+CREATE TABLE mesh_edge (
     fid integer PRIMARY KEY,
     arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
@@ -210,8 +210,7 @@ CREATE TABLE elem_edge (
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
-
-CREATE TABLE elem_vertex (
+CREATE TABLE mesh_vertex (
     fid integer PRIMARY KEY,
     node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
