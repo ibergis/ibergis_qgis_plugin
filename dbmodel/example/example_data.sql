@@ -88,15 +88,15 @@ INSERT INTO roof (fid, sector_id, scenario_id, geom) VALUES(58, 1, 1, ST_GeomFro
 -- ----
 -- EDGE
 -- ----
-INSERT INTO elem_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(1, 1, 1, 4717, 8168, ST_GeomFromText('LINESTRING (418470.11819 4577865.43944, 418473.49737 4577846.94189)', <SRID_VALUE>));
-INSERT INTO elem_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(2, 1, 1, 929, 2659, ST_GeomFromText('LINESTRING (418473.51486 4577846.84616, 418476.91153 4577828.25287)', <SRID_VALUE>));
-INSERT INTO elem_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(3, 1, 1, 8168, 8169, ST_GeomFromText('LINESTRING (418470.11819 4577865.43944, 418474.16432 4577870.54197)', <SRID_VALUE>));
-INSERT INTO elem_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(4, 1, 1, 7430, 8169, ST_GeomFromText('LINESTRING (418474.16432 4577870.54197, 418530.50217 4577874.06092)', <SRID_VALUE>));
-INSERT INTO elem_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(5, 1, 1, 7430, 8554, ST_GeomFromText('LINESTRING (418530.50217 4577874.06092, 418555.03496 4577875.59328)', <SRID_VALUE>));
-INSERT INTO elem_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(6, 1, 1, 226, 419, ST_GeomFromText('LINESTRING (418461.08877 4577869.34935, 418460.1429 4577865.2884)', <SRID_VALUE>));
-INSERT INTO elem_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(7, 1, 1, 419, 8039, ST_GeomFromText('LINESTRING (418460.1429 4577865.2884, 418466.65169 4577829.24666)', <SRID_VALUE>));
-INSERT INTO elem_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(8, 1, 1, 226, 8000, ST_GeomFromText('LINESTRING (418461.08877 4577869.34935, 418454.66911 4577869.15124)', <SRID_VALUE>));
-INSERT INTO elem_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(9, 1, 1, 5267, 8000, ST_GeomFromText('LINESTRING (418454.66911 4577869.15124, 418410.13492 4577861.49231)', <SRID_VALUE>));
+INSERT INTO mesh_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(1, 1, 1, 4717, 8168, ST_GeomFromText('LINESTRING (418470.11819 4577865.43944, 418473.49737 4577846.94189)', <SRID_VALUE>));
+INSERT INTO mesh_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(2, 1, 1, 929, 2659, ST_GeomFromText('LINESTRING (418473.51486 4577846.84616, 418476.91153 4577828.25287)', <SRID_VALUE>));
+INSERT INTO mesh_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(3, 1, 1, 8168, 8169, ST_GeomFromText('LINESTRING (418470.11819 4577865.43944, 418474.16432 4577870.54197)', <SRID_VALUE>));
+INSERT INTO mesh_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(4, 1, 1, 7430, 8169, ST_GeomFromText('LINESTRING (418474.16432 4577870.54197, 418530.50217 4577874.06092)', <SRID_VALUE>));
+INSERT INTO mesh_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(5, 1, 1, 7430, 8554, ST_GeomFromText('LINESTRING (418530.50217 4577874.06092, 418555.03496 4577875.59328)', <SRID_VALUE>));
+INSERT INTO mesh_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(6, 1, 1, 226, 419, ST_GeomFromText('LINESTRING (418461.08877 4577869.34935, 418460.1429 4577865.2884)', <SRID_VALUE>));
+INSERT INTO mesh_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(7, 1, 1, 419, 8039, ST_GeomFromText('LINESTRING (418460.1429 4577865.2884, 418466.65169 4577829.24666)', <SRID_VALUE>));
+INSERT INTO mesh_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(8, 1, 1, 226, 8000, ST_GeomFromText('LINESTRING (418461.08877 4577869.34935, 418454.66911 4577869.15124)', <SRID_VALUE>));
+INSERT INTO mesh_edge (fid, sector_id, scenario_id, vertex_id1, vertex_id2, geom) VALUES(9, 1, 1, 5267, 8000, ST_GeomFromText('LINESTRING (418454.66911 4577869.15124, 418410.13492 4577861.49231)', <SRID_VALUE>));
 
 
 -- ---
