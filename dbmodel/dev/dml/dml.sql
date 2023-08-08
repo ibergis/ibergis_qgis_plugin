@@ -14,6 +14,7 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('config_param_user', 'attributes', 'config_param_user', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('edit_typevalue', 'attributes', 'edit_typevalue', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_scenario', 'attributes', 'cat_scenario', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_arc', 'attributes', 'cat_arc', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_curve', 'attributes', 'cat_curve', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_curve_value', 'attributes', 'cat_curve_value', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_timeseries', 'attributes', 'cat_timeseries', '',  0, 0, 0, 0, 0, 0);
@@ -52,6 +53,7 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('selector_scena
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('config_param_user', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('edit_typevalue', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_scenario', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_arc', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_curve', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_curve_value', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_timeseries', 0);

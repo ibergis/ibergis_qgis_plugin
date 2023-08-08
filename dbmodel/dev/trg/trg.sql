@@ -14,6 +14,7 @@ CREATE TRIGGER "trigger_delete_feature_count_selector_scenario" AFTER DELETE ON 
 CREATE TRIGGER "trigger_delete_feature_count_selector_sector" AFTER DELETE ON "selector_sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_sector'); END;
 CREATE TRIGGER "trigger_delete_feature_count_config_param_user" AFTER DELETE ON "config_param_user" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_param_user'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_scenario" AFTER DELETE ON "cat_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_scenario'); END;
+CREATE TRIGGER "trigger_delete_feature_count_cat_arc" AFTER DELETE ON "cat_arc" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_arc'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_curve" AFTER DELETE ON "cat_curve" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_curve'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_curve_value" AFTER DELETE ON "cat_curve_value" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_curve_value'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_timeseries" AFTER DELETE ON "cat_timeseries" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_timeseries'); END;
@@ -45,9 +46,10 @@ CREATE TRIGGER "trigger_delete_feature_count_inp_storage" AFTER DELETE ON "inp_s
 CREATE TRIGGER "trigger_delete_feature_count_inp_junction" AFTER DELETE ON "inp_junction" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_junction'); END;
 
 CREATE TRIGGER "trigger_insert_feature_count_selector_sector" AFTER INSERT ON "selector_sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_sector'); END;
-CREATE TRIGGER "trigger_insert_feature_count_selector_scenarior" AFTER INSERT ON "selector_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_scenario'); END;
+CREATE TRIGGER "trigger_insert_feature_count_selector_scenario" AFTER INSERT ON "selector_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_scenario'); END;
 CREATE TRIGGER "trigger_insert_feature_count_config_param_user" AFTER INSERT ON "config_param_user" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('config_param_user'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_scenario" AFTER INSERT ON "cat_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_scenario'); END;
+CREATE TRIGGER "trigger_insert_feature_count_cat_arc" AFTER INSERT ON "cat_arc" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_arc'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_curve" AFTER INSERT ON "cat_curve" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_curve'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_curve_value" AFTER INSERT ON "cat_curve_value" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_curve_value'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_timeseries" AFTER INSERT ON "cat_timeseries" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_timeseries'); END;

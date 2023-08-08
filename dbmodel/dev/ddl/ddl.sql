@@ -53,6 +53,30 @@ CREATE TABLE cat_grate (
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
 
+CREATE TABLE cat_arc (
+    id integer primary key,
+    idval text unique check (typeof(idval) = 'text'),
+    shape text check (typeof(shape) = 'text' or shape = not null),
+    geom1 real check (typeof(geom1) = 'real' or geom1 = null),
+    geom2 real check (typeof(geom2) = 'real' or geom2 = null),
+    geom3 real check (typeof(geom3) = 'real' or geom3 = null),
+    geom4 real check (typeof(geom4) = 'real' or geom4 = null),
+    geom5 real check (typeof(geom5) = 'real' or geom5 = null),
+    geom6 real check (typeof(geom6) = 'real' or geom6 = null),
+    geom7 real check (typeof(geom7) = 'real' or geom7 = null),
+    geom8 real check (typeof(geom8) = 'real' or geom8 = null),
+    descript text check (typeof(descript) = 'text' or descript = null),
+    z1 real check (typeof(z1) = 'real' or z1 = null),
+    z2 real check (typeof(z2) = 'real' or z2 = null),
+    width real check (typeof(width) = 'real' or width = null),
+    area real check (typeof(area) = 'real' or area = null),
+    estimated_depth real check (typeof(estimated_depth) = 'real' or estimated_depth = null),
+    bulk real check (typeof(bulk) = 'real' or bulk = null),
+    active boolean check (typeof(active) in (0, 1, null)) default 1,
+    arc_type text check (typeof(arc_type) = 'text' or arc_type = null)
+);
+
+
 CREATE TABLE cat_curve (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
