@@ -568,7 +568,7 @@ INSERT INTO gully (fid, sector_id, scenario_id, top_elev, source_fid, geom) VALU
 INSERT INTO gully (fid, sector_id, scenario_id, top_elev, source_fid, geom) VALUES(103, 2, 1, 40.1, 49997, ST_GeomFromText('POINT(418584.066459 4577703.285258)', <SRID_VALUE>));
 
 
-/*
+
 INSERT INTO link (fid, sector_id, scenario_id, feature_type, feature_id, exit_type, exit_id, source_fid, geom) VALUES(1,  2, 1, 'GULLY', '49812', 'inp_conduit', '18893', 600, ST_GeomFromText('LINESTRING(418508.579613 4577581.404796, 418513.189461 4577582.166055)', <SRID_VALUE>));
 INSERT INTO link (fid, sector_id, scenario_id, feature_type, feature_id, exit_type, exit_id, source_fid, geom) VALUES(2,  2, 1, 'GULLY', '49813', 'inp_conduit', '18893', 601, ST_GeomFromText('LINESTRING(418518.491388 4577582.85177, 418513.219977 4577581.981262)', <SRID_VALUE>));
 INSERT INTO link (fid, sector_id, scenario_id, feature_type, feature_id, exit_type, exit_id, source_fid, geom) VALUES(3,  2, 1, 'GULLY', '49814', 'inp_conduit', '18893', 602, ST_GeomFromText('LINESTRING(418501.778834 4577622.281823, 418506.437787 4577623.051191)', <SRID_VALUE>));
