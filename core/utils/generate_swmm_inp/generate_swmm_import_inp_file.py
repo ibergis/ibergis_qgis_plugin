@@ -1,5 +1,6 @@
 # TODO: include attribuition to https://github.com/Jannik-Schilling/generate_swmm_inp/blob/main/generate_swmm_import_inp_file.py
 
+import itertools
 import numpy as np
 import pandas as pd
 from .g_s_defaults import (
@@ -195,10 +196,8 @@ def inp2dict(readfile, feedback):
         :param str pattern_row
         :return: list
         """
-        count_patterns = int(
-            len(all_patterns[pattern_type]) / len(pattern_times[pattern_type])
-        )
-        new_col = pattern_times[pattern_type] * count_patterns
+        timesteps = itertools.cycle(pattern_times[pattern_type])
+        new_col = [next(timesteps) for _ in range(len(all_patterns[pattern_type]))]
         return new_col
 
     for pattern_type in pattern_cols.keys():
@@ -448,7 +447,7 @@ def inp2dict(readfile, feedback):
         feedback.setProgress(95)
         dict_res_table["TRANSECTS"] = transects_dict
         feedback.setProgress(100)
-    
+
     if feedback.isCanceled():
         return
 
