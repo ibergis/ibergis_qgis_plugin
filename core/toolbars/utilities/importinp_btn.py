@@ -70,11 +70,19 @@ class GwImportINPButton(GwAction):
         # Sector
         query = "SELECT DISTINCT code || ' - ' || descript, code FROM sector WHERE active = true"
         rows = global_vars.gpkg_dao_data.get_rows(query)
+        if not rows:
+            message = "You need to have at least one active sector and one active scenario before importing a INP file."
+            tools_qt.show_info_box(message)
+            return
         tools_qt.fill_combo_values(self.dlg_import.cmb_sector, rows, add_empty=True)
 
         # Scenario
         query = "SELECT DISTINCT id || ' - ' || idval, id FROM cat_scenario WHERE active = true"
         rows = global_vars.gpkg_dao_data.get_rows(query)
+        if not rows:
+            message = "You need to have at least one active sector and one active scenario before importing a INP file."
+            tools_qt.show_info_box(message)
+            return
         tools_qt.fill_combo_values(self.dlg_import.cmb_scenario, rows, add_empty=True)
 
     def _get_file_dialog(self, widget):
@@ -175,12 +183,12 @@ class GwImportINPButton(GwAction):
             return False
 
         sector = tools_qt.get_combo_value(dlg, dlg.cmb_sector, index=1)
-        if not sector:
+        if not sector or sector == -1:
             tools_qt.show_info_box("You should select a sector!")
             return False
 
         scenario = tools_qt.get_combo_value(dlg, dlg.cmb_scenario, index=1)
-        if not scenario:
+        if not scenario or scenario == -1:
             tools_qt.show_info_box("You should select a scenario!")
             return False
 
