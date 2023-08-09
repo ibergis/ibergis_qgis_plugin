@@ -624,3 +624,494 @@ CREATE TABLE inp_junction (
     FOREIGN KEY (sector_id) references sector (fid),
     FOREIGN KEY (scenario_id) references cat_scenario (id)
 );
+
+
+-- ---------
+-- RPT_TABLES
+-- --------
+
+CREATE TABLE rpt_arc (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id =null),
+    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
+    resultdate text check (typeof(resultdate) = 'text' or resultdate = null),
+    resulttime text check (typeof(resulttime) = 'text' or resulttime = null),
+    flow real check (typeof(flow) = 'real' or flow = null),
+    velocity real check (typeof(velocity) = 'real' or velocity = null),
+    fullpercent real check (typeof(fullpercent) = 'real' or fullpercent = null)
+);
+
+CREATE TABLE rpt_arcflow_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
+    arc_type text check (typeof(arc_type) = 'text' or arc_type = null),
+    max_flow real check (typeof(max_flow) = 'real' or max_flow = null),
+    time_days text check (typeof(time_days) = 'text' or time_days = null),
+    time_hour text check (typeof(time_hour) = 'text' or time_hour = null),
+    max_veloc real check (typeof(max_veloc) = 'real' or max_veloc = null),
+    mfull_flow real check (typeof(mfull_flow) = 'real' or mfull_flow = null),
+    mfull_dept real check (typeof(mfull_dept) = 'real' or mfull_dept = null),
+    max_shear real check (typeof(max_shear) = 'real' or max_shear = null),
+    max_hr real check (typeof(max_hr) = 'real' or max_hr = null),
+    max_slope real check (typeof(max_slope) = 'real' or max_slope = null),
+    day_max text check (typeof(day_max) = 'text' or day_max = null),
+    time_max text check (typeof(time_max) = 'text 'or time_max = null),
+    min_shear real check (typeof(min_shear) = 'real' or min_shear = null),
+    day_min text check (typeof(day_min) = 'text' or day_min = null),
+    time_min text check (typeof(time_min) = 'text' or time_min = null)
+);
+
+CREATE TABLE rpt_arcpolload_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
+    poll_id text check (typeof(poll_id) = 'text' or poll_id = null)
+);
+
+CREATE TABLE rpt_arcpollutant_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    poll_id text check (typeof(poll_id) = 'text' or poll_id = null),
+    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
+    value real check (typeof(value) = 'real' or value = null)
+);
+
+CREATE TABLE rpt_cat_result (
+    result_id integer primary key,
+    result text check (typeof(result) = 'text' or result = null),
+    flow_units text check (typeof(flow_units) = 'text' or flow_units = null),
+    rain_runof text check (typeof(rain_runof) = 'text' or rain_runof = null),
+    snowmelt text check (typeof(snowmelt) = 'text' or snowmelt = null),
+    groundw text check (typeof(groundw) = 'text' or groundw = null),
+    flow_rout text check (typeof(flow_rout) = 'text' or flow_rout = null),
+    pond_all text check (typeof(pond_all) = 'text' or pond_all = null),
+    water_q text check (typeof(water_q) = 'text' or water_q = null),
+    infil_m text check (typeof(infil_m) = 'text' or infil_m = null),
+    flowrout_m text check (typeof(flowrout_m) = 'text' or flowrout_m = null),
+    start_date text check (typeof(start_date) = 'text' or start_date = null),
+    end_date text check (typeof(end_date) = 'text' or end_date = null),
+    dry_days real check (typeof(dry_days) = 'real' or dry_days = null),
+    rep_tstep text check (typeof(rep_tstep) = 'text' or rep_tstep = null),
+    wet_tstep text check (typeof(wet_tstep) = 'text' or wet_tstep = null),
+    dry_tstep text check (typeof(dry_tstep) = 'text' or dry_tstep = null),
+    rout_tstep text check (typeof(rout_tstep) = 'text' or rout_tstep = null),
+    var_time_step text check (typeof(var_time_step) = 'text' or var_time_step = null),
+    max_trials real check (typeof(max_trials) = 'real' or max_trials = null),
+    head_tolerance text check (typeof(head_tolerance) = 'text' or head_tolerance = null),
+    exec_date timestamp check (typeof(exec_date) = 'timestamp' or exec_date = null),
+    cur_user text check (typeof(cur_user) = 'text' or cur_user = null),
+    inp_options json text check (typeof(inp_options) = 'json' or inp_options = null),
+    rpt_stats json text check (typeof(rpt_stats) = 'json' or rpt_stats = null),
+    export_options text json check (typeof(export_options) = 'text' or export_options = null),
+    network_stats json check (typeof(network_stats) = 'json' or network_stats = null),
+    status int2 text check (typeof(status) = 'int2' or status = null)
+);
+
+CREATE TABLE rpt_condsurcharge_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
+    both_ends real check (typeof(both_ends) = 'real' or both_ends = null),
+    upstream real check (typeof(upstream) = 'real' or upstream = null),
+    dnstream real check (typeof(dnstream) = 'real' or dnstream = null),
+    hour_nflow real check (typeof(hour_nflow) = 'real' or hour_nflow = null),
+    hour_limit real check (typeof(hour_limit) = 'real' or hour_limit = null)
+);
+
+CREATE TABLE rpt_continuity_errors (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    descript text check (typeof(descript) = 'text' or descript = null)
+);
+
+CREATE TABLE rpt_control_actions_taken (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    descript text check (typeof(descript) = 'text' or descript = null)
+);
+
+CREATE TABLE rpt_critical_elements (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    descript text check (typeof(descript) = 'text' or descript = null)
+);
+
+CREATE TABLE rpt_flowclass_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
+    length real check (typeof(length) = 'real' or length = null),
+    dry real check (typeof(dry) = 'real' or dry = null),
+    up_dry real check (typeof(up_dry) = 'real' or up_dry = null),
+    down_dry real check (typeof(down_dry) = 'real' or down_dry = null),
+    sub_crit real check (typeof(sub_crit) = 'real' or sub_crit = null),
+    sub_crit_1 real check (typeof(sub_crit_1) = 'real' or sub_crit_1 = null),
+    up_crit real check (typeof(up_crit) = 'real' or up_crit = null),
+    down_crit real check (typeof(down_crit) = 'real' or down_crit = null),
+    froud_numb real check (typeof(froud_numb) = 'real' or froud_numb = null),
+    flow_chang real check (typeof(flow_chang) = 'real' or flow_chang = null)
+);
+
+CREATE TABLE rpt_flowrouting_cont (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    dryw_inf real check (typeof(dryw_inf) = 'real' or dryw_inf = null),
+    wetw_inf real check (typeof(wetw_inf) = 'real' or wetw_inf = null),
+    ground_inf real check (typeof(ground_inf) = 'real' or ground_inf = null),
+    rdii_inf real check (typeof(rdii_inf) = 'real' or rdii_inf = null),
+    ext_inf real check (typeof(ext_inf) = 'real' or ext_inf = null),
+    ext_out real check (typeof(ext_out) = 'real' or ext_out = null),
+    int_out real check (typeof(int_out) = 'real' or int_out = null),
+    stor_loss real check (typeof(stor_loss) = 'real' or stor_loss = null),
+    initst_vol real check (typeof(initst_vol) = 'real' or initst_vol = null),
+    finst_vol real check (typeof(finst_vol) = 'real' or finst_vol = null),
+    cont_error real check (typeof(cont_error) = 'real' or cont_error = null),
+    evap_losses real check (typeof(evap_losses) = 'real' or evap_losses = null),
+    seepage_losses real check (typeof(seepage_losses) = 'real' or seepage_losses = null)
+);
+
+CREATE TABLE rpt_groundwater_cont (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    init_stor real check (typeof(init_stor) = 'real' or init_stor = null),
+    infilt real check (typeof(infilt) = 'real' or infilt = null),
+    upzone_et real check (typeof(upzone_et) = 'real' or upzone_et = null),
+    lowzone_et real check (typeof(lowzone_et) = 'real' or lowzone_et = null),
+    deep_perc real check (typeof(deep_perc) = 'real' or deep_perc = null),
+    groundw_fl real check (typeof(groundw_fl) = 'real' or groundw_fl = null),
+    final_stor real check (typeof(final_stor) = 'real' or final_stor = null),
+    cont_error real check (typeof(cont_error) = 'real' or cont_error = null)
+);
+
+CREATE TABLE rpt_high_conterrors (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    descript text check (typeof(descript) = 'text' or descript = null)
+);
+
+CREATE TABLE rpt_high_flowinest_ind (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    descript text check (typeof(descript) = 'text' or descript = null)
+);
+
+CREATE TABLE rpt_instability_index (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    descript text check (typeof(descript) = 'text' or descript = null)
+);
+
+CREATE TABLE rpt_lidperformance_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    subc_id text check (typeof(subc_id) = 'text' or subc_id = null),
+    lidco_id text check (typeof(lidco_id) = 'text' or lidco_id = null),
+    tot_inflow real check (typeof(tot_inflow) = 'real' or tot_inflow = null),
+    evap_loss real check (typeof(evap_loss) = 'real' or evap_loss = null),
+    infil_loss real check (typeof(infil_loss) = 'real' or infil_loss = null),
+    surf_outf real check (typeof(surf_outf) = 'real' or surf_outf = null),
+    drain_outf real check (typeof(drain_outf) = 'real' or drain_outf = null),
+    init_stor real check (typeof(init_stor) = 'real' or init_stor = null),
+    final_stor real check (typeof(final_stor) = 'real' or final_stor = null),
+    per_error real check (typeof(per_error) = 'real' or per_error = null)
+);
+
+CREATE TABLE rpt_node (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    resultdate text check (typeof(resultdate) = 'text' or resultdate = null),
+    resulttime text check (typeof(resulttime) = 'text' or resulttime = null),
+    flooding real check (typeof(flooding) = 'real' or flooding = null),
+    depth real check (typeof("depth") = 'real' or "depth" = null),
+    head real check (typeof(head) = 'real' or head = null),
+    inflow real check (typeof(inflow) = 'real' or inflow = null)
+);
+
+CREATE TABLE rpt_nodedepth_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
+    aver_depth real check (typeof(aver_depth) = 'real' or aver_depth = null),
+    max_depth real check (typeof(max_depth) = 'real' or max_depth = null),
+    max_hgl real check (typeof(max_hgl) = 'real' or max_hgl = null),
+    time_days text check (typeof(time_days) = 'text' or time_days = null),
+    time_hour text check (typeof(time_hour) = 'text' or time_hour = null)
+);
+
+CREATE TABLE rpt_nodeflooding_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    hour_flood real check (typeof(hour_flood) = 'real' or hour_flood = null),
+    max_rate real check (typeof(max_rate) = 'real' or max_rate = null),
+    time_days text check (typeof(time_days) = 'text' or time_days = null),
+    time_hour text check (typeof(time_hour) = 'text' or time_hour = null),
+    tot_flood real check (typeof(tot_flood) = 'real' or tot_flood = null),
+    max_ponded real check (typeof(max_ponded) = 'real' or max_ponded = null)
+);
+
+CREATE TABLE rpt_nodeinflow_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
+    max_latinf real check (typeof(max_latinf) = 'real' or max_latinf = null),
+    max_totinf real check (typeof(max_totinf) = 'real' or max_totinf = null),
+    time_days text check (typeof(time_days) = 'text' or time_days = null),
+    time_hour text check (typeof(time_hour) = 'text' or time_hour = null),
+    latinf_vol real check (typeof(latinf_vol) = 'real' or latinf_vol = null),
+    totinf_vol real check (typeof(totinf_vol) = 'real' or totinf_vol = null),
+    flow_balance_error real check (typeof(flow_balance_error) = 'real' or flow_balance_error = null),
+    other_info text check (typeof(other_info) = 'text' or other_info = null)
+);
+
+CREATE TABLE rpt_nodesurcharge_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
+    hour_surch real check (typeof(hour_surch) = 'real' or hour_surch = null),
+    max_height real check (typeof(max_height) = 'real' or max_height = null),
+    min_depth real check (typeof(min_depth) = 'real' or min_depth = null)
+);
+
+CREATE TABLE rpt_outfallflow_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    flow_freq real check (typeof(flow_freq) = 'real' or flow_freq = null),
+    avg_flow real check (typeof(avg_flow) = 'real' or avg_flow = null),
+    max_flow real check (typeof(max_flow) = 'real' or max_flow = null),
+    total_vol real check (typeof(total_vol) = 'real' or total_vol = null)
+);
+
+CREATE TABLE rpt_outfallload_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    poll_id text check (typeof(poll_id) = 'text' or poll_id = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    value real check (typeof(value) = 'real' or value = null)
+);
+
+CREATE TABLE rpt_pumping_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
+    percent real check (typeof("percent") = 'real' or "percent" = null),
+    num_startup integer check (typeof(num_startup) = 'integer' or num_startup = null),
+    min_flow real check (typeof(min_flow) = 'real' or min_flow = null),
+    avg_flow real check (typeof(avg_flow) = 'real' or avg_flow = null),
+    max_flow real check (typeof(max_flow) = 'real' or max_flow = null),
+    vol_ltr real check (typeof(vol_ltr) = 'real' or vol_ltr = null),
+    powus_kwh real check (typeof(powus_kwh) = 'real' or powus_kwh = null),
+    timoff_min real check (typeof(timoff_min) = 'real' or timoff_min = null),
+    timoff_max real check (typeof(timoff_max) = 'real' or timoff_max = null)
+);
+
+CREATE TABLE rpt_qualrouting_cont (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    poll_id text check (typeof(poll_id) = 'text' or poll_id = null),
+    dryw_inf real check (typeof(dryw_inf) = 'real' or dryw_inf = null),
+    wetw_inf real check (typeof(wetw_inf) = 'real' or wetw_inf = null),
+    ground_inf real check (typeof(ground_inf) = 'real' or ground_inf = null),
+    rdii_inf real check (typeof(rdii_inf) = 'real' or rdii_inf = null),
+    ext_inf real check (typeof(ext_inf) = 'real' or ext_inf = null),
+    int_inf real check (typeof(int_inf) = 'real' or int_inf = null),
+    ext_out real check (typeof(ext_out) = 'real' or ext_out = null),
+    mass_reac real check (typeof(mass_reac) = 'real' or mass_reac = null),
+    initst_mas real check (typeof(initst_mas) = 'real' or initst_mas = null),
+    finst_mas real check (typeof(finst_mas) = 'real' or finst_mas = null),
+    cont_error real check (typeof(cont_error) = 'real' or cont_error = null)
+);
+
+CREATE TABLE rpt_rainfall_dep (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    sewer_rain real check (typeof(sewer_rain) = 'real' or sewer_rain = null),
+    rdiip_prod real check (typeof(rdiip_prod) = 'real' or rdiip_prod = null),
+    rdiir_rat real check (typeof(rdiir_rat) = 'real' or rdiir_rat = null)
+);
+
+CREATE TABLE rpt_routing_timestep (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    descript text check (typeof(descript) = 'text' or descript = null)
+);
+
+CREATE TABLE rpt_runoff_qual (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    poll_id text check (typeof(poll_id) = 'text' or poll_id = null),
+    init_buil real check (typeof(init_buil) = 'real' or init_buil = null),
+    surf_buil real check (typeof(surf_buil) = 'real' or surf_buil = null),
+    wet_dep real check (typeof(wet_dep) = 'real' or wet_dep = null),
+    sweep_re real check (typeof(sweep_re) = 'real' or sweep_re = null),
+    infil_loss real check (typeof(infil_loss) = 'real' or infil_loss = null),
+    bmp_re real check (typeof(bmp_re) = 'real' or bmp_re = null),
+    surf_runof real check (typeof(surf_runof) = 'real' or surf_runof = null),
+    rem_buil real check (typeof(rem_buil) = 'real' or rem_buil = null),
+    cont_error real check (typeof(cont_error) = 'real' or cont_error = null)
+);
+
+CREATE TABLE rpt_runoff_quant (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    initsw_co real check (typeof(initsw_co) = 'real' or initsw_co = null),
+    total_prec real check (typeof(total_prec) = 'real' or total_prec = null),
+    evap_loss real check (typeof(evap_loss) = 'real' or evap_loss = null),
+    infil_loss real check (typeof(infil_loss) = 'real' or infil_loss = null),
+    surf_runof real check (typeof(surf_runof) = 'real' or surf_runof = null),
+    snow_re real check (typeof(snow_re) = 'real' or snow_re = null),
+    finalsw_co real check (typeof(finalsw_co) = 'real' or finalsw_co = null),
+    finals_sto real check (typeof(finals_sto) = 'real' or finals_sto = null),
+    cont_error real check (typeof(cont_error) = 'real' or cont_error = null),
+    initlid_sto real check (typeof(initlid_sto) = 'real' or initlid_sto = null)
+);
+
+CREATE TABLE rpt_storagevol_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    aver_vol real check (typeof(aver_vol) = 'real' or aver_vol = null),
+    avg_full real check (typeof(avg_full) = 'real' or avg_full = null),
+    ei_loss real check (typeof(ei_loss) = 'real' or ei_loss = null),
+    max_vol real check (typeof(max_vol) = 'real' or max_vol = null),
+    max_full real check (typeof(max_full) = 'real' or max_full = null),
+    time_days text check (typeof(time_days) = 'text' or time_days = null),
+    time_hour text check (typeof(time_hour) = 'text' or time_hour = null),
+    max_out real check (typeof(max_out) = 'real' or max_out = null)
+);
+
+CREATE TABLE rpt_subcatchment (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    subc_id text check (typeof(subc_id) = 'text' or subc_id = null),
+    resultdate text check (typeof(resultdate) = 'text' or resultdate = null),
+    resulttime text check (typeof(resulttime) = 'text' or resulttime = null),
+    precip real check (typeof(precip) = 'real' or precip = null),
+    losses real check (typeof(losses) = 'real' or losses = null),
+    runoff real check (typeof(runoff) = 'real' or runoff = null)
+);
+
+CREATE TABLE rpt_subcatchrunoff_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    subc_id text check (typeof(subc_id) = 'text' or subc_id = null),
+    tot_precip real check (typeof(tot_precip) = 'real' or tot_precip = null),
+    tot_runon real check (typeof(tot_runon) = 'real' or tot_runon = null),
+    tot_evap real check (typeof(tot_evap) = 'real' or tot_evap = null),
+    tot_infil real check (typeof(tot_infil) = 'real' or tot_infil = null),
+    tot_runoff real check (typeof(tot_runoff) = 'real' or tot_runoff = null),
+    tot_runofl real check (typeof(tot_runofl) = 'real' or tot_runofl = null),
+    peak_runof real check (typeof(peak_runof) = 'real' or peak_runof = null),
+    runoff_coe real check (typeof(runoff_coe) = 'real' or runoff_coe = null),
+    vxmax real check (typeof(vxmax) = 'real' or vxmax = null),
+    vymax real check (typeof(vymax) = 'real' or vymax = null),
+    "depth" real check (typeof("depth") = 'real' or "depth" = null),
+    vel real check (typeof(vel) = 'real' or vel = null),
+    vhmax real check (typeof(vhmax) = 'real' or vhmax = null)
+);
+
+CREATE TABLE rpt_subcatchwashoff_sum (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    subc_id text check (typeof(subc_id) = 'text' or subc_id = null),
+    poll_id text check (typeof(poll_id) = 'text' or poll_id = null),
+    value real check (typeof(value) = 'real' or value = null)
+);
+
+CREATE TABLE rpt_summary_arc (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
+    node_1 text check (typeof(node_1) = 'text' or node_1 = null),
+    node_2 text check (typeof(node_2) = 'text' or node_2 = null),
+    epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
+    length real check (typeof(length) = 'real' or length = null),
+    slope real check (typeof(slope) = 'real' or slope = null),
+    roughness real check (typeof(roughness) = 'real' or roughness = null)
+);
+
+CREATE TABLE rpt_summary_crossection (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
+    shape text check (typeof(shape) = 'text' or shape = null),
+    fulldepth real check (typeof(fulldepth) = 'real' or fulldepth = null),
+    fullarea real check (typeof(fullarea) = 'real' or fullarea = null),
+    hydrad real check (typeof(hydrad) = 'real' or hydrad = null),
+    maxwidth real check (typeof(maxwidth) = 'real' or maxwidth = null),
+    barrels integer check (typeof(barrels) = 'integer' or barrels = null),
+    fullflow real check (typeof(fullflow) = 'real' or fullflow = null)
+);
+
+CREATE TABLE rpt_summary_node (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    node_id text check (typeof(node_id) = 'text' or node_id = null),
+    epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
+    elevation real check (typeof(elevation) = 'real' or elevation = null),
+    maxdepth real check (typeof(maxdepth) = 'real' or maxdepth = null),
+    pondedarea real check (typeof(pondedarea) = 'real' or pondedarea = null),
+    externalinf text check (typeof(externalinf) = 'text' or externalinf = null)
+);
+
+CREATE TABLE rpt_summary_raingage (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    rg_id text check (typeof(rg_id) = 'text' or rg_id = null),
+    data_source text check (typeof(data_source) = 'text' or data_source = null),
+    data_type text check (typeof(data_type) = 'text' or data_type = null),
+    "interval" text check (typeof("interval") = 'text' or "interval" = null)
+);
+
+CREATE TABLE rpt_summary_subcatchment (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    subc_id text check (typeof(subc_id) = 'text' or subc_id = null),
+    area real check (typeof(area) = 'real' or area = null),
+    width real check (typeof(width) = 'real' or width = null),
+    imperv real check (typeof(imperv) = 'real' or imperv = null),
+    slope real check (typeof(slope) = 'real' or slope = null),
+    rg_id text check (typeof(rg_id) = 'text' or rg_id = null),
+    outlet text check (typeof(outlet) = 'text' or outlet = null)
+);
+
+CREATE TABLE rpt_timestep_critelem (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    descript text check (typeof(descript) = 'text' or descript = null)
+);
+
+CREATE TABLE rpt_warning_summary (
+    id integer primary key,
+    result_id text check (typeof(result_id) = 'text' or result_id = null),
+    warning_number text check (typeof(warning_number) = 'text' or warning_number = null),
+    descript text check (typeof(descript) = 'text' or descript = null)
+);
+
+CREATE TABLE selector_rpt_compare (
+    result_id integer primary key,
+    cur_user text check (typeof(cur_user) = 'text' or cur_user = null)
+);
+
+CREATE TABLE selector_rpt_compare_tstep (
+    resultdate integer primary key,
+    resulttime text check (typeof(resulttime) = 'text' or resulttime = null),
+    cur_user text check (typeof(cur_user) = 'text' or cur_user = null)
+);
+
+CREATE TABLE selector_rpt_main (
+    result_id integer primary key,
+    cur_user text check (typeof(cur_user) = 'text' or cur_user = null)
+);
+
+CREATE TABLE selector_rpt_main_tstep (
+    resultdate integer primary key,
+    resulttime text check (typeof(resulttime) = 'text' or resulttime = null),
+    cur_user text check (typeof(cur_user) = 'text' or cur_user = null)
+);
