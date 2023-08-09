@@ -29,13 +29,13 @@ INSERT INTO cat_timeseries (id, idval, sector_id, scenario_id) VALUES(1, 'T10', 
 -- -------
 -- CAT_ARC
 -- -------
-INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, geom5, geom6, geom7, geom8, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(1, 'CC100', 'CIRCULAR', 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 'Conduit', 0.1, 0.1, 1.3, 0.7854, 2.2, 0.15, 1, 'CONDUIT');
-INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, geom5, geom6, geom7, geom8, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(2, 'CC040', 'CIRCULAR', 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 'Conduit', 0.1, 0.1, 0.52, 0.1257, 1.6, 0.06, 1, 'CONDUIT');
-INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, geom5, geom6, geom7, geom8, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(3, 'CC060', 'CIRCULAR', 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 'Conduit', 0.1, 0.1, 0.78, 0.2827, 1.8, 0.09, 1, 'CONDUIT');
-INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, geom5, geom6, geom7, geom8, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(4, 'CC080', 'CIRCULAR', 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 'Conduit', 0.1, 0.1, 1.04, 0.5027, 2.0, 0.12, 1, 'CONDUIT');
-INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, geom5, geom6, geom7, geom8, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(5, 'CC315', 'CIRCULAR', 0.315, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 'Conduit', 0.1, 0.1, 0.42, 0.092, 1.5, 0.06, 1, 'CONDUIT');
-INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, geom5, geom6, geom7, geom8, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(6, 'EG150', 'EGG', 1.5, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 'Conduit', 0.1, 0.1, 1.15, 1.5, 2.7, 0.22, 1, 'CONDUIT');
-INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, geom5, geom6, geom7, geom8, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(7, 'PP020', 'FORCE_MAIN', 0.18, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 'Pump pipe', 0.1, 0.1, 0.26, 0.0314, 1.4, 0.03, 1, 'PUMP_PIPE');
+INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(1, 'CC100', 'CIRCULAR', 1.0, 0.0, 0.0, 0.0, 'Conduit', 0.1, 0.1, 1.3, 0.7854, 2.2, 0.15, 'CONDUIT', 1);
+INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(2, 'CC040', 'CIRCULAR', 0.4, 0.0, 0.0, 0.0,  'Conduit', 0.1, 0.1, 0.52, 0.1257, 1.6, 0.06, 'CONDUIT', 1);
+INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(3, 'CC060', 'CIRCULAR', 0.6, 0.0, 0.0, 0.0, 'Conduit', 0.1, 0.1, 0.78, 0.2827, 1.8, 0.09, 'CONDUIT', 1);
+INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(4, 'CC080', 'CIRCULAR', 0.8, 0.0, 0.0, 0.0, 'Conduit', 0.1, 0.1, 1.04, 0.5027, 2.0, 0.12, 'CONDUIT', 1);
+INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(5, 'CC315', 'CIRCULAR', 0.315, 0.0, 0.0, 0.0,  'Conduit', 0.1, 0.1, 0.42, 0.092, 1.5, 0.06, 'CONDUIT', 1);
+INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(6, 'EG150', 'EGG', 1.5, 1.0, 0.0, 0.0,  'Conduit', 0.1, 0.1, 1.15, 1.5, 2.7, 0.22, 'CONDUIT', 1);
+INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(7, 'PP020', 'FORCE_MAIN', 0.18, 100.0, 0.0, 0.0, 'Pump pipe', 0.1, 0.1, 0.26, 0.0314, 1.4, 0.03, 'PUMP_PIPE', 1);
 
 INSERT INTO cat_curve (id, idval, sector_id, scenario_id) VALUES(1, 'EBAR-02', 2, 1);
 
