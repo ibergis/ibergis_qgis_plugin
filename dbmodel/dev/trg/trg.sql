@@ -6,9 +6,9 @@ as published by the Free Software Foundation, either version 3 of the License, o
 This version of Giswater is provided by Giswater Association
 */
 
--- ----------------------------------------
+-- ---------------------------------
 -- TRIGGERS FOR SYS GPKG TABLESPACE
--- ----------------------------------------
+-- ---------------------------------
 
 CREATE TRIGGER "trigger_delete_feature_count_selector_scenario" AFTER DELETE ON "selector_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_scenario'); END;
 CREATE TRIGGER "trigger_delete_feature_count_selector_sector" AFTER DELETE ON "selector_sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_sector'); END;
@@ -88,6 +88,8 @@ CREATE TRIGGER "trigger_delete_feature_count_inp_outfall" AFTER DELETE ON "inp_o
 CREATE TRIGGER "trigger_delete_feature_count_inp_divider" AFTER DELETE ON "inp_divider" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_divider'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_storage" AFTER DELETE ON "inp_storage" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_storage'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_junction" AFTER DELETE ON "inp_junction" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_junction'); END;
+
+
 
 CREATE TRIGGER "trigger_insert_feature_count_selector_sector" AFTER INSERT ON "selector_sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_sector'); END;
 CREATE TRIGGER "trigger_insert_feature_count_selector_scenario" AFTER INSERT ON "selector_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_scenario'); END;
@@ -169,6 +171,7 @@ CREATE TRIGGER "trigger_insert_feature_count_inp_storage" AFTER INSERT ON "inp_s
 CREATE TRIGGER "trigger_insert_feature_count_inp_junction" AFTER INSERT ON "inp_junction" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_junction'); END;
 
 
+
 CREATE TRIGGER "rtree_sector_geom_delete" AFTER DELETE ON "sector" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_sector_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_ground_geom_delete" AFTER DELETE ON "ground" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_ground_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_ground_roughness_geom_delete" AFTER DELETE ON "ground_roughness" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_ground_roughness_geom" WHERE id= OLD."fid"; END;
@@ -190,7 +193,6 @@ CREATE TRIGGER "rtree_inp_outfall_geom_delete" AFTER DELETE ON "inp_outfall" WHE
 CREATE TRIGGER "rtree_inp_divider_geom_delete" AFTER DELETE ON "inp_divider" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_inp_divider_geom" WHERE id = OLD."fid"; END;
 CREATE TRIGGER "rtree_inp_storage_geom_delete" AFTER DELETE ON "inp_storage" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_inp_storage_geom" WHERE id = OLD."fid"; END;
 CREATE TRIGGER "rtree_inp_junction_geom_delete" AFTER DELETE ON "inp_junction" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_inp_junction_geom" WHERE id = OLD."fid"; END;
-
 
 CREATE TRIGGER "rtree_sector_geom_insert" AFTER INSERT ON "sector" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_ground_geom_insert" AFTER INSERT ON "ground" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_ground_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
@@ -303,10 +305,13 @@ CREATE TRIGGER "rtree_inp_storage_geom_update4" AFTER UPDATE ON "inp_storage" WH
 CREATE TRIGGER "rtree_inp_junction_geom_update4" AFTER UPDATE ON "inp_junction" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_junction_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 
 
------
+
+---------------------------------------------------
+-- TRIGGERS TO CREATE AN AUTOINDEX FOR EACH ELEMENT
+-- ------------------------------------------------
 --create trigger "trigger_update_node_id_inp_raingage" after insert on "inp_raingage" BEGIN update inp_raingage set node_id = 'G'||fid; END;
 create trigger "trigger_update_arc_id_inp_conduit" after insert on "inp_conduit" BEGIN update inp_conduit set arc_id = 'C'||fid; END;
---create trigger "trigger_update_node_id_inp_subcatchment" after insert on "inp_subcatchment" BEGIN update inp_subcatchment set node_id = 'H'||fid; END;
+--create trigger "trigger_update_subc_id_inp_subcatchment" after insert on "inp_subcatchment" BEGIN update inp_subcatchment set node_id = 'H'||fid; END;
 create trigger "trigger_update_arc_id_inp_outlet" after insert on "inp_outlet" BEGIN update inp_outlet set arc_id = 'T'||fid; END;
 create trigger "trigger_update_arc_id_inp_orifice" after insert on "inp_orifice" BEGIN update inp_orifice set arc_id = 'R'||fid; END;
 create trigger "trigger_update_arc_id_inp_weir" after insert on "inp_weir" BEGIN update inp_weir set arc_id = 'W'||fid; END;
@@ -315,7 +320,6 @@ create trigger "trigger_update_node_id_inp_outfall" after insert on "inp_outfall
 create trigger "trigger_update_node_id_inp_divider" after insert on "inp_divider" BEGIN update inp_divider set node_id = 'D'||fid; END;
 create trigger "trigger_update_node_id_inp_storage" after insert on "inp_storage" BEGIN update inp_storage set node_id = 'S'||fid; END;
 create trigger "trigger_update_node_id_inp_junction" after insert on "inp_junction" BEGIN update inp_junction set node_id = 'J'||fid; END;
-
 
 
 

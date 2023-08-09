@@ -67,7 +67,6 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('selector_rpt_main', 'attributes', 'selector_rpt_main', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('selector_rpt_main_tstep', 'attributes', 'selector_rpt_main_tstep', '', 0, 0, 0, 0, 0, 0);
 
-
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sector', 'features', 'sector', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('ground', 'features', 'ground', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('ground_roughness', 'features', 'ground_roughness', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -89,7 +88,6 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_divider', 'features', 'inp_divider', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_storage', 'features', 'inp_storage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_junction', 'features', 'inp_junction', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-
 
 
 
@@ -172,6 +170,7 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_divider', 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_storage', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_junction', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_raingage', 0);
+
 
 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('sector', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);

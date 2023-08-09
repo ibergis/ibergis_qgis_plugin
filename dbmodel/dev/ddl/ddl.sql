@@ -9,13 +9,10 @@ This version of Giswater is provided by Giswater Association
 -- --------------
 -- NO-GEOM TABLES
 -----------------
-CREATE TABLE cat_scenario (
-    id integer primary key,
-    idval text check (typeof(idval)='text') NOT NULL,
-    sector_id integer CHECK (typeof(sector_id) = 'integer' or sector_id = null),
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 
+CREATE TABLE config_param_user (
+    parameter_id text primary key,  
+    value text CHECK (typeof(value)='text' OR value=NULL)
 );
 
 create table sector (
@@ -30,6 +27,11 @@ create table sector (
     geom geometry
 );
 
+
+-- ---------
+-- SELECTORS
+-- ---------
+
 CREATE TABLE selector_sector (
     sector_id integer primary key
 );
@@ -38,9 +40,17 @@ CREATE TABLE selector_scenario (
     scenario_id integer primary key
 );
 
-CREATE TABLE config_param_user (
-	parameter_id text primary key,	
-	value text CHECK (typeof(value)='text' OR value=NULL)
+
+-- --------
+-- CATALOGS
+-- --------
+
+CREATE TABLE cat_scenario (
+    id integer primary key,
+    idval text check (typeof(idval)='text') NOT NULL,
+    sector_id integer CHECK (typeof(sector_id) = 'integer' or sector_id = null),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL),
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
 
 CREATE TABLE cat_landuses (
@@ -83,7 +93,6 @@ CREATE TABLE cat_arc (
     arc_type text check (typeof(arc_type) = 'text' or arc_type = null),
     active boolean check (typeof(active) in (0, 1, null)) default 1
 );
-
 
 CREATE TABLE cat_curve (
     id integer primary key,
@@ -132,11 +141,10 @@ CREATE TABLE cat_pattern (
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT 1
 );
 
+
 -- -----------
 -- GEOM TABLES
 -- -----------
-
-
 
 CREATE TABLE ground (
     fid integer PRIMARY KEY,
@@ -314,6 +322,7 @@ CREATE TABLE gully (
     --FOREIGN KEY (gratecat_id) references cat_grate (idval)
 );
 
+
 -- ----------
 -- INP TABLES
 -- ----------
@@ -378,7 +387,6 @@ CREATE TABLE inp_conduit (
     FOREIGN KEY (sector_id) references sector (fid),
     FOREIGN KEY (scenario_id) references cat_scenario (id),
     FOREIGN KEY (matcat_id) references cat_arc(idval)
-
 );
 
 CREATE TABLE inp_outlet (
@@ -622,9 +630,9 @@ CREATE TABLE inp_junction (
 );
 
 
--- ---------
+-- ----------
 -- RPT_TABLES
--- --------
+-- ----------
 
 CREATE TABLE rpt_arc (
     id integer primary key,
