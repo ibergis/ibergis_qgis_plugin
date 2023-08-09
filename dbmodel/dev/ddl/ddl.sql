@@ -541,7 +541,7 @@ CREATE TABLE inp_outfall (
     outfall_type text check (typeof(outfall_type) = 'text' or outfall_type = null),
     stage real check (typeof(stage) = 'real' or stage = null),
     curve_id text check (typeof(curve_id) = 'text' or curve_id = null),
-    timeser_id text check (typeof(timeser_id) = 'text') not null,
+    timeser_id text check (typeof(timeser_id) = 'text' or timeser_id = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
