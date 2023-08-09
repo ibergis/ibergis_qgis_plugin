@@ -117,7 +117,6 @@ def getselectors(p_input: dict) -> dict:
             column_names = [f'{table_id}', 'label', 'orderBy', 'name', 'widgetname', 'columnname', 'type',
                             'dataType', 'value' ]
             rows_fields = global_vars.gpkg_dao_data.get_rows(v_sql)
-            print("ERROR:",global_vars.gpkg_dao_data.last_error)
 
             v_fields = []
             for row in rows_fields:
@@ -156,6 +155,82 @@ def getselectors(p_input: dict) -> dict:
     return v_return
 
 
+def setselectors(p_input: dict) -> dict:
+    accepted: bool = True
+    v_return: dict = {}
+    v_sql: str
+    v_message: str
+
+    try:
+        v_return = _create_return(v_return, accepted=True, message="Process done successfully")
+
+        p_input = json.loads(p_input)
+        checkAll = p_input['data'].get('checkAll')
+        tabName = p_input['data'].get('tabName')
+        id = p_input['data'].get('id')
+        value = p_input['data'].get('value')
+
+        v_sql = f"SELECT value from config_param_user WHERE parameter_id like 'basic_selector_{tabName}'"
+        row = global_vars.gpkg_dao_data.get_row(v_sql)
+        config_json = json.loads(row[0].replace('/', ''))
+
+        selector_table = config_json["selector"]
+        column_id = f"{selector_table.removeprefix('selector_')}_id"
+        data_table = config_json["table"]
+        data_table_id = config_json["table_id"]
+
+        if checkAll is None and id:
+            if value == 'True':
+                v_sql = f"INSERT INTO {selector_table} VALUES({id})"
+                global_vars.gpkg_dao_data.execute_sql(v_sql)
+            else:
+                v_sql = f"DELETE FROM {selector_table} WHERE {column_id}={id}"
+                global_vars.gpkg_dao_data.execute_sql(v_sql)
+        else:
+            if checkAll == 'True':
+                v_sql =f"INSERT INTO {selector_table} SELECT {data_table_id} FROM {data_table}"
+                global_vars.gpkg_dao_data.execute_sql(v_sql)
+            else:
+                v_sql = f"DELETE FROM {selector_table} WHERE {column_id} IN (SELECT {data_table_id} FROM {data_table})"
+                global_vars.gpkg_dao_data.execute_sql(v_sql)
+
+
+        v_sql =f"SELECT {column_id} FROM {selector_table}"
+        rows = global_vars.gpkg_dao_data.get_rows(v_sql)
+        id_list = [row[0] for row in rows]
+
+        v_return["body"]["data"]["filter_ids"] = id_list
+        v_return["body"]["data"]["column_id"] = column_id
+
+        v_message = "Process done succesfully."
+
+    except Exception as e:
+        print(f"EXCEPTION IN setselectors: {e}")
+        accepted = False
+        v_message = f"{e}"
+
+    v_return = _create_return(v_return, accepted=accepted, message=v_message)
+    return v_return
+
+def get_sectors():
+    sectors = 'NULL'
+
+    sql = f'SELECT sector_id FROM selector_sector'
+    rows = global_vars.gpkg_dao_data.get_rows(sql)
+    if rows:
+        sectors = ", ".join(str(x[0]) for x in rows)
+
+    return sectors
+
+def get_scenarios():
+    scenarios = 'NULL'
+
+    sql = f'SELECT scenario_id FROM selector_scenario'
+    rows = global_vars.gpkg_dao_data.get_rows(sql)
+    if rows:
+        scenarios = ", ".join(str(x[0]) for x in rows)
+
+    return scenarios
 
 def _create_return(p_data: dict, accepted: bool = True, message: str = "") -> dict:
     """ Creates a return json & ensures that the format is consistent """
