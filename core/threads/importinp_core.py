@@ -129,7 +129,7 @@ _tables = (
             "ToNode": "node2",
             "PumpCurve": "curve_id",
             "Status": "state",
-            # "Startup": "startup",
+            "Startup": "startup",
             "Shutoff": "shutoff",
             "Annotation": "annotation",
         },
