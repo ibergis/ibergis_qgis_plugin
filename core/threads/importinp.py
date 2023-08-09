@@ -25,11 +25,10 @@ class GwImportInpTask(GwTask):
         super().run()
         try:
             self.dao = global_vars.gpkg_dao_data.clone()
-            self._import_file()
+            return self._import_file()
         except Exception:
             self.exception = traceback.format_exc()
             return False
-        return True
 
     def _get_colums(self, table):
         rows = self.dao.get_rows(f"select name from pragma_table_info('{table}')")
@@ -40,17 +39,20 @@ class GwImportInpTask(GwTask):
         gpkg_file = self.dao.db_filepath
         dicts = inp2dict(self.input_file, self.feedback)
         if self.isCanceled():
-            return
+            return False
         columns = {table: self._get_colums(table) for table in core.tables()}
         data = core.get_dataframes(
             dicts, self.sector_id, self.scenario_id, columns, global_vars.data_epsg
         )
         if self.isCanceled():
-            return
+            return False
         for i, item in enumerate(data):
             self.feedback.setProgress(i / len(data) * 100)
             if len(item["df"]) == 0:
                 self.feedback.setProgressText(f"Skipping empty table {item['table']}")
                 continue
+            if self.isCanceled():
+                return False
             self.feedback.setProgressText(f"Saving table {item['table']}")
             item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
+        return True

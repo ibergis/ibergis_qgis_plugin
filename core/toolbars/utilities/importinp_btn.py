@@ -33,6 +33,7 @@ class GwImportINPButton(GwAction):
         tools_gw.open_dialog(dlg, dlg_name="import")
 
     def _execute_process(self):
+        dlg = self.dlg_import
         self.feedback = Feedback()
         if not self._validate_inputs():
             return
@@ -47,20 +48,21 @@ class GwImportINPButton(GwAction):
         )
 
         # Set signals
-        self.dlg_import.btn_ok.setEnabled(False)
-        self.dlg_import.btn_cancel.clicked.disconnect()
-        self.dlg_import.btn_cancel.clicked.connect(self.thread.cancel)
+        dlg.btn_ok.setEnabled(False)
+        dlg.btn_cancel.clicked.disconnect()
+        dlg.btn_cancel.clicked.connect(self.thread.cancel)
+        dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
         self.thread.feedback.progressText.connect(self._set_progress_text)
-        self.thread.feedback.progress.connect(self.dlg_import.progress_bar.setValue)
-        self.thread.taskCompleted.connect(self._on_task_end)
-        self.thread.taskTerminated.connect(self._on_task_end)
+        self.thread.feedback.progress.connect(dlg.progress_bar.setValue)
+        self.thread.taskCompleted.connect(self._on_task_completed)
+        self.thread.taskTerminated.connect(self._on_task_terminated)
 
         # Timer
         self.t0 = time()
         self.timer = QTimer()
         self.timer.timeout.connect(self._on_timer_timeout)
         self.timer.start(500)
-        self.dlg_import.rejected.connect(self.timer.stop)
+        dlg.rejected.connect(self.timer.stop)
 
         QgsApplication.taskManager().addTask(self.thread)
 
@@ -94,10 +96,13 @@ class GwImportINPButton(GwAction):
     def _load_user_values(self):
         self._user_values("load")
 
-    def _on_task_end(self):
+    def _on_task_completed(self):
+        self._on_task_end("Task finished!")
+
+    def _on_task_end(self, message):
         tools_gw.fill_tab_log(
             self.dlg_import,
-            {"info": {"values": [{"message": "Task finished!"}]}},
+            {"info": {"values": [{"message": message}]}},
             reset_text=False,
         )
         sb = self.dlg_import.txt_infolog.verticalScrollBar()
@@ -105,6 +110,12 @@ class GwImportINPButton(GwAction):
         self.feedback.setProgress(100)
         self.feedback = None
         self.timer.stop()
+
+    def _on_task_terminated(self):
+        message = "Task failed. See the Log Messages Panel for more information."
+        if self.thread.isCanceled():
+            message = "Task canceled."
+        self._on_task_end(message)
 
     def _on_timer_timeout(self):
         # Update timer
