@@ -47,7 +47,7 @@ CREATE TABLE selector_scenario (
 
 CREATE TABLE cat_scenario (
     id integer primary key,
-    idval text check (typeof(idval)='text') NOT NULL,
+    idval text unique check (typeof(idval)='text') NOT NULL,
     sector_id integer CHECK (typeof(sector_id) = 'integer' or sector_id = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
@@ -55,7 +55,7 @@ CREATE TABLE cat_scenario (
 
 CREATE TABLE cat_landuses (
 	id integer primary key,
-	idval text check (typeof(idval)='text') NOT NULL,
+	idval text unique check (typeof(idval)='text') NOT NULL,
 	sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
 	scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text check (typeof(descript)='text' or typeof(descript)=null),
@@ -67,7 +67,7 @@ CREATE TABLE cat_landuses (
 
 CREATE TABLE cat_grate (
     id integer primary key,
-    idval text check (typeof(idval)='text') NOT NULL,
+    idval text unique check (typeof(idval)='text') NOT NULL,
     length real check (typeof(length) = 'real' or length = null) DEFAULT 0.00,
     width real check (typeof(width) = 'real' or width = null) DEFAULT 0.00,
     a_param real check (typeof(a_param) = 'real' or a_param = null) DEFAULT 0.00,
@@ -115,7 +115,7 @@ CREATE TABLE cat_curve_value (
 
 CREATE TABLE cat_timeseries (
     id integer primary key,
-    idval text check (typeof(idval)='text') NOT NULL,
+    idval text unique check (typeof(idval)='text') NOT NULL,
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
