@@ -174,7 +174,8 @@ CREATE TABLE ground_roughness (
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id)
+    FOREIGN KEY (scenario_id) references cat_scenario(id),
+    FOREIGN KEY (roughness_id) references ground(fid)
 );
 
 CREATE TABLE ground_losses (
@@ -183,7 +184,7 @@ CREATE TABLE ground_losses (
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    method_id text check (typeof(method_id) in ('LINEAL,', 'SCS', 'SCSC', 'HORTON', 'GREENAMPT') or method_id=null),
+    method_id text check (typeof(method_id) in ('text', null) and method_id in ('LINEAL,', 'SCS', 'SCSC', 'HORTON', 'GREENAMPT', 'NONE')),
     losslin_aparam real CHECK (typeof(losslin_aparam)='real' OR losslin_aparam=NULL),
     losslin_bparam real CHECK (typeof(losslin_bparam)='real' OR losslin_bparam=NULL),
     lossscs_aparam real CHECK (typeof(lossscs_aparam)='real' OR lossscs_aparam=NULL),
@@ -226,7 +227,7 @@ CREATE TABLE mesh_tin (
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    roughness_id text CHECK (typeof(roughness_id)='text' OR roughness_id=NULL),
+    roughness_id integer CHECK (typeof(roughness_id) in ('integer', not null)),
     custom_roughness real,
     losses_id integer CHECK (typeof(losses_id)='integer' OR losses_id=NULL),
     roof_id integer CHECK (typeof(roof_id)='integer' OR roof_id=NULL),
@@ -242,8 +243,8 @@ CREATE TABLE mesh_tin (
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
-    --FOREIGN KEY (roughness_id) references ground_losses (method_id)
+    FOREIGN KEY (scenario_id) references cat_scenario(id),
+    FOREIGN KEY (roughness_id) references ground_losses(fid)
 );
 
 CREATE TABLE mesh_edge (
