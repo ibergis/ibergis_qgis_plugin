@@ -92,6 +92,7 @@ CREATE TRIGGER "trigger_delete_feature_count_inp_outfall" AFTER DELETE ON "inp_o
 CREATE TRIGGER "trigger_delete_feature_count_inp_divider" AFTER DELETE ON "inp_divider" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_divider'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_storage" AFTER DELETE ON "inp_storage" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_storage'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_junction" AFTER DELETE ON "inp_junction" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_junction'); END;
+CREATE TRIGGER "trigger_delete_feature_count_inp_dwf" AFTER DELETE ON "inp_dwf" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_dwf'); END;
 
 
 
@@ -177,6 +178,7 @@ CREATE TRIGGER "trigger_insert_feature_count_inp_outfall" AFTER INSERT ON "inp_o
 CREATE TRIGGER "trigger_insert_feature_count_inp_divider" AFTER INSERT ON "inp_divider" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_divider'); END;
 CREATE TRIGGER "trigger_insert_feature_count_inp_storage" AFTER INSERT ON "inp_storage" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_storage'); END;
 CREATE TRIGGER "trigger_insert_feature_count_inp_junction" AFTER INSERT ON "inp_junction" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_junction'); END;
+CREATE TRIGGER "trigger_insert_feature_count_inp_dwf" AFTER INSERT ON "inp_dwf" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_dwf'); END;
 
 
 
@@ -201,6 +203,7 @@ CREATE TRIGGER "rtree_inp_outfall_geom_delete" AFTER DELETE ON "inp_outfall" WHE
 CREATE TRIGGER "rtree_inp_divider_geom_delete" AFTER DELETE ON "inp_divider" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_inp_divider_geom" WHERE id = OLD."fid"; END;
 CREATE TRIGGER "rtree_inp_storage_geom_delete" AFTER DELETE ON "inp_storage" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_inp_storage_geom" WHERE id = OLD."fid"; END;
 CREATE TRIGGER "rtree_inp_junction_geom_delete" AFTER DELETE ON "inp_junction" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_inp_junction_geom" WHERE id = OLD."fid"; END;
+CREATE TRIGGER "rtree_inp_dwf_geom_delete" AFTER DELETE ON "inp_dwf" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_inp_dwf_geom" WHERE id = OLD."fid"; END;
 
 CREATE TRIGGER "rtree_sector_geom_insert" AFTER INSERT ON "sector" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_ground_geom_insert" AFTER INSERT ON "ground" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_ground_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
@@ -223,6 +226,7 @@ CREATE TRIGGER "rtree_inp_outfall_geom_insert" AFTER INSERT ON "inp_outfall" WHE
 CREATE TRIGGER "rtree_inp_divider_geom_insert" AFTER INSERT ON "inp_divider" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_divider_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_inp_storage_geom_insert" AFTER INSERT ON "inp_storage" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_storage_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_inp_junction_geom_insert" AFTER INSERT ON "inp_junction" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_junction_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
+CREATE TRIGGER "rtree_inp_dwf_geom_insert" AFTER INSERT ON "inp_dwf" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_dwf_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 
 CREATE TRIGGER "rtree_sector_geom_update1" AFTER UPDATE OF "geom" ON "sector" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_ground_geom_update1" AFTER UPDATE OF "geom" ON "ground" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_ground_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
@@ -245,6 +249,7 @@ CREATE TRIGGER "rtree_inp_outfall_geom_update1" AFTER UPDATE OF "geom" ON "inp_o
 CREATE TRIGGER "rtree_inp_divider_geom_update1" AFTER UPDATE OF "geom" ON "inp_divider" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_divider_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_inp_storage_geom_update1" AFTER UPDATE OF "geom" ON "inp_storage" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_storage_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_inp_junction_geom_update1" AFTER UPDATE OF "geom" ON "inp_junction" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_junction_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
+CREATE TRIGGER "rtree_inp_dwf_geom_update1" AFTER UPDATE OF "geom" ON "inp_dwf" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_dwf_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 
 CREATE TRIGGER "rtree_sector_geom_update2" AFTER UPDATE OF "geom" ON "sector" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_sector_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_ground_geom_update2" AFTER UPDATE OF "geom" ON "ground" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_geom" WHERE id= OLD."fid"; END;
@@ -267,6 +272,7 @@ CREATE TRIGGER "rtree_inp_outfall_geom_update2" AFTER UPDATE OF "geom" ON "inp_o
 CREATE TRIGGER "rtree_inp_divider_geom_update2" AFTER UPDATE OF "geom" ON "inp_divider" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_divider_geom" WHERE id = OLD."fid"; END;
 CREATE TRIGGER "rtree_inp_storage_geom_update2" AFTER UPDATE OF "geom" ON "inp_storage" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_storage_geom" WHERE id = OLD."fid"; END;
 CREATE TRIGGER "rtree_inp_junction_geom_update2" AFTER UPDATE OF "geom" ON "inp_junction" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_junction_geom" WHERE id = OLD."fid"; END;
+CREATE TRIGGER "rtree_inp_dwf_geom_update2" AFTER UPDATE OF "geom" ON "inp_dwf" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_dwf_geom" WHERE id = OLD."fid"; END;
 
 CREATE TRIGGER "rtree_sector_geom_update3" AFTER UPDATE ON "sector" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_sector_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_ground_geom_update3" AFTER UPDATE ON "ground" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_ground_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
@@ -289,6 +295,7 @@ CREATE TRIGGER "rtree_inp_outfall_geom_update3" AFTER UPDATE ON "inp_outfall" WH
 CREATE TRIGGER "rtree_inp_divider_geom_update3" AFTER UPDATE ON "inp_divider" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_divider_geom" WHERE id = OLD."fid"; INSERT OR REPLACE INTO "rtree_inp_divider_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_inp_storage_geom_update3" AFTER UPDATE ON "inp_storage" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_storage_geom" WHERE id = OLD."fid"; INSERT OR REPLACE INTO "rtree_inp_storage_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_inp_junction_geom_update3" AFTER UPDATE ON "inp_junction" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_junction_geom" WHERE id = OLD."fid"; INSERT OR REPLACE INTO "rtree_inp_junction_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
+CREATE TRIGGER "rtree_inp_dwf_geom_update3" AFTER UPDATE ON "inp_dwf" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_dwf_geom" WHERE id = OLD."fid"; INSERT OR REPLACE INTO "rtree_inp_dwf_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 
 CREATE TRIGGER "rtree_sector_geom_update4" AFTER UPDATE ON "sector" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_sector_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_ground_geom_update4" AFTER UPDATE ON "ground" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
@@ -311,6 +318,7 @@ CREATE TRIGGER "rtree_inp_outfall_geom_update4" AFTER UPDATE ON "inp_outfall" WH
 CREATE TRIGGER "rtree_inp_divider_geom_update4" AFTER UPDATE ON "inp_divider" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_divider_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_inp_storage_geom_update4" AFTER UPDATE ON "inp_storage" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_storage_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_inp_junction_geom_update4" AFTER UPDATE ON "inp_junction" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_junction_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
+CREATE TRIGGER "rtree_inp_dwf_geom_update4" AFTER UPDATE ON "inp_dwf" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_dwf_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 
 
 

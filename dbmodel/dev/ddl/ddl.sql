@@ -657,7 +657,7 @@ create table inp_inflows_poll (
     --sfactor
     --base
     pattern_id integer check (typeof(pattern_id) = 'integer' or pattern_id = null)
-); --poll_id y node_id es doble clave primaria
+);
 
 
 create table inp_lid (
@@ -686,6 +686,27 @@ create table inp_buildup (
     c3 real check (typeof(c3) = 'real' or c3 = null),
     perunit text check (typeof(perunit) in ('text', null) and perunit in ('AREA', 'CURBLENGTH'))
 );
+
+create table inp_dwf (
+    fid integer primary key,
+    node_id text unique,
+    code text check (typeof(code) = 'text' or code = null),
+    sector_id integer check (typeof(sector_id) = 'integer') NOT NULL,
+    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
+    descript text check (typeof(descript) = 'text' or descript = null),
+    pat1 text check (typeof(pat1) = 'text' or pat1 = null),
+    pat2 text check (typeof(pat1) = 'text' or pat2 = null),
+    pat3 text check (typeof(pat1) = 'text' or pat3 = null),
+    pat4 text check (typeof(pat1) = 'text' or pat4 = null),
+    annotation text check (typeof(annotation) = 'text' or annotation = null),
+    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
+    geom geometry,
+    FOREIGN KEY (pat1) REFERENCES cat_pattern(idval),
+    FOREIGN KEY (pat2) REFERENCES cat_pattern(idval),
+    FOREIGN KEY (pat3) REFERENCES cat_pattern(idval),
+    FOREIGN KEY (pat4) REFERENCES cat_pattern(idval)
+);
+
 
 -- ----------
 -- RPT_TABLES
