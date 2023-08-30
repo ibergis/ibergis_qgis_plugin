@@ -172,9 +172,9 @@ ALGORITHMS = {
 
 def triangulate_custom(
     source_layer,
-    line_anchor_layer,
-    point_anchor_layer,
-    algorithm,
+    line_anchor_layer=None,
+    point_anchor_layer=None,
+    algorithm=ALGORITHMS["Frontal-Delaunay"],
     enable_transition=True,
     transition_slope=0.5,
     transition_start=0,
