@@ -161,7 +161,7 @@ ALGORITHMS = {
     "Quasi-structured Quad": 11
 }
 
-@alg(name='triangulate_custom', label='Hopefully triangulate',
+@alg(name='triangulate_process', label='Hopefully triangulate',
      group='drain_scripts', group_label='Drain')
 # 'INPUT' is the recommended name for the main input parameter
 @alg.input(type=alg.VECTOR_LAYER, name='INPUT', label='Superficies')
@@ -170,25 +170,52 @@ ALGORITHMS = {
 @alg.input(type=alg.ENUM, name='ALGORITHM', label='Algorithm', options=ALGORITHMS.keys(), default=4)
 @alg.input(type=alg.BOOL, name='ENABLE_TRANSITION', label='Fancy Transition', default=True)
 @alg.input(type=alg.DISTANCE, name='TRANSITION_SLOPE', label='Transition Slope', default=0.5)
-@alg.input(type=alg.DISTANCE, name='TRANSITION_START', label='Transition Sart Distance', default=0)
+@alg.input(type=alg.DISTANCE, name='TRANSITION_START', label='Transition Start Distance', default=0)
 @alg.input(type=alg.DISTANCE, name='TRANSITION_EXTENT', label='Transition Extent', default=20)
 # 'OUTPUT' is the recommended name for the main output parameter
 @alg.output(type=alg.VECTOR_LAYER, name='OUTPUT', label='Mesh')
-def triangulate_custom(instance, parameters, context, feedback, inputs):
+def triangulate_process(instance, parameters, context, feedback, inputs):
     """
-    Description of the algorithm.
+    Create the mesh for Iber.
     """
+    
     print(parameters)
-    
-    start = time.time()
-    print("Getting data... ", end='')
-    transition_slope = parameters["TRANSITION_SLOPE"]
-    transition_start = parameters["TRANSITION_START"]
-    transition_extent = parameters["TRANSITION_EXTENT"]
-    
     source_layer = instance.parameterAsLayer(parameters, "INPUT", context)
     line_anchor_layer = instance.parameterAsLayer(parameters, "LINE_ANCHOR", context)
     point_anchor_layer = instance.parameterAsLayer(parameters, "POINT_ANCHOR", context)
+    algorithm = list(ALGORITHMS.values())[parameters["ALGORITHM"]]
+    enable_transition = parameters["ENABLE_TRANSITION"]
+    transition_slope = parameters["TRANSITION_SLOPE"]
+    transition_start = parameters["TRANSITION_START"]
+    transition_extent = parameters["TRANSITION_EXTENT"]
+    poly_layer = triangulate_custom(source_layer, 
+                                    line_anchor_layer, 
+                                    point_anchor_layer, 
+                                    algorithm,
+                                    enable_transition,
+                                    transition_slope, 
+                                    transition_start, 
+                                    transition_extent,
+                                    feedback)
+    context.temporaryLayerStore().addMapLayer(poly_layer)
+    context.addLayerToLoadOnCompletion(poly_layer.id(),QgsProcessingContext.LayerDetails('MESH_OUTPUT',context.project(),'LAYER'))
+    return {"OUTPUT": poly_layer}
+
+def triangulate_custom(source_layer, 
+                       line_anchor_layer, 
+                       point_anchor_layer, 
+                       algorithm,
+                       enable_transition=True,
+                       transition_slope=0.5, 
+                       transition_start=0, 
+                       transition_extent=20,
+                       feedback=None):
+    """
+    Create the mesh for Iber.
+    """
+    
+    start = time.time()
+    print("Getting data... ", end='')
     
     data = layer_to_gdf(source_layer, feedback)
    
@@ -228,14 +255,14 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
     )
 
     gmsh.option.setNumber("Mesh.MeshSizeFromPoints", True)
-    gmsh.option.setNumber("Mesh.Algorithm", list(ALGORITHMS.values())[parameters["ALGORITHM"]])
+    gmsh.option.setNumber("Mesh.Algorithm", algorithm)
     
     start = time.time()
     print("Generating Mesh (1/2)... ", end='')
     gmsh.model.mesh.generate(dim=2)
     print(f"Done! {time.time() - start}s")
 
-    if parameters["ENABLE_TRANSITION"]:
+    if enable_transition:
         start = time.time()
         print("Creating fields... ", end='')
         threshold_ids = []
@@ -335,8 +362,6 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
     #    print("Feature:", f.id(), f.attributes(), f.geometry())
     poly_layer.updateExtents()
     
-    context.temporaryLayerStore().addMapLayer(poly_layer)
-    context.addLayerToLoadOnCompletion(poly_layer.id(),QgsProcessingContext.LayerDetails('MESH_OUTPUT',context.project(),'LAYER'))
     print(f"Done! {time.time() - start}s")
     
-    return {"OUTPUT": poly_layer}
+    return poly_layer
