@@ -4,13 +4,13 @@ from pathlib import Path
 from time import time
 
 from qgis.core import QgsApplication
-from qgis.PyQt.QtCore import pyqtSignal, QObject, QTimer
+from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QFileDialog
 
 from ..dialog import GwAction
 from ...threads.importinp import GwImportInpTask
 from ...ui.ui_manager import GwImportInpUi
-from ...utils import tools_gw
+from ...utils import Feedback, tools_gw
 from .... import global_vars
 from ....lib import tools_qt
 
@@ -196,28 +196,3 @@ class GwImportINPButton(GwAction):
         self.sector = sector
         self.scenario = scenario
         return True
-
-
-class Feedback(QObject):
-    progressText = pyqtSignal(str)
-    progress = pyqtSignal(int)
-
-    def __init__(self):
-        super().__init__()
-        self.canceled = False
-
-    def cancel(self):
-        self.canceled = True
-
-    def setProgressText(self, txt):
-        self.progressText.emit(txt)
-
-    def setProgress(self, value):
-        self.progress.emit(int(value))
-
-    def pushWarning(self, txt):
-        msg = "=" * 40 + "\n" + txt + "\n" + "=" * 40
-        self.progressText.emit(msg)
-
-    def isCanceled(self):
-        return True if self.canceled else False
