@@ -2,11 +2,13 @@ import datetime
 from functools import partial
 from time import time
 
+from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
 
 from ..dialog import GwAction
+from ...threads.createmesh import GwCreateMeshTask
 from ...ui.ui_manager import GwCreateMeshUi
-from ...utils import tools_gw
+from ...utils import Feedback, tools_gw
 from .... import global_vars
 from ....lib import tools_qt
 
@@ -29,25 +31,22 @@ class GwCreateMeshButton(GwAction):
 
     def _execute_process(self):
         dlg = self.dlg_mesh
+        self.feedback = Feedback()
         if not self._validate_inputs():
             return
         self._save_user_values()
-        # self.thread = GwImportInpTask(
-        #     "Import INP file",
-        #     self.input_file,
-        #     global_vars.gpkg_dao_data.db_filepath,
-        #     self.sector,
-        #     self.scenario,
-        #     self.feedback,
-        # )
+        self.thread = GwCreateMeshTask(
+            "Import INP file",
+            self.feedback,
+        )
 
         # Set signals
         dlg.btn_ok.setEnabled(False)
         dlg.btn_cancel.clicked.disconnect()
-        # dlg.btn_cancel.clicked.connect(self.thread.cancel)
+        dlg.btn_cancel.clicked.connect(self.thread.cancel)
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
-        # self.thread.taskCompleted.connect(self._on_task_completed)
-        # self.thread.taskTerminated.connect(self._on_task_terminated)
+        self.thread.taskCompleted.connect(self._on_task_completed)
+        self.thread.taskTerminated.connect(self._on_task_terminated)
 
         # Timer
         self.t0 = time()
@@ -56,7 +55,7 @@ class GwCreateMeshButton(GwAction):
         self.timer.start(500)
         dlg.rejected.connect(self.timer.stop)
 
-        # QgsApplication.taskManager().addTask(self.thread)
+        QgsApplication.taskManager().addTask(self.thread)
 
     def _load_user_values(self):
         self._user_values("load")
