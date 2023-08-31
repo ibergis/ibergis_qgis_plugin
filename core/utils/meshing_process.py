@@ -366,6 +366,19 @@ try:
 
 except ImportError:
 
+    # 2D algorithms: https://gmsh.info/doc/texinfo/gmsh.html#Mesh-options
+    ALGORITHMS = {
+        "MeshAdapt": 1,
+        "Automatic": 2,
+        "Initial mesh only": 3,
+        "Delaunay": 5,
+        "Frontal-Delaunay": 6,
+        "BAMG": 7,
+        "Frontal-Delaunay for Quads": 8,
+        "Packing of Parallelograms": 9,
+        "Quasi-structured Quad": 11,
+    }
+
     def triangulate_custom(*args):
         pass
 
