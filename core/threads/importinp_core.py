@@ -1,4 +1,7 @@
-import geopandas as gpd
+try:
+    import geopandas as gpd
+except ImportError:
+    pass
 
 _tables = (
     {

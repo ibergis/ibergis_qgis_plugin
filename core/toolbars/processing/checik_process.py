@@ -10,8 +10,10 @@ from qgis import processing
 from qgis.PyQt.QtCore import QPoint
 
 import pandamesh as pm
-
-import geopandas as gpd
+try:
+    import geopandas as gpd
+except ImportError:
+    pass
 import matplotlib.pyplot as plt
 import shapely
 import shapely.validation
