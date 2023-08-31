@@ -69,7 +69,26 @@ CREATE TRIGGER "trigger_delete_feature_count_rpt_warning_summary" AFTER DELETE O
 CREATE TRIGGER "trigger_delete_feature_count_selector_rpt_compare" AFTER DELETE ON "selector_rpt_compare" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_rpt_compare'); END;
 CREATE TRIGGER "trigger_delete_feature_count_selector_rpt_compare_tstep" AFTER DELETE ON "selector_rpt_compare_tstep" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_rpt_compare_tstep'); END;
 CREATE TRIGGER "trigger_delete_feature_count_selector_rpt_main" AFTER DELETE ON "selector_rpt_main" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_rpt_main'); END;
-CREATE TRIGGER "trigger_delete_feature_count_selector_rpt_main_tstep" AFTER DELETE ON "selector_rpt_main_tstep" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_rpt_main_tstep'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_conduits" INSTEAD OF DELETE ON "vi_conduits" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_conduits'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_subcatchments" INSTEAD OF DELETE ON "vi_subcatchments" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_subcatchments'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_outlets" INSTEAD OF DELETE ON "vi_outlets" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_outlets'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_orifices" INSTEAD OF DELETE ON "vi_orifices" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_orifices'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_weirs" INSTEAD OF DELETE ON "vi_weirs" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_weirs'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_pumps" INSTEAD OF DELETE ON "vi_pumps" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_pumps'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_outfall" INSTEAD OF DELETE ON "vi_outfall" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_outfalls'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_dividers" INSTEAD OF DELETE ON "vi_dividers" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_dividers'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_storage" INSTEAD OF DELETE ON "vi_storage" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_storage'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_junctions" INSTEAD OF DELETE ON "vi_junctions" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_junctions'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_raingages" INSTEAD OF DELETE ON "vi_raingages" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_raingages'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_curves" INSTEAD OF DELETE ON "vi_curves" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_curves'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_timeseries" INSTEAD OF DELETE ON "vi_timeseries" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_timeseries'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_patterns" INSTEAD OF DELETE ON "vi_patterns" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_patterns'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_landuses" INSTEAD OF DELETE ON "vi_landuses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_landuses'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_subareas" INSTEAD OF DELETE ON "vi_subareas" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_subareas'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_losses" INSTEAD OF DELETE ON "vi_losses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_losses'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_xsections" INSTEAD OF DELETE ON "vi_xsections" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_xsections'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_dwf" INSTEAD OF DELETE ON "vi_dwf" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_dwf'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_infiltration" INSTEAD OF DELETE ON "vi_infiltration" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_infiltration'); END;
 
 CREATE TRIGGER "trigger_delete_feature_count_sector" AFTER DELETE ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_delete_feature_count_ground" AFTER DELETE ON "ground"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('ground'); END;
@@ -155,7 +174,26 @@ CREATE TRIGGER "trigger_insert_feature_count_rpt_warning_summary" AFTER INSERT O
 CREATE TRIGGER "trigger_insert_feature_count_selector_rpt_compare" AFTER INSERT ON "selector_rpt_compare" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_rpt_compare'); END;
 CREATE TRIGGER "trigger_insert_feature_count_selector_rpt_compare_tstep" AFTER INSERT ON "selector_rpt_compare_tstep" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_rpt_compare_tstep'); END;
 CREATE TRIGGER "trigger_insert_feature_count_selector_rpt_main" AFTER INSERT ON "selector_rpt_main" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_rpt_main'); END;
-CREATE TRIGGER "trigger_insert_feature_count_selector_rpt_main_tstep" AFTER INSERT ON "selector_rpt_main_tstep" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_rpt_main_tstep'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_conduits" INSTEAD OF INSERT ON "vi_conduits" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_conduits'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_subcatchments" INSTEAD OF INSERT ON "vi_subcatchments" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_subcatchments'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_outlets" INSTEAD OF INSERT ON "vi_outlets" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_outlets'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_orifices" INSTEAD OF INSERT ON "vi_orifices" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_orifices'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_weirs" INSTEAD OF INSERT ON "vi_weirs" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_weirs'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_pumps" INSTEAD OF INSERT ON "vi_pumps" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_pumps'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_outfall" INSTEAD OF INSERT ON "vi_outfall" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_outfall'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_dividers" INSTEAD OF INSERT ON "vi_dividers" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_dividers'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_storage" INSTEAD OF INSERT ON "vi_storage" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_storage'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_junctions" INSTEAD OF INSERT ON "vi_junctions" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_junctions'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_raingages" INSTEAD OF INSERT ON "vi_raingages" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_raingages'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_curves" INSTEAD OF INSERT ON "vi_curves" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_curves'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_timeseries" INSTEAD OF INSERT ON "vi_timeseries" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_timeseries'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_patterns" INSTEAD OF INSERT ON "vi_patterns" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_patterns'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_landuses" INSTEAD OF INSERT ON "vi_landuses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_landuses'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_subareas" INSTEAD OF INSERT ON "vi_subareas" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_subareas'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_losses" INSTEAD OF INSERT ON "vi_losses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_losses'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_xsections" INSTEAD OF INSERT ON "vi_xsections" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_xsections'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_dwf" INSTEAD OF INSERT ON "vi_dwf" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_dwf'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_infiltration" INSTEAD OF INSERT ON "vi_infiltration" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_infiltration'); END;
 
 CREATE TRIGGER "trigger_insert_feature_count_sector" AFTER INSERT ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_insert_feature_count_ground" AFTER INSERT ON "ground"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('ground'); END;
@@ -337,6 +375,10 @@ create trigger "trigger_update_node_id_inp_divider" after insert on "inp_divider
 create trigger "trigger_update_node_id_inp_storage" after insert on "inp_storage" BEGIN update inp_storage set node_id = 'S'||fid; END;
 create trigger "trigger_update_node_id_inp_junction" after insert on "inp_junction" BEGIN update inp_junction set node_id = 'J'||fid; END;
 
+/*
+create trigger "trigger_insert_vi_curves" INSTEAD OF INSERT on "vi_curves" BEGIN insert into cat_curve (curve_type, sector_id, scenario_id) values (new.curve_type, new.sector_id, new.scenario_id); insert into cat_curve_value (xcoord, ycoord) values (lower(new.Depth), lower(new.Flow)); end;
+create trigger "trigger_update_vi_curves" INSTEAD OF UPDATE on "vi_curves" BEGIN update cat_curve_value set idval=new.idval, curve_type=new.curve_type, sector_id=new.sector_id, scenario_id=new.scenario_id, descript=new.descript. active=new.active where id = new.id; END;
+*/
 
 
 -- -------------------

@@ -69,6 +69,26 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('selector_rpt_compare_tstep', 'attributes', 'selector_rpt_compare_tstep', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('selector_rpt_main', 'attributes', 'selector_rpt_main', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('selector_rpt_main_tstep', 'attributes', 'selector_rpt_main_tstep', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_curves', 'attributes', 'vi_curves', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_timeseries', 'attributes', 'vi_timeseries', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_patterns', 'attributes', 'vi_patterns', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_landuses', 'attributes', 'vi_landuses', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_subareas', 'attributes', 'vi_subareas', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_losses', 'attributes', 'vi_losses', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_xsections', 'attributes', 'vi_xsections', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_dwf', 'attributes', 'vi_dwf', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_infiltration', 'attributes', 'vi_infiltration', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_raingages', 'attributes', 'vi_raingages', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_conduits', 'attributes', 'vi_conduits', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_subcatchments', 'attributes', 'vi_subcatchments', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_outlets', 'attributes', 'vi_outlets', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_orifices', 'attributes', 'vi_orifices', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_weirs', 'attributes', 'vi_weirs', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_pumps', 'attributes', 'vi_pumps', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_outfalsl', 'attributes', 'vi_outfalls', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_dividers', 'attributes', 'vi_dividers', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_storage', 'attributes', 'vi_storage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_junctions', 'attributes', 'vi_junctions', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sector', 'features', 'sector', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('ground', 'features', 'ground', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -92,6 +112,9 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_storage', 'features', 'inp_storage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_junction', 'features', 'inp_junction', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_dwf', 'features', 'inp_dwf', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+
+
+
 
 
 
@@ -156,6 +179,26 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('selector_rpt_c
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('selector_rpt_compare_tstep', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('selector_rpt_main', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('selector_rpt_main_tstep', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_conduits', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_subcatchments', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_outlets', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_orifices', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_weirs', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_pumps', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_outfall', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_dividers', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_storage', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_junctions', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_raingages', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_curves', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_timeseries', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_patterns', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_landuses', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_subareas', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_losses', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_xsections', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_dwf', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_infiltration', 0);
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sector', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('ground', 0);
@@ -179,7 +222,6 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_storage', 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_junction', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_raingage', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_dwf', 0);
-
 
 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('sector', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
