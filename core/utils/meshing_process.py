@@ -14,10 +14,11 @@ import shapely
 import numpy as np
 import time
 
+from ...ext_libs import pandamesh as pm
+
 try:
     import geopandas as gpd
     import gmsh
-    import pandamesh as pm
 
     # From pandamesh
     def get_vertices():
