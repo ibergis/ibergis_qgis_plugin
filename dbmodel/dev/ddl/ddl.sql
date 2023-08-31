@@ -61,7 +61,10 @@ CREATE TABLE cat_landuses (
 	scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text check (typeof(descript)='text' or typeof(descript)=null),
 	manning real check (typeof(manning)='real' or typeof(manning)=null),
-	active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
+    sweepint real check (typeof(sweepint) = 'real' or sweepint = null),
+    availab real check (typeof(availab) = 'real' or availab = null),
+    lastsweep real check (typeof(lastsweep) = 'real' or lastsweep = null),
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
     FOREIGN KEY (sector_id) references sector (fid),
     FOREIGN KEY (scenario_id) references cat_scenario (id)
 );
@@ -78,7 +81,7 @@ CREATE TABLE cat_grate (
 
 CREATE TABLE cat_arc (
     id integer primary key,
-    idval text unique check (typeof(idval) = 'text'),
+    idval text unique check (typeof(idval) = 'text') NOT NULL,
     shape text check (typeof(shape) = 'text' and shape in ('ARCH', 'BASKETHANDLE', 'CIRCULAR', 'CUSTOM', 'DUMMY', 'EGG', 'FILLED_CIRCULAR', 'FORCE_MAIN', 'HORIZ_ELLIPSE', 'HORSESHOE', 'IRREGULAR', 'MODBASKETHANDLE', 'PARABOLIC', 'POWER', 'RECT_CLOSED', 'RECT_OPEN', 'RECT_ROUND', 'RECT_TRIANGULAR', 'SEMICIRCULAR', 'SEMIELLIPTICAL', 'TRAPEZOIDAL', 'TRIANGULAR', 'VERT_ELLIPSE', 'VIRTUAL')),
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
     geom2 real check (typeof(geom2) = 'real' or geom2 = null),
@@ -109,7 +112,7 @@ CREATE TABLE cat_curve (
 
 CREATE TABLE cat_curve_value (
     id integer primary key,
-    idval text unique check (typeof(idval)='text') NOT NULL,
+    idval text CHECK (typeof(idval) = 'text' or idval = null),
     xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
     ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
     FOREIGN KEY (idval) references cat_curve (idval)
@@ -130,10 +133,11 @@ CREATE TABLE cat_timeseries (
 
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
-    idval text unique check (typeof(idval)='text') NOT NULL,
+    idval text  check (typeof(idval)='text' OR  idval = null),
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-    value real CHECK (typeof(value)='real' OR value=NULL)
+    value real CHECK (typeof(value)='real' OR value=NULL),
+    file text CHECK (typeof(file) = 'text' or file = null)
     --FOREIGN KEY (idval) references cat_timeseries(idval)
 );
 
@@ -143,6 +147,13 @@ CREATE TABLE cat_pattern (
     pattern_type text check (typeof(pattern_type) in ('text', null) and pattern_type in ('DAILY', 'HOURLY', 'MONTHLY', 'WEEKEND')),
     descript text check (typeof(descript) = 'text' or descript = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT 1
+);
+
+CREATE TABLE cat_pattern_value (
+    id integer primary key,
+    idval text unique check (typeof(idval)='text') NOT NULL,
+    time datetime CHECK (typeof(time)='datetime' OR time=NULL),
+    value real CHECK (typeof(value)='real' OR value=NULL)
 );
 
 
@@ -497,6 +508,7 @@ CREATE TABLE inp_weir (
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
     geom2 real check (typeof(geom2) = 'real' or geom2 = null)  DEFAULT 0.00,
     geom3 real check (typeof(geom3) = 'real' or geom3 = null)  DEFAULT 0.00,
+    geom4 real check (typeof(geom4) = 'real' or geom4 = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     custom_elev real check (typeof(custom_elev) = 'real' or custom_elev = null),
     cd2 real check (typeof(cd2) = 'real' or cd2 = null),
@@ -640,9 +652,12 @@ CREATE TABLE inp_junction (
 create table inp_files (
     id integer primary key,
     idval text unique,
+    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
+    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     actio_type text check (typeof(actio_type) in ('text', null) and actio_type in ('SAVE', 'USE')),
     file_type text check (typeof(file_type) in ('text', null) and file_type in ('HOTSTART', 'INFLOWS', 'OUTFLOWS', 'RAINFALL', 'RDII', 'RUNOFF')),
     fname text check (typeof(fname) = 'text' or fname = null),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL),
     active boolean check (typeof(active) in (0, 1, null))
 );
 
