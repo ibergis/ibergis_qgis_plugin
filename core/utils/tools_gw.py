@@ -899,6 +899,7 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
         fields = row[pos]
     except:
         fields = row
+
     field_id = ''
     if 'fields' in fields:
         field_id = 'fields'
@@ -1036,6 +1037,7 @@ def check_parameters(field):
 
 def add_widget(dialog, field, lbl, widget):
     """ Insert widget into layout """
+
     layout = dialog.findChild(QGridLayout, field['layoutname'])
     if layout in (None, 'null', 'NULL', 'Null'):
         return

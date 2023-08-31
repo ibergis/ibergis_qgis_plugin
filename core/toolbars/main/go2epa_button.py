@@ -16,7 +16,7 @@ from datetime import timedelta
 
 from qgis.PyQt.QtCore import QStringListModel, Qt, QTimer
 from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGroupBox, QSpacerItem, QSizePolicy, \
-    QGridLayout, QLabel, QTabWidget
+    QGridLayout, QLabel, QTabWidget, QVBoxLayout
 from qgis.core import QgsApplication
 
 from ...shared.selector import GwSelector
@@ -440,29 +440,38 @@ class GwGo2EpaButton(GwAction):
         form = '"formName":"epaoptions"'
         body = tools_gw.create_body(form=form)
         json_result = tools_gw.execute_procedure('getconfig', body)
-        print("JSON RESULT")
-        print(f"{json_result}")
         if not json_result or json_result['status'] == 'Failed':
             return False
 
+        v_sql = f"SELECT distinct tabname FROM sys_param_user WHERE tabname IS NOT NULL"
+        tab_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        v_sql = f"select distinct (layoutname), tabname FROM sys_param_user WHERE layoutname IS NOT NULL"
+        lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+
+        main_tab = self.dlg_go2epa_options.findChild(QTabWidget, 'main_tab')
+
+        for tab in tab_list:
+            tab_widget = QWidget(main_tab)
+            tab_widget.setObjectName(f"{tab[0]}")
+            main_tab.addTab(tab_widget, f"{tab[0]}")
+
+            layout = QVBoxLayout()
+
+            for lyt in lyt_list:
+                if lyt[1] == tab[0]:
+                    gridlayout = QGridLayout()
+                    gridlayout.setObjectName(f"{lyt[0]}")
+                    layout.addLayout(gridlayout)
+
+            tab_widget.setLayout(layout)
         tools_gw.build_dialog_options(
             self.dlg_go2epa_options, json_result['body']['form']['formTabs'], 0, self.epa_options_list)
-        grbox_list = self.dlg_go2epa_options.findChildren(QGroupBox)
-        for grbox in grbox_list:
-            widget_list = grbox.findChildren(QWidget)
-            if len(widget_list) == 0:
-                grbox.setVisible(False)
-            else:
-                layout_list = grbox.findChildren(QGridLayout)
-                for lyt in layout_list:
-                    spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-                    lyt.addItem(spacer)
 
         # Event on change from combo parent
-        self._get_event_combo_parent(json_result)
-        self.dlg_go2epa_options.btn_accept.clicked.connect(partial(self._update_values, self.epa_options_list))
-        self.dlg_go2epa_options.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_go2epa_options))
-        self.dlg_go2epa_options.rejected.connect(partial(tools_gw.close_dialog, self.dlg_go2epa_options))
+        #self._get_event_combo_parent(json_result)
+        #self.dlg_go2epa_options.btn_accept.clicked.connect(partial(self._update_values, self.epa_options_list))
+        #self.dlg_go2epa_options.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_go2epa_options))
+        #self.dlg_go2epa_options.rejected.connect(partial(tools_gw.close_dialog, self.dlg_go2epa_options))
 
         tools_gw.open_dialog(self.dlg_go2epa_options, dlg_name='go2epa_options')
 

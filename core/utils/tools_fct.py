@@ -20,18 +20,15 @@ def getconfig(p_input: dict) -> dict:
     v_raw_values: list
 
     try:
-        print(f"getconfig")
-        print(f"{p_input}")
 
         # get widgets from sys_param_user
         column_names = ['id', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
-                        'isenabled', 'ismandatory', 'iseditable', 'placeholder', 'id AS widgetname', 'false AS isparent']
+                        'isenabled', 'ismandatory', 'iseditable', 'placeholder', 'id AS widgetname', 'false AS isparent', 'tabname']
         v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM sys_param_user " \
                 f"ORDER BY layoutname, layoutorder, id"
         v_raw_widgets = global_vars.gpkg_dao_config.get_rows(v_sql)
-        print(f"{v_raw_widgets=}")
-        print(f"{global_vars.gpkg_dao_config.last_error=}")
+
         # format widgets as a json
         v_widgets = []
         for row in v_raw_widgets:
@@ -44,18 +41,16 @@ def getconfig(p_input: dict) -> dict:
             v_widgets.append(widget_dict)
 
         # put values into widgets
-        v_sql = f"SELECT parameter_id, parameter, value " \
+        v_sql = f"SELECT parameter_id, value " \
                 f"FROM config_param_user " \
-                f"ORDER BY parameter, parameter_id"
+                f"ORDER BY parameter_id"
         v_raw_values = global_vars.gpkg_dao_data.get_rows(v_sql)
-        print(f"{v_raw_values=}")
-        print(f"{global_vars.gpkg_dao_config.last_error=}")
 
         # Iterate through the raw values and update the corresponding widgets in v_widgets
         for row in v_raw_values:
-            parameter_id, parameter, value = row
+            parameter_id, value = row
             for widget in v_widgets:
-                if widget['id'] == parameter:
+                if widget['id'] == parameter_id:
                     widget['value'] = value
                     break
 
