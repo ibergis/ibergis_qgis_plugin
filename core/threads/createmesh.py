@@ -25,6 +25,11 @@ class GwCreateMeshTask(GwTask):
             source_layer = QgsVectorLayer(path, table_name, "ogr")
             if not source_layer.isValid():
                 raise ValueError("Ground layer is not valid.")
+            if not all(
+                type(feature["cellsize"]) in [int, float] and feature["cellsize"] > 0
+                for feature in source_layer.getFeatures()
+            ):
+                raise ValueError("Invalid values in column cellsize.")
             poly_layer = triangulate_custom(source_layer, feedback=self.feedback)
             QgsProject.instance().addMapLayer(poly_layer)
             return True
