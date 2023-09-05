@@ -1,1 +1,1 @@
-from pandamesh.data.sample_data import provinces_nl
+from .sample_data import provinces_nl

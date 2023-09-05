@@ -9,7 +9,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-from pandamesh.common import (
+from .common import (
     FloatArray,
     IntArray,
     check_geodataframe,
@@ -19,13 +19,13 @@ from pandamesh.common import (
     separate,
     to_ugrid,
 )
-from pandamesh.gmsh_fields import (
+from .gmsh_fields import (
     FIELDS,
     add_distance_field,
     add_structured_field,
     validate_field,
 )
-from pandamesh.gmsh_geometry import add_field_geometry, add_geometry
+from .gmsh_geometry import add_field_geometry, add_geometry
 
 
 @contextmanager

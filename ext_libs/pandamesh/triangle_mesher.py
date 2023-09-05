@@ -4,7 +4,7 @@ from typing import Tuple, Union
 import geopandas as gpd
 import triangle
 
-from pandamesh.common import (
+from .common import (
     FloatArray,
     IntArray,
     check_geodataframe,
@@ -13,7 +13,7 @@ from pandamesh.common import (
     separate,
     to_ugrid,
 )
-from pandamesh.triangle_geometry import collect_geometry, polygon_holes
+from .triangle_geometry import collect_geometry, polygon_holes
 
 
 class DelaunayAlgorithm(Enum):

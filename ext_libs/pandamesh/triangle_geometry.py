@@ -5,7 +5,7 @@ import numpy as np
 import shapely
 import shapely.geometry as sg
 
-from pandamesh.common import FloatArray, IntArray, flatten
+from .common import FloatArray, IntArray, flatten
 
 
 def add_linestrings(linestrings: gpd.GeoSeries) -> Tuple[FloatArray, IntArray]:
