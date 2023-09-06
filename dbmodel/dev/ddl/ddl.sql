@@ -231,7 +231,7 @@ CREATE TABLE roof (
     outlet_id integer CHECK (typeof(outlet_id)='integer' OR outlet_id=NULL),
     outlet_vol real CHECK (typeof(outlet_vol) = 'real' OR outlet_vol=NULL),
     street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
-    outlet_vol2 real real CHECK (typeof(outlet_vol2) = 'real' OR outlet_vol2=NULL),
+    infiltr_vol real real CHECK (typeof(infiltr_vol) = 'real' OR infiltr_vol=NULL),
     totalvol real CHECK (typeof(totalvol)='real' OR totalvol=NULL),
     inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
     lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
