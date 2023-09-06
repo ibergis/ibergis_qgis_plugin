@@ -1,7 +1,8 @@
 import traceback
 
-from qgis.core import QgsProject, QgsVectorLayer
+from qgis.core import QgsProject
 
+from . import createmesh_core as core
 from .task import GwTask
 from ..utils.meshing_process import triangulate_custom
 from ... import global_vars
@@ -20,17 +21,15 @@ class GwCreateMeshTask(GwTask):
         super().run()
         try:
             self.dao = global_vars.gpkg_dao_data.clone()
-            table_name = "ground"
-            path = f"{self.dao.db_filepath}|layername={table_name}"
-            source_layer = QgsVectorLayer(path, table_name, "ogr")
-            if not source_layer.isValid():
+            ground_layer = core.get_layer(self.dao, "ground")
+            if not ground_layer.isValid():
                 raise ValueError("Ground layer is not valid.")
             if not all(
                 type(feature["cellsize"]) in [int, float] and feature["cellsize"] > 0
-                for feature in source_layer.getFeatures()
+                for feature in ground_layer.getFeatures()
             ):
                 raise ValueError("Invalid values in column cellsize.")
-            poly_layer = triangulate_custom(source_layer, feedback=self.feedback)
+            poly_layer = triangulate_custom(ground_layer, feedback=self.feedback)
             QgsProject.instance().addMapLayer(poly_layer)
             return True
         except Exception:
