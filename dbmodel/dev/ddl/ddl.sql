@@ -222,6 +222,7 @@ CREATE TABLE roof (
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
+    elev real CHECK (typeof(elev)='real' OR elev = NULL),
     slope real CHECK (typeof(slope)='real' OR slope=NULL),
     width real CHECK (typeof(width)='real' OR width=NULL),
     roughness real CHECK (typeof(roughness)='real' OR roughness=NULL),
