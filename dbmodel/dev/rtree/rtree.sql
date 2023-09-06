@@ -16,6 +16,7 @@ CREATE VIRTUAL TABLE rtree_ground_roughness_geom USING rtree(id, minx, maxx, min
 CREATE VIRTUAL TABLE rtree_ground_losses_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_roof_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_mesh_tin_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_mesh_roof_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_mesh_edge_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_mesh_vertex_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_link_geom USING rtree (id, minx, maxx, miny, maxy);
