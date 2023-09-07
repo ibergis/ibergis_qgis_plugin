@@ -22,9 +22,9 @@ class GwCreateMeshTask(GwTask):
         try:
             self.dao = global_vars.gpkg_dao_data.clone()
             ground_layer = core.get_layer(self.dao, "ground")
-            core.validate_layers(ground_layer)
-            poly_layer = triangulate_custom(ground_layer, feedback=self.feedback)
-            QgsProject.instance().addMapLayer(poly_layer)
+            core.validate_layer(ground_layer)
+            poly_ground_layer = triangulate_custom(ground_layer, feedback=self.feedback)
+            QgsProject.instance().addMapLayer(poly_ground_layer)
             return True
         except Exception:
             self.exception = traceback.format_exc()
