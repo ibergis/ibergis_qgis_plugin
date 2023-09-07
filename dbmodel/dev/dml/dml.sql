@@ -99,6 +99,8 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_roof', 'features', 'mesh_roof', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_edge', 'features', 'mesh_edge', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_vertex', 'features', 'mesh_vertex', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_anchor_points', 'features', 'mesh_anchor_points', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('mesh_anchor_lines', 'features', 'mesh_anchor_lines', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('link', 'features', 'link', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('gully', 'features', 'gully', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_raingage', 'features', 'inp_raingage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
@@ -210,6 +212,8 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('mesh_tin', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('mesh_roof', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('mesh_edge', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('mesh_vertex', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('mesh_anchor_points', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('mesh_anchor_lines', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('link', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('gully', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_conduit', 0);
@@ -235,6 +239,8 @@ INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('mesh_roof', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('mesh_edge', 'geom', 'LINESTRING', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('mesh_vertex', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
+INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('mesh_anchor_points', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
+INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('mesh_anchor_lines', 'geom', 'LINESTRING', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('link', 'geom', 'LINESTRING', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('gully', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('inp_conduit', 'geom', 'LINESTRING', <SRID_VALUE>, 0, 0);

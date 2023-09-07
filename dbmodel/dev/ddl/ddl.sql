@@ -326,6 +326,16 @@ CREATE TABLE mesh_vertex (
     FOREIGN KEY (scenario_id) references cat_scenario (id)
 );
 
+CREATE TABLE mesh_anchor_points (
+    fid integer PRIMARY KEY,
+    geom geometry
+);
+
+CREATE TABLE mesh_anchor_lines (
+    fid integer PRIMARY KEY,
+    geom geometry
+);
+
 CREATE TABLE link (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),
