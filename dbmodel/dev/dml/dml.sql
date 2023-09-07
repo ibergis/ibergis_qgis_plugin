@@ -115,6 +115,8 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_storage', 'features', 'inp_storage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_junction', 'features', 'inp_junction', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_dwf', 'features', 'inp_dwf', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('v_node', 'features', 'v_node', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('v_arc', 'features', 'v_arc', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 
 
 
@@ -228,6 +230,9 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_storage', 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_junction', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_raingage', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_dwf', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('v_node', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('v_arc', 0);
+
 
 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('sector', 'geom', 'MULTIPOLYGON', <SRID_VALUE>, 0, 0);
@@ -255,3 +260,5 @@ INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, 
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('inp_junction', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('inp_raingage', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
 INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('inp_dwf', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
+INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('v_node', 'geom', 'POINT', <SRID_VALUE>, 0, 0);
+INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('v_arc', 'geom', 'LINESTRING', <SRID_VALUE>, 0, 0);

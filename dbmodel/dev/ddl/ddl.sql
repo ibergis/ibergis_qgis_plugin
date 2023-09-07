@@ -1285,6 +1285,22 @@ create view if not exists vi_xsections as select shape as Type, geom1 as Geom1, 
 create view if not exists vi_dwf as select node_id as Name, 'FLOW' as Constituent, value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_infiltration as select method as InfMethod, maxrate as MaxRate, minrate as MinRate, decay as Decay, maxinfl as MaxInf, suction as SuctHead, conduct as Conductiv, initdef as InitDef, curveno as CurveNum, annotation as Annotation from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 
+CREATE VIEW v_node as
+    select node_id, sector_id, scenario_id, geom from inp_storage union
+    select node_id, sector_id, scenario_id, geom from inp_outfall union
+    select node_id, sector_id, scenario_id, geom from inp_junction union
+    select node_id, sector_id, scenario_id, geom from inp_divider
+    JOIN selector_sector USING (sector_id)
+    JOIN selector_scenario USING (scenario_id);
+
+CREATE VIEW v_arc as
+    select arc_id, sector_id, scenario_id, geom from inp_outlet union
+    select arc_id, sector_id, scenario_id, geom from inp_weir union
+    select arc_id, sector_id, scenario_id, geom from inp_orifice union
+    select arc_id, sector_id, scenario_id, geom from inp_pump union
+    select arc_id, sector_id, scenario_id, geom from inp_conduit
+    JOIN selector_sector USING (sector_id)
+    JOIN selector_scenario USING (scenario_id);
 
 /*
 Not imported sections:
