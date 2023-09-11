@@ -689,12 +689,12 @@ def add_layer_to_toc(layer, group=None, sub_group=None, create_groups=False, sub
     if create_groups:
         if not first_group:
             first_group = root.insertGroup(0, group)
-        if not tools_qgis.find_toc_group(first_group, sub_group):
+        if sub_group is not None and not tools_qgis.find_toc_group(first_group, sub_group):
             second_group = first_group.insertGroup(0, sub_group)
             if sub_sub_group and not tools_qgis.find_toc_group(second_group, sub_sub_group):
                 second_group.insertGroup(0, sub_sub_group)
 
-    if first_group and sub_group:
+    if first_group:
         second_group = tools_qgis.find_toc_group(first_group, sub_group)
         if second_group:
             third_group = tools_qgis.find_toc_group(second_group, sub_sub_group)

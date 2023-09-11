@@ -1,11 +1,13 @@
 import traceback
 
-from qgis.core import QgsProject
+from qgis.core import QgsLayerTreeGroup, QgsProject
+from qgis.utils import iface
 
 from . import createmesh_core as core
 from .task import GwTask
 from ..utils.meshing_process import triangulate_custom
 from ... import global_vars
+from ...lib import tools_qt
 
 
 class GwCreateMeshTask(GwTask):
@@ -25,6 +27,7 @@ class GwCreateMeshTask(GwTask):
             ground_layer = core.get_layer(self.dao, "ground")
             core.validate_layer(ground_layer)
             poly_ground_layer = triangulate_custom(ground_layer, feedback=self.feedback)
+            poly_ground_layer.setName("Ground Mesh")
 
             roof_layer = core.get_layer(self.dao, "roof")
             core.validate_layer(roof_layer)
@@ -38,9 +41,11 @@ class GwCreateMeshTask(GwTask):
                 for feature in features
             )
             poly_roof_layer = core.join_layers(roof_meshes)
+            poly_roof_layer.setName("Roof Mesh")
 
-            QgsProject.instance().addMapLayer(poly_ground_layer)
-            QgsProject.instance().addMapLayer(poly_roof_layer)
+            group_name = "Mesh Temp Layers"
+            tools_qt.add_layer_to_toc(poly_ground_layer, group_name, create_groups=True)
+            tools_qt.add_layer_to_toc(poly_roof_layer, group_name, create_groups=True)
 
             return True
         except Exception:
