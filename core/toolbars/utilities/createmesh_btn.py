@@ -2,7 +2,7 @@ import datetime
 from functools import partial
 from time import time
 
-from qgis.core import QgsApplication
+from qgis.core import QgsApplication, QgsProject
 from qgis.PyQt.QtCore import QTimer
 
 from ..dialog import GwAction
@@ -10,7 +10,7 @@ from ...threads.createmesh import GwCreateMeshTask
 from ...ui.ui_manager import GwCreateMeshUi
 from ...utils import Feedback, tools_gw
 from .... import global_vars
-from ....lib import tools_qt
+from ....lib import tools_qgis, tools_qt
 
 
 class GwCreateMeshButton(GwAction):
@@ -23,11 +23,33 @@ class GwCreateMeshButton(GwAction):
         self.dlg_mesh = GwCreateMeshUi()
         dlg = self.dlg_mesh
 
+        self._check_for_previous_results()
+        save_temp_meshes = False
+        if self.temp_meshes:
+            message = (
+                "There are some temporary layers from previous runs of this tool that were not saved."
+                ' Do you want to save them now? (Click "Cancel" to generate new meshes.)'
+            )
+            save_temp_meshes = tools_qt.show_question(message)
+
         tools_gw.load_settings(dlg)
         self._load_user_values()
         self._set_initial_signals()
         tools_gw.disable_tab_log(dlg)
+
         tools_gw.open_dialog(dlg, dlg_name="create_mesh")
+        if save_temp_meshes:
+            self._save_meshes()
+
+    def _check_for_previous_results(self):
+        self.temp_meshes = {}
+        root = QgsProject.instance().layerTreeRoot()
+        temp_group = tools_qgis.find_toc_group(root, "Mesh Temp Layers")
+        if temp_group is None:
+            return
+        for layer in temp_group.findLayers():
+            if layer.name() in ["Ground Mesh", "Roof Mesh"]:
+                self.temp_meshes[layer.name()] = layer
 
     def _execute_process(self):
         dlg = self.dlg_mesh
@@ -84,6 +106,9 @@ class GwCreateMeshButton(GwAction):
         elapsed_time = time() - self.t0
         text = str(datetime.timedelta(seconds=round(elapsed_time)))
         self.dlg_mesh.lbl_timer.setText(text)
+
+    def _save_meshes(self):
+        pass
 
     def _save_user_values(self):
         self._user_values("save")
