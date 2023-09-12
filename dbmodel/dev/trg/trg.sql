@@ -386,8 +386,8 @@ CREATE TRIGGER "rtree_inp_dwf_geom_update4" AFTER UPDATE ON "inp_dwf" WHEN OLD."
 ---------------------------------------------------
 -- TRIGGERS TO CREATE AN AUTOINDEX FOR EACH ELEMENT
 -- ------------------------------------------------
-create trigger "trigger_update_subc_id_inp_subcatchment" after insert on "inp_subcatchment" BEGIN update inp_subcatchment set node_id = 'H'||fid; END;
-create trigger "trigger_update_node_id_inp_raingage" after insert on "inp_raingage" BEGIN update inp_raingage set node_id = 'G'||fid; END;
+create trigger "trigger_update_subc_id_inp_subcatchment" after insert on "inp_subcatchment" BEGIN update inp_subcatchment set subc_id = 'H'||fid; END;
+create trigger "trigger_update_rg_id_id_inp_raingage" after insert on "inp_raingage" BEGIN update inp_raingage set rg_id = 'RG'||fid; END;
 
 create trigger "trigger_update_arc_id_inp_outlet" after insert on "inp_outlet" BEGIN update inp_outlet set arc_id = 'T'||fid; END;
 create trigger "trigger_update_arc_id_inp_weir" after insert on "inp_weir" BEGIN update inp_weir set arc_id = 'W'||fid; END;

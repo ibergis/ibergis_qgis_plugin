@@ -65,8 +65,8 @@ CREATE TABLE cat_landuses (
     availab real check (typeof(availab) = 'real' or availab = null),
     lastsweep real check (typeof(lastsweep) = 'real' or lastsweep = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 CREATE TABLE cat_grate (
@@ -106,8 +106,8 @@ CREATE TABLE cat_curve (
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text check (typeof(descript)='text' or typeof(descript)=null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 CREATE TABLE cat_curve_value (
@@ -115,7 +115,7 @@ CREATE TABLE cat_curve_value (
     idval text CHECK (typeof(idval) = 'text' or idval = null),
     xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
     ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
-    FOREIGN KEY (idval) references cat_curve (idval)
+    FOREIGN KEY (idval) references cat_curve (idval) on update cascade
 );
 
 CREATE TABLE cat_timeseries (
@@ -127,8 +127,8 @@ CREATE TABLE cat_timeseries (
     timeseries_type text CHECK (typeof(timeseries_type) in ('text', null) and timeseries_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade
 );
 
 CREATE TABLE cat_timeseries_value (
@@ -137,8 +137,8 @@ CREATE TABLE cat_timeseries_value (
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
-    file text CHECK (typeof(file) = 'text' or file = null)
-    --FOREIGN KEY (idval) references cat_timeseries(idval)
+    file text CHECK (typeof(file) = 'text' or file = null),
+    FOREIGN KEY (idval) references cat_timeseries(idval) on update cascade
 );
 
 CREATE TABLE cat_pattern (
@@ -172,8 +172,8 @@ CREATE TABLE ground (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade
 );
 
 CREATE TABLE ground_roughness (
@@ -188,9 +188,9 @@ CREATE TABLE ground_roughness (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id),
-    FOREIGN KEY (roughness_id) references ground(fid)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade,
+    FOREIGN KEY (roughness_id) references ground(fid) on update cascade
 );
 
 CREATE TABLE ground_losses (
@@ -210,8 +210,8 @@ CREATE TABLE ground_losses (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade
 );
 
 CREATE TABLE roof (
@@ -237,8 +237,8 @@ CREATE TABLE roof (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade
 );
 
 CREATE TABLE mesh_tin (
@@ -262,9 +262,9 @@ CREATE TABLE mesh_tin (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id),
-    FOREIGN KEY (roughness_id) references ground_losses(fid)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade,
+    FOREIGN KEY (roughness_id) references ground_losses(fid) on update cascade
 );
 
 CREATE TABLE mesh_roof (
@@ -288,9 +288,9 @@ CREATE TABLE mesh_roof (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id),
-    FOREIGN KEY (roughness_id) references ground_losses(fid)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade,
+    FOREIGN KEY (roughness_id) references ground_losses(fid) on update cascade
 );
 
 CREATE TABLE mesh_edge (
@@ -305,8 +305,8 @@ CREATE TABLE mesh_edge (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 CREATE TABLE mesh_vertex (
     fid integer PRIMARY KEY,
@@ -321,8 +321,8 @@ CREATE TABLE mesh_vertex (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 CREATE TABLE mesh_anchor_points (
@@ -348,8 +348,8 @@ CREATE TABLE link (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 CREATE TABLE gully (
@@ -374,9 +374,9 @@ CREATE TABLE gully (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
-    --FOREIGN KEY (gratecat_id) references cat_grate (idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (gratecat_id) references cat_grate (idval) on update cascade
 );
 
 
@@ -395,7 +395,6 @@ CREATE TABLE inp_raingage (
     form_type text check (typeof(form_type) = 'text' and form_type in ('CUMULATIVE', 'INTENSITY', 'VOLUME')),
     data_source text check (typeof(data_source) in ('text', null) and data_source in ('FILE', 'TIMESERIES')),
     timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL),
-    rg_id text check (typeof(rg_id) = 'text' or rg_id = null),
     intvl text check (typeof(intvl) = 'text' or intvl = null),
     scf real check (typeof(scf) = 'real' or scf = null),
     fname text check (typeof(fname) = 'text' or fname = null),
@@ -404,9 +403,9 @@ CREATE TABLE inp_raingage (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
-    --FOREIGN KEY (timeseries_id) references cat_timeseries (idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (timeseries_id) references cat_timeseries (idval) on update cascade
 );
 
 CREATE TABLE inp_conduit (
@@ -443,9 +442,9 @@ CREATE TABLE inp_conduit (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (matcat_id) references cat_arc(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (matcat_id) references cat_arc(idval) on update cascade
 );
 
 CREATE TABLE inp_outlet (
@@ -466,9 +465,9 @@ CREATE TABLE inp_outlet (
     annotation real check (typeof(annotation)='real' or annotation= null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve (idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve (idval) on update cascade
 );
 
 CREATE TABLE inp_subcatchment ( 
@@ -506,9 +505,9 @@ CREATE TABLE inp_subcatchment (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
-    --FOREIGN KEY (rg_id) references inp_raingage (rg_id),
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (rg_id) references inp_raingage (rg_id) on update cascade
     --FOREIGN KEY (outlet_id) references inp_outlet (arc_id)
 );
 
@@ -532,8 +531,8 @@ CREATE TABLE inp_orifice (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 CREATE TABLE inp_weir (
@@ -563,9 +562,9 @@ CREATE TABLE inp_weir (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
 );
 
 CREATE TABLE inp_pump (
@@ -584,9 +583,9 @@ CREATE TABLE inp_pump (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
 );
 
 CREATE TABLE inp_outfall (
@@ -607,9 +606,9 @@ CREATE TABLE inp_outfall (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
     --FOREIGN KEY (timeser_id) references cat_timeseries(idval)
 );
 
@@ -635,9 +634,9 @@ CREATE TABLE inp_divider (
     annotation real check (typeof(annotation) = 'real' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
 );
 
 CREATE TABLE inp_storage (
@@ -665,9 +664,9 @@ CREATE TABLE inp_storage (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
 );
 
 CREATE TABLE inp_junction (
@@ -687,8 +686,8 @@ CREATE TABLE inp_junction (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 create table inp_files (
@@ -758,10 +757,10 @@ create table inp_dwf (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (pat1) REFERENCES cat_pattern(idval),
-    FOREIGN KEY (pat2) REFERENCES cat_pattern(idval),
-    FOREIGN KEY (pat3) REFERENCES cat_pattern(idval),
-    FOREIGN KEY (pat4) REFERENCES cat_pattern(idval)
+    FOREIGN KEY (pat1) REFERENCES cat_pattern(idval) on update cascade,
+    FOREIGN KEY (pat2) REFERENCES cat_pattern(idval) on update cascade,
+    FOREIGN KEY (pat3) REFERENCES cat_pattern(idval) on update cascade,
+    FOREIGN KEY (pat4) REFERENCES cat_pattern(idval) on update cascade
 );
 
 
