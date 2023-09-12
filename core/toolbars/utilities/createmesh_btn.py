@@ -2,7 +2,7 @@ import datetime
 from functools import partial
 from time import time
 
-from qgis.core import QgsApplication, QgsProject
+from qgis.core import QgsApplication, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QTimer
 
 from ..dialog import GwAction
@@ -20,6 +20,7 @@ class GwCreateMeshButton(GwAction):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
     def clicked_event(self):
+        self.dao = global_vars.gpkg_dao_data.clone()
         self.dlg_mesh = GwCreateMeshUi()
         dlg = self.dlg_mesh
 
@@ -40,6 +41,19 @@ class GwCreateMeshButton(GwAction):
         tools_gw.open_dialog(dlg, dlg_name="create_mesh")
         if save_temp_meshes:
             self._save_meshes()
+        else:
+            self.ground_layer = self._get_layer(self.dao, "ground")
+            self.roof_layer = self._get_layer(self.dao, "roof")
+            errors = self._validate_input_layers()
+            if errors:
+                message = "**Please verify these problems in the input layers before proceeding:**\n\n"
+                if "ground_layer" in errors:
+                    message += "- " + "\n- ".join(errors["ground_layer"]) + "\n"
+                if "roof_layer" in errors:
+                    message += "- " + "\n- ".join(errors["roof_layer"]) + "\n"
+                dlg.lbl_warnings.setText(message)
+            else:
+                dlg.lbl_warnings.hide()
 
     def _check_for_previous_results(self):
         self.temp_meshes = {}
@@ -78,6 +92,10 @@ class GwCreateMeshButton(GwAction):
         dlg.rejected.connect(self.timer.stop)
 
         QgsApplication.taskManager().addTask(self.thread)
+
+    def _get_layer(self, dao, layer_name):
+        path = f"{dao.db_filepath}|layername={layer_name}"
+        return QgsVectorLayer(path, layer_name, "ogr")
 
     def _load_user_values(self):
         self._user_values("load")
@@ -149,6 +167,46 @@ class GwCreateMeshButton(GwAction):
                     widget,
                     value,
                 )
+
+    def _validate_input_layers(self):
+        errors = {}
+        errors_ground_layer = []
+        if not self.ground_layer.isValid():
+            errors_ground_layer.append(
+                "Ground layer is not valid. Check if GPKG file has a 'ground' layer."
+            )
+        else:
+            if not all(
+                type(feature["cellsize"]) in [int, float] and feature["cellsize"] > 0
+                for feature in self.ground_layer.getFeatures()
+            ):
+                errors_ground_layer.append(
+                    "There are invalid values in the column 'cellsize' of ground layer. "
+                    "The values of 'cellsize' must be greater than zero."
+                )
+        if errors_ground_layer:
+            errors["ground_layer"] = errors_ground_layer
+
+        errors_roof_layer = []
+        if not self.roof_layer.isValid():
+            errors_roof_layer.append(
+                "Roof layer is not valid. Check if GPKG file has a 'roof' layer."
+            )
+        else:
+            if not all(
+                type(feature["cellsize"]) in [int, float] and feature["cellsize"] > 0
+                for feature in self.roof_layer.getFeatures()
+            ):
+                errors_roof_layer.append(
+                    "There are invalid values in the column 'cellsize' of roof layer. "
+                    "The values of 'cellsize' must be greater than zero."
+                )
+        if errors_roof_layer:
+            errors["roof_layer"] = errors_roof_layer
+        
+        return errors
+        
+
 
     def _validate_inputs(self):
         dlg = self.dlg_mesh

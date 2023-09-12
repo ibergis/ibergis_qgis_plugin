@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>403</width>
+    <height>350</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Additional Demand Check</string>
+   <string>Create meshes</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="11" column="0">
@@ -65,7 +65,7 @@
        <string>Config</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="5" column="0">
+       <item row="3" column="1">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -77,6 +77,26 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="lbl_warnings">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 220);
+padding: 10px;</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::MarkdownText</enum>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
