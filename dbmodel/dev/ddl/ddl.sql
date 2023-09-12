@@ -293,38 +293,6 @@ CREATE TABLE mesh_roof (
     FOREIGN KEY (roughness_id) references ground_losses(fid) on update cascade
 );
 
-CREATE TABLE mesh_edge (
-    fid integer PRIMARY KEY,
-    arc_id text unique,
-    code text check (typeof(code) = 'text' or code = null),
-    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    vertex_id1 integer CHECK (typeof(vertex_id1)='integer' OR vertex_id1=NULL),
-    vertex_id2 integer CHECK (typeof(vertex_id2)='integer' OR vertex_id2=NULL),
-    annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
-    geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
-    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
-);
-CREATE TABLE mesh_vertex (
-    fid integer PRIMARY KEY,
-    node_id text unique,
-    code text check (typeof(code) = 'text' or code = null),
-    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    elevation real CHECK (typeof(elevation)='real' OR elevation=NULL),
-	latitude real CHECK (typeof(latitude)='real' OR latitude=NULL),
-	longitude real CHECK (typeof(longitude)='real' OR longitude=NULL),
-    annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
-    geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
-    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
-);
-
 CREATE TABLE mesh_anchor_points (
     fid integer PRIMARY KEY,
     geom geometry
