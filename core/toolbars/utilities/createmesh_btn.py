@@ -33,12 +33,6 @@ class GwCreateMeshButton(GwAction):
             )
             save_temp_meshes = tools_qt.show_question(message)
 
-        tools_gw.load_settings(dlg)
-        self._load_user_values()
-        self._set_initial_signals()
-        tools_gw.disable_tab_log(dlg)
-
-        tools_gw.open_dialog(dlg, dlg_name="create_mesh")
         if save_temp_meshes:
             self._save_meshes()
         else:
@@ -49,11 +43,20 @@ class GwCreateMeshButton(GwAction):
                 message = "**Please verify these problems in the input layers before proceeding:**\n\n"
                 if "ground_layer" in errors:
                     message += "- " + "\n- ".join(errors["ground_layer"]) + "\n"
+                    dlg.chk_ground.setEnabled(False)
                 if "roof_layer" in errors:
                     message += "- " + "\n- ".join(errors["roof_layer"]) + "\n"
+                    dlg.chk_roof.setEnabled(False)
                 dlg.lbl_warnings.setText(message)
             else:
                 dlg.lbl_warnings.hide()
+
+        tools_gw.load_settings(dlg)
+        self._load_user_values()
+        self._set_initial_signals()
+        tools_gw.disable_tab_log(dlg)
+
+        tools_gw.open_dialog(dlg, dlg_name="create_mesh")
 
     def _check_for_previous_results(self):
         self.temp_meshes = {}
@@ -73,7 +76,9 @@ class GwCreateMeshButton(GwAction):
         self._save_user_values()
         self.thread = GwCreateMeshTask(
             "Import INP file",
-            self.feedback,
+            ground_layer=self.ground_layer if dlg.chk_ground.isChecked() else None,
+            roof_layer=self.roof_layer if dlg.chk_roof.isChecked() else None,
+            feedback=self.feedback,
         )
 
         # Set signals
@@ -203,11 +208,12 @@ class GwCreateMeshButton(GwAction):
                 )
         if errors_roof_layer:
             errors["roof_layer"] = errors_roof_layer
-        
-        return errors
-        
 
+        return errors
 
     def _validate_inputs(self):
         dlg = self.dlg_mesh
+        if not dlg.chk_ground.isChecked() and not dlg.chk_roof.isChecked():
+            tools_qt.show_info_box("Select at least one mesh to be created.")
+            return False
         return True
