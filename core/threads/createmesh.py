@@ -1,3 +1,4 @@
+import time
 import traceback
 
 from . import createmesh_core as core
@@ -49,6 +50,7 @@ class GwCreateMeshTask(GwTask):
             group_name = "Mesh Temp Layers"
             for layer in layers:
                 tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+                time.sleep(1)
 
             return True
         except Exception:
