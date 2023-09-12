@@ -1,11 +1,13 @@
 import time
 import traceback
 
+from qgis.core import QgsProject
+
 from . import createmesh_core as core
 from .task import GwTask
 from ..utils.meshing_process import triangulate_custom
 from ... import global_vars
-from ...lib import tools_qt
+from ...lib import tools_qgis, tools_qt
 
 
 class GwCreateMeshTask(GwTask):
@@ -47,10 +49,17 @@ class GwCreateMeshTask(GwTask):
                 poly_roof_layer.setName("Roof Mesh")
                 layers.append(poly_roof_layer)
 
+            root = QgsProject.instance().layerTreeRoot()
             group_name = "Mesh Temp Layers"
+            temp_group = tools_qgis.find_toc_group(root, group_name)
+            if temp_group is not None:
+                for layer in temp_group.findLayers():
+                    if layer.name() in ["Ground Mesh", "Roof Mesh"]:
+                        # FIXME: This crashes QGIS
+                        temp_group.removeChildNode(layer)
             for layer in layers:
+                # FIXME: This breaks the TOC
                 tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
-                time.sleep(1)
 
             return True
         except Exception:
