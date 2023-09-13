@@ -391,10 +391,10 @@ CREATE TABLE inp_conduit (
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
-    shape text check (typeof(shape) = 'text' or shape = null),
+    shape text check (typeof(shape) = 'text' and shape in ('ARCH', 'BASKETHANDLE', 'CIRCULAR', 'CUSTOM', 'DUMMY', 'EGG', 'FILLED_CIRCULAR', 'FORCE_MAIN', 'HORIZ_ELLIPSE', 'HORSESHOE', 'IRREGULAR', 'MODBASKETHANDLE', 'PARABOLIC', 'POWER', 'RECT_CLOSED', 'RECT_OPEN', 'RECT_ROUND', 'RECT_TRIANGULAR', 'SEMICIRCULAR', 'SEMIELLIPTICAL', 'TRAPEZOIDAL', 'TRIANGULAR', 'VERT_ELLIPSE', 'VIRTUAL')),
     shape_trnsct text check (typeof(shape_trnsct) = 'text' or shape_trnsct = null),
     custom_length real check (typeof(custom_length) = 'real' or custom_length = null),
-    matcat_id text check (typeof(matcat_id) = 'text' or matcat_id = null),
+    arccat_id text check (typeof(arccat_id) = 'text' or arccat_id = null),
     custom_roughness real check (typeof(custom_roughness) = 'real' or custom_roughness = null),
     z1 real check (typeof(z1) = 'real' or z1 = null),
     custom_z1 real check (typeof(custom_z1) = 'real' or custom_z1 = null),
@@ -418,7 +418,7 @@ CREATE TABLE inp_conduit (
     geom geometry,
     FOREIGN KEY (sector_id) references sector (fid) on update cascade,
     FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
-    FOREIGN KEY (matcat_id) references cat_arc(idval) on update cascade
+    FOREIGN KEY (arccat_id) references cat_arc(idval) on update cascade
 );
 
 CREATE TABLE inp_outlet (
