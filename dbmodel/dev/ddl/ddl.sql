@@ -1226,7 +1226,7 @@ CREATE TABLE selector_rpt_main_tstep (
 -- ------------
 -- VI_IMPORT_INP
 -- -----------
-create view if not exists vi_title as select parameter_id, value from config_param_user where parameter_id like 'project_%';
+create view if not exists vi_title as select parameter, value from config_param_user where parameter like 'project_%';
 create view if not exists vi_files as select fname as Name from inp_files join selector_sector using (sector_id) join selector_scenario using (scenario_id) where active = 1;
 create view if not exists vi_options as select parameter as Option, value as Value from config_param_user where parameter like 'inp_options%';
 
