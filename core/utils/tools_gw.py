@@ -1655,12 +1655,12 @@ def fill_combo(widget, field):
     if 'comboIds' in field and 'comboNames' in field:
         if tools_os.set_boolean(field.get('isNullValue'), False):
             combolist.append(['', ''])
-        for record in field['comboIds']:
-            comboIds.append(record.split(','))
-        for record in field['comboNames']:
-            comboNames.append(record.split(','))
-        for i in range(0, len(comboIds[0])):
-            elem = [comboIds[0][i], comboNames[0][i]]
+        for record in field['comboIds'].split(','):
+            comboIds.append(record)
+        for record in field['comboNames'].split(','):
+            comboNames.append(record)
+        for i in range(0, len(comboIds)):
+            elem = [comboIds[i], comboNames[i]]
             combolist.append(elem)
     else:
         msg = f"key 'comboIds' or/and comboNames not found WHERE widgetname='{field['widgetname']}' " \

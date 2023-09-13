@@ -59,10 +59,12 @@ def getconfig(p_input: dict) -> dict:
                     cmb_ids = []
                     cmb_names = []
                     if widget['dv_querytext']:
-                        v_querystring = widget['dv_querytext'].replace('SELECT id, idval', 'SELECT group_concat(id)')
-                        cmb_ids = global_vars.gpkg_dao_config.get_row(v_querystring)
-                        v_querystring = widget['dv_querytext'].replace('SELECT id, idval', 'SELECT group_concat(idval)')
-                        cmb_names = global_vars.gpkg_dao_config.get_row(v_querystring)
+                        v_querystring = widget['dv_querytext']
+                        result = global_vars.gpkg_dao_config.get_row(v_querystring)
+
+                        cmb_ids = result[0]
+                        cmb_names = result[1]
+
                     widget['comboIds'] = cmb_ids
                     widget['comboNames'] = cmb_names
 
