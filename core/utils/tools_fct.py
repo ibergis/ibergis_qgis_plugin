@@ -23,7 +23,12 @@ def getconfig(p_input: dict) -> dict:
 
         # get widgets from sys_param_user
         column_names = ['id', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
-                        'isenabled', 'ismandatory', 'iseditable', 'placeholder', 'id AS widgetname', 'false AS isparent', 'tabname']
+                        'placeholder', 'id AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
+                        'dv_orderby_id', 'dv_isnullvalue',
+                        'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
+                        'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
+                        'CASE WHEN isenabled = 1 THEN True ELSE False END AS isenabled',
+                        ]
         v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM sys_param_user " \
                 f"ORDER BY layoutname, layoutorder, id"
@@ -41,16 +46,27 @@ def getconfig(p_input: dict) -> dict:
             v_widgets.append(widget_dict)
 
         # put values into widgets
-        v_sql = f"SELECT parameter_id, value " \
+        v_sql = f"SELECT parameter, value " \
                 f"FROM config_param_user " \
-                f"ORDER BY parameter_id"
+                f"ORDER BY parameter"
         v_raw_values = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         # Iterate through the raw values and update the corresponding widgets in v_widgets
         for row in v_raw_values:
-            parameter_id, value = row
+            parameter, value = row
             for widget in v_widgets:
-                if widget['id'] == parameter_id:
+                if widget['widgettype'] == 'combo':
+                    cmb_ids = []
+                    cmb_names = []
+                    if widget['dv_querytext']:
+                        v_querystring = widget['dv_querytext'].replace('SELECT id, idval', 'SELECT group_concat(id)')
+                        cmb_ids = global_vars.gpkg_dao_config.get_row(v_querystring)
+                        v_querystring = widget['dv_querytext'].replace('SELECT id, idval', 'SELECT group_concat(idval)')
+                        cmb_names = global_vars.gpkg_dao_config.get_row(v_querystring)
+                    widget['comboIds'] = cmb_ids
+                    widget['comboNames'] = cmb_names
+
+                if widget['id'] == parameter:
                     widget['value'] = value
                     break
 
@@ -72,6 +88,30 @@ def getconfig(p_input: dict) -> dict:
     return v_return
 
 
+def setconfig(p_input: dict) -> dict:
+    accepted: bool = True
+    v_return: dict = {}
+    v_sql: str
+
+    try:
+        v_table = 'config_param_user'
+        for field in p_input['data']['fields']:
+            v_querystring = f"SELECT * FROM {v_table} WHERE parameter = '{field['widget']}'"
+            result = global_vars.gpkg_dao_data.get_row(v_querystring)
+            if result:
+                v_sql = f"UPDATE {v_table} SET value = '{field['value']}' WHERE parameter = '{field['widget']}'"
+                global_vars.gpkg_dao_data.execute_sql(v_sql)
+            else:
+                v_sql = f"INSERT INTO {v_table} (parameter, value) VALUES ('{field['widget']}', '{field['value']}')"
+                global_vars.gpkg_dao_data.execute_sql(v_sql)
+    except Exception as e:
+        print(f"EXCEPTION IN setconfig: {e}")
+        accepted = False
+
+    v_return = _create_return(v_return, accepted=accepted)
+    return v_return
+
+
 def getselectors(p_input: dict) -> dict:
     accepted: bool = True
     v_return: dict = {}
@@ -87,7 +127,7 @@ def getselectors(p_input: dict) -> dict:
         v_return["body"]["form"]["currentTab"] = "tab_scenario"
         v_return["body"]["form"]["formTabs"] = []
 
-        v_sql = f"SELECT parameter_id, value from config_param_user WHERE parameter_id like 'basic_selector_%'"
+        v_sql = f"SELECT parameter, value from config_param_user WHERE parameter like 'basic_selector_%'"
         rows = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         for row in rows:
@@ -165,7 +205,7 @@ def setselectors(p_input: dict) -> dict:
         id = p_input['data'].get('id')
         value = p_input['data'].get('value')
 
-        v_sql = f"SELECT value from config_param_user WHERE parameter_id like 'basic_selector_{tabName}'"
+        v_sql = f"SELECT value from config_param_user WHERE parameter like 'basic_selector_{tabName}'"
         row = global_vars.gpkg_dao_data.get_row(v_sql)
         config_json = json.loads(row[0].replace('/', ''))
 

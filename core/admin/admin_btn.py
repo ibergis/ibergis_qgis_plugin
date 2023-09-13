@@ -535,7 +535,7 @@ class GwAdminButton:
 
         for row in rows:
             data = (row[0], row[1])
-            sql_insert = f"INSERT INTO config_param_user (parameter_id, value) VALUES (?,?)"
+            sql_insert = f"INSERT INTO config_param_user (parameter, value) VALUES (?,?)"
             try:
                 global_vars.gpkg_dao_data.execute_sql_placeholder(sql_insert, data)
             except Exception as e:
@@ -553,7 +553,7 @@ class GwAdminButton:
         """Populate project params in config_param_user"""
 
         for key, value in self.project_params.items():
-            sql = f"UPDATE config_param_user SET value = '{value}' WHERE parameter_id='{key}'"
+            sql = f"UPDATE config_param_user SET value = '{value}' WHERE parameter='{key}'"
             try:
                 global_vars.gpkg_dao_data.execute_sql(sql)
             except Exception as e:
