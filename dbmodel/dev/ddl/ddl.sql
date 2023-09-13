@@ -134,6 +134,8 @@ CREATE TABLE cat_timeseries (
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
     idval text  check (typeof(idval)='text' OR  idval = null),
+    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
+    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
@@ -152,8 +154,12 @@ CREATE TABLE cat_pattern (
 CREATE TABLE cat_pattern_value (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
+    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
+    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-    value real CHECK (typeof(value)='real' OR value=NULL)
+    value real CHECK (typeof(value)='real' OR value=NULL),
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT 1
+
 );
 
 
@@ -718,6 +724,7 @@ create table inp_dwf (
     sector_id integer check (typeof(sector_id) = 'integer') NOT NULL,
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text check (typeof(descript) = 'text' or descript = null),
+    avg_value real check (typeof(avg_value)='real' or avg_value = null),
     pat1 text check (typeof(pat1) = 'text' or pat1 = null),
     pat2 text check (typeof(pat1) = 'text' or pat2 = null),
     pat3 text check (typeof(pat1) = 'text' or pat3 = null),
@@ -1230,17 +1237,17 @@ create view if not exists vi_title as select parameter, value from config_param_
 create view if not exists vi_files as select fname as Name from inp_files join selector_sector using (sector_id) join selector_scenario using (scenario_id) where active = 1;
 create view if not exists vi_options as select parameter as Option, value as Value from config_param_user where parameter like 'inp_options%';
 
-create view if not exists vi_conduits as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, length as Length, n as Roughness, z1 as InOffset, z2 as OutOffset, q0 as InitFlow, qmax as MaxFlow, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, culvert as Culvert, shape_transct as Shp_Trnsct, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_subcatchments as select code as Name, rg_id as RainGage, outlet_id as Outlet, area as Area, imperv as Imperv, width as Width, slope as Slope, clength as CurbLen, annotation as Annotation, nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted, curveno as CurveNum, conduct as Conductiv, drytime as DryTime, method as InfMethod, suction as SuctHead, initdef as InitDef, maxrate as MaxRatefrom, minrate as MinRate, decay as Decay, maxinfl as MaxInf from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_outlets as select arc_id as Name, node1 as FromNode, node2 as ToNode, offsetval as InOffset, outlet_type as RateCurve, cd1 as Qcoeff, cd2 as Qexpon, flap as FlapGate, curve_id as CurveName, annotation as Annotation from inp_outlet join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_orifices as select arc_id as Name, node1 as FromNode, node2 as ToNode, ori_type as Type, offsetval as InOffset, cd1 as Qcoeff, flap as FlapGate, close_time as CloseTime, annotation as Annotation, shape as Shape, geom1 as Height, geom2 as Width from inp_orifice join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_weirs as select arc_id as Name, node1 as FromNode, node2 as ToNode, weir_type as Type, offsetval as CrestHight, cd2 as Qcoeff, flap as FlapGate, ec as EndContrac, cd2 as Qcoeff, surcharge as Surcharge, road_width as RoadWidth, road_surf as RoadSurf, curve_id as CoeffCurve, annotation as Annotation, geom1 as Hight, geom3 as Length, geom4 as SideSlope from inp_weir join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_conduits as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, custom_length as Length, custom_roughness as Roughness, z1 as InOffset, z2 as OutOffset, q0 as InitFlow, qmax as MaxFlow, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, culvert as Culvert, shape_trnsct as Shp_Trnsct, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_subcatchments as select subc_id as Name, rg_id as RainGage, outlet_id as Outlet, area as Area, imperv as Imperv, width as Width, slope as Slope, clength as CurbLen, annotation as Annotation, nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted, curveno as CurveNum, conduct as Conductiv, drytime as DryTime, method as InfMethod, suction as SuctHead, initdef as InitDef, maxrate as MaxRatefrom, minrate as MinRate, decay as Decay, maxinfl as MaxInf from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_outlets as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, offsetval as InOffset, outlet_type as RateCurve, cd1 as Qcoeff, cd2 as Qexpon, flap as FlapGate, curve_id as CurveName, annotation as Annotation from inp_outlet join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_orifices as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, ori_type as Type, offsetval as InOffset, cd1 as Qcoeff, flap as FlapGate, close_time as CloseTime, annotation as Annotation, shape as Shape, geom1 as Height, geom2 as Width from inp_orifice join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_weirs as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, weir_type as Type, offsetval as CrestHight, cd2 as Qcoeff, flap as FlapGate, ec as EndContrac, cd2 as Qcoeff, surcharge as Surcharge, road_width as RoadWidth, road_surf as RoadSurf, curve_id as CoeffCurve, annotation as Annotation, geom1 as Hight, geom3 as Length, geom4 as SideSlope from inp_weir join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_pumps as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, curve_id as PumpCurve, state as Status, startup as Startup, shutoff as Shutoff, annotation as Annotation from inp_pump join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_outfalls as select node_id as Name, elev as Elevation, outfall_type as Type, stage as FixedStage, curve_id as Curve_TS, gate as FlapGate, routeto as RouteTo, annotation as Annotation from inp_outfalls join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_outfalls as select node_id as Name, elev as Elevation, outfall_type as Type, stage as FixedStage, curve_id as Curve_TS, gate as FlapGate, routeto as RouteTo, annotation as Annotation from inp_outfall join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_dividers as select code as Name, elev as Elevation, node_id as DivertLink, divider_type as Type, curve_id as Curve, qmin as WeirMinFlo, qmax as WeirMaxDep, q0 as WeirCoeff, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation from inp_divider join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_storage as select node_id as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, storage_type as Type, curve_id as Curve, a1 as Coeff, a2 as Exponent, a0 as Constant, ysur as SurDepth, fevap as Fevap, psi as Psi, ksat as Ksat, imd as IMD, annotation as Annotation from inp_storage join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_junctions as SELECT node_id as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation from inp_junction join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_raingages as select code as Name, form_type as Format, intvl as Interval, scf as SCF, source as DataSource, timeseries_id as SeriesName, fname as FileName, sta as StationID, units as RainUnits, annotation as Annotation from inp_raingage join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_raingages as select code as Name, form_type as Format, intvl as Interval, scf as SCF, data_source as DataSource, timeseries_id as SeriesName, fname as FileName, sta as StationID, units as RainUnits, annotation as Annotation from inp_raingage join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 
 create view if not exists vi_curves as select c.idval as Name, c.curve_type, cv.xcoord as Depth, cv.ycoord as Flow, c.sector_id, c.scenario_id from cat_curve c, cat_curve_value cv join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_timeseries as select idval as Name, "date" as "Date", "time" as "Time", value as Value, file as File_Name from cat_timeseries_value join selector_sector using (sector_id) join selector_scenario using (scenario_id);
@@ -1248,8 +1255,8 @@ create view if not exists vi_patterns as select idval as Name, "time" as "Time",
 create view if not exists vi_landuses as select idval as Name, sweepint as SweepingInterval, availab as SweepingFractionAvailable, lastsweep as LastSwept from cat_landuses join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_subareas as select nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_losses as select arc_id as Name, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_xsections as select shape as Type, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, shape_transct as Shp_Trnsct from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_dwf as select node_id as Name, 'FLOW' as Constituent, value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_xsections as select shape as Type, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, shape_trnsct as Shp_Trnsct from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_dwf as select node_id as Name, 'FLOW' as Constituent, avg_value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_infiltration as select method as InfMethod, maxrate as MaxRate, minrate as MinRate, decay as Decay, maxinfl as MaxInf, suction as SuctHead, conduct as Conductiv, initdef as InitDef, curveno as CurveNum, annotation as Annotation from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 
 CREATE VIEW v_node as
