@@ -22,7 +22,7 @@ import json
 import time
 import sys
 #from guppy import hpy
-from tqdm import tqdm
+# from tqdm import tqdm
 
 @alg(name='check_intersect', label='Hopefully check',
      group='drain_scripts', group_label='Drain')
@@ -55,7 +55,8 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
     points = []
     polygon_index = []
     ring = []
-    for i in tqdm(range(len(data)), desc="Polygon -> Vertex"):
+    # for i in tqdm(range(len(data)), desc="Polygon -> Vertex"):
+    for i in range(len(data)):
         geom: shapely.Polygon = data.geometry.iloc[i]
         for p in geom.exterior.coords:
             points.append(shapely.Point(p))
@@ -108,7 +109,8 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
                 vertices.loc[other_i, "anchor"] = True
 
     # Reconstruct the polygons from the modified vertices
-    for polygon_id, group in tqdm(vertices.groupby("polygon"), desc="Vertex -> Polygon"):
+    # for polygon_id, group in tqdm(vertices.groupby("polygon"), desc="Vertex -> Polygon"):
+    for polygon_id, group in vertices.groupby("polygon"):
         exterior = group[group["ring"] == -1].geometry
         exterior = [(np.round(p.x, 5), np.round(p.y, 5)) for p in exterior]
         
