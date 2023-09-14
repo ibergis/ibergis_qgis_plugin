@@ -1257,11 +1257,16 @@ create view if not exists vi_patterns as select idval as Name, "time" as "Time",
 create view if not exists vi_landuses as select idval as Name, sweepint as SweepingInterval, availab as SweepingFractionAvailable, lastsweep as LastSwept from cat_landuses join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_subareas as select nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_losses as select arc_id as Name, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_xsections as select shape as Type, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, shape_trnsct as Shp_Trnsct from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_dwf as select node_id as Name, 'FLOW' as Constituent, avg_value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_infiltration as select method as InfMethod, maxrate as MaxRate, minrate as MinRate, decay as Decay, maxinfl as MaxInf, suction as SuctHead, conduct as Conductiv, initdef as InitDef, curveno as CurveNum, annotation as Annotation from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_xsections as
+    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, 0 as other3, 0 as other4, barrels as other5, null as other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape ='CUSTOM' union
+    select arc_id as Link, shape as Shape, shape_trnsct as other1, 0 as other2, 0 as other3, 0 as other4, barrels as other5, NULL AS other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape='IRREGULAR'union
+    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, geom3 as other3, geom4 as other4, barrels as other5, culvert as other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape not in ('CUSTOM', 'IRREGULAR') union
+    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, null as other3, null as other4, null as other5, null as other6 from inp_orifice JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) union
+    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, null as other3, null as other4, null as other5, null as other6 from inp_weir JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id);
 
-CREATE VIEW v_node as
+CREATE VIEW if not exists v_node as
     select node_id, sector_id, scenario_id, geom from inp_storage union
     select node_id, sector_id, scenario_id, geom from inp_outfall union
     select node_id, sector_id, scenario_id, geom from inp_junction union
@@ -1269,7 +1274,7 @@ CREATE VIEW v_node as
     JOIN selector_sector USING (sector_id)
     JOIN selector_scenario USING (scenario_id);
 
-CREATE VIEW v_arc as
+CREATE VIEW if not exists v_arc as
     select arc_id, sector_id, scenario_id, geom from inp_outlet union
     select arc_id, sector_id, scenario_id, geom from inp_weir union
     select arc_id, sector_id, scenario_id, geom from inp_orifice union
