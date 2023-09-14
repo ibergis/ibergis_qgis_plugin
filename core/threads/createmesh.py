@@ -24,11 +24,14 @@ class GwCreateMeshTask(GwTask):
     def run(self):
         super().run()
         try:
+            self.feedback.setProgressText("Starting process!")
+
             self.dao = global_vars.gpkg_dao_data.clone()
 
             layers = []
 
             if self.ground_layer is not None:
+                self.feedback.setProgressText("Creating ground mesh...")
                 poly_ground_layer = triangulate_custom(
                     self.ground_layer, feedback=self.feedback
                 )
@@ -36,6 +39,7 @@ class GwCreateMeshTask(GwTask):
                 layers.append(poly_ground_layer)
 
             if self.roof_layer is not None:
+                self.feedback.setProgressText("Creating roof mesh...")
                 crs = self.roof_layer.crs()
                 features = (
                     core.feature_to_layer(feature, crs)

@@ -88,6 +88,8 @@ class GwCreateMeshButton(GwAction):
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
         self.thread.taskCompleted.connect(self._on_task_completed)
         self.thread.taskTerminated.connect(self._on_task_terminated)
+        self.thread.feedback.progressText.connect(self._set_progress_text)
+        self.thread.feedback.progress.connect(dlg.progress_bar.setValue)
 
         # Timer
         self.t0 = time()
