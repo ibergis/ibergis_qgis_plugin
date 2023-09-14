@@ -28,7 +28,7 @@ from ....lib import tools_qgis, tools_qt, tools_db
 from ..dialog import GwAction
 
 
-class GwGo2EpaButton(GwAction):
+class GwGo2IberButton(GwAction):
     """ Button 23: Go2epa """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):

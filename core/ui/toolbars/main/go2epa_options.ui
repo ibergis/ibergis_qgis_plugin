@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Go2Epa - options</string>
+   <string>Go2Iber - options</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">

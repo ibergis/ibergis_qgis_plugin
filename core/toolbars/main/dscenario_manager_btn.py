@@ -125,6 +125,11 @@ class GwDscenarioManagerButton(GwAction):
         if message:
             tools_qgis.show_warning(message)
 
+        self.tbl_dscenario.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tbl_dscenario.horizontalHeader().setSectionResizeMode(2)
+        self.tbl_dscenario.horizontalHeader().setStretchLastSection(True)
+        self.tbl_dscenario.horizontalHeader().setMinimumSectionSize(100)
+
 
     def _manage_btn_create(self):
         """ Fill btn_create QMenu """
@@ -301,7 +306,6 @@ class GwDscenarioManagerButton(GwAction):
         editable_delegate = EditableDelegate(widget)
         for x in range(2, model.columnCount()):
             widget.setItemDelegateForColumn(x, editable_delegate)
-
 
         # Check for errors
         if model.lastError().isValid():
