@@ -58,7 +58,6 @@ CREATE TABLE cat_landuses (
 	id integer primary key,
 	idval text unique check (typeof(idval)='text') NOT NULL,
 	sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-	scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text check (typeof(descript)='text' or typeof(descript)=null),
 	manning real check (typeof(manning)='real' or typeof(manning)=null),
     sweepint real check (typeof(sweepint) = 'real' or sweepint = null),
@@ -66,7 +65,6 @@ CREATE TABLE cat_landuses (
     lastsweep real check (typeof(lastsweep) = 'real' or lastsweep = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
     FOREIGN KEY (sector_id) references sector (fid) on update cascade,
-    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 CREATE TABLE cat_grate (
@@ -104,11 +102,9 @@ CREATE TABLE cat_curve (
     idval text unique check (typeof(idval)='text') NOT NULL,
     curve_type text check (typeof(curve_type) in ('text', null) and curve_type in ('CONTROL', 'DIVERSION', 'PUMP1', 'PUMP2', 'PUMP3', 'PUMP4', 'RATING', 'SHAPE', 'STORAGE', 'TIDAL')),
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text check (typeof(descript)='text' or typeof(descript)=null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
     FOREIGN KEY (sector_id) references sector (fid) on update cascade,
-    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 CREATE TABLE cat_curve_value (
@@ -123,20 +119,16 @@ CREATE TABLE cat_timeseries (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     timser_type text check (typeof(timser_type) in ('text', null) and timser_type in ('EVAPORATION', 'INFLOW_HYDROGRAPH', 'INFLOW_POLLUTOGRAPH', 'ORIFICE', 'OTHER', 'RAINFALL', 'TEMPERATURE')),
     timeseries_type text CHECK (typeof(timeseries_type) in ('text', null) and timeseries_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
     FOREIGN KEY (sector_id) references sector(fid) on update cascade,
-    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade
 );
 
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
     idval text  check (typeof(idval)='text' OR  idval = null),
-    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
@@ -147,6 +139,7 @@ CREATE TABLE cat_timeseries_value (
 CREATE TABLE cat_pattern (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
+    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     pattern_type text check (typeof(pattern_type) in ('text', null) and pattern_type in ('DAILY', 'HOURLY', 'MONTHLY', 'WEEKEND')),
     descript text check (typeof(descript) = 'text' or descript = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT 1
