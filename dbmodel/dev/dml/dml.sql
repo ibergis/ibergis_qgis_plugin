@@ -22,9 +22,6 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_grate', 'attributes', 'cat_grate', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_pattern', 'attributes', 'cat_pattern', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_files', 'attributes', 'inp_files', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_inflows_poll', 'attributes', 'inp_inflows_poll', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_lid', 'attributes', 'inp_lid', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_buildup', 'attributes', 'inp_buildup', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('rpt_arc', 'attributes', 'rpt_arc', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('rpt_arcflow_sum', 'attributes', 'rpt_arcflow_sum', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('rpt_arcpolload_sum', 'attributes', 'rpt_arcpolload_sum', '', 0, 0, 0, 0, 0, 0);
@@ -141,9 +138,6 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_landuses',
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_grate', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_pattern', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_files', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_inflows_poll', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_lid', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_buildup', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('rpt_arc', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('rpt_arcflow_sum', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('rpt_arcpolload_sum', 0);

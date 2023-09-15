@@ -678,47 +678,6 @@ create table inp_files (
     active boolean check (typeof(active) in (0, 1, null))
 );
 
-create table inp_inflows_poll (
-    id integer primary key,
-    idval text unique,
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
-    timeser_id integer check (typeof(timeser_id) = 'integer' or timeser_id = null),--es el fid de la cat_timeseries
-    inflow_type text check (typeof(inflow_type) in ('text', null) and inflow_type in ('CONCEN', 'MASS')),
-    form_type text check (typeof(form_type) = 'text' and form_type in ('CUMULATIVE', 'INTENSITY', 'VOLUME')),
-    --mfactor
-    --sfactor
-    --base
-    pattern_id integer check (typeof(pattern_id) = 'integer' or pattern_id = null)
-);
-
-
-create table inp_lid (
-    id integer primary key,
-    idval text unique,
-    lid_type text check (typeof(lid_type) in ('text', null) and lid_type in ('BC', 'GR', 'IT', 'PP', 'RB', 'RD', 'RG', 'VS')),
-    lid_layer text check (typeof(lid_layer) in ('text', null) and lid_layer in ('DRAIN', 'DRAINMAT', 'PAVEMENT', 'RB', 'SOIL', 'STORAGE', 'SURFACE')),
-    value_2 real check (typeof(value_2) = 'real' or value_2 = null),
-    value_3 real check (typeof(value_3) = 'real' or value_3 = null),
-    value_4 real check (typeof(value_4) = 'real' or value_4 = null),
-    value_5 real check (typeof(value_5) = 'real' or value_5 = null),
-    value_6 real check (typeof(value_6) = 'real' or value_6 = null),
-    value_7 real check (typeof(value_7) = 'real' or value_7 = null),
-    value_8 real check (typeof(value_8) = 'real' or value_8 = null),
-    descript text check (typeof(descript) = 'text' or descript = null),
-    active boolean check (typeof(active) in (0, 1, null))
-);
-
-create table inp_buildup (
-    id integer primary key,
-    idval text unique,
-    landuse_id integer check (typeof(landuse_id) = 'integer' or landuse_id = null),
-    func_type text check (typeof(func_type) in ('text', null) and func_type in ('EXP', 'EXT', 'POW', 'SAT')),
-    c1 real check (typeof(c1) = 'real' or c1 = null),
-    c2 real check (typeof(c2) = 'real' or c2 = null),
-    c3 real check (typeof(c3) = 'real' or c3 = null),
-    perunit text check (typeof(perunit) in ('text', null) and perunit in ('AREA', 'CURBLENGTH'))
-);
-
 create table inp_dwf (
     fid integer primary key,
     node_id text unique,
