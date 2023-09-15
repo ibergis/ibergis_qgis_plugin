@@ -109,7 +109,7 @@ CREATE TABLE cat_curve (
 
 CREATE TABLE cat_curve_value (
     id integer primary key,
-    idval text CHECK (typeof(idval) = 'text' or idval = null),
+    idval text unique check (typeof(idval)='text') NOT NULL,
     xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
     ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
     FOREIGN KEY (idval) references cat_curve (idval) on update cascade
@@ -121,6 +121,7 @@ CREATE TABLE cat_timeseries (
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     timser_type text check (typeof(timser_type) in ('text', null) and timser_type in ('EVAPORATION', 'INFLOW_HYDROGRAPH', 'INFLOW_POLLUTOGRAPH', 'ORIFICE', 'OTHER', 'RAINFALL', 'TEMPERATURE')),
     timeseries_type text CHECK (typeof(timeseries_type) in ('text', null) and timeseries_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
+    file text CHECK (typeof(file) = 'text' or file = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
     FOREIGN KEY (sector_id) references sector(fid) on update cascade,
@@ -128,11 +129,10 @@ CREATE TABLE cat_timeseries (
 
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
-    idval text  check (typeof(idval)='text' OR  idval = null),
+    idval text unique check (typeof(idval)='text') NOT NULL,
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
-    file text CHECK (typeof(file) = 'text' or file = null),
     FOREIGN KEY (idval) references cat_timeseries(idval) on update cascade
 );
 
@@ -148,12 +148,8 @@ CREATE TABLE cat_pattern (
 CREATE TABLE cat_pattern_value (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
-    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-    value real CHECK (typeof(value)='real' OR value=NULL),
-    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT 1
-
+    value real CHECK (typeof(value)='real' OR value=NULL)
 );
 
 
