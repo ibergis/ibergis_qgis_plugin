@@ -32,7 +32,7 @@ INSERT INTO cat_scenario (id, idval, descript, active) VALUES(4, 'scenario4', 'S
 -- --------------
 -- CAT_TIMESERIES
 -- --------------
-INSERT INTO cat_timeseries (id, idval, sector_id, scenario_id) VALUES(1, 'T10', 1, 1);
+INSERT INTO cat_timeseries (id, idval, sector_id) VALUES(1, 'T10', 1);
 
 
 -- -------
@@ -46,7 +46,7 @@ INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1,
 INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(6, 'EG150', 'EGG', 1.5, 1.0, 0.0, 0.0,  'Conduit', 0.1, 0.1, 1.15, 1.5, 2.7, 0.22, 'CONDUIT', 1);
 INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(7, 'PP020', 'FORCE_MAIN', 0.18, 100.0, 0.0, 0.0, 'Pump pipe', 0.1, 0.1, 0.26, 0.0314, 1.4, 0.03, 'PUMP_PIPE', 1);
 
-INSERT INTO cat_curve (id, idval, sector_id, scenario_id) VALUES(1, 'EBAR-02', 2, 1);
+INSERT INTO cat_curve (id, idval, sector_id) VALUES(1, 'EBAR-02', 2);
 
 -- ----
 -- ROOF
