@@ -64,7 +64,7 @@ CREATE TABLE cat_landuses (
     availab real check (typeof(availab) = 'real' or availab = null),
     lastsweep real check (typeof(lastsweep) = 'real' or lastsweep = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
-    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade
 );
 
 CREATE TABLE cat_grate (
@@ -104,7 +104,7 @@ CREATE TABLE cat_curve (
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     descript text check (typeof(descript)='text' or typeof(descript)=null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
-    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade
 );
 
 CREATE TABLE cat_curve_value (
@@ -124,7 +124,7 @@ CREATE TABLE cat_timeseries (
     file text CHECK (typeof(file) = 'text' or file = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
-    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade
 );
 
 CREATE TABLE cat_timeseries_value (
