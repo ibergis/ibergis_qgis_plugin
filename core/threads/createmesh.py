@@ -59,8 +59,9 @@ class GwCreateMeshTask(GwTask):
             if temp_group is not None:
                 for layer in temp_group.findLayers():
                     if layer.name() in ["Ground Mesh", "Roof Mesh"]:
-                        # FIXME: This crashes QGIS
-                        temp_group.removeChildNode(layer)
+                        tools_qgis.remove_layer_from_toc(
+                            layer.name(), "Mesh Temp Layers"
+                        )
             for layer in layers:
                 # FIXME: This breaks the TOC
                 tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
