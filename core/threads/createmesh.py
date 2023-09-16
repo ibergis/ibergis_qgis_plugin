@@ -1,7 +1,7 @@
-import time
 import traceback
 
 from qgis.core import QgsProject
+from qgis.utils import iface
 
 from . import createmesh_core as core
 from .task import GwTask
@@ -63,8 +63,10 @@ class GwCreateMeshTask(GwTask):
                             layer.name(), "Mesh Temp Layers"
                         )
             for layer in layers:
-                # FIXME: This breaks the TOC
                 tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+
+            # Refresh TOC
+            iface.layerTreeView().model().sourceModel().modelReset.emit()
 
             return True
         except Exception:
