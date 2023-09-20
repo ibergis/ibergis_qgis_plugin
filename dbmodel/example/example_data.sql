@@ -46,6 +46,8 @@ INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1,
 INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(6, 'EG150', 'EGG', 1.5, 1.0, 0.0, 0.0,  'Conduit', 0.1, 0.1, 1.15, 1.5, 2.7, 0.22, 'CONDUIT', 1);
 INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1, z2, width, area, estimated_depth, bulk, active, arc_type) VALUES(7, 'PP020', 'FORCE_MAIN', 0.18, 100.0, 0.0, 0.0, 'Pump pipe', 0.1, 0.1, 0.26, 0.0314, 1.4, 0.03, 'PUMP_PIPE', 1);
 
+INSERT INTO cat_transects (id, idval, sector_id) VALUES (1,'IRR_1', 1);
+
 INSERT INTO cat_curve (id, idval, sector_id) VALUES(1, 'EBAR-02', 2);
 
 INSERT INTO cat_controls (id, sector_id) VALUES (1, 1);
