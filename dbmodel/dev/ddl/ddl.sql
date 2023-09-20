@@ -1247,37 +1247,34 @@ CREATE VIEW if not exists v_arc as
     JOIN selector_sector USING (sector_id)
     JOIN selector_scenario USING (scenario_id);
 
-/*
-Not imported sections:
 
-controls
-washoff
-lid_controls
-lid_usage
-adjustments
-map
-symbols
-labels
-coordinates
-vertices
-polygons
+create table tables_nogeom (table_name text primary key);
+create table tables_geom (table_name text primary key, isgeom text NOT NULL);
 
-rdii
-hydrographs
-transects
 
-treatment
-coverage
-backdrop
-loadings
-inflows
-buildup
-pollutants
+create trigger "trigger_tables_nogeom" after insert on "tables_nogeom"
+BEGIN 
+    select new.table_name from tables_nogeom;
 
-evaporation
-temperature
-aquifers
-groundwater
-snowpacks
+    INSERT INTO gpkg_ogr_contents (table_name, feature_count) 
+    VALUES(new.table_name, 0);
+    
+    insert into gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id)
+    values (new.table_name, 'attributes', new.table_name, '', 0, 0, 0, 0, 0, 0);
+END;
 
-*/
+
+
+create trigger trigger_tables_geom after insert on "tables_geom"
+BEGIN 
+    select new.table_name, new.isgeom from tables_geom;
+
+    INSERT INTO gpkg_ogr_contents (table_name, feature_count) 
+    VALUES(new.table_name, 0);
+    
+    insert into gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id)
+    values (new.table_name, 'features', new.table_name, '', 0, 0, 0, 0, 0, 0);
+
+    insert into gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES(new.table_name, 'geom', new.isgeom, <SRID_VALUE>, 0, 0);
+
+END;
