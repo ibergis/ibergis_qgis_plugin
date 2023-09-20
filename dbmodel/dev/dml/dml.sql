@@ -76,20 +76,20 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_xsections', 'attributes', 'vi_xsections', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_dwf', 'attributes', 'vi_dwf', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_infiltration', 'attributes', 'vi_infiltration', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_raingages', 'attributes', 'vi_raingages', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_conduits', 'attributes', 'vi_conduits', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_subcatchments', 'attributes', 'vi_subcatchments', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_outlets', 'attributes', 'vi_outlets', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_orifices', 'attributes', 'vi_orifices', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_weirs', 'attributes', 'vi_weirs', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_pumps', 'attributes', 'vi_pumps', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_outfalls', 'attributes', 'vi_outfalls', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_dividers', 'attributes', 'vi_dividers', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_storage', 'attributes', 'vi_storage', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_junctions', 'attributes', 'vi_junctions', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_title', 'attributes', 'vi_title', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_files', 'attributes', 'vi_files', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_options', 'attributes', 'vi_options', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_raingages', 'attributes', 'vi_raingages', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_conduits', 'attributes', 'vi_conduits', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_subcatchments', 'attributes', 'vi_subcatchments', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_outlets', 'attributes', 'vi_outlets', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_orifices', 'attributes', 'vi_orifices', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_weirs', 'attributes', 'vi_weirs', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_pumps', 'attributes', 'vi_pumps', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_outfalls', 'attributes', 'vi_outfalls', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_dividers', 'attributes', 'vi_dividers', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_storage', 'attributes', 'vi_storage', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_junctions', 'attributes', 'vi_junctions', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_title', 'attributes', 'vi_title', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_files', 'attributes', 'vi_files', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_options', 'attributes', 'vi_options', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_controls', 'attributes', 'vi_controls', '', 0, 0, 0, 0, 0, 0);
 
 
