@@ -152,7 +152,12 @@ CREATE TABLE cat_pattern_value (
     value real CHECK (typeof(value)='real' OR value=NULL)
 );
 
-
+CREATE TABLE cat_controls (
+    id integer primary key,
+    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
+    "text" text check (typeof("text" = 'text') or "text" = null),
+    active boolean CHECK (typeof(active) IN (0,1,NULL))
+);
 -- -----------
 -- GEOM TABLES
 -- -----------
@@ -1207,6 +1212,7 @@ create view if not exists vi_subareas as select nimp as N_Imperv, nperv as N_Per
 create view if not exists vi_losses as select arc_id as Name, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_dwf as select node_id as Name, 'FLOW' as Constituent, avg_value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_infiltration as select method as InfMethod, maxrate as MaxRate, minrate as MinRate, decay as Decay, maxinfl as MaxInf, suction as SuctHead, conduct as Conductiv, initdef as InitDef, curveno as CurveNum, annotation as Annotation from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_controls as select "text" from cat_controls join selector_sector using (sector_id) where active != 0;
 create view if not exists vi_xsections as
     select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, 0 as other3, 0 as other4, barrels as other5, null as other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape ='CUSTOM' union
     select arc_id as Link, shape as Shape, shape_trnsct as other1, 0 as other2, 0 as other3, 0 as other4, barrels as other5, NULL AS other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape='IRREGULAR'union

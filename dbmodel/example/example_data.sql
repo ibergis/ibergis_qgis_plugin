@@ -48,6 +48,7 @@ INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1,
 
 INSERT INTO cat_curve (id, idval, sector_id) VALUES(1, 'EBAR-02', 2);
 
+INSERT INTO cat_controls (id, sector_id) VALUES (1, 1);
 -- ----
 -- ROOF
 -- ----

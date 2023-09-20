@@ -22,6 +22,7 @@ CREATE TRIGGER "trigger_delete_feature_count_cat_timeseries_value" AFTER DELETE 
 CREATE TRIGGER "trigger_delete_feature_count_cat_landuses" AFTER DELETE ON "cat_landuses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_landuses'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_grate" AFTER DELETE ON "cat_grate" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_grate'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_pattern" AFTER DELETE ON "cat_pattern" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_pattern'); END;
+CREATE TRIGGER "trigger_delete_feature_count_cat_controls" AFTER DELETE ON "cat_controls" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_controls'); END;
 CREATE TRIGGER "trigger_delete_feature_count_inp_files" AFTER DELETE ON "inp_files" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_files'); END;
 CREATE TRIGGER "trigger_delete_feature_count_rpt_arc" AFTER DELETE ON "rpt_arc" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('rpt_arc'); END;
 CREATE TRIGGER "trigger_delete_feature_count_rpt_arcflow_sum" AFTER DELETE ON "rpt_arcflow_sum" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('rpt_arcflow_sum'); END;
@@ -89,6 +90,7 @@ CREATE TRIGGER "trigger_delete_feature_count_vi_infiltration" INSTEAD OF DELETE 
 CREATE TRIGGER "trigger_delete_feature_count_vi_title" INSTEAD OF DELETE ON "vi_title" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_title'); END;
 CREATE TRIGGER "trigger_delete_feature_count_vi_files" INSTEAD OF DELETE ON "vi_files" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_files'); END;
 CREATE TRIGGER "trigger_delete_feature_count_vi_options" INSTEAD OF DELETE ON "vi_options" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_options'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_controls" INSTEAD OF DELETE ON "vi_controls" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_controls'); END;
 
 CREATE TRIGGER "trigger_delete_feature_count_sector" AFTER DELETE ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_delete_feature_count_ground" AFTER DELETE ON "ground"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('ground'); END;
@@ -127,6 +129,7 @@ CREATE TRIGGER "trigger_insert_feature_count_cat_timeseries_value" AFTER INSERT 
 CREATE TRIGGER "trigger_insert_feature_count_cat_landuses" AFTER INSERT ON "cat_landuses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_landuses'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_grate" AFTER INSERT ON "cat_grate" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_grate'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_pattern" AFTER INSERT ON "cat_pattern" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_pattern'); END;
+CREATE TRIGGER "trigger_insert_feature_count_cat_controls" AFTER INSERT ON "cat_controls" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_controls'); END;
 CREATE TRIGGER "trigger_insert_feature_count_inp_files" AFTER INSERT ON "inp_files" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('inp_files'); END;
 CREATE TRIGGER "trigger_insert_feature_count_rpt_arc" AFTER INSERT ON "rpt_arc" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('rpt_arc'); END;
 CREATE TRIGGER "trigger_insert_feature_count_rpt_arcflow_sum" AFTER INSERT ON "rpt_arcflow_sum" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('rpt_arcflow_sum'); END;
@@ -194,6 +197,7 @@ CREATE TRIGGER "trigger_insert_feature_count_vi_infiltration" INSTEAD OF INSERT 
 CREATE TRIGGER "trigger_insert_feature_count_vi_title" INSTEAD OF INSERT ON "vi_title" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_title'); END;
 CREATE TRIGGER "trigger_insert_feature_count_vi_options" INSTEAD OF INSERT ON "vi_options" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_options'); END;
 CREATE TRIGGER "trigger_insert_feature_count_vi_files" INSTEAD OF INSERT ON "vi_files" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_files'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_controls" INSTEAD OF INSERT ON "vi_controls" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_controls'); END;
 
 CREATE TRIGGER "trigger_insert_feature_count_sector" AFTER INSERT ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_insert_feature_count_ground" AFTER INSERT ON "ground"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('ground'); END;

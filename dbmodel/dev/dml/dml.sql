@@ -21,6 +21,7 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_landuses', 'attributes', 'cat_landuses', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_grate', 'attributes', 'cat_grate', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_pattern', 'attributes', 'cat_pattern', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_controls', 'attributes', 'cat_controls', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_files', 'attributes', 'inp_files', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('rpt_arc', 'attributes', 'rpt_arc', '', 0, 0, 0, 0, 0, 0);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('rpt_arcflow_sum', 'attributes', 'rpt_arcflow_sum', '', 0, 0, 0, 0, 0, 0);
@@ -89,6 +90,7 @@ INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_title', 'attributes', 'vi_title', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_files', 'attributes', 'vi_files', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_options', 'attributes', 'vi_options', '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vi_controls', 'attributes', 'vi_controls', '', 0, 0, 0, 0, 0, 0);
 
 
 
@@ -137,6 +139,7 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_timeseries
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_landuses', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_grate', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_pattern', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_controls', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_files', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('rpt_arc', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('rpt_arcflow_sum', 0);
@@ -205,6 +208,7 @@ INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_infiltratio
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_title', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_files', 0);
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_options', 0);
+INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vi_controls', 0);
 
 
 INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sector', 0);
