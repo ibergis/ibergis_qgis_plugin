@@ -125,10 +125,9 @@ class GwDscenarioManagerButton(GwAction):
         if message:
             tools_qgis.show_warning(message)
 
-        self.tbl_dscenario.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tbl_dscenario.horizontalHeader().setSectionResizeMode(2)
-        self.tbl_dscenario.horizontalHeader().setStretchLastSection(True)
-        self.tbl_dscenario.horizontalHeader().setMinimumSectionSize(100)
+        # Set widget & model properties
+        tools_qt.set_tableview_config(self.tbl_dscenario, selection=QAbstractItemView.SelectRows,
+                                      sectionResizeMode=2, stretchLastSection=True)
 
 
     def _manage_btn_create(self):
