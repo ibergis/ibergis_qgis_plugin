@@ -129,7 +129,7 @@ CREATE TABLE cat_curve (
 
 CREATE TABLE cat_curve_value (
     id integer primary key,
-    idval text unique check (typeof(idval)='text') NOT NULL,
+    idval text check (typeof(idval)='text') NOT NULL,
     xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
     ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
     FOREIGN KEY (idval) references cat_curve (idval) on update cascade
@@ -149,7 +149,7 @@ CREATE TABLE cat_timeseries (
 
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
-    idval text unique check (typeof(idval)='text') NOT NULL,
+    idval text check (typeof(idval)='text') NOT NULL,
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
@@ -167,9 +167,10 @@ CREATE TABLE cat_pattern (
 
 CREATE TABLE cat_pattern_value (
     id integer primary key,
-    idval text unique check (typeof(idval)='text') NOT NULL,
-    time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-    value real CHECK (typeof(value)='real' OR value=NULL)
+    idval text check (typeof(idval)='text') NOT NULL,
+    timestep datetime CHECK (typeof(timestep)='datetime' OR timestep=NULL),
+    value real CHECK (typeof(value)='real' OR value=NULL),
+    FOREIGN KEY (idval) references cat_pattern(idval) on update cascade
 );
 
 CREATE TABLE cat_controls (

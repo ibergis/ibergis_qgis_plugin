@@ -65,9 +65,28 @@ INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1,
 
 INSERT INTO cat_transects (id, idval, sector_id) VALUES (1,'IRR_1', 1);
 
-INSERT INTO cat_curve (id, idval, sector_id) VALUES(1, 'EBAR-02', 2);
-
 INSERT INTO cat_controls (id, sector_id) VALUES (1, 1);
+
+-- -------------------
+-- CURVE/PATTERN_VALUE
+-- -------------------
+INSERT INTO cat_curve (id, idval, sector_id) VALUES(1, 'EBAR_02', 2);
+INSERT INTO cat_curve (id, idval, sector_id) VALUES(2, 'PUMP_01', 2);
+
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(1, 'EBAR_02', 10.0000, 50.0000);
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(2, 'PUMP_01', 10.0000, 0.0160);
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(3, 'PUMP_01', 20.0000, 0.0150);
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(4, 'PUMP_01', 30.0000, 0.1300);
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(5, 'PUMP_01', 40.0000, 0.0080);
+
+
+INSERT INTO cat_pattern (id, idval, sector_id, pattern_type, active) VALUES(1, 'PATTERN_1', 1, 'MONTHLY', 1);
+
+INSERT INTO cat_pattern_value (id, idval, timestep, value) VALUES(1, 'PATTERN_1', 1, 20);
+INSERT INTO cat_pattern_value (id, idval, timestep, value) VALUES(2, 'PATTERN_1', 2, 30);
+INSERT INTO cat_pattern_value (id, idval, timestep, value) VALUES(3, 'PATTERN_1', 3, 40);
+
+
 -- ----
 -- ROOF
 -- ----
@@ -254,7 +273,7 @@ INSERT INTO inp_weir (fid, sector_id, scenario_id, shape, geom) VALUES(1, 2, 1, 
 INSERT INTO inp_pump (fid, sector_id, scenario_id, geom) VALUES(1, 2, 1, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418717.9662245355 4577602.212748872)', <SRID_VALUE>));
 
 
-INSERT INTO inp_storage (fid, source_fid, sector_id, scenario_id, storage_type, curve_id, geom) VALUES(1, '18828', 1, 1, 'TABULAR', 'EBAR-02', ST_GeomFromText('POINT (418716.0233455198 4577601.812087212)', <SRID_VALUE>));
+INSERT INTO inp_storage (fid, source_fid, sector_id, scenario_id, storage_type, curve_id, geom) VALUES(1, '18828', 1, 1, 'TABULAR', 'EBAR_02', ST_GeomFromText('POINT (418716.0233455198 4577601.812087212)', <SRID_VALUE>));
 
 
 INSERT INTO inp_outfall (fid, sector_id, scenario_id, timeser_id, outfall_type, geom) VALUES(1, 1, 1, 'T10', 'NORMAL', ST_GeomFromText('POINT (418670.68587686174 4578106.617988236)', <SRID_VALUE>));
