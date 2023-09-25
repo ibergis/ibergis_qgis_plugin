@@ -26,6 +26,14 @@ create table config_csv (
     addparam text check (typeof(addparam) = 'text' or addparam=null)
 );
 
+create table config_typevalue (
+    typevalue text check (typeof(typevalue) = 'text' or typevalue = null),
+    id text check (typeof(id) = 'text' or id = null),
+    idval text check (typeof(idval) = 'text' or idval = null),
+    descript text check (typeof(descript) = 'text' or descript = null),
+    addparam text check (typeof(addparam) = 'text' or addparam = null)
+
+);
 
 create table sector (
     fid integer primary key,

@@ -44,6 +44,7 @@ insert into tables_nogeom (table_name) values
 ('selector_scenario'),
 ('config_param_user'),
 ('config_csv'),
+('config_typevalue'),
 ('cat_scenario'),
 ('cat_arc'),
 ('cat_transects'),
