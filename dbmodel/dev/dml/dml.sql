@@ -43,6 +43,7 @@ insert into tables_nogeom (table_name) values
 ('selector_sector'),
 ('selector_scenario'),
 ('config_param_user'),
+('config_csv'),
 ('cat_scenario'),
 ('cat_arc'),
 ('cat_transects'),

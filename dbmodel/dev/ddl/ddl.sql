@@ -16,6 +16,17 @@ CREATE TABLE config_param_user (
     isconflictive boolean check (isconflictive in (0, 1) or isconflictive is null)
 );
 
+create table config_csv (
+    fid integer primary key,
+    alias text check (typeof(alias) = 'text' or alias = null),
+    descript text check (typeof(descript)='text' or descript = null),
+    functionname text check (typeof(functionname)='text' or functionname=null),
+    active boolean check (typeof(active) in (0, 1, null)),
+    orderby integer check (typeof(orderby) = 'integer' or orderby = null),
+    addparam text check (typeof(addparam) = 'text' or addparam=null)
+);
+
+
 create table sector (
     fid integer primary key,
     code text check (typeof(code) = 'text' or code = null),

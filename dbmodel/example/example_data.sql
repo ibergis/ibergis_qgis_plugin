@@ -20,6 +20,23 @@ INSERT INTO selector_sector (sector_id) VALUES(2);
 INSERT INTO selector_scenario (scenario_id) VALUES(1);
 INSERT INTO selector_scenario (scenario_id) VALUES(3);
 
+-- ----------
+-- CONFIG_CSV
+-- ----------
+INSERT INTO config_csv (fid, alias, descript, functionname, active, orderby, addparam) VALUES(384, 'Import inp curves', 'Function to automatize the import of inp curves files. 
+The csv file must containts next columns on same position: 
+curve_id, x_value, y_value, curve_type (for WS project OR UD project curve_type has diferent values. Check user manual)', 'gw_fct_import_inp_curve', 1, 9, NULL);
+INSERT INTO config_csv (fid, alias, descript, functionname, active, orderby, addparam) VALUES(386, 'Import inp patterns', 'Function to automatize the import of inp patterns files. 
+The csv file must containts next columns on same position: 
+pattern_id, pattern_type, factor1,.......,factorn. 
+For WS use up factor18, repeating rows if you like. 
+For UD use up factor24. More than one row for pattern is not allowed', 'gw_fct_import_inp_pattern', 1, 9, NULL);
+INSERT INTO config_csv (fid, alias, descript, functionname, active, orderby, addparam) VALUES(385, 'Import inp timeseries', 'Function to assist the import of timeseries for inp models.
+The csv file must containts next columns on same position: 
+timeseries, type, mode, date, hour, time, value (fill date/hour for ABSOLUTE or time for RELATIVE)', 'gw_fct_import_inp_timeseries', 1, 9, NULL);
+
+
+
 -- ------------
 -- CAT_SCENARIO
 -- ------------
