@@ -702,6 +702,24 @@ create table inp_dwf (
     FOREIGN KEY (pat4) REFERENCES cat_pattern(idval) on update cascade
 );
 
+create table inp_inflow (
+    fid integer primary key,
+    node_id text unique,
+    code text check (typeof(code) = 'text' or code = null),
+    sector_id integer check (typeof(sector_id) = 'integer') NOT NULL,
+    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
+    descript text check (typeof(descript) = 'text' or descript = null),
+    timeser_id text check (typeof(timeser_id) = 'text' or timeser_id = null),
+    format text check (typeof(format) = 'text' or format in ('POLLUTANT', 'FLOW', null)),
+    mfactor real check (typeof(mfactor) = 'real' or mfactor=null) default 1,
+    sfactor real check (typeof(sfactor)='real' or sfactor=null) default 1,
+    base real check (typeof(base)='real' or base=null) default 0,
+    pattern_id text check (typeof(pattern_id) = 'text' or pattern_id=null),
+    geom geometry,
+    FOREIGN KEY (pattern_id) REFERENCES cat_pattern(idval) on update cascade
+);
+
+
 
 -- ----------
 -- RPT_TABLES
@@ -1223,6 +1241,7 @@ create view if not exists vi_dwf as select node_id as Name, 'FLOW' as Constituen
 create view if not exists vi_infiltration as select method as InfMethod, maxrate as MaxRate, minrate as MinRate, decay as Decay, maxinfl as MaxInf, suction as SuctHead, conduct as Conductiv, initdef as InitDef, curveno as CurveNum, annotation as Annotation from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_controls as select "text" from cat_controls join selector_sector using (sector_id) where active != 0;
 create view if not exists vi_transects as select "text" from cat_transects join selector_sector using (sector_id) where active != 0;
+create view if not exists vi_inflows as select node_id, format, timeser_id, mfactor, sfactor, pattern_id from inp_inflow JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id);
 create view if not exists vi_xsections as
     select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, 0 as other3, 0 as other4, barrels as other5, null as other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape ='CUSTOM' union
     select arc_id as Link, shape as Shape, shape_trnsct as other1, 0 as other2, 0 as other3, 0 as other4, barrels as other5, NULL AS other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape='IRREGULAR'union
