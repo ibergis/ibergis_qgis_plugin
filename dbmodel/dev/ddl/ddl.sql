@@ -17,7 +17,7 @@ CREATE TABLE config_param_user (
 );
 
 create table config_csv (
-    fid integer primary key,
+    id integer primary key,
     alias text check (typeof(alias) = 'text' or alias = null),
     descript text check (typeof(descript)='text' or descript = null),
     functionname text check (typeof(functionname)='text' or functionname=null),
