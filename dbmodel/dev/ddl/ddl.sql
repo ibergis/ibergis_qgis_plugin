@@ -739,6 +739,17 @@ create table inp_inflow (
     FOREIGN KEY (pattern_id) REFERENCES cat_pattern(idval) on update cascade
 );
 
+create table boundary_conditions (
+    fid integer primary key,
+    code text check (typeof(code) = 'text' or code = null),
+    sector_id integer check (typeof(sector_id) = 'integer') NOT NULL,
+    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
+    descript text check (typeof(descript) = 'text' or descript = null),
+    tin_id text check (typeof(tin_id) = 'text' or tin_id=null),
+    edge_id text check (typeof(edge_id) = 'text' or edge_id=null),
+    boundary_type text check (typeof(boundary_type) = 'text' or boundary_type=null),
+    geom geometry
+);
 
 
 -- ----------

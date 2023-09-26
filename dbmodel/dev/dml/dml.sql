@@ -19,6 +19,7 @@ INSERT INTO tables_geom (table_name, isgeom) values
 ('mesh_roof', 'MULTIPOLYGON'),
 ('mesh_anchor_points', 'POINT'),
 ('mesh_anchor_lines', 'LINESTRING'),
+('boundary_conditions', 'LINESTRING'),
 ('link', 'LINESTRING'),
 ('gully', 'POINT'),
 ('inp_conduit', 'LINESTRING'),
