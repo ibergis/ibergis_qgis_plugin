@@ -128,3 +128,59 @@ insert into tables_nogeom (table_name) values
 ('vi_controls'),
 ('vi_inflows'),
 ('vi_transects');
+
+
+
+
+-- --------------
+-- CONFIG_TYPEVALUE
+-- --------------
+INSERT INTO config_typevalue (typevalue, id, idval, descript, addparam) VALUES
+(1, 'nullvalue', '0', 'UNDEFINED', NULL),
+(2, 'options_order', '0', 'Order 0', NULL),
+(3, 'options_order', '1', 'Order 1', NULL),
+(4, 'options_order', '10', 'Order 10', NULL),
+(5, 'options_order', '101', 'Order 101', NULL),
+(6, 'options_simulation_new', '0', 'New simulation', NULL),
+(7, 'options_simulation_new', '1', 'Continue simulation', NULL),
+(8, 'losses_zonal_assign', '1', 'Lineal	Type of zonal losses', NULL),
+(9, 'losses_zonal_assign', '2', 'SCS', NULL),
+(10, 'losses_zonal_assign', '3', 'Horton', NULL),
+(11, 'losses_zonal_assign', '4', 'Green ampt', NULL),
+(12, 'losses_zonal_assign', '5', 'SCSC', NULL),
+(13, 'rain_class', '0', 'No_rain', NULL),
+(14, 'rain_class', '1', 'Hyetogram', NULL),
+(15, 'rain_class', '2', 'Raster', NULL),
+(16, 'rain_class', '3', 'Raster interpolation', NULL),
+(17, 'rain_format', '0', 'Intensity', NULL),
+(18, 'rain_format', '1', 'Volume', NULL),
+(19, 'plg_swmm_options', '0', 'Only gullies', NULL),
+(20, 'plg_swmm_options', '1', 'Complete network', NULL),
+(21, 'inp_value_yesno', 'YES', 'YES', NULL),
+(22, 'inp_value_yesno', 'NO', 'NO', NULL),
+(23, 'inp_options_dwfscenario', '1', 'Default', ''),
+(24, 'inp_options_dwfscenario', '0', 'UNDEFINED', NULL),
+(25, 'inp_options_force_main_eq', 'H-W', 'H-W', NULL),
+(26, 'inp_options_force_main_eq', 'D-W', 'D-W', NULL),
+(27, 'inp_options_inertial_damping', 'FULL', 'FULL', ''),
+(28, 'inp_options_inertial_damping', 'NONE', 'NONE', NULL),
+(29, 'inp_options_normal_flow_limited', 'BOTH', 'BOTH', NULL),
+(30, 'inp_options_normal_flow_limited', 'FLOWDE', 'FLOWDE', NULL),
+(31, 'inp_options_normal_flow_limited', 'SLOPE', 'SLOPE', NULL),
+(32, 'inp_options_hydro_scenario', '1', 'Infiltration default value', NULL),
+(33, 'inp_options_hydro_scenario', '0', 'UNDEFINED', NULL),
+(34, 'inp_options_flow_units', 'CFS', 'CFS', NULL),
+(35, 'inp_options_flow_units', 'CMS', 'CMS', NULL),
+(36, 'inp_options_flow_units', 'GPM', 'GPM', NULL),
+(37, 'inp_options_flow_units', 'LPS', 'LPS', NULL),
+(38, 'inp_options_flow_units', 'MGD', 'MGD', NULL),
+(39, 'inp_options_flow_units', 'MLD', 'MLD', NULL),
+(40, 'inp_options_flow_routing', 'DYNWAVE', 'DYNWAVE', NULL),
+(41, 'inp_options_flow_routing', 'KINWAVE', 'KINWAVE', NULL),
+(42, 'inp_options_flow_routing', 'STEADY', 'STEADY', NULL),
+(43, 'inp_options_link_offsets', 'ELEVATION', 'ELEVATION', NULL),
+(44, 'inp_options_link_offsets', 'DEPTH', 'DEPTH', NULL),
+(45, 'inp_options_networkmode', '1D', '1D SWMM', NULL),
+(46, 'inp_options_networkmode', '1D2D', '1D/2D SWMM_IBER', NULL);
+
+
