@@ -17,6 +17,12 @@ _tables = (
             "OutOffset": "z2",
             "InitFlow": "q0",
             "MaxFlow": "qmax",
+        },
+    },
+    {
+        "table_name": "inp_conduit",
+        "section": "XSECTIONS",
+        "mapper": {
             "Shape": "shape",
             "Geom1": "geom1",
             "Geom2": "geom2",
@@ -25,6 +31,12 @@ _tables = (
             "Barrels": "barrels",
             "Culvert": "culvert",
             "Shp_Trnsct": "shape_trnsct",
+        },
+    },
+    {
+        "table_name": "inp_conduit",
+        "section": "LOSSES",
+        "mapper": {
             "Kentry": "kentry",
             "Kexit": "kexit",
             "Kavg": "kavg",
@@ -46,7 +58,30 @@ _tables = (
             "Slope": "slope",
             "CurbLen": "clength",
             "SnowPack": "snow_id",
+        },
+    },
+    {
+        "table_name": "inp_subcatchment",
+        "section": "INFILTRATION",
+        "mapper": {
+            "InfMethod": "method",
+            "MaxRate": "maxrate",
+            "MinRate": "minrate",
+            "Decay": "decay",
+            "DryTime": "drytime",
+            "MaxInf": "maxinfl",
+            "SuctHead": "suction",
+            "Conductiv": "conduct",
+            "InitDef": "initdef",
+            "CurveNum": "curveno",
             "Annotation": "annotation",
+        },
+    },
+    {
+        "table_name": "inp_subcatchment",
+        "section": "SUBAREAS",
+        "mapper": {
+            "Subcatchment": "subc_id",
             "N_Imperv": "nimp",
             "N_Perv": "nperv",
             "S_Imperv": "simp",
@@ -54,16 +89,6 @@ _tables = (
             "PctZero": "zero",
             "RouteTo": "routeto",
             "PctRouted": "rted",
-            "CurveNum": "curveno",
-            "Conductiv": "conduct",
-            "DryTime": "drytime",
-            "InfMethod": "method",
-            "SuctHead": "suction",
-            "InitDef": "initdef",
-            "MaxRate": "maxrate",
-            "MinRate": "minrate",
-            "Decay": "decay",
-            "MaxInf": "maxinfl",
         },
     },
     {
@@ -223,6 +248,100 @@ _tables = (
             "StationID": "sta",
             "RainUnits": "units",
             "Annotation": "annotation",
+        },
+    },
+    {
+        "table_name": "cat_curve",
+        "section": "CURVES",
+        "mapper": {
+            "Name": "idval",
+            #"Type": 
+            "Depth": "xcoord",
+            "Area": "ycoord",
+            # "Annotation": 
+        },
+    },
+    {
+        "table_name": "cat_timeseries_value",
+        "section": "TIMESERIES",
+        "mapper": {
+            "Name": "idval",
+            "Date": "date",
+            "Time": "time",
+            "Value": "value",
+            # "File_Name":
+        },
+    },
+    {
+        "table_name": "cat_pattern_value",
+        "section": "PATTERNS",
+        "mapper": {
+            "Name": "idval",
+            "Time_Stamp": "pattern_type",
+            "Factor": "value",
+        },
+    },
+    {
+        "table_name": "cat_landuses",
+        "section": "LANDUSES",
+        "mapper": {
+            "Name": "idval",
+            "SweepingInterval": "sweepint",
+            "SweepingFractionAvailable": "availab",
+            # "LastSwept":
+            # "Pollutant":
+            # "BuildupFunction":
+            # "BuildupMax":
+            # "BuildupRateConstant":
+            # "BuildupExponent_SatConst":
+            # "BuilupPerUnit":
+            # "WashoffFunction":
+            # "WashoffCoefficient":
+            # "WashoffExponent":
+            # "WashoffCleaninfEfficiency":
+            # "WashoffBmpEfficiency":
+        },
+    },
+    {
+        "table_name": "inp_dwf",
+        "section": "DWF",
+        "mapper": {
+            "Node": "node_id",
+            #"Constituent":
+            "Average_Value": "avg_value",
+            "Time_Pattern1": "pat1",
+            "Time_Pattern2": "pat2",
+            "Time_Pattern3": "pat3",
+            "Time_Pattern4": "pat4",
+        },
+    },
+    {
+        "table_name": "cat_transects",
+        "section": "TRANSECTS",
+        "mapper": {
+            "TransectName": "idval",
+            "RoughnessLeftBlank": "text",
+            "RoughnessRightBlank": "text",
+            "RoughnessChannel": "text",
+            "BankStationLeft": "text",
+            "BankStationRight": "text",
+            "ModifierStations": "text",
+            "ModifierElevations": "text",
+            "ModifierMeander": "text",
+        },
+    },
+    {
+        "table_name": "inp_inflow",
+        "section": "INFLOWS",
+        "mapper": {
+            "Name": "node_id",
+            "Constituent": "format",
+            "Baseline": "base",
+            "Baseline_Pattern": "pattern_id",
+            "Time_Series": "timeser_id",
+            "Scale_Factor": "sfactor",
+            # "Type":
+            "Units_Factor": "mfactor",
         },
     },
 )
