@@ -1024,9 +1024,9 @@ def check_parameters(field):
     if 'widgetname' not in field:
         msg += "widgetname not found. "
 
-    if field.get('widgettype') not in ('text', 'linetext', 'combo', 'check', 'datetime', 'spinbox', 'button'):
+    if field.get('widgettype') not in ('text', 'linetext', 'combo', 'check', 'datetime', 'spinbox', 'button', 'tab'):
         msg += "widgettype is wrongly configured. Needs to be in " \
-               "('text', 'linetext', 'combo', 'check', 'datetime', 'spinbox', 'button')"
+               "('text', 'linetext', 'combo', 'check', 'datetime', 'spinbox', 'button', 'tab')"
 
     if 'layoutorder' not in field:
         msg += "layoutorder not found. "
@@ -1596,9 +1596,9 @@ def add_combo(field, dialog=None, complet_result=None):
     if 'columnname' in field:
         widget.setProperty('columnname', field['columnname'])
     widget = fill_combo(widget, field)
-    if 'selectedId' in field:
-        tools_qt.set_combo_value(widget, field['selectedId'], 0)
-        widget.setProperty('selectedId', field['selectedId'])
+    if 'value' in field:
+        tools_qt.set_combo_value(widget, field['value'], 0)
+        widget.setProperty('selectedId', field['value'])
     else:
         widget.setProperty('selectedId', None)
     if 'iseditable' in field:
@@ -1608,7 +1608,6 @@ def add_combo(field, dialog=None, complet_result=None):
 
     if 'widgetfunction' in field and field['widgetfunction']:
         widgetfunction = field['widgetfunction']
-        functions = None
         if isinstance(widgetfunction, list):
             functions = widgetfunction
         else:
@@ -1643,18 +1642,24 @@ def add_combo(field, dialog=None, complet_result=None):
 
 
 def fill_combo(widget, field):
+
     # Generate list of items to add into combo
 
     widget.blockSignals(True)
     widget.clear()
     widget.blockSignals(False)
     combolist = []
-    comboIds = field.get('comboIds')
-    comboNames = field.get('comboNames')
+    comboIds = []
+    comboNames = []
+
     if 'comboIds' in field and 'comboNames' in field:
         if tools_os.set_boolean(field.get('isNullValue'), False):
             combolist.append(['', ''])
-        for i in range(0, len(field['comboIds'])):
+        for record in field['comboIds'].split(','):
+            comboIds.append(record)
+        for record in field['comboNames'].split(','):
+            comboNames.append(record)
+        for i in range(0, len(comboIds)):
             elem = [comboIds[i], comboNames[i]]
             combolist.append(elem)
     else:

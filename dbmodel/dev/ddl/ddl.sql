@@ -11,9 +11,28 @@ This version of Giswater is provided by Giswater Association
 -----------------
 
 CREATE TABLE config_param_user (
-    parameter_id text primary key,  
+    parameter text primary key,  
     value text CHECK (typeof(value)='text' OR value=NULL),
     isconflictive boolean check (isconflictive in (0, 1) or isconflictive is null)
+);
+
+create table config_csv (
+    id integer primary key,
+    alias text check (typeof(alias) = 'text' or alias = null),
+    descript text check (typeof(descript)='text' or descript = null),
+    functionname text check (typeof(functionname)='text' or functionname=null),
+    active boolean check (typeof(active) in (0, 1, null)),
+    orderby integer check (typeof(orderby) = 'integer' or orderby = null),
+    addparam text check (typeof(addparam) = 'text' or addparam=null)
+);
+
+create table config_typevalue (
+    typevalue text check (typeof(typevalue) = 'text' or typevalue = null),
+    id text check (typeof(id) = 'text' or id = null),
+    idval text check (typeof(idval) = 'text' or idval = null),
+    descript text check (typeof(descript) = 'text' or descript = null),
+    addparam text check (typeof(addparam) = 'text' or addparam = null)
+
 );
 
 create table sector (
@@ -58,15 +77,13 @@ CREATE TABLE cat_landuses (
 	id integer primary key,
 	idval text unique check (typeof(idval)='text') NOT NULL,
 	sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-	scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text check (typeof(descript)='text' or typeof(descript)=null),
 	manning real check (typeof(manning)='real' or typeof(manning)=null),
     sweepint real check (typeof(sweepint) = 'real' or sweepint = null),
     availab real check (typeof(availab) = 'real' or availab = null),
     lastsweep real check (typeof(lastsweep) = 'real' or lastsweep = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade
 );
 
 CREATE TABLE cat_grate (
@@ -82,11 +99,12 @@ CREATE TABLE cat_grate (
 CREATE TABLE cat_arc (
     id integer primary key,
     idval text unique check (typeof(idval) = 'text') NOT NULL,
-    shape text check (typeof(shape) = 'text' and shape in ('ARCH', 'BASKETHANDLE', 'CIRCULAR', 'CUSTOM', 'DUMMY', 'EGG', 'FILLED_CIRCULAR', 'FORCE_MAIN', 'HORIZ_ELLIPSE', 'HORSESHOE', 'IRREGULAR', 'MODBASKETHANDLE', 'PARABOLIC', 'POWER', 'RECT_CLOSED', 'RECT_OPEN', 'RECT_ROUND', 'RECT_TRIANGULAR', 'SEMICIRCULAR', 'SEMIELLIPTICAL', 'TRAPEZOIDAL', 'TRIANGULAR', 'VERT_ELLIPSE', 'VIRTUAL')),
+    shape text check (typeof(shape) = 'text' and shape in ('ARCH', 'BASKETHANDLE', 'CIRCULAR', 'CUSTOM', 'DUMMY', 'EGG', 'FILLED_CIRCULAR', 'FORCE_MAIN', 'HORIZ_ELLIPSE', 'HORSESHOE', 'IRREGULAR', 'MODBASKETHANDLE', 'PARABOLIC', 'POWER', 'RECT_CLOSED', 'RECT_OPEN', 'RECT_ROUND', 'RECT_TRIANGULAR', 'SEMICIRCULAR', 'SEMIELLIPTICAL', 'TRAPEZOIDAL', 'TRIANGULAR', 'VERT_ELLIPSE', 'VIRTUAL')) NOT NULL,
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
     geom2 real check (typeof(geom2) = 'real' or geom2 = null),
     geom3 real check (typeof(geom3) = 'real' or geom3 = null),
     geom4 real check (typeof(geom4) = 'real' or geom4 = null),
+    curve_id text check (typeof(curve_id) = 'text' or curve_id=null),
     descript text check (typeof(descript) = 'text' or descript = null),
     z1 real check (typeof(z1) = 'real' or z1 = null),
     z2 real check (typeof(z2) = 'real' or z2 = null),
@@ -98,52 +116,58 @@ CREATE TABLE cat_arc (
     active boolean check (typeof(active) in (0, 1, null)) default 1
 );
 
+CREATE TABLE cat_transects (
+    id integer primary key,
+    idval text unique check (typeof(idval) = 'text') NOT NULL,
+    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
+    "text" text check (typeof("text" = 'text') or "text" = null),
+    active boolean CHECK (typeof(active) IN (0,1,NULL))
+);
+
+
 CREATE TABLE cat_curve (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
     curve_type text check (typeof(curve_type) in ('text', null) and curve_type in ('CONTROL', 'DIVERSION', 'PUMP1', 'PUMP2', 'PUMP3', 'PUMP4', 'RATING', 'SHAPE', 'STORAGE', 'TIDAL')),
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text check (typeof(descript)='text' or typeof(descript)=null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade
 );
 
 CREATE TABLE cat_curve_value (
     id integer primary key,
-    idval text CHECK (typeof(idval) = 'text' or idval = null),
+    idval text check (typeof(idval)='text') NOT NULL,
     xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
     ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
-    FOREIGN KEY (idval) references cat_curve (idval)
+    FOREIGN KEY (idval) references cat_curve (idval) on update cascade
 );
 
 CREATE TABLE cat_timeseries (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     timser_type text check (typeof(timser_type) in ('text', null) and timser_type in ('EVAPORATION', 'INFLOW_HYDROGRAPH', 'INFLOW_POLLUTOGRAPH', 'ORIFICE', 'OTHER', 'RAINFALL', 'TEMPERATURE')),
     timeseries_type text CHECK (typeof(timeseries_type) in ('text', null) and timeseries_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
+    file text CHECK (typeof(file) = 'text' or file = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade
 );
 
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
-    idval text  check (typeof(idval)='text' OR  idval = null),
+    idval text check (typeof(idval)='text') NOT NULL,
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
-    file text CHECK (typeof(file) = 'text' or file = null)
-    --FOREIGN KEY (idval) references cat_timeseries(idval)
+    FOREIGN KEY (idval) references cat_timeseries(idval) on update cascade
 );
 
 CREATE TABLE cat_pattern (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
+    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     pattern_type text check (typeof(pattern_type) in ('text', null) and pattern_type in ('DAILY', 'HOURLY', 'MONTHLY', 'WEEKEND')),
     descript text check (typeof(descript) = 'text' or descript = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT 1
@@ -151,12 +175,19 @@ CREATE TABLE cat_pattern (
 
 CREATE TABLE cat_pattern_value (
     id integer primary key,
-    idval text unique check (typeof(idval)='text') NOT NULL,
-    time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-    value real CHECK (typeof(value)='real' OR value=NULL)
+    idval text check (typeof(idval)='text') NOT NULL,
+    pattern_type text check (typeof(pattern_type) in ('text', null) and pattern_type in ('DAILY', 'HOURLY', 'MONTHLY', 'WEEKEND')),
+    timestep datetime CHECK (typeof(timestep)='datetime' OR timestep=NULL),
+    value real CHECK (typeof(value)='real' OR value=NULL),
+    FOREIGN KEY (idval) references cat_pattern(idval) on update cascade
 );
 
-
+CREATE TABLE cat_controls (
+    id integer primary key,
+    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
+    "text" text check (typeof("text" = 'text') or "text" = null),
+    active boolean CHECK (typeof(active) IN (0,1,NULL))
+);
 -- -----------
 -- GEOM TABLES
 -- -----------
@@ -167,13 +198,13 @@ CREATE TABLE ground (
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    cellsize real CHECK (typeof(cellsize)='real' OR cellsize=NULL),
+    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
     structured boolean CHECK (typeof(structured) IN (0,1,NULL)),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade
 );
 
 CREATE TABLE ground_roughness (
@@ -188,9 +219,9 @@ CREATE TABLE ground_roughness (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id),
-    FOREIGN KEY (roughness_id) references ground(fid)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade,
+    FOREIGN KEY (roughness_id) references ground(fid) on update cascade
 );
 
 CREATE TABLE ground_losses (
@@ -200,19 +231,18 @@ CREATE TABLE ground_losses (
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     method_id text check (typeof(method_id) in ('text', null) and method_id in ('LINEAL,', 'SCS', 'SCSC', 'HORTON', 'GREENAMPT', 'NONE')),
-    losslin_aparam real CHECK (typeof(losslin_aparam)='real' OR losslin_aparam=NULL),
-    losslin_bparam real CHECK (typeof(losslin_bparam)='real' OR losslin_bparam=NULL),
-    lossscs_aparam real CHECK (typeof(lossscs_aparam)='real' OR lossscs_aparam=NULL),
-    lossscs_bparam real CHECK (typeof(lossscs_bparam)='real' OR lossscs_bparam=NULL),
-    losshort_aparam real CHECK (typeof(losshort_aparam)='real' OR losshort_aparam=NULL),
-    losshort_bparam real CHECK (typeof(losshort_bparam)='real' OR losshort_bparam=NULL),
-    lossgreen_aparam real CHECK (typeof(lossgreen_aparam)='real' OR lossgreen_aparam=NULL),
-    lossgreen_bparam real CHECK (typeof(lossgreen_bparam)='real' OR lossgreen_bparam=NULL),
+    lin_ia real CHECK (typeof(lin_ia)='real' OR lin_ia=NULL),
+    lin_fi real CHECK (typeof(lin_fi)='real' OR lin_fi=NULL),
+    scs_cn real CHECK (typeof(scs_cn)='real' OR scs_cn=NULL),
+    hort_f0 real CHECK (typeof(hort_f0)='real' OR hort_f0=NULL),
+    hort_fc real CHECK (typeof(hort_fc)='real' OR hort_fc=NULL),
+    ga_suction real CHECK (typeof(ga_suction)='real' OR ga_suction=NULL),
+    ga_porosity real CHECK (typeof(ga_porosity)='real' OR ga_porosity=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade
 );
 
 CREATE TABLE roof (
@@ -221,19 +251,25 @@ CREATE TABLE roof (
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
+    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
+    elev real CHECK (typeof(elev)='real' OR elev = NULL),
     slope real CHECK (typeof(slope)='real' OR slope=NULL),
     width real CHECK (typeof(width)='real' OR width=NULL),
     roughness real CHECK (typeof(roughness)='real' OR roughness=NULL),
+    isconnected integer CHECK (typeof(isconnected) in ('integer', NULL) AND isconnected IN (1, 2, 3)),
     outlet_type text CHECK (typeof(outlet_type)='text' OR outlet_type=NULL),
     outlet_id integer CHECK (typeof(outlet_id)='integer' OR outlet_id=NULL),
+    outlet_vol real CHECK (typeof(outlet_vol) = 'real' OR outlet_vol=NULL),
+    street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
+    infiltr_vol real real CHECK (typeof(infiltr_vol) = 'real' OR infiltr_vol=NULL),
     totalvol real CHECK (typeof(totalvol)='real' OR totalvol=NULL),
     inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
     lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade
 );
 
 CREATE TABLE mesh_tin (
@@ -243,7 +279,7 @@ CREATE TABLE mesh_tin (
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     roughness_id integer CHECK (typeof(roughness_id) in ('integer', not null)),
-    custom_roughness real,
+    custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness = NULL),
     losses_id integer CHECK (typeof(losses_id)='integer' OR losses_id=NULL),
     roof_id integer CHECK (typeof(roof_id)='integer' OR roof_id=NULL),
     vertex_id1 real CHECK (typeof(vertex_id1)='real' OR vertex_id1=NULL),
@@ -257,41 +293,45 @@ CREATE TABLE mesh_tin (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector(fid),
-    FOREIGN KEY (scenario_id) references cat_scenario(id),
-    FOREIGN KEY (roughness_id) references ground_losses(fid)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade,
+    FOREIGN KEY (roughness_id) references ground_losses(fid) on update cascade
 );
 
-CREATE TABLE mesh_edge (
+CREATE TABLE mesh_roof (
     fid integer PRIMARY KEY,
-    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    vertex_id1 integer CHECK (typeof(vertex_id1)='integer' OR vertex_id1=NULL),
-    vertex_id2 integer CHECK (typeof(vertex_id2)='integer' OR vertex_id2=NULL),
+    roughness_id integer CHECK (typeof(roughness_id) in ('integer', not null)),
+    custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness = NULL),
+    losses_id integer CHECK (typeof(losses_id)='integer' OR losses_id=NULL),
+    roof_id integer CHECK (typeof(roof_id)='integer' OR roof_id=NULL),
+    vertex_id1 real CHECK (typeof(vertex_id1)='real' OR vertex_id1=NULL),
+    vertex_id2 real CHECK (typeof(vertex_id2)='real' OR vertex_id2=NULL),
+    vertex_id3 real CHECK (typeof(vertex_id3)='real' OR vertex_id3=NULL),
+    vertex_id4 real CHECK (typeof(vertex_id4)='real' OR vertex_id4=NULL),
+    ini_vx real CHECK (typeof(ini_vx)='real' OR ini_vx=NULL),
+    ini_vy real CHECK (typeof(ini_vy)='real' OR ini_vy=NULL),
+    ini_type real CHECK (typeof(ini_type)='real' OR ini_type=NULL),
+    ini_value real CHECK (typeof(ini_value)='real' OR ini_value=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector(fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario(id) on update cascade,
+    FOREIGN KEY (roughness_id) references ground_losses(fid) on update cascade
 );
-CREATE TABLE mesh_vertex (
+
+CREATE TABLE mesh_anchor_points (
     fid integer PRIMARY KEY,
-    node_id text unique,
-    code text check (typeof(code) = 'text' or code = null),
-    sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
-    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    elevation real CHECK (typeof(elevation)='real' OR elevation=NULL),
-	latitude real CHECK (typeof(latitude)='real' OR latitude=NULL),
-	longitude real CHECK (typeof(longitude)='real' OR longitude=NULL),
-    annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
-    geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    geom geometry
+);
+
+CREATE TABLE mesh_anchor_lines (
+    fid integer PRIMARY KEY,
+    geom geometry
 );
 
 CREATE TABLE link (
@@ -307,8 +347,8 @@ CREATE TABLE link (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 CREATE TABLE gully (
@@ -333,9 +373,9 @@ CREATE TABLE gully (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
-    --FOREIGN KEY (gratecat_id) references cat_grate (idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (gratecat_id) references cat_grate (idval) on update cascade
 );
 
 
@@ -345,6 +385,7 @@ CREATE TABLE gully (
 
 CREATE TABLE inp_raingage (
     fid integer PRIMARY KEY,
+    rg_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     sector_id integer CHECK (typeof(sector_id) = 'integer') NOT NULL,
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
@@ -353,7 +394,6 @@ CREATE TABLE inp_raingage (
     form_type text check (typeof(form_type) = 'text' and form_type in ('CUMULATIVE', 'INTENSITY', 'VOLUME')),
     data_source text check (typeof(data_source) in ('text', null) and data_source in ('FILE', 'TIMESERIES')),
     timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL),
-    rg_id text check (typeof(rg_id) = 'text' or rg_id = null),
     intvl text check (typeof(intvl) = 'text' or intvl = null),
     scf real check (typeof(scf) = 'real' or scf = null),
     fname text check (typeof(fname) = 'text' or fname = null),
@@ -362,9 +402,9 @@ CREATE TABLE inp_raingage (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
-    --FOREIGN KEY (timeseries_id) references cat_timeseries (idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (timeseries_id) references cat_timeseries (idval) on update cascade
 );
 
 CREATE TABLE inp_conduit (
@@ -376,10 +416,10 @@ CREATE TABLE inp_conduit (
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
-    shape text check (typeof(shape) = 'text' or shape = null),
+    shape text check (typeof(shape) = 'text' and shape in ('ARCH', 'BASKETHANDLE', 'CIRCULAR', 'CUSTOM', 'DUMMY', 'EGG', 'FILLED_CIRCULAR', 'FORCE_MAIN', 'HORIZ_ELLIPSE', 'HORSESHOE', 'IRREGULAR', 'MODBASKETHANDLE', 'PARABOLIC', 'POWER', 'RECT_CLOSED', 'RECT_OPEN', 'RECT_ROUND', 'RECT_TRIANGULAR', 'SEMICIRCULAR', 'SEMIELLIPTICAL', 'TRAPEZOIDAL', 'TRIANGULAR', 'VERT_ELLIPSE', 'VIRTUAL')) NOT NULL,
     shape_trnsct text check (typeof(shape_trnsct) = 'text' or shape_trnsct = null),
     custom_length real check (typeof(custom_length) = 'real' or custom_length = null),
-    matcat_id text check (typeof(matcat_id) = 'text' or matcat_id = null),
+    arccat_id text check (typeof(arccat_id) = 'text' or arccat_id = null),
     custom_roughness real check (typeof(custom_roughness) = 'real' or custom_roughness = null),
     z1 real check (typeof(z1) = 'real' or z1 = null),
     custom_z1 real check (typeof(custom_z1) = 'real' or custom_z1 = null),
@@ -401,9 +441,9 @@ CREATE TABLE inp_conduit (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (matcat_id) references cat_arc(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (arccat_id) references cat_arc(idval) on update cascade
 );
 
 CREATE TABLE inp_outlet (
@@ -424,9 +464,9 @@ CREATE TABLE inp_outlet (
     annotation real check (typeof(annotation)='real' or annotation= null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve (idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve (idval) on update cascade
 );
 
 CREATE TABLE inp_subcatchment ( 
@@ -464,9 +504,9 @@ CREATE TABLE inp_subcatchment (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
-    --FOREIGN KEY (rg_id) references inp_raingage (rg_id),
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (rg_id) references inp_raingage (rg_id) on update cascade
     --FOREIGN KEY (outlet_id) references inp_outlet (arc_id)
 );
 
@@ -480,7 +520,7 @@ CREATE TABLE inp_orifice (
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
     ori_type text check (typeof(ori_type) in ('text', null) and ori_type in ('BOTTOM', 'SIDE')),
-    shape text check (typeof(shape) in ('text', null) and shape in ('CIRCULAR', 'RECT_CLOSED')),
+    shape text check (typeof(shape) in ('text', null) and shape in ('CIRCULAR', 'RECT_CLOSED')) NOT NULL,
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
     geom2 real check (typeof(geom2) = 'real' or geom2 = null)  DEFAULT 0.00,
     offsetval real check (typeof(offsetval) = 'real' or offsetval = null),
@@ -490,8 +530,8 @@ CREATE TABLE inp_orifice (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 CREATE TABLE inp_weir (
@@ -509,6 +549,7 @@ CREATE TABLE inp_weir (
     geom2 real check (typeof(geom2) = 'real' or geom2 = null)  DEFAULT 0.00,
     geom3 real check (typeof(geom3) = 'real' or geom3 = null)  DEFAULT 0.00,
     geom4 real check (typeof(geom4) = 'real' or geom4 = null),
+    shape text check (typeof(shape) in ('text', null) and shape in ('CIRCULAR', 'RECT_CLOSED')) NOT NULL,
     elev real check (typeof(elev) = 'real' or elev = null),
     custom_elev real check (typeof(custom_elev) = 'real' or custom_elev = null),
     cd2 real check (typeof(cd2) = 'real' or cd2 = null),
@@ -521,9 +562,9 @@ CREATE TABLE inp_weir (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
 );
 
 CREATE TABLE inp_pump (
@@ -542,9 +583,9 @@ CREATE TABLE inp_pump (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
 );
 
 CREATE TABLE inp_outfall (
@@ -565,9 +606,9 @@ CREATE TABLE inp_outfall (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
     --FOREIGN KEY (timeser_id) references cat_timeseries(idval)
 );
 
@@ -593,9 +634,9 @@ CREATE TABLE inp_divider (
     annotation real check (typeof(annotation) = 'real' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
 );
 
 CREATE TABLE inp_storage (
@@ -623,9 +664,9 @@ CREATE TABLE inp_storage (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id),
-    FOREIGN KEY (curve_id) references cat_curve(idval)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade,
+    FOREIGN KEY (curve_id) references cat_curve(idval) on update cascade
 );
 
 CREATE TABLE inp_junction (
@@ -645,8 +686,8 @@ CREATE TABLE inp_junction (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (sector_id) references sector (fid),
-    FOREIGN KEY (scenario_id) references cat_scenario (id)
+    FOREIGN KEY (sector_id) references sector (fid) on update cascade,
+    FOREIGN KEY (scenario_id) references cat_scenario (id) on update cascade
 );
 
 create table inp_files (
@@ -661,47 +702,6 @@ create table inp_files (
     active boolean check (typeof(active) in (0, 1, null))
 );
 
-create table inp_inflows_poll (
-    id integer primary key,
-    idval text unique,
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
-    timeser_id integer check (typeof(timeser_id) = 'integer' or timeser_id = null),--es el fid de la cat_timeseries
-    inflow_type text check (typeof(inflow_type) in ('text', null) and inflow_type in ('CONCEN', 'MASS')),
-    form_type text check (typeof(form_type) = 'text' and form_type in ('CUMULATIVE', 'INTENSITY', 'VOLUME')),
-    --mfactor
-    --sfactor
-    --base
-    pattern_id integer check (typeof(pattern_id) = 'integer' or pattern_id = null)
-);
-
-
-create table inp_lid (
-    id integer primary key,
-    idval text unique,
-    lid_type text check (typeof(lid_type) in ('text', null) and lid_type in ('BC', 'GR', 'IT', 'PP', 'RB', 'RD', 'RG', 'VS')),
-    lid_layer text check (typeof(lid_layer) in ('text', null) and lid_layer in ('DRAIN', 'DRAINMAT', 'PAVEMENT', 'RB', 'SOIL', 'STORAGE', 'SURFACE')),
-    value_2 real check (typeof(value_2) = 'real' or value_2 = null),
-    value_3 real check (typeof(value_3) = 'real' or value_3 = null),
-    value_4 real check (typeof(value_4) = 'real' or value_4 = null),
-    value_5 real check (typeof(value_5) = 'real' or value_5 = null),
-    value_6 real check (typeof(value_6) = 'real' or value_6 = null),
-    value_7 real check (typeof(value_7) = 'real' or value_7 = null),
-    value_8 real check (typeof(value_8) = 'real' or value_8 = null),
-    descript text check (typeof(descript) = 'text' or descript = null),
-    active boolean check (typeof(active) in (0, 1, null))
-);
-
-create table inp_buildup (
-    id integer primary key,
-    idval text unique,
-    landuse_id integer check (typeof(landuse_id) = 'integer' or landuse_id = null),
-    func_type text check (typeof(func_type) in ('text', null) and func_type in ('EXP', 'EXT', 'POW', 'SAT')),
-    c1 real check (typeof(c1) = 'real' or c1 = null),
-    c2 real check (typeof(c2) = 'real' or c2 = null),
-    c3 real check (typeof(c3) = 'real' or c3 = null),
-    perunit text check (typeof(perunit) in ('text', null) and perunit in ('AREA', 'CURBLENGTH'))
-);
-
 create table inp_dwf (
     fid integer primary key,
     node_id text unique,
@@ -709,6 +709,7 @@ create table inp_dwf (
     sector_id integer check (typeof(sector_id) = 'integer') NOT NULL,
     scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
     descript text check (typeof(descript) = 'text' or descript = null),
+    avg_value real check (typeof(avg_value)='real' or avg_value = null),
     pat1 text check (typeof(pat1) = 'text' or pat1 = null),
     pat2 text check (typeof(pat1) = 'text' or pat2 = null),
     pat3 text check (typeof(pat1) = 'text' or pat3 = null),
@@ -716,10 +717,39 @@ create table inp_dwf (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
-    FOREIGN KEY (pat1) REFERENCES cat_pattern(idval),
-    FOREIGN KEY (pat2) REFERENCES cat_pattern(idval),
-    FOREIGN KEY (pat3) REFERENCES cat_pattern(idval),
-    FOREIGN KEY (pat4) REFERENCES cat_pattern(idval)
+    FOREIGN KEY (pat1) REFERENCES cat_pattern(idval) on update cascade,
+    FOREIGN KEY (pat2) REFERENCES cat_pattern(idval) on update cascade,
+    FOREIGN KEY (pat3) REFERENCES cat_pattern(idval) on update cascade,
+    FOREIGN KEY (pat4) REFERENCES cat_pattern(idval) on update cascade
+);
+
+create table inp_inflow (
+    fid integer primary key,
+    node_id text unique,
+    code text check (typeof(code) = 'text' or code = null),
+    sector_id integer check (typeof(sector_id) = 'integer') NOT NULL,
+    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
+    descript text check (typeof(descript) = 'text' or descript = null),
+    timeser_id text check (typeof(timeser_id) = 'text' or timeser_id = null),
+    format text check (typeof(format) = 'text' or format in ('POLLUTANT', 'FLOW', null)),
+    mfactor real check (typeof(mfactor) = 'real' or mfactor=null) default 1,
+    sfactor real check (typeof(sfactor)='real' or sfactor=null) default 1,
+    base real check (typeof(base)='real' or base=null) default 0,
+    pattern_id text check (typeof(pattern_id) = 'text' or pattern_id=null),
+    geom geometry,
+    FOREIGN KEY (pattern_id) REFERENCES cat_pattern(idval) on update cascade
+);
+
+create table boundary_conditions (
+    fid integer primary key,
+    code text check (typeof(code) = 'text' or code = null),
+    sector_id integer check (typeof(sector_id) = 'integer') NOT NULL,
+    scenario_id integer CHECK (typeof(scenario_id)='integer') NOT NULL,
+    descript text check (typeof(descript) = 'text' or descript = null),
+    tin_id text check (typeof(tin_id) = 'text' or tin_id=null),
+    edge_id text check (typeof(edge_id) = 'text' or edge_id=null),
+    boundary_type text check (typeof(boundary_type) = 'text' or boundary_type=null),
+    geom geometry
 );
 
 
@@ -1217,21 +1247,21 @@ CREATE TABLE selector_rpt_main_tstep (
 -- ------------
 -- VI_IMPORT_INP
 -- -----------
-create view if not exists vi_title as select parameter_id, value from config_param_user where parameter_id like 'project_%';
+create view if not exists vi_title as select parameter, value from config_param_user where parameter like 'project_%';
 create view if not exists vi_files as select fname as Name from inp_files join selector_sector using (sector_id) join selector_scenario using (scenario_id) where active = 1;
 create view if not exists vi_options as select parameter as Option, value as Value from config_param_user where parameter like 'inp_options%';
 
-create view if not exists vi_conduits as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, length as Length, n as Roughness, z1 as InOffset, z2 as OutOffset, q0 as InitFlow, qmax as MaxFlow, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, culvert as Culvert, shape_transct as Shp_Trnsct, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_subcatchments as select code as Name, rg_id as RainGage, outlet_id as Outlet, area as Area, imperv as Imperv, width as Width, slope as Slope, clength as CurbLen, annotation as Annotation, nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted, curveno as CurveNum, conduct as Conductiv, drytime as DryTime, method as InfMethod, suction as SuctHead, initdef as InitDef, maxrate as MaxRatefrom, minrate as MinRate, decay as Decay, maxinfl as MaxInf from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_outlets as select arc_id as Name, node1 as FromNode, node2 as ToNode, offsetval as InOffset, outlet_type as RateCurve, cd1 as Qcoeff, cd2 as Qexpon, flap as FlapGate, curve_id as CurveName, annotation as Annotation from inp_outlet join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_orifices as select arc_id as Name, node1 as FromNode, node2 as ToNode, ori_type as Type, offsetval as InOffset, cd1 as Qcoeff, flap as FlapGate, close_time as CloseTime, annotation as Annotation, shape as Shape, geom1 as Height, geom2 as Width from inp_orifice join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_weirs as select arc_id as Name, node1 as FromNode, node2 as ToNode, weir_type as Type, offsetval as CrestHight, cd2 as Qcoeff, flap as FlapGate, ec as EndContrac, cd2 as Qcoeff, surcharge as Surcharge, road_width as RoadWidth, road_surf as RoadSurf, curve_id as CoeffCurve, annotation as Annotation, geom1 as Hight, geom3 as Length, geom4 as SideSlope from inp_weir join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_conduits as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, custom_length as Length, custom_roughness as Roughness, z1 as InOffset, z2 as OutOffset, q0 as InitFlow, qmax as MaxFlow, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, culvert as Culvert, shape_trnsct as Shp_Trnsct, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_subcatchments as select subc_id as Name, rg_id as RainGage, outlet_id as Outlet, area as Area, imperv as Imperv, width as Width, slope as Slope, clength as CurbLen, annotation as Annotation, nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted, curveno as CurveNum, conduct as Conductiv, drytime as DryTime, method as InfMethod, suction as SuctHead, initdef as InitDef, maxrate as MaxRatefrom, minrate as MinRate, decay as Decay, maxinfl as MaxInf from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_outlets as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, offsetval as InOffset, outlet_type as RateCurve, cd1 as Qcoeff, cd2 as Qexpon, flap as FlapGate, curve_id as CurveName, annotation as Annotation from inp_outlet join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_orifices as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, ori_type as Type, offsetval as InOffset, cd1 as Qcoeff, flap as FlapGate, close_time as CloseTime, annotation as Annotation, shape as Shape, geom1 as Height, geom2 as Width from inp_orifice join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_weirs as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, weir_type as Type, offsetval as CrestHight, cd2 as Qcoeff, flap as FlapGate, ec as EndContrac, cd2 as Qcoeff, surcharge as Surcharge, road_width as RoadWidth, road_surf as RoadSurf, curve_id as CoeffCurve, annotation as Annotation, geom1 as Hight, geom3 as Length, geom4 as SideSlope from inp_weir join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_pumps as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, curve_id as PumpCurve, state as Status, startup as Startup, shutoff as Shutoff, annotation as Annotation from inp_pump join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_outfall as select node_id as Name, elev as Elevation, outfall_type as Type, stage as FixedStage, curve_id as Curve_TS, gate as FlapGate, routeto as RouteTo, annotation as Annotation from inp_outfall join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_outfalls as select node_id as Name, elev as Elevation, outfall_type as Type, stage as FixedStage, curve_id as Curve_TS, gate as FlapGate, routeto as RouteTo, annotation as Annotation from inp_outfall join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_dividers as select code as Name, elev as Elevation, node_id as DivertLink, divider_type as Type, curve_id as Curve, qmin as WeirMinFlo, qmax as WeirMaxDep, q0 as WeirCoeff, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation from inp_divider join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_storage as select node_id as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, storage_type as Type, curve_id as Curve, a1 as Coeff, a2 as Exponent, a0 as Constant, ysur as SurDepth, fevap as Fevap, psi as Psi, ksat as Ksat, imd as IMD, annotation as Annotation from inp_storage join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_junctions as SELECT node_id as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation from inp_junction join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_raingages as select code as Name, form_type as Format, intvl as Interval, scf as SCF, source as DataSource, timeseries_id as SeriesName, fname as FileName, sta as StationID, units as RainUnits, annotation as Annotation from inp_raingage join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_raingages as select code as Name, form_type as Format, intvl as Interval, scf as SCF, data_source as DataSource, timeseries_id as SeriesName, fname as FileName, sta as StationID, units as RainUnits, annotation as Annotation from inp_raingage join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 
 create view if not exists vi_curves as select c.idval as Name, c.curve_type, cv.xcoord as Depth, cv.ycoord as Flow, c.sector_id, c.scenario_id from cat_curve c, cat_curve_value cv join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_timeseries as select idval as Name, "date" as "Date", "time" as "Time", value as Value, file as File_Name from cat_timeseries_value join selector_sector using (sector_id) join selector_scenario using (scenario_id);
@@ -1239,42 +1269,63 @@ create view if not exists vi_patterns as select idval as Name, "time" as "Time",
 create view if not exists vi_landuses as select idval as Name, sweepint as SweepingInterval, availab as SweepingFractionAvailable, lastsweep as LastSwept from cat_landuses join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_subareas as select nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_losses as select arc_id as Name, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_xsections as select shape as Type, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, shape_transct as Shp_Trnsct from inp_conduit join selector_sector using (sector_id) join selector_scenario using (scenario_id);
-create view if not exists vi_dwf as select node_id as Name, 'FLOW' as Constituent, value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_dwf as select node_id as Name, 'FLOW' as Constituent, avg_value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf join selector_sector using (sector_id) join selector_scenario using (scenario_id);
 create view if not exists vi_infiltration as select method as InfMethod, maxrate as MaxRate, minrate as MinRate, decay as Decay, maxinfl as MaxInf, suction as SuctHead, conduct as Conductiv, initdef as InitDef, curveno as CurveNum, annotation as Annotation from inp_subcatchment join selector_sector using (sector_id) join selector_scenario using (scenario_id);
+create view if not exists vi_controls as select "text" from cat_controls join selector_sector using (sector_id) where active != 0;
+create view if not exists vi_transects as select "text" from cat_transects join selector_sector using (sector_id) where active != 0;
+create view if not exists vi_inflows as select node_id, format, timeser_id, mfactor, sfactor, pattern_id from inp_inflow JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id);
+create view if not exists vi_xsections as
+    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, 0 as other3, 0 as other4, barrels as other5, null as other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape ='CUSTOM' union
+    select arc_id as Link, shape as Shape, shape_trnsct as other1, 0 as other2, 0 as other3, 0 as other4, barrels as other5, NULL AS other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape='IRREGULAR'union
+    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, geom3 as other3, geom4 as other4, barrels as other5, culvert as other6 from inp_conduit JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) where shape not in ('CUSTOM', 'IRREGULAR') union
+    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, null as other3, null as other4, null as other5, null as other6 from inp_orifice JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id) union
+    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, null as other3, null as other4, null as other5, null as other6 from inp_weir JOIN selector_sector USING (sector_id) JOIN selector_scenario USING (scenario_id);
+
+CREATE VIEW if not exists v_node as
+    select node_id, sector_id, scenario_id, geom from inp_storage union
+    select node_id, sector_id, scenario_id, geom from inp_outfall union
+    select node_id, sector_id, scenario_id, geom from inp_junction union
+    select node_id, sector_id, scenario_id, geom from inp_divider
+    JOIN selector_sector USING (sector_id)
+    JOIN selector_scenario USING (scenario_id);
+
+CREATE VIEW if not exists v_arc as
+    select arc_id, sector_id, scenario_id, geom from inp_outlet union
+    select arc_id, sector_id, scenario_id, geom from inp_weir union
+    select arc_id, sector_id, scenario_id, geom from inp_orifice union
+    select arc_id, sector_id, scenario_id, geom from inp_pump union
+    select arc_id, sector_id, scenario_id, geom from inp_conduit
+    JOIN selector_sector USING (sector_id)
+    JOIN selector_scenario USING (scenario_id);
 
 
-/*
-Not imported sections:
+create table tables_nogeom (table_name text primary key);
+create table tables_geom (table_name text primary key, isgeom text NOT NULL);
 
-controls
-washoff
-lid_controls
-lid_usage
-adjustments
-map
-symbols
-labels
-coordinates
-vertices
-polygons
 
-rdii
-hydrographs
-transects
+create trigger "trigger_tables_nogeom" after insert on "tables_nogeom"
+BEGIN 
+    select new.table_name from tables_nogeom;
 
-treatment
-coverage
-backdrop
-loadings
-inflows
-buildup
-pollutants
+    INSERT INTO gpkg_ogr_contents (table_name, feature_count) 
+    VALUES(new.table_name, 0);
+    
+    insert into gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id)
+    values (new.table_name, 'attributes', new.table_name, '', 0, 0, 0, 0, 0, 0);
+END;
 
-evaporation
-temperature
-aquifers
-groundwater
-snowpacks
 
-*/
+
+create trigger trigger_tables_geom after insert on "tables_geom"
+BEGIN 
+    select new.table_name, new.isgeom from tables_geom;
+
+    INSERT INTO gpkg_ogr_contents (table_name, feature_count) 
+    VALUES(new.table_name, 0);
+    
+    insert into gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id)
+    values (new.table_name, 'features', new.table_name, '', 0, 0, 0, 0, 0, 0);
+
+    insert into gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES(new.table_name, 'geom', new.isgeom, <SRID_VALUE>, 0, 0);
+
+END;

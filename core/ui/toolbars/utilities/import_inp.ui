@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>355</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Additional Demand Check</string>
+   <string>Import INP</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="11" column="0">

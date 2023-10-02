@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Go2Epa</string>
+   <string>Go2Iber</string>
   </property>
   <layout class="QGridLayout" name="gridLayout" rowstretch="0,0">
    <item row="1" column="0">
@@ -94,8 +94,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>571</width>
-            <height>489</height>
+            <width>563</width>
+            <height>472</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
@@ -418,8 +418,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>571</width>
-            <height>489</height>
+            <width>109</width>
+            <height>109</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">

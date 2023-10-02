@@ -16,10 +16,11 @@ import time
 
 # Vendored Geopandas to use `exclusive` parameter in `sjoin_nearest`
 from ...ext_libs import geopandas as gpd
-from ...ext_libs import pandamesh as pm
+# from ...ext_libs import pandamesh as pm
 
 try:
     import gmsh
+    import pandamesh as pm
 
     # From pandamesh
     def get_vertices():

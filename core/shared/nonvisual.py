@@ -38,12 +38,13 @@ class GwNonVisual:
         self.canvas = global_vars.canvas
         self.dialog = None
         self.manager_dlg = None
-        self.dict_views = {'v_edit_inp_curve': 'curves', 'v_edit_inp_pattern': 'patterns',
-                           'v_edit_inp_timeseries': 'timeseries', 'v_edit_inp_controls': 'controls',
+        self.dict_views = {'cat_curve': 'curves', 'cat_pattern': 'patterns',
+                           'cat_timeseries': 'timeseries',
+                           #'v_edit_inp_controls': 'controls',
                            'inp_lid': 'lids'}
-        self.dict_ids = {'v_edit_inp_curve': 'id', 'v_edit_inp_curve_value': 'curve_id',
-                         'v_edit_inp_pattern': 'pattern_id', 'v_edit_inp_pattern_value': 'pattern_id',
-                         'v_edit_inp_controls': 'id',
+        self.dict_ids = {'cat_curve': 'id', 'v_edit_inp_curve_value': 'curve_id',
+                         'cat_pattern': 'pattern_id', 'cat_timeseries': 'pattern_id',
+                         #'v_edit_inp_controls': 'id',
                          'v_edit_inp_rules': 'id',
                          'v_edit_inp_timeseries': 'id', 'v_edit_inp_timeseries_value': 'timser_id',
                          'inp_lid': 'lidco_id', 'inp_lid_value': 'lidco_id',
@@ -156,7 +157,7 @@ class GwNonVisual:
 
         # Set widget & model properties
         tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=set_edit_triggers,
-                                      sectionResizeMode=0, stretchLastSection=False)
+                                      sectionResizeMode=2, stretchLastSection=True)
         tools_gw.set_tablemodel_config(self.manager_dlg, widget, table_name)
 
         # Sort the table by feature id
