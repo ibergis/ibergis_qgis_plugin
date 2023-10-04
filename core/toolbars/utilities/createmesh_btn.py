@@ -4,6 +4,7 @@ from time import time
 
 from qgis.core import QgsApplication, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QTimer
+from qgis.utils import iface
 
 from ..dialog import GwAction
 from ...threads.createmesh import GwCreateMeshTask
@@ -126,6 +127,7 @@ class GwCreateMeshButton(GwAction):
 
         # Set signals
         dlg.btn_ok.setEnabled(False)
+        dlg.btn_save.setEnabled(False)
         dlg.btn_cancel.clicked.disconnect()
         dlg.btn_cancel.clicked.connect(self.thread.cancel)
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
@@ -149,6 +151,8 @@ class GwCreateMeshButton(GwAction):
 
     def _on_task_completed(self):
         self._on_task_end("Task finished!")
+        self.dlg_mesh.btn_save.clicked.connect(self._save_meshes)
+        self.dlg_mesh.btn_save.setEnabled(True)
 
     def _on_task_end(self, message):
         tools_gw.fill_tab_log(
@@ -173,7 +177,34 @@ class GwCreateMeshButton(GwAction):
         self.dlg_mesh.lbl_timer.setText(text)
 
     def _save_meshes(self):
-        pass
+        self.dlg_mesh.btn_save.setEnabled(False)
+
+        if self.thread.poly_ground_layer is not None:
+            self.feedback.setProgressText("Saving ground mesh...")
+            self.thread.poly_ground_layer.selectAll()
+            iface.copySelectionToClipboard(self.thread.poly_ground_layer)
+            mesh_tin = self._get_layer(self.dao, "mesh_tin")
+            mesh_tin.startEditing()
+            mesh_tin.selectAll()
+            mesh_tin.deleteSelectedFeatures()
+            iface.pasteFromClipboard(mesh_tin)
+            mesh_tin.commitChanges()
+            tools_qgis.remove_layer_from_toc("Ground Mesh", "Mesh Temp Layers")
+
+        if self.thread.poly_roof_layer is not None:
+            self.feedback.setProgressText("Saving roof mesh...")
+            self.thread.poly_roof_layer.selectAll()
+            iface.copySelectionToClipboard(self.thread.poly_roof_layer)
+            mesh_roof = self._get_layer(self.dao, "mesh_roof")
+            mesh_roof.startEditing()
+            mesh_roof.selectAll()
+            mesh_roof.deleteSelectedFeatures()
+            iface.pasteFromClipboard(mesh_roof)
+            mesh_roof.commitChanges()
+            tools_qgis.remove_layer_from_toc("Roof Mesh", "Mesh Temp Layers")
+
+        iface.mapCanvas().refreshAllLayers()
+        self.feedback.setProgressText("Task finished!")
 
     def _set_progress_text(self, txt):
         tools_gw.fill_tab_log(

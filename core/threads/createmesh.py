@@ -14,7 +14,9 @@ class GwCreateMeshTask(GwTask):
     def __init__(self, description, ground_layer=None, roof_layer=None, feedback=None):
         super().__init__(description)
         self.ground_layer = ground_layer
+        self.poly_ground_layer = None
         self.roof_layer = roof_layer
+        self.poly_roof_layer = None
         self.feedback = feedback
 
     def cancel(self):
@@ -32,11 +34,11 @@ class GwCreateMeshTask(GwTask):
 
             if self.ground_layer is not None:
                 self.feedback.setProgressText("Creating ground mesh...")
-                poly_ground_layer = triangulate_custom(
+                self.poly_ground_layer = triangulate_custom(
                     self.ground_layer, feedback=self.feedback
                 )
-                poly_ground_layer.setName("Ground Mesh")
-                layers.append(poly_ground_layer)
+                self.poly_ground_layer.setName("Ground Mesh")
+                layers.append(self.poly_ground_layer)
 
             if self.roof_layer is not None:
                 self.feedback.setProgressText("Creating roof mesh...")
@@ -49,9 +51,9 @@ class GwCreateMeshTask(GwTask):
                     triangulate_custom(feature, feedback=self.feedback)
                     for feature in features
                 )
-                poly_roof_layer = core.join_layers(roof_meshes)
-                poly_roof_layer.setName("Roof Mesh")
-                layers.append(poly_roof_layer)
+                self.poly_roof_layer = core.join_layers(roof_meshes)
+                self.poly_roof_layer.setName("Roof Mesh")
+                layers.append(self.poly_roof_layer)
 
             root = QgsProject.instance().layerTreeRoot()
             group_name = "Mesh Temp Layers"
