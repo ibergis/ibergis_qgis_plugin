@@ -11,6 +11,7 @@ from qgis.PyQt import uic, QtCore
 
 from .dialog import GwDialog
 from .main_window import GwMainWindow
+from ...lib import tools_qgis, tools_qt
 
 # region private functions
 
@@ -77,7 +78,17 @@ class GwImportInpUi(GwDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('create_mesh.ui', 'utilities')
 class GwCreateMeshUi(GwDialog, FORM_CLASS):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.meshes_saved = True
+
+    def reject(self):
+        if self.meshes_saved:
+            super().reject()
+        elif tools_qt.show_question("Do you want to close this dialog before saving? You will lose the generated meshes."):
+            tools_qgis.remove_layer_from_toc("Ground Mesh", "Mesh Temp Layers")
+            tools_qgis.remove_layer_from_toc("Roof Mesh", "Mesh Temp Layers")
+            super().reject()
 # endregion
 
 

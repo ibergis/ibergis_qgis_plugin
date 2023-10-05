@@ -151,8 +151,10 @@ class GwCreateMeshButton(GwAction):
 
     def _on_task_completed(self):
         self._on_task_end("Task finished!")
-        self.dlg_mesh.btn_save.clicked.connect(self._save_meshes)
-        self.dlg_mesh.btn_save.setEnabled(True)
+        dlg = self.dlg_mesh
+        dlg.btn_save.clicked.connect(self._save_meshes)
+        dlg.btn_save.setEnabled(True)
+        dlg.meshes_saved = False
 
     def _on_task_end(self, message):
         tools_gw.fill_tab_log(
@@ -162,7 +164,12 @@ class GwCreateMeshButton(GwAction):
         )
         sb = self.dlg_mesh.txt_infolog.verticalScrollBar()
         sb.setValue(sb.maximum())
+
         self.timer.stop()
+
+        dlg = self.dlg_mesh
+        dlg.btn_cancel.clicked.disconnect()
+        dlg.btn_cancel.clicked.connect(dlg.reject)
 
     def _on_task_terminated(self):
         message = "Task failed. See the Log Messages Panel for more information."
@@ -203,6 +210,7 @@ class GwCreateMeshButton(GwAction):
             mesh_roof.commitChanges()
             tools_qgis.remove_layer_from_toc("Roof Mesh", "Mesh Temp Layers")
 
+        self.dlg_mesh.meshes_saved = True
         iface.mapCanvas().refreshAllLayers()
         self.feedback.setProgressText("Task finished!")
 
