@@ -90,10 +90,8 @@ class GwCreateMeshButton(GwAction):
                 message = "**Please verify these problems in the input layers before proceeding:**\n\n"
                 if "ground_layer" in errors:
                     message += "- " + "\n- ".join(errors["ground_layer"]) + "\n"
-                    dlg.chk_ground.setEnabled(False)
                 if "roof_layer" in errors:
                     message += "- " + "\n- ".join(errors["roof_layer"]) + "\n"
-                    dlg.chk_roof.setEnabled(False)
                 dlg.lbl_warnings.setText(message)
             else:
                 dlg.lbl_warnings.hide()
@@ -113,15 +111,10 @@ class GwCreateMeshButton(GwAction):
         dlg = self.dlg_mesh
         self.feedback = Feedback()
 
-        # Validate inputs
-        if not dlg.chk_ground.isChecked() and not dlg.chk_roof.isChecked():
-            tools_qt.show_info_box("Select at least one mesh to be created.")
-            return
-
         self.thread = GwCreateMeshTask(
             "Import INP file",
-            ground_layer=self.ground_layer if dlg.chk_ground.isChecked() else None,
-            roof_layer=self.roof_layer if dlg.chk_roof.isChecked() else None,
+            ground_layer=self.ground_layer,
+            roof_layer=self.roof_layer,
             feedback=self.feedback,
         )
 

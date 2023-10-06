@@ -32,29 +32,30 @@ class GwCreateMeshTask(GwTask):
 
             layers = []
 
-            if self.ground_layer is not None:
-                self.feedback.setProgressText("Creating ground mesh...")
-                self.poly_ground_layer = triangulate_custom(
-                    self.ground_layer, feedback=self.feedback
-                )
-                self.poly_ground_layer.setName("Ground Mesh")
-                layers.append(self.poly_ground_layer)
+            # Create mesh for ground
+            self.feedback.setProgressText("Creating ground mesh...")
+            self.poly_ground_layer = triangulate_custom(
+                self.ground_layer, feedback=self.feedback
+            )
+            self.poly_ground_layer.setName("Ground Mesh")
+            layers.append(self.poly_ground_layer)
 
-            if self.roof_layer is not None:
-                self.feedback.setProgressText("Creating roof mesh...")
-                crs = self.roof_layer.crs()
-                features = (
-                    core.feature_to_layer(feature, crs)
-                    for feature in self.roof_layer.getFeatures()
-                )
-                roof_meshes = (
-                    triangulate_custom(feature, feedback=self.feedback)
-                    for feature in features
-                )
-                self.poly_roof_layer = core.join_layers(roof_meshes)
-                self.poly_roof_layer.setName("Roof Mesh")
-                layers.append(self.poly_roof_layer)
+            # Create mesh for roofs
+            self.feedback.setProgressText("Creating roof mesh...")
+            crs = self.roof_layer.crs()
+            features = (
+                core.feature_to_layer(feature, crs)
+                for feature in self.roof_layer.getFeatures()
+            )
+            roof_meshes = (
+                triangulate_custom(feature, feedback=self.feedback)
+                for feature in features
+            )
+            self.poly_roof_layer = core.join_layers(roof_meshes)
+            self.poly_roof_layer.setName("Roof Mesh")
+            layers.append(self.poly_roof_layer)
 
+            # Insert temp layers to TOC
             root = QgsProject.instance().layerTreeRoot()
             group_name = "Mesh Temp Layers"
             temp_group = tools_qgis.find_toc_group(root, group_name)
