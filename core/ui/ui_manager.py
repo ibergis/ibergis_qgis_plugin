@@ -7,6 +7,7 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 import os
 
+from qgis.core import QgsProject
 from qgis.PyQt import uic, QtCore
 
 from .dialog import GwDialog
@@ -85,9 +86,10 @@ class GwCreateMeshUi(GwDialog, FORM_CLASS):
     def reject(self):
         if self.meshes_saved:
             super().reject()
-        elif tools_qt.show_question("Do you want to close this dialog before saving? You will lose the generated meshes."):
-            tools_qgis.remove_layer_from_toc("Ground Mesh", "Mesh Temp Layers")
-            tools_qgis.remove_layer_from_toc("Roof Mesh", "Mesh Temp Layers")
+        elif tools_qt.show_question("Do you want to close this dialog before saving? You will lose the generated mesh."):
+            project = QgsProject.instance()
+            for layer in project.mapLayersByName("Mesh Temp Layer"):
+                project.removeMapLayer(layer)
             super().reject()
 # endregion
 

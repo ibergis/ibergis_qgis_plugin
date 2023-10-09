@@ -24,77 +24,57 @@ class GwCreateMeshButton(GwAction):
         self.dao = global_vars.gpkg_dao_data.clone()
         self.dlg_mesh = GwCreateMeshUi()
         dlg = self.dlg_mesh
+        
+        self.ground_layer = self._get_layer(self.dao, "ground")
+        self.roof_layer = self._get_layer(self.dao, "roof")
 
-        # Check for previous results
-        self.temp_meshes = {}
-        root = QgsProject.instance().layerTreeRoot()
-        temp_group = tools_qgis.find_toc_group(root, "Mesh Temp Layers")
-        if temp_group is not None:
-            for layer in temp_group.findLayers():
-                if layer.name() in ["Ground Mesh", "Roof Mesh"]:
-                    self.temp_meshes[layer.name()] = layer
-
-        save_temp_meshes = False
-        if self.temp_meshes:
-            message = (
-                "There are some temporary layers from previous runs of this tool that were not saved."
-                ' Do you want to save them now? (Click "Cancel" to generate new meshes.)'
+        # Validate input layers
+        errors = {}
+        errors_ground_layer = []
+        if not self.ground_layer.isValid():
+            errors_ground_layer.append(
+                "Ground layer is not valid. Check if GPKG file has a 'ground' layer."
             )
-            save_temp_meshes = tools_qt.show_question(message)
-
-        if save_temp_meshes:
-            self._save_meshes()
         else:
-            self.ground_layer = self._get_layer(self.dao, "ground")
-            self.roof_layer = self._get_layer(self.dao, "roof")
-
-            # Validate input layers
-            errors = {}
-            errors_ground_layer = []
-            if not self.ground_layer.isValid():
+            if not all(
+                type(feature["cellsize"]) in [int, float]
+                and feature["cellsize"] > 0
+                for feature in self.ground_layer.getFeatures()
+            ):
                 errors_ground_layer.append(
-                    "Ground layer is not valid. Check if GPKG file has a 'ground' layer."
+                    "There are invalid values in the column 'cellsize' of ground layer. "
+                    "The values of 'cellsize' must be greater than zero."
                 )
-            else:
-                if not all(
-                    type(feature["cellsize"]) in [int, float]
-                    and feature["cellsize"] > 0
-                    for feature in self.ground_layer.getFeatures()
-                ):
-                    errors_ground_layer.append(
-                        "There are invalid values in the column 'cellsize' of ground layer. "
-                        "The values of 'cellsize' must be greater than zero."
-                    )
-            if errors_ground_layer:
-                errors["ground_layer"] = errors_ground_layer
+        if errors_ground_layer:
+            errors["ground_layer"] = errors_ground_layer
 
-            errors_roof_layer = []
-            if not self.roof_layer.isValid():
+        errors_roof_layer = []
+        if not self.roof_layer.isValid():
+            errors_roof_layer.append(
+                "Roof layer is not valid. Check if GPKG file has a 'roof' layer."
+            )
+        else:
+            if not all(
+                type(feature["cellsize"]) in [int, float]
+                and feature["cellsize"] > 0
+                for feature in self.roof_layer.getFeatures()
+            ):
                 errors_roof_layer.append(
-                    "Roof layer is not valid. Check if GPKG file has a 'roof' layer."
+                    "There are invalid values in the column 'cellsize' of roof layer. "
+                    "The values of 'cellsize' must be greater than zero."
                 )
-            else:
-                if not all(
-                    type(feature["cellsize"]) in [int, float]
-                    and feature["cellsize"] > 0
-                    for feature in self.roof_layer.getFeatures()
-                ):
-                    errors_roof_layer.append(
-                        "There are invalid values in the column 'cellsize' of roof layer. "
-                        "The values of 'cellsize' must be greater than zero."
-                    )
-            if errors_roof_layer:
-                errors["roof_layer"] = errors_roof_layer
+        if errors_roof_layer:
+            errors["roof_layer"] = errors_roof_layer
 
-            if errors:
-                message = "**Please verify these problems in the input layers before proceeding:**\n\n"
-                if "ground_layer" in errors:
-                    message += "- " + "\n- ".join(errors["ground_layer"]) + "\n"
-                if "roof_layer" in errors:
-                    message += "- " + "\n- ".join(errors["roof_layer"]) + "\n"
-                dlg.lbl_warnings.setText(message)
-            else:
-                dlg.lbl_warnings.hide()
+        if errors:
+            message = "**Please verify these problems in the input layers before proceeding:**\n\n"
+            if "ground_layer" in errors:
+                message += "- " + "\n- ".join(errors["ground_layer"]) + "\n"
+            if "roof_layer" in errors:
+                message += "- " + "\n- ".join(errors["roof_layer"]) + "\n"
+            dlg.lbl_warnings.setText(message)
+        else:
+            dlg.lbl_warnings.hide()
 
         tools_gw.load_settings(dlg)
         tools_gw.disable_tab_log(dlg)

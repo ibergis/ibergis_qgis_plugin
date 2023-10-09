@@ -36,6 +36,10 @@ class GwCreateMeshTask(GwTask):
         try:
             self.feedback.setProgressText("Starting process!")
 
+            project = QgsProject.instance()
+            for layer in project.mapLayersByName("Mesh Temp Layer"):
+                project.removeMapLayer(layer)
+
             self.dao = global_vars.gpkg_dao_data.clone()
 
             self.mesh = {"triangles": {}, "vertices": {}}
@@ -83,6 +87,7 @@ class GwCreateMeshTask(GwTask):
             self.feedback.setProgressText("Creating temp layer for visualization...")
             temp_layer = QgsVectorLayer("Polygon", "temp", "memory")
             temp_layer.setCrs(self.ground_layer.crs())
+            temp_layer.setName("Mesh Temp Layer")
             provider = temp_layer.dataProvider()
             provider.addAttributes(
                 [
@@ -121,18 +126,8 @@ class GwCreateMeshTask(GwTask):
 
             temp_layer.updateExtents()
 
-
             # Add temp layer to TOC
-            root = QgsProject.instance().layerTreeRoot()
-            group_name = "Mesh Temp Layers"
-            temp_group = tools_qgis.find_toc_group(root, group_name)
-            if temp_group is not None:
-                for layer in temp_group.findLayers():
-                    if layer.name() in ["Ground Mesh", "Roof Mesh"]:
-                        tools_qgis.remove_layer_from_toc(
-                            layer.name(), "Mesh Temp Layers"
-                        )
-            tools_qt.add_layer_to_toc(temp_layer, group_name, create_groups=True)
+            tools_qt.add_layer_to_toc(temp_layer)
 
             # Refresh TOC
             iface.layerTreeView().model().sourceModel().modelReset.emit()
