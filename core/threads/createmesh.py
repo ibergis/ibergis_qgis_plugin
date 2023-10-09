@@ -1,6 +1,14 @@
 import traceback
 
-from qgis.core import QgsProject
+from qgis.core import (
+    QgsFeature,
+    QgsField,
+    QgsGeometry,
+    QgsPointXY,
+    QgsProject,
+    QgsVectorLayer,
+)
+from qgis.PyQt.QtCore import QVariant
 from qgis.utils import iface
 
 from . import createmesh_core as core
@@ -30,17 +38,24 @@ class GwCreateMeshTask(GwTask):
 
             self.dao = global_vars.gpkg_dao_data.clone()
 
-            layers = []
+            self.mesh = {"triangles": {}, "vertices": {}}
 
             # Create mesh for ground
             self.feedback.setProgressText("Creating ground mesh...")
-            self.poly_ground_layer = triangulate_custom(
+            ground_triangles, ground_vertices = triangulate_custom(
                 self.ground_layer, feedback=self.feedback
             )
-            self.poly_ground_layer.setName("Ground Mesh")
-            layers.append(self.poly_ground_layer)
+            for i, triangle in enumerate(ground_triangles, start=1):
+                self.mesh["triangles"][i] = {
+                    "vertices_ids": [triangle[v] + 1 for v in (0, 1, 2, 0)]
+                }
+                next_triangle_id = i + 1
 
-            # Create mesh for roofs
+            for i, vertice in enumerate(ground_vertices, start=1):
+                self.mesh["vertices"][i] = {"coordinates": (vertice[0], vertice[1])}
+                next_vertice_id = i + 1
+
+            # Add roofs to mesh
             self.feedback.setProgressText("Creating roof mesh...")
             crs = self.roof_layer.crs()
             features = (
@@ -51,11 +66,63 @@ class GwCreateMeshTask(GwTask):
                 triangulate_custom(feature, feedback=self.feedback)
                 for feature in features
             )
-            self.poly_roof_layer = core.join_layers(roof_meshes)
-            self.poly_roof_layer.setName("Roof Mesh")
-            layers.append(self.poly_roof_layer)
+            for roof_triangles, roof_vertices in roof_meshes:
+                for i, triangle in enumerate(roof_triangles, start=next_triangle_id):
+                    self.mesh["triangles"][i] = {
+                        "vertices_ids": [
+                            triangle[v] + next_vertice_id for v in (0, 1, 2, 0)
+                        ]
+                    }
+                    next_triangle_id = i + 1
 
-            # Insert temp layers to TOC
+                for i, vertice in enumerate(roof_vertices, start=next_vertice_id):
+                    self.mesh["vertices"][i] = {"coordinates": (vertice[0], vertice[1])}
+                    next_vertice_id = i + 1
+
+            # Create temp layer
+            self.feedback.setProgressText("Creating temp layer for visualization...")
+            temp_layer = QgsVectorLayer("Polygon", "temp", "memory")
+            temp_layer.setCrs(self.ground_layer.crs())
+            provider = temp_layer.dataProvider()
+            provider.addAttributes(
+                [
+                    QgsField("fid", QVariant.Int),
+                    QgsField("vertex_id1", QVariant.Int),
+                    QgsField("vertex_id2", QVariant.Int),
+                    QgsField("vertex_id3", QVariant.Int),
+                    QgsField("vertex_id4", QVariant.Int),
+                ]
+            )
+            temp_layer.updateFields()
+            for i, tri in self.mesh["triangles"].items():
+                if self.feedback.isCanceled():
+                    return {}
+                feature = QgsFeature()
+                feature.setGeometry(
+                    QgsGeometry.fromPolygonXY(
+                        [
+                            [
+                                QgsPointXY(*self.mesh["vertices"][vert]["coordinates"])
+                                for vert in tri["vertices_ids"]
+                            ]
+                        ]
+                    )
+                )
+                feature.setAttributes(
+                    [
+                        i,
+                        int(tri["vertices_ids"][0]),
+                        int(tri["vertices_ids"][1]),
+                        int(tri["vertices_ids"][2]),
+                        int(tri["vertices_ids"][0]),
+                    ]
+                )
+                provider.addFeature(feature)
+
+            temp_layer.updateExtents()
+
+
+            # Add temp layer to TOC
             root = QgsProject.instance().layerTreeRoot()
             group_name = "Mesh Temp Layers"
             temp_group = tools_qgis.find_toc_group(root, group_name)
@@ -65,8 +132,7 @@ class GwCreateMeshTask(GwTask):
                         tools_qgis.remove_layer_from_toc(
                             layer.name(), "Mesh Temp Layers"
                         )
-            for layer in layers:
-                tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+            tools_qt.add_layer_to_toc(temp_layer, group_name, create_groups=True)
 
             # Refresh TOC
             iface.layerTreeView().model().sourceModel().modelReset.emit()

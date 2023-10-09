@@ -317,55 +317,7 @@ try:
         vertices = get_vertices()
         triangles = get_faces()
 
-        print("Done :)")
-        # gmsh.fltk.run()
-
-        start = time.time()
-        print("Creating temp layer... ", end="")
-        poly_layer = QgsVectorLayer("Polygon", "temp", "memory")
-        poly_layer.setCrs(source_layer.crs())
-        provider = poly_layer.dataProvider()
-        provider.addAttributes(
-            [
-                QgsField("fid", QVariant.Int),
-                QgsField("sector_id", QVariant.Int),
-                QgsField("scenario_id", QVariant.Int),
-                QgsField("vertex_id1", QVariant.Int),
-                QgsField("vertex_id2", QVariant.Int),
-                QgsField("vertex_id3", QVariant.Int),
-                QgsField("vertex_id4", QVariant.Int),
-            ]
-        )
-        poly_layer.updateFields()
-        for i, tri in enumerate(triangles):
-            if feedback.isCanceled():
-                return {}
-            feature = QgsFeature()
-            feature.setGeometry(
-                QgsGeometry.fromPolygonXY(
-                    [[QgsPointXY(vertices[vert][0], vertices[vert][1]) for vert in tri]]
-                )
-            )
-            feature.setAttributes(
-                [
-                    i + 1,
-                    1,
-                    1,
-                    int(tri[0]) + 1,
-                    int(tri[1]) + 1,
-                    int(tri[2]) + 1,
-                    int(tri[0]) + 1,
-                ]
-            )
-            provider.addFeature(feature)
-
-        # for f in layer.getFeatures():
-        #    print("Feature:", f.id(), f.attributes(), f.geometry())
-        poly_layer.updateExtents()
-
-        print(f"Done! {time.time() - start}s")
-
-        return poly_layer
+        return triangles, vertices
 
 except ImportError:
 
