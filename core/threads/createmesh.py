@@ -1,11 +1,14 @@
 import traceback
 
 from qgis.core import (
+    QgsCategorizedSymbolRenderer,
     QgsFeature,
     QgsField,
+    QgsFillSymbol,
     QgsGeometry,
     QgsPointXY,
     QgsProject,
+    QgsRendererCategory,
     QgsVectorLayer,
 )
 from qgis.PyQt.QtCore import QVariant
@@ -51,7 +54,8 @@ class GwCreateMeshTask(GwTask):
             )
             for i, triangle in enumerate(ground_triangles, start=1):
                 self.mesh["triangles"][i] = {
-                    "vertices_ids": [triangle[v] + 1 for v in (0, 1, 2, 0)]
+                    "category": "ground",
+                    "vertices_ids": [triangle[v] + 1 for v in (0, 1, 2, 0)],
                 }
                 next_triangle_id = i + 1
 
@@ -73,9 +77,10 @@ class GwCreateMeshTask(GwTask):
             for roof_triangles, roof_vertices in roof_meshes:
                 for i, triangle in enumerate(roof_triangles, start=next_triangle_id):
                     self.mesh["triangles"][i] = {
+                        "category": "roof",
                         "vertices_ids": [
                             triangle[v] + next_vertice_id for v in (0, 1, 2, 0)
-                        ]
+                        ],
                     }
                     next_triangle_id = i + 1
 
@@ -92,6 +97,7 @@ class GwCreateMeshTask(GwTask):
             provider.addAttributes(
                 [
                     QgsField("fid", QVariant.Int),
+                    QgsField("category", QVariant.String),
                     QgsField("vertex_id1", QVariant.Int),
                     QgsField("vertex_id2", QVariant.Int),
                     QgsField("vertex_id3", QVariant.Int),
@@ -116,6 +122,7 @@ class GwCreateMeshTask(GwTask):
                 feature.setAttributes(
                     [
                         i,
+                        tri["category"],
                         int(tri["vertices_ids"][0]),
                         int(tri["vertices_ids"][1]),
                         int(tri["vertices_ids"][2]),
@@ -125,6 +132,19 @@ class GwCreateMeshTask(GwTask):
                 provider.addFeature(feature)
 
             temp_layer.updateExtents()
+
+            # Set the style of the layer
+            renderer = QgsCategorizedSymbolRenderer()
+            ground_category = QgsRendererCategory(
+                "ground", QgsFillSymbol.createSimple({"color": "a6cee3"}), "Ground"
+            )
+            roof_category = QgsRendererCategory(
+                "roof", QgsFillSymbol.createSimple({"color": "fb9a99"}), "Roofs"
+            )
+            renderer = QgsCategorizedSymbolRenderer(
+                "category", [ground_category, roof_category]
+            )
+            temp_layer.setRenderer(renderer)
 
             # Add temp layer to TOC
             tools_qt.add_layer_to_toc(temp_layer)
