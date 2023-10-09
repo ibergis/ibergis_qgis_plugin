@@ -39,6 +39,7 @@ class GwCreateMeshTask(GwTask):
         try:
             self.feedback.setProgressText("Starting process!")
 
+            # Remove previous temp layers
             project = QgsProject.instance()
             for layer in project.mapLayersByName("Mesh Temp Layer"):
                 project.removeMapLayer(layer)
@@ -55,7 +56,7 @@ class GwCreateMeshTask(GwTask):
             for i, triangle in enumerate(ground_triangles, start=1):
                 self.mesh["triangles"][i] = {
                     "category": "ground",
-                    "vertices_ids": [triangle[v] + 1 for v in (0, 1, 2, 0)],
+                    "vertices_ids": [int(triangle[v] + 1) for v in (0, 1, 2, 0)],
                 }
                 next_triangle_id = i + 1
 
@@ -79,7 +80,7 @@ class GwCreateMeshTask(GwTask):
                     self.mesh["triangles"][i] = {
                         "category": "roof",
                         "vertices_ids": [
-                            triangle[v] + next_vertice_id for v in (0, 1, 2, 0)
+                            int(triangle[v] + next_vertice_id) for v in (0, 1, 2, 0)
                         ],
                     }
                     next_triangle_id = i + 1

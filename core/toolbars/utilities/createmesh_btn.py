@@ -1,5 +1,6 @@
 import datetime
 from functools import partial
+from pathlib import Path
 from time import time
 
 from qgis.core import QgsApplication, QgsProject, QgsVectorLayer
@@ -24,7 +25,7 @@ class GwCreateMeshButton(GwAction):
         self.dao = global_vars.gpkg_dao_data.clone()
         self.dlg_mesh = GwCreateMeshUi()
         dlg = self.dlg_mesh
-        
+
         self.ground_layer = self._get_layer(self.dao, "ground")
         self.roof_layer = self._get_layer(self.dao, "roof")
 
@@ -37,8 +38,7 @@ class GwCreateMeshButton(GwAction):
             )
         else:
             if not all(
-                type(feature["cellsize"]) in [int, float]
-                and feature["cellsize"] > 0
+                type(feature["cellsize"]) in [int, float] and feature["cellsize"] > 0
                 for feature in self.ground_layer.getFeatures()
             ):
                 errors_ground_layer.append(
@@ -55,8 +55,7 @@ class GwCreateMeshButton(GwAction):
             )
         else:
             if not all(
-                type(feature["cellsize"]) in [int, float]
-                and feature["cellsize"] > 0
+                type(feature["cellsize"]) in [int, float] and feature["cellsize"] > 0
                 for feature in self.roof_layer.getFeatures()
             ):
                 errors_roof_layer.append(
@@ -125,7 +124,7 @@ class GwCreateMeshButton(GwAction):
     def _on_task_completed(self):
         self._on_task_end("Task finished!")
         dlg = self.dlg_mesh
-        dlg.btn_save.clicked.connect(self._save_meshes)
+        dlg.btn_save.clicked.connect(self._save_mesh)
         dlg.btn_save.setEnabled(True)
         dlg.meshes_saved = False
 
@@ -156,35 +155,34 @@ class GwCreateMeshButton(GwAction):
         text = str(datetime.timedelta(seconds=round(elapsed_time)))
         self.dlg_mesh.lbl_timer.setText(text)
 
-    def _save_meshes(self):
+    def _save_mesh(self):
         self.dlg_mesh.btn_save.setEnabled(False)
 
-        if self.thread.poly_ground_layer is not None:
-            self.feedback.setProgressText("Saving ground mesh...")
-            self.thread.poly_ground_layer.selectAll()
-            iface.copySelectionToClipboard(self.thread.poly_ground_layer)
-            mesh_tin = self._get_layer(self.dao, "mesh_tin")
-            mesh_tin.startEditing()
-            mesh_tin.selectAll()
-            mesh_tin.deleteSelectedFeatures()
-            iface.pasteFromClipboard(mesh_tin)
-            mesh_tin.commitChanges()
-            tools_qgis.remove_layer_from_toc("Ground Mesh", "Mesh Temp Layers")
+        self.feedback.setProgressText("Saving mesh...")
+        file_name = "mesh.dat"
+        project_folder = Path(self.dao.db_filepath).parent
+        file_path = project_folder / file_name
 
-        if self.thread.poly_roof_layer is not None:
-            self.feedback.setProgressText("Saving roof mesh...")
-            self.thread.poly_roof_layer.selectAll()
-            iface.copySelectionToClipboard(self.thread.poly_roof_layer)
-            mesh_roof = self._get_layer(self.dao, "mesh_roof")
-            mesh_roof.startEditing()
-            mesh_roof.selectAll()
-            mesh_roof.deleteSelectedFeatures()
-            iface.pasteFromClipboard(mesh_roof)
-            mesh_roof.commitChanges()
-            tools_qgis.remove_layer_from_toc("Roof Mesh", "Mesh Temp Layers")
+        with open(file_path, "w") as file:
+            file.write("MATRIU\n")
+            file.write(f"\t{len(self.thread.mesh['triangles'])}\n")
+            for i, tri in self.thread.mesh["triangles"].items():
+                v1, v2, v3, v4 = tri["vertices_ids"]
+                manning_number = 0.0180
+                file.write(f"\t\t{v1}\t\t{v2}\t\t{v3}\t\t{v4}\t\t{manning_number}\t\t{i}\n")
+            file.write("VERTEXS\n")
+            file.write(f"\t{len(self.thread.mesh['vertices'])}\n")
+            for i, v in self.thread.mesh["vertices"].items():
+                x, y = v["coordinates"]
+                z = 0.000
+                file.write(f"\t\t{x}\t\t{y}\t\t{z}\t\t{i}\n")
+
+        # Remove temp layer
+        project = QgsProject.instance()
+        for layer in project.mapLayersByName("Mesh Temp Layer"):
+            project.removeMapLayer(layer)
 
         self.dlg_mesh.meshes_saved = True
-        iface.mapCanvas().refreshAllLayers()
         self.feedback.setProgressText("Task finished!")
 
     def _set_progress_text(self, txt):
