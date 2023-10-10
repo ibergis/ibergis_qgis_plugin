@@ -137,10 +137,10 @@ class GwCreateMeshTask(GwTask):
             # Set the style of the layer
             renderer = QgsCategorizedSymbolRenderer()
             ground_category = QgsRendererCategory(
-                "ground", QgsFillSymbol.createSimple({"color": "a6cee3"}), "Ground"
+                "ground", QgsFillSymbol.createSimple({"color": "#a6cee3"}), "Ground"
             )
             roof_category = QgsRendererCategory(
-                "roof", QgsFillSymbol.createSimple({"color": "fb9a99"}), "Roofs"
+                "roof", QgsFillSymbol.createSimple({"color": "#fb9a99"}), "Roofs"
             )
             renderer = QgsCategorizedSymbolRenderer(
                 "category", [ground_category, roof_category]
