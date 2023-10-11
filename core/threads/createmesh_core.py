@@ -1,4 +1,5 @@
-from qgis.core import QgsVectorLayer, QgsField
+from qgis.core import QgsFeature, QgsVectorLayer, QgsField
+from qgis.PyQt.QtCore import QVariant
 
 
 def feature_to_layer(feature, crs):
@@ -27,11 +28,35 @@ def join_layers(iterable):
     joined_layer.updateExtents()
     return joined_layer
 
-def validate_layer(layer):
-    if not layer.isValid():
-        raise ValueError("Layer is not valid.")
-    if not all(
-        type(feature["cellsize"]) in [int, float] and feature["cellsize"] > 0
-        for feature in layer.getFeatures()
-    ):
-        raise ValueError("Invalid values in column cellsize.")
+
+def validate_input_layers(layers_dict):
+    error_layers = []
+
+    # Validate ground layer
+    # 1. Verify cellsize values
+    ground_cellsize_layer = QgsVectorLayer(
+        "Polygon", "ground: Invalid cellsize", "memory"
+    )
+    ground_cellsize_layer.setCrs(layers_dict["ground"].crs())
+    provider = ground_cellsize_layer.dataProvider()
+    provider.addAttributes(
+        [
+            QgsField("fid", QVariant.Int),
+            QgsField("cellsize", QVariant.Double),
+        ]
+    )
+    ground_cellsize_layer.updateFields()
+    ground_cellsize_layer.startEditing()
+    for feature in layers_dict["ground"].getFeatures():
+        cellsize = feature["cellsize"]
+        if type(cellsize) in [int, float] and cellsize > 0:
+            continue
+        invalid_feature = QgsFeature(ground_cellsize_layer.fields())
+        invalid_feature.setAttributes([feature["fid"], feature["cellsize"]])
+        invalid_feature.setGeometry(feature.geometry())
+        ground_cellsize_layer.addFeature(invalid_feature)
+    ground_cellsize_layer.commitChanges()
+    if ground_cellsize_layer.hasFeatures():
+        error_layers.append(ground_cellsize_layer)
+
+    return error_layers

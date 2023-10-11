@@ -56,34 +56,7 @@ class GwCreateMeshTask(GwTask):
                 layers[layer] = l
 
             # Validate inputs
-            error_layers = []
-
-            # Validate ground layer
-            # 1. Verify cellsize values
-            ground_cellsize_layer = QgsVectorLayer(
-                "Polygon", "ground: Invalid cellsize", "memory"
-            )
-            ground_cellsize_layer.setCrs(layers["ground"].crs())
-            provider = ground_cellsize_layer.dataProvider()
-            provider.addAttributes(
-                [
-                    QgsField("fid", QVariant.Int),
-                    QgsField("cellsize", QVariant.Double),
-                ]
-            )
-            ground_cellsize_layer.updateFields()
-            ground_cellsize_layer.startEditing()
-            for feature in layers["ground"].getFeatures():
-                cellsize = feature["cellsize"]
-                if type(cellsize) in [int, float] and cellsize > 0:
-                    continue
-                invalid_feature = QgsFeature(ground_cellsize_layer.fields())
-                invalid_feature.setAttributes([feature["fid"], feature["cellsize"]])
-                invalid_feature.setGeometry(feature.geometry())
-                ground_cellsize_layer.addFeature(invalid_feature)
-            ground_cellsize_layer.commitChanges()
-            if ground_cellsize_layer.hasFeatures():
-                error_layers.append(ground_cellsize_layer)
+            error_layers = core.validate_input_layers(layers)
 
             # Add errors to TOC
             if error_layers:
