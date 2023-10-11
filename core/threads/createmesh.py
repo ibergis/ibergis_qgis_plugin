@@ -37,7 +37,8 @@ class GwCreateMeshTask(GwTask):
 
             # Remove previous temp layers
             project = QgsProject.instance()
-            project.removeMapLayers(project.mapLayersByName("Mesh Temp Layer"))
+            layer_ids = (x.id() for x in project.mapLayersByName("Mesh Temp Layer"))
+            project.removeMapLayers(layer_ids)
             group_name = "Mesh inputs errors & warnings"
             temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
             if temp_group is not None:
