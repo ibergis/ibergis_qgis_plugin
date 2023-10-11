@@ -69,48 +69,20 @@ class GwCreateMeshTask(GwTask):
             project.layerTreeRoot().removeChildrenGroupWithoutLayers()
             iface.layerTreeView().model().sourceModel().modelReset.emit()
 
-            self.mesh = {"triangles": {}, "vertices": {}}
+            # Create mesh
+            triangulations = []
 
-            # Create mesh for ground
             self.feedback.setProgressText("Creating ground mesh...")
-            ground_triangles, ground_vertices = triangulate_custom(
-                layers["ground"], feedback=self.feedback
-            )
-            for i, triangle in enumerate(ground_triangles, start=1):
-                self.mesh["triangles"][i] = {
-                    "category": "ground",
-                    "vertices_ids": [int(triangle[v] + 1) for v in (0, 1, 2, 0)],
-                }
-                next_triangle_id = i + 1
+            ground_triang = triangulate_custom(layers["ground"], feedback=self.feedback)
+            triangulations.append(ground_triang)
 
-            for i, vertice in enumerate(ground_vertices, start=1):
-                self.mesh["vertices"][i] = {"coordinates": (vertice[0], vertice[1])}
-                next_vertice_id = i + 1
-
-            # Add roofs to mesh
             self.feedback.setProgressText("Creating roof mesh...")
             crs = layers["roof"].crs()
-            features = (
-                core.feature_to_layer(feature, crs)
-                for feature in layers["roof"].getFeatures()
-            )
-            roof_meshes = (
-                triangulate_custom(feature, feedback=self.feedback)
-                for feature in features
-            )
-            for roof_triangles, roof_vertices in roof_meshes:
-                for i, triangle in enumerate(roof_triangles, start=next_triangle_id):
-                    self.mesh["triangles"][i] = {
-                        "category": "roof",
-                        "vertices_ids": [
-                            int(triangle[v] + next_vertice_id) for v in (0, 1, 2, 0)
-                        ],
-                    }
-                    next_triangle_id = i + 1
+            for feature in layers["roof"].getFeatures():
+                layer = core.feature_to_layer(feature, crs)
+                triangulations.append(triangulate_custom(layer, feedback=self.feedback))
 
-                for i, vertice in enumerate(roof_vertices, start=next_vertice_id):
-                    self.mesh["vertices"][i] = {"coordinates": (vertice[0], vertice[1])}
-                    next_vertice_id = i + 1
+            self.mesh = core.create_mesh_dict(triangulations)
 
             # Create temp layer
             self.feedback.setProgressText("Creating temp layer for visualization...")
@@ -137,7 +109,7 @@ class GwCreateMeshTask(GwTask):
                         [
                             [
                                 QgsPointXY(*self.mesh["vertices"][vert]["coordinates"])
-                                for vert in tri["vertices_ids"]
+                                for vert in tri["vertice_ids"]
                             ]
                         ]
                     )
@@ -146,10 +118,10 @@ class GwCreateMeshTask(GwTask):
                     [
                         i,
                         tri["category"],
-                        int(tri["vertices_ids"][0]),
-                        int(tri["vertices_ids"][1]),
-                        int(tri["vertices_ids"][2]),
-                        int(tri["vertices_ids"][0]),
+                        int(tri["vertice_ids"][0]),
+                        int(tri["vertice_ids"][1]),
+                        int(tri["vertice_ids"][2]),
+                        int(tri["vertice_ids"][0]),
                     ]
                 )
                 provider.addFeature(feature)
