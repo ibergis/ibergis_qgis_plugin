@@ -22,12 +22,8 @@ from ...lib import tools_qgis, tools_qt
 
 
 class GwCreateMeshTask(GwTask):
-    def __init__(self, description, ground_layer=None, roof_layer=None, feedback=None):
+    def __init__(self, description, feedback=None):
         super().__init__(description)
-        self.ground_layer = ground_layer
-        self.poly_ground_layer = None
-        self.roof_layer = roof_layer
-        self.poly_roof_layer = None
         self.feedback = feedback
 
     def cancel(self):
@@ -41,17 +37,70 @@ class GwCreateMeshTask(GwTask):
 
             # Remove previous temp layers
             project = QgsProject.instance()
-            for layer in project.mapLayersByName("Mesh Temp Layer"):
-                project.removeMapLayer(layer)
+            project.removeMapLayers(project.mapLayersByName("Mesh Temp Layer"))
+            group_name = "Mesh inputs errors & warnings"
+            temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
+            if temp_group is not None:
+                project.removeMapLayers(temp_group.findLayerIds())
 
+            # Load input layers
             self.dao = global_vars.gpkg_dao_data.clone()
+            path = f"{self.dao.db_filepath}|layername="
+            layers = {"ground": None, "roof": None}
+            for layer in layers:
+                l = QgsVectorLayer(f"{path}{layer}", layer, "ogr")
+                if not l.isValid():
+                    message = f"Layer '{layer}' is not valid. Check if GPKG file has a '{layer}' layer."
+                    self.feedback.setProgressText(message)
+                    return False
+                layers[layer] = l
+
+            # Validate inputs
+            error_layers = []
+
+            # Validate ground layer
+            # 1. Verify cellsize values
+            ground_cellsize_layer = QgsVectorLayer(
+                "Polygon", "ground: Invalid cellsize", "memory"
+            )
+            ground_cellsize_layer.setCrs(layers["ground"].crs())
+            provider = ground_cellsize_layer.dataProvider()
+            provider.addAttributes(
+                [
+                    QgsField("fid", QVariant.Int),
+                    QgsField("cellsize", QVariant.Double),
+                ]
+            )
+            ground_cellsize_layer.updateFields()
+            ground_cellsize_layer.startEditing()
+            for feature in layers["ground"].getFeatures():
+                cellsize = feature["cellsize"]
+                if type(cellsize) in [int, float] and cellsize > 0:
+                    continue
+                invalid_feature = QgsFeature(ground_cellsize_layer.fields())
+                invalid_feature.setAttributes([feature["fid"], feature["cellsize"]])
+                invalid_feature.setGeometry(feature.geometry())
+                ground_cellsize_layer.addFeature(invalid_feature)
+            ground_cellsize_layer.commitChanges()
+            if ground_cellsize_layer.hasFeatures():
+                error_layers.append(ground_cellsize_layer)
+
+            # Add errors to TOC
+            if error_layers:
+                group_name = "Mesh inputs errors & warnings"
+                for layer in error_layers:
+                    tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+                iface.layerTreeView().model().sourceModel().modelReset.emit()
+                return False
+            project.layerTreeRoot().removeChildrenGroupWithoutLayers()
+            iface.layerTreeView().model().sourceModel().modelReset.emit()
 
             self.mesh = {"triangles": {}, "vertices": {}}
 
             # Create mesh for ground
             self.feedback.setProgressText("Creating ground mesh...")
             ground_triangles, ground_vertices = triangulate_custom(
-                self.ground_layer, feedback=self.feedback
+                layers["ground"], feedback=self.feedback
             )
             for i, triangle in enumerate(ground_triangles, start=1):
                 self.mesh["triangles"][i] = {
@@ -66,10 +115,10 @@ class GwCreateMeshTask(GwTask):
 
             # Add roofs to mesh
             self.feedback.setProgressText("Creating roof mesh...")
-            crs = self.roof_layer.crs()
+            crs = layers["roof"].crs()
             features = (
                 core.feature_to_layer(feature, crs)
-                for feature in self.roof_layer.getFeatures()
+                for feature in layers["roof"].getFeatures()
             )
             roof_meshes = (
                 triangulate_custom(feature, feedback=self.feedback)
@@ -91,9 +140,8 @@ class GwCreateMeshTask(GwTask):
 
             # Create temp layer
             self.feedback.setProgressText("Creating temp layer for visualization...")
-            temp_layer = QgsVectorLayer("Polygon", "temp", "memory")
-            temp_layer.setCrs(self.ground_layer.crs())
-            temp_layer.setName("Mesh Temp Layer")
+            temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
+            temp_layer.setCrs(layers["ground"].crs())
             provider = temp_layer.dataProvider()
             provider.addAttributes(
                 [
