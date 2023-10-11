@@ -710,9 +710,9 @@ def add_layer_to_toc(layer, group=None, sub_group=None, create_groups=False, sub
         return
 
     root = QgsProject.instance().layerTreeRoot()
-    my_group = root.findGroup("GW Layers")
+    my_group = root.findGroup("DRAIN Layers")
     if my_group is None:
-        my_group = root.insertGroup(0, "GW Layers")
+        my_group = root.insertGroup(0, "DRAIN Layers")
     my_group.insertLayer(0, layer)
 
 
