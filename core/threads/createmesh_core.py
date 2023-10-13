@@ -38,34 +38,43 @@ def feature_to_layer(feature, crs):
     return layer
 
 
+def validate_cellsize(layer):
+    # Create layer
+    layer_name = f"{layer.name()}: Invalid cellsize"
+    errors_layer = QgsVectorLayer("Polygon", layer_name, "memory")
+    errors_layer.setCrs(layer.crs())
+    provider = errors_layer.dataProvider()
+    fid_field = QgsField("fid", QVariant.Int)
+    cellsize_field = QgsField("cellsize", QVariant.Double)
+    provider.addAttributes([fid_field, cellsize_field])
+    errors_layer.updateFields()
+
+    # Fill layer with cellsize errors
+    errors_layer.startEditing()
+    for feature in layer.getFeatures():
+        cellsize = feature["cellsize"]
+        if type(cellsize) in [int, float] and cellsize > 0:
+            continue
+        invalid_feature = QgsFeature(errors_layer.fields())
+        invalid_feature.setAttributes([feature["fid"], feature["cellsize"]])
+        invalid_feature.setGeometry(feature.geometry())
+        errors_layer.addFeature(invalid_feature)
+    errors_layer.commitChanges()
+
+    return errors_layer
+
+
 def validate_input_layers(layers_dict):
     error_layers = []
 
     # Validate ground layer
-    # 1. Verify cellsize values
-    ground_cellsize_layer = QgsVectorLayer(
-        "Polygon", "ground: Invalid cellsize", "memory"
-    )
-    ground_cellsize_layer.setCrs(layers_dict["ground"].crs())
-    provider = ground_cellsize_layer.dataProvider()
-    provider.addAttributes(
-        [
-            QgsField("fid", QVariant.Int),
-            QgsField("cellsize", QVariant.Double),
-        ]
-    )
-    ground_cellsize_layer.updateFields()
-    ground_cellsize_layer.startEditing()
-    for feature in layers_dict["ground"].getFeatures():
-        cellsize = feature["cellsize"]
-        if type(cellsize) in [int, float] and cellsize > 0:
-            continue
-        invalid_feature = QgsFeature(ground_cellsize_layer.fields())
-        invalid_feature.setAttributes([feature["fid"], feature["cellsize"]])
-        invalid_feature.setGeometry(feature.geometry())
-        ground_cellsize_layer.addFeature(invalid_feature)
-    ground_cellsize_layer.commitChanges()
+    ground_cellsize_layer = validate_cellsize(layers_dict["ground"])
     if ground_cellsize_layer.hasFeatures():
         error_layers.append(ground_cellsize_layer)
+
+    # Validate roof layer
+    roof_cellsize_layer = validate_cellsize(layers_dict["roof"])
+    if roof_cellsize_layer.hasFeatures():
+        error_layers.append(roof_cellsize_layer)
 
     return error_layers
