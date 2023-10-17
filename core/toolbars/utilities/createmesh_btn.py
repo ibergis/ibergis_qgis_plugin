@@ -34,8 +34,8 @@ class GwCreateMeshButton(GwAction):
 
         # Set initial signals
         dlg = self.dlg_mesh
-        dlg.btn_ok.clicked.connect(self._execute_process)
-        dlg.btn_cancel.clicked.connect(dlg.reject)
+        # dlg.btn_ok.clicked.connect(self._execute_process)
+        # dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
 
         tools_gw.open_dialog(dlg, dlg_name="create_mesh")
@@ -50,11 +50,11 @@ class GwCreateMeshButton(GwAction):
         )
 
         # Set signals
-        dlg.btn_ok.setEnabled(False)
+        # dlg.btn_ok.setEnabled(False)
         dlg.btn_save.setEnabled(False)
-        dlg.btn_cancel.clicked.disconnect()
-        dlg.btn_cancel.clicked.connect(self.thread.cancel)
-        dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
+        # dlg.btn_cancel.clicked.disconnect()
+        # dlg.btn_cancel.clicked.connect(self.thread.cancel)
+        # dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
         self.thread.taskCompleted.connect(self._on_task_completed)
         self.thread.taskTerminated.connect(self._on_task_terminated)
         self.thread.feedback.progressText.connect(self._set_progress_text)
@@ -92,8 +92,8 @@ class GwCreateMeshButton(GwAction):
         self.timer.stop()
 
         dlg = self.dlg_mesh
-        dlg.btn_cancel.clicked.disconnect()
-        dlg.btn_cancel.clicked.connect(dlg.reject)
+        # dlg.btn_cancel.clicked.disconnect()
+        # dlg.btn_cancel.clicked.connect(dlg.reject)
 
     def _on_task_terminated(self):
         message = "Task failed. See the Log Messages Panel for more information."

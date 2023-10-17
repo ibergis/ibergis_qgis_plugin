@@ -12,6 +12,7 @@ from qgis.PyQt import uic, QtCore
 
 from .dialog import GwDialog
 from .main_window import GwMainWindow
+from .wizard import GwWizard
 from ...lib import tools_qgis, tools_qt
 
 # region private functions
@@ -78,7 +79,7 @@ FORM_CLASS = _get_ui_class('import_inp.ui', 'utilities')
 class GwImportInpUi(GwDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('create_mesh.ui', 'utilities')
-class GwCreateMeshUi(GwDialog, FORM_CLASS):
+class GwCreateMeshUi(GwWizard, FORM_CLASS):
     def __init__(self):
         super().__init__()
         self.meshes_saved = True
