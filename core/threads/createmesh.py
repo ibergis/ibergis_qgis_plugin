@@ -111,56 +111,41 @@ class GwCreateMeshTask(GwTask):
             temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
             temp_layer.setCrs(layers["ground"].crs())
             provider = temp_layer.dataProvider()
-            provider.addAttributes(
-                [
-                    QgsField("fid", QVariant.Int),
-                    QgsField("category", QVariant.String),
-                    QgsField("vertex_id1", QVariant.Int),
-                    QgsField("vertex_id2", QVariant.Int),
-                    QgsField("vertex_id3", QVariant.Int),
-                    QgsField("vertex_id4", QVariant.Int),
-                ]
-            )
+            fields = [
+                QgsField("fid", QVariant.Int),
+                QgsField("category", QVariant.String),
+                QgsField("vertex_id1", QVariant.Int),
+                QgsField("vertex_id2", QVariant.Int),
+                QgsField("vertex_id3", QVariant.Int),
+                QgsField("vertex_id4", QVariant.Int),
+            ]
+            provider.addAttributes(fields)
             temp_layer.updateFields()
             for i, tri in self.mesh["triangles"].items():
                 if self.feedback.isCanceled():
                     return {}
                 feature = QgsFeature()
-                feature.setGeometry(
-                    QgsGeometry.fromPolygonXY(
-                        [
-                            [
-                                QgsPointXY(*self.mesh["vertices"][vert]["coordinates"])
-                                for vert in tri["vertice_ids"]
-                            ]
-                        ]
-                    )
-                )
-                feature.setAttributes(
-                    [
-                        i,
-                        tri["category"],
-                        int(tri["vertice_ids"][0]),
-                        int(tri["vertice_ids"][1]),
-                        int(tri["vertice_ids"][2]),
-                        int(tri["vertice_ids"][0]),
-                    ]
-                )
+                polygon_points = [
+                    QgsPointXY(*self.mesh["vertices"][vert]["coordinates"])
+                    for vert in tri["vertice_ids"]
+                ]
+                feature.setGeometry(QgsGeometry.fromPolygonXY([polygon_points]))
+                feature.setAttributes([i, tri["category"], *tri["vertice_ids"]])
                 provider.addFeature(feature)
 
             temp_layer.updateExtents()
 
             # Set the style of the layer
             renderer = QgsCategorizedSymbolRenderer()
-            ground_category = QgsRendererCategory(
-                "ground", QgsFillSymbol.createSimple({"color": "#a6cee3"}), "Ground"
-            )
-            roof_category = QgsRendererCategory(
-                "roof", QgsFillSymbol.createSimple({"color": "#fb9a99"}), "Roof"
-            )
-            renderer = QgsCategorizedSymbolRenderer(
-                "category", [ground_category, roof_category]
-            )
+            categories = [
+                QgsRendererCategory(
+                    "ground", QgsFillSymbol.createSimple({"color": "#a6cee3"}), "Ground"
+                ),
+                QgsRendererCategory(
+                    "roof", QgsFillSymbol.createSimple({"color": "#fb9a99"}), "Roof"
+                ),
+            ]
+            renderer = QgsCategorizedSymbolRenderer("category", categories)
             temp_layer.setRenderer(renderer)
 
             # Add temp layer to TOC
