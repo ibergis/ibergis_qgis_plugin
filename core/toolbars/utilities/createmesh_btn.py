@@ -89,13 +89,14 @@ class GwCreateMeshButton(GwAction):
         return QgsVectorLayer(path, layer_name, "ogr")
 
     def _on_task_completed(self):
-        self._on_task_end("Task finished!")
+        self._on_task_end()
         dlg = self.dlg_mesh
         dlg.btn_save.clicked.connect(self._save_mesh)
         dlg.btn_save.setEnabled(True)
         dlg.meshes_saved = False
 
-    def _on_task_end(self, message):
+    def _on_task_end(self):
+        message = "Task canceled." if self.thread.isCanceled() else self.thread.message
         tools_gw.fill_tab_log(
             self.dlg_mesh,
             {"info": {"values": [{"message": message}]}},
@@ -111,10 +112,7 @@ class GwCreateMeshButton(GwAction):
         dlg.btn_cancel.clicked.connect(dlg.reject)
 
     def _on_task_terminated(self):
-        message = "Task failed. See the Log Messages Panel for more information."
-        if self.thread.isCanceled():
-            message = "Task canceled."
-        self._on_task_end(message)
+        self._on_task_end()
 
     def _on_timer_timeout(self):
         # Update timer

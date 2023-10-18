@@ -63,8 +63,7 @@ class GwCreateMeshTask(GwTask):
             for layer in layers:
                 l = QgsVectorLayer(f"{path}{layer}", layer, "ogr")
                 if not l.isValid():
-                    message = f"Layer '{layer}' is not valid. Check if GPKG file has a '{layer}' layer."
-                    self.feedback.setProgressText(message)
+                    self.message = f"Layer '{layer}' is not valid. Check if GPKG file has a '{layer}' layer."
                     return False
                 layers[layer] = l
 
@@ -77,6 +76,9 @@ class GwCreateMeshTask(GwTask):
                 for layer in error_layers:
                     tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
                 iface.layerTreeView().model().sourceModel().modelReset.emit()
+                self.message = (
+                    "There are errors in input data. Please, check the error layers."
+                )
                 return False
             project.layerTreeRoot().removeChildrenGroupWithoutLayers()
             iface.layerTreeView().model().sourceModel().modelReset.emit()
@@ -123,7 +125,8 @@ class GwCreateMeshTask(GwTask):
             temp_layer.updateFields()
             for i, tri in self.mesh["triangles"].items():
                 if self.feedback.isCanceled():
-                    return {}
+                    self.message = "Task canceled."
+                    return False
                 feature = QgsFeature()
                 polygon_points = [
                     QgsPointXY(*self.mesh["vertices"][vert]["coordinates"])
@@ -154,7 +157,11 @@ class GwCreateMeshTask(GwTask):
             # Refresh TOC
             iface.layerTreeView().model().sourceModel().modelReset.emit()
 
+            self.message = "Triangulation finished! Check the temporary layer and click the button bellow to proceed to the next step."
             return True
         except Exception:
             self.exception = traceback.format_exc()
+            self.message = (
+                "Task failed. See the Log Messages Panel for more information."
+            )
             return False
