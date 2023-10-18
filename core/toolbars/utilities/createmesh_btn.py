@@ -34,6 +34,7 @@ class GwCreateMeshButton(GwAction):
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
+        dlg.btn_save.setVisible(False)
 
         # Set initial signals
         dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
@@ -93,6 +94,7 @@ class GwCreateMeshButton(GwAction):
         dlg = self.dlg_mesh
         dlg.btn_save.clicked.connect(self._save_mesh)
         dlg.btn_save.setEnabled(True)
+        dlg.btn_save.setVisible(True)
         dlg.meshes_saved = False
 
     def _on_task_end(self):
