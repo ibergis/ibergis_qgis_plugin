@@ -134,7 +134,7 @@ class GwCreateMeshButton(GwAction):
             file.write("MATRIU\n")
             file.write(f"\t{len(self.thread.mesh['triangles'])}\n")
             for i, tri in self.thread.mesh["triangles"].items():
-                v1, v2, v3, v4 = tri["vertices_ids"]
+                v1, v2, v3, v4 = tri["vertice_ids"]
                 manning_number = 0.0180
                 file.write(
                     f"\t\t{v1}\t\t{v2}\t\t{v3}\t\t{v4}\t\t{manning_number}\t\t{i}\n"
