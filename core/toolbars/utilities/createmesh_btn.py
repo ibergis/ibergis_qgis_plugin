@@ -31,9 +31,14 @@ class GwCreateMeshButton(GwAction):
 
         tools_gw.load_settings(dlg)
         tools_gw.disable_tab_log(dlg)
+        tools_qt.double_validator(dlg.txt_slope)
+        tools_qt.double_validator(dlg.txt_start)
+        tools_qt.double_validator(dlg.txt_extent)
 
         # Set initial signals
-        dlg = self.dlg_mesh
+        dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
+        dlg.chk_transition.stateChanged.connect(dlg.txt_start.setEnabled)
+        dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
@@ -42,10 +47,20 @@ class GwCreateMeshButton(GwAction):
 
     def _execute_process(self):
         dlg = self.dlg_mesh
-        self.feedback = Feedback()
 
+        # Get inputs
+        enable_transition = dlg.chk_transition.isChecked()
+        transition_slope = float(dlg.txt_slope.text())
+        transition_start = float(dlg.txt_start.text())
+        transition_extent = float(dlg.txt_extent.text())
+
+        self.feedback = Feedback()
         self.thread = GwCreateMeshTask(
             "Import INP file",
+            enable_transition,
+            transition_slope,
+            transition_start,
+            transition_extent,
             feedback=self.feedback,
         )
 
@@ -121,7 +136,9 @@ class GwCreateMeshButton(GwAction):
             for i, tri in self.thread.mesh["triangles"].items():
                 v1, v2, v3, v4 = tri["vertices_ids"]
                 manning_number = 0.0180
-                file.write(f"\t\t{v1}\t\t{v2}\t\t{v3}\t\t{v4}\t\t{manning_number}\t\t{i}\n")
+                file.write(
+                    f"\t\t{v1}\t\t{v2}\t\t{v3}\t\t{v4}\t\t{manning_number}\t\t{i}\n"
+                )
             file.write("VERTEXS\n")
             file.write(f"\t{len(self.thread.mesh['vertices'])}\n")
             for i, v in self.thread.mesh["vertices"].items():

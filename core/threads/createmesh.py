@@ -22,8 +22,20 @@ from ...lib import tools_qgis, tools_qt
 
 
 class GwCreateMeshTask(GwTask):
-    def __init__(self, description, feedback=None):
+    def __init__(
+        self,
+        description,
+        enable_transition,
+        transition_slope,
+        transition_start,
+        transition_extent,
+        feedback=None,
+    ):
         super().__init__(description)
+        self.enable_transition = enable_transition
+        self.transition_slope = transition_slope
+        self.transition_start = transition_start
+        self.transition_extent = transition_extent
         self.feedback = feedback
 
     def cancel(self):
@@ -73,14 +85,24 @@ class GwCreateMeshTask(GwTask):
             triangulations = []
 
             self.feedback.setProgressText("Creating ground mesh...")
-            ground_triang = triangulate_custom(layers["ground"], feedback=self.feedback)
+            ground_triang = triangulate_custom(
+                layers["ground"],
+                enable_transition=self.enable_transition,
+                transition_slope=self.transition_slope,
+                transition_start=self.transition_start,
+                transition_extent=self.transition_extent,
+                feedback=self.feedback,
+            )
             triangulations.append(ground_triang)
 
             self.feedback.setProgressText("Creating roof mesh...")
             crs = layers["roof"].crs()
             for feature in layers["roof"].getFeatures():
                 layer = core.feature_to_layer(feature, crs)
-                triangulations.append(triangulate_custom(layer, feedback=self.feedback))
+                roof_triang = triangulate_custom(
+                    layer, enable_transition=False, feedback=self.feedback
+                )
+                triangulations.append(roof_triang)
 
             self.mesh = core.create_mesh_dict(triangulations)
 
