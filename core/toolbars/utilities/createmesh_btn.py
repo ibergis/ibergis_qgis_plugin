@@ -67,13 +67,13 @@ class GwCreateMeshButton(GwAction):
         transition_start = float(dlg.txt_start.text())
         transition_extent = float(dlg.txt_extent.text())
         self.dem_layer = tools_qt.get_combo_value(dlg, dlg.cmb_dem_layer, index=1)
-        if self.dem_layer == '':
+        if self.dem_layer == "":
             tools_qt.show_info_box("Please, select a DEM layer!")
             return
 
         self.feedback = Feedback()
-        self.thread = GwCreateMeshTask(
-            "Import INP file",
+        self.thread_triangulation = GwCreateMeshTask(
+            "Triangulation",
             enable_transition,
             transition_slope,
             transition_start,
@@ -85,12 +85,12 @@ class GwCreateMeshButton(GwAction):
         dlg.btn_ok.setEnabled(False)
         dlg.btn_save.setEnabled(False)
         dlg.btn_cancel.clicked.disconnect()
-        dlg.btn_cancel.clicked.connect(self.thread.cancel)
+        dlg.btn_cancel.clicked.connect(self.thread_triangulation.cancel)
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
-        self.thread.taskCompleted.connect(self._on_task_completed)
-        self.thread.taskTerminated.connect(self._on_task_terminated)
-        self.thread.feedback.progressText.connect(self._set_progress_text)
-        self.thread.feedback.progress.connect(dlg.progress_bar.setValue)
+        self.thread_triangulation.taskCompleted.connect(self._on_task_completed)
+        self.thread_triangulation.taskTerminated.connect(self._on_task_terminated)
+        self.thread_triangulation.feedback.progressText.connect(self._set_progress_text)
+        self.thread_triangulation.feedback.progress.connect(dlg.progress_bar.setValue)
 
         # Timer
         self.t0 = time()
@@ -99,7 +99,7 @@ class GwCreateMeshButton(GwAction):
         self.timer.start(500)
         dlg.rejected.connect(self.timer.stop)
 
-        QgsApplication.taskManager().addTask(self.thread)
+        QgsApplication.taskManager().addTask(self.thread_triangulation)
 
     def _get_layer(self, dao, layer_name):
         path = f"{dao.db_filepath}|layername={layer_name}"
@@ -114,7 +114,8 @@ class GwCreateMeshButton(GwAction):
         dlg.meshes_saved = False
 
     def _on_task_end(self):
-        message = "Task canceled." if self.thread.isCanceled() else self.thread.message
+        thread = self.thread_triangulation
+        message = "Task canceled." if thread.isCanceled() else thread.message
         tools_gw.fill_tab_log(
             self.dlg_mesh,
             {"info": {"values": [{"message": message}]}},
@@ -148,16 +149,16 @@ class GwCreateMeshButton(GwAction):
 
         with open(file_path, "w") as file:
             file.write("MATRIU\n")
-            file.write(f"\t{len(self.thread.mesh['triangles'])}\n")
-            for i, tri in self.thread.mesh["triangles"].items():
+            file.write(f"\t{len(self.thread_triangulation.mesh['triangles'])}\n")
+            for i, tri in self.thread_triangulation.mesh["triangles"].items():
                 v1, v2, v3, v4 = tri["vertice_ids"]
                 manning_number = 0.0180
                 file.write(
                     f"\t\t{v1}\t\t{v2}\t\t{v3}\t\t{v4}\t\t{manning_number}\t\t{i}\n"
                 )
             file.write("VERTEXS\n")
-            file.write(f"\t{len(self.thread.mesh['vertices'])}\n")
-            for i, v in self.thread.mesh["vertices"].items():
+            file.write(f"\t{len(self.thread_triangulation.mesh['vertices'])}\n")
+            for i, v in self.thread_triangulation.mesh["vertices"].items():
                 x, y = v["coordinates"]
                 z = 0.000
                 file.write(f"\t\t{x}\t\t{y}\t\t{z}\t\t{i}\n")
