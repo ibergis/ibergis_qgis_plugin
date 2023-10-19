@@ -5,14 +5,13 @@ from time import time
 
 from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QTimer
-from qgis.utils import iface
 
 from ..dialog import GwAction
 from ...threads.createmesh import GwCreateMeshTask
 from ...ui.ui_manager import GwCreateMeshUi
 from ...utils import Feedback, tools_gw
 from .... import global_vars
-from ....lib import tools_qgis, tools_qt
+from ....lib import tools_qt
 
 
 class GwCreateMeshButton(GwAction):
@@ -66,8 +65,8 @@ class GwCreateMeshButton(GwAction):
         transition_slope = float(dlg.txt_slope.text())
         transition_start = float(dlg.txt_start.text())
         transition_extent = float(dlg.txt_extent.text())
-        self.dem_layer = tools_qt.get_combo_value(dlg, dlg.cmb_dem_layer, index=1)
-        if self.dem_layer == "":
+        dem_layer = tools_qt.get_combo_value(dlg, dlg.cmb_dem_layer, index=1)
+        if dem_layer == "":
             tools_qt.show_info_box("Please, select a DEM layer!")
             return
 
@@ -78,6 +77,7 @@ class GwCreateMeshButton(GwAction):
             transition_slope,
             transition_start,
             transition_extent,
+            dem_layer,
             feedback=self.feedback,
         )
 
@@ -160,7 +160,7 @@ class GwCreateMeshButton(GwAction):
             file.write(f"\t{len(self.thread_triangulation.mesh['vertices'])}\n")
             for i, v in self.thread_triangulation.mesh["vertices"].items():
                 x, y = v["coordinates"]
-                z = 0.000
+                z = v["elevation"]
                 file.write(f"\t\t{x}\t\t{y}\t\t{z}\t\t{i}\n")
 
         # Remove temp layer

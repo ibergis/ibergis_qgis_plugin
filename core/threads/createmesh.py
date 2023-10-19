@@ -2,6 +2,7 @@ import traceback
 
 from qgis.core import (
     QgsCategorizedSymbolRenderer,
+    QgsCoordinateTransform,
     QgsFeature,
     QgsField,
     QgsFillSymbol,
@@ -29,6 +30,7 @@ class GwCreateMeshTask(GwTask):
         transition_slope,
         transition_start,
         transition_extent,
+        dem_layer,
         feedback=None,
     ):
         super().__init__(description)
@@ -36,6 +38,7 @@ class GwCreateMeshTask(GwTask):
         self.transition_slope = transition_slope
         self.transition_start = transition_start
         self.transition_extent = transition_extent
+        self.dem_layer = dem_layer
         self.feedback = feedback
 
     def cancel(self):
@@ -107,6 +110,21 @@ class GwCreateMeshTask(GwTask):
                 triangulations.append(roof_triang)
 
             self.mesh = core.create_mesh_dict(triangulations)
+
+            # Get elevation
+            # FIXME use following line after fixing GPKG CRS issue
+            # ground_crs = layers["ground"].crs()
+            self.feedback.setProgressText("Getting vertice elevations...")
+            ground_crs = QgsProject.instance().crs()
+            dem_crs = self.dem_layer.crs()
+            qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
+            for vertice in self.mesh["vertices"].values():
+                if self.dem_layer is None:
+                    vertice["elevation"] = 0
+                else:
+                    point = qct.transform(QgsPointXY(*vertice["coordinates"]))
+                    val, res = self.dem_layer.dataProvider().sample(point, 1)
+                    vertice["elevation"] = val if res else 0
 
             # Create temp layer
             self.feedback.setProgressText("Creating temp layer for visualization...")
