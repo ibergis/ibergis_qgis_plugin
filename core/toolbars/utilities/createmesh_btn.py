@@ -3,7 +3,7 @@ from functools import partial
 from pathlib import Path
 from time import time
 
-from qgis.core import QgsApplication, QgsProject, QgsVectorLayer
+from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QTimer
 from qgis.utils import iface
 
@@ -29,12 +29,24 @@ class GwCreateMeshButton(GwAction):
         self.ground_layer = self._get_layer(self.dao, "ground")
         self.roof_layer = self._get_layer(self.dao, "roof")
 
+        # Set widgets
         tools_gw.load_settings(dlg)
         tools_gw.disable_tab_log(dlg)
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
         dlg.btn_save.setVisible(False)
+
+        # Fill raster layers combo
+        project = QgsProject.instance()
+        all_layers = project.mapLayers().values()
+        raster_layers = (
+            [layer.name(), layer]
+            for layer in all_layers
+            if layer.type() == QgsMapLayer.RasterLayer
+        )
+        rows = [["Fill elevation with zeroes", None], *raster_layers]
+        tools_qt.fill_combo_values(dlg.cmb_dem_layer, rows, add_empty=True)
 
         # Set initial signals
         dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
@@ -49,11 +61,15 @@ class GwCreateMeshButton(GwAction):
     def _execute_process(self):
         dlg = self.dlg_mesh
 
-        # Get inputs
+        # Get and validate inputs
         enable_transition = dlg.chk_transition.isChecked()
         transition_slope = float(dlg.txt_slope.text())
         transition_start = float(dlg.txt_start.text())
         transition_extent = float(dlg.txt_extent.text())
+        self.dem_layer = tools_qt.get_combo_value(dlg, dlg.cmb_dem_layer, index=1)
+        if self.dem_layer == '':
+            tools_qt.show_info_box("Please, select a DEM layer!")
+            return
 
         self.feedback = Feedback()
         self.thread = GwCreateMeshTask(
