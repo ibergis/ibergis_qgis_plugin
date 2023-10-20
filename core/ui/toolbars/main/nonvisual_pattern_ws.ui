@@ -106,7 +106,7 @@
          </widget>
         </item>
         <item row="1" column="2">
-         <widget class="QComboBox" name="cmb_expl_id">
+         <widget class="QComboBox" name="cmb_sector_id">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -137,7 +137,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Exploitation ID</string>
+           <string>Sector ID</string>
           </property>
          </widget>
         </item>
