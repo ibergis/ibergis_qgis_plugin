@@ -98,7 +98,7 @@ class GwCreateMeshTask(GwTask):
                 transition_extent=self.transition_extent,
                 feedback=self.feedback,
             )
-            triangulations.append(ground_triang)
+            triangulations.append((*ground_triang, {"category": "ground"}))
 
             self.feedback.setProgressText("Creating roof mesh...")
             crs = layers["roof"].crs()
@@ -107,7 +107,13 @@ class GwCreateMeshTask(GwTask):
                 roof_triang = triangulate_custom(
                     layer, enable_transition=False, feedback=self.feedback
                 )
-                triangulations.append(roof_triang)
+                roof_metadata = {
+                    "category": "roof",
+                    "roof_id": feature["fid"],
+                    "elevation": feature["elev"],
+                    "roughness": feature["roughness"],
+                }
+                triangulations.append((*roof_triang, roof_metadata))
 
             self.mesh = core.create_mesh_dict(triangulations)
 

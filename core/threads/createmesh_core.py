@@ -7,21 +7,17 @@ def create_mesh_dict(triangulations_list):
     next_triangle_id = 1
     next_vertice_id = 1
 
-    # The first element is ground
-    category = "ground"
-
-    for triangles, vertices in triangulations_list:
+    for triangles, vertices, metadata in triangulations_list:
         for i, triangle in enumerate(triangles, start=next_triangle_id):
             vertice_ids = [int(triangle[v] + next_vertice_id) for v in (0, 1, 2, 0)]
-            mesh["triangles"][i] = {"category": category, "vertice_ids": vertice_ids}
+            mesh["triangles"][i] = {"vertice_ids": vertice_ids}
+            mesh["triangles"][i].update(metadata)
             next_triangle_id = i + 1
 
         for i, vertice in enumerate(vertices, start=next_vertice_id):
             mesh["vertices"][i] = {"coordinates": (vertice)}
+            mesh["vertices"][i].update(metadata)
             next_vertice_id = i + 1
-
-        # All the other elements are roof
-        category = "roof"
 
     return mesh
 
