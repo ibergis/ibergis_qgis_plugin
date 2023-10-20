@@ -115,13 +115,14 @@ class GwCreateMeshTask(GwTask):
             # FIXME use following line after fixing GPKG CRS issue
             # ground_crs = layers["ground"].crs()
             self.feedback.setProgressText("Getting vertice elevations...")
-            ground_crs = QgsProject.instance().crs()
-            dem_crs = self.dem_layer.crs()
-            qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
-            for vertice in self.mesh["vertices"].values():
-                if self.dem_layer is None:
+            if self.dem_layer is None:
+                for vertice in self.mesh["vertices"].values():
                     vertice["elevation"] = 0
-                else:
+            else:
+                ground_crs = QgsProject.instance().crs()
+                dem_crs = self.dem_layer.crs()
+                qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
+                for vertice in self.mesh["vertices"].values():
                     point = qct.transform(QgsPointXY(*vertice["coordinates"]))
                     val, res = self.dem_layer.dataProvider().sample(point, 1)
                     vertice["elevation"] = val if res else 0
