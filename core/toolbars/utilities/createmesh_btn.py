@@ -42,7 +42,7 @@ class GwCreateMeshButton(GwAction):
         raster_layers = (
             [layer.name(), layer]
             for layer in all_layers
-            if layer.type() == QgsMapLayer.RasterLayer
+            if layer.type() == QgsMapLayer.RasterLayer and layer.bandCount() == 1
         )
         rows = [["Fill elevation with zeroes", None], *raster_layers]
         tools_qt.fill_combo_values(dlg.cmb_dem_layer, rows, add_empty=True)
