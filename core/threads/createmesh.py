@@ -123,15 +123,17 @@ class GwCreateMeshTask(GwTask):
             self.feedback.setProgressText("Getting vertice elevations...")
             if self.dem_layer is None:
                 for vertice in self.mesh["vertices"].values():
-                    vertice["elevation"] = 0
+                    if vertice["category"] == "ground":
+                        vertice["elevation"] = 0
             else:
                 ground_crs = QgsProject.instance().crs()
                 dem_crs = self.dem_layer.crs()
                 qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
                 for vertice in self.mesh["vertices"].values():
-                    point = qct.transform(QgsPointXY(*vertice["coordinates"]))
-                    val, res = self.dem_layer.dataProvider().sample(point, 1)
-                    vertice["elevation"] = val if res else 0
+                    if vertice["category"] == "ground":
+                        point = qct.transform(QgsPointXY(*vertice["coordinates"]))
+                        val, res = self.dem_layer.dataProvider().sample(point, 1)
+                        vertice["elevation"] = val if res else 0
 
             # Create temp layer
             self.feedback.setProgressText("Creating temp layer for visualization...")
