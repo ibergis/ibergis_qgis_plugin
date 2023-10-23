@@ -123,15 +123,17 @@ def validate_roof_layer(layer: QgsVectorLayer):
     provider.addAttributes([fid_field, roughness_field, elev_field])
     errors_layer.updateFields()
 
-    # Fill layer with cellsize errors
+    # Fill layer the with errors
     errors_layer.startEditing()
     for feature in layer.getFeatures():
         roughness = feature["roughness"]
         elev = feature["elev"]
-        if type(roughness) in [int, float] and roughness > 0:
+        if (
+            type(roughness) in [int, float] and roughness > 0 and
+            type(elev) in [int, float] and elev > 0
+        ):
             continue
-        if type(elev) in [int, float] and elev > 0:
-            continue
+
         invalid_feature = QgsFeature(errors_layer.fields())
         invalid_feature.setAttributes([feature["fid"], feature["roughness"], feature["elev"]])
         invalid_feature.setGeometry(feature.geometry())
