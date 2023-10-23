@@ -16,6 +16,7 @@ from qgis.PyQt.QtCore import QVariant
 from qgis.utils import iface
 
 from . import createmesh_core as core
+from .validatemesh import validate_input_layers
 from .task import GwTask
 from ..utils.meshing_process import triangulate_custom
 from ... import global_vars
@@ -71,7 +72,7 @@ class GwCreateMeshTask(GwTask):
                 layers[layer] = l
 
             # Validate inputs
-            error_layers = core.validate_input_layers(layers)
+            error_layers = validate_input_layers(layers)
 
             # Add errors to TOC
             if error_layers:

@@ -142,7 +142,7 @@ try:
         data = data[~data.is_empty]
         return data
 
-    def layer_to_gdf(layer, feedback):
+    def layer_to_gdf(layer, feedback=None) -> gpd.GeoDataFrame:
         geoms = []
         sizes = []
         total = layer.featureCount()
@@ -154,9 +154,10 @@ try:
                 print(e, wkt)
             sizes.append(feature["cellsize"])
 
-            feedback.setProgress(100 * i / total)
-            if feedback.isCanceled():
-                return {}
+            if feedback:
+                feedback.setProgress(100 * i / total)
+                if feedback.isCanceled():
+                    return {}
 
         gdf = gpd.GeoDataFrame(geometry=geoms, data={"cellsize": sizes})
         gdf = gdf.explode(ignore_index=True)
