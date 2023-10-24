@@ -1324,7 +1324,7 @@ BEGIN
     VALUES(new.table_name, 0);
     
     insert into gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id)
-    values (new.table_name, 'features', new.table_name, '', 0, 0, 0, 0, 0, 0);
+    values (new.table_name, 'features', new.table_name, '', 0, 0, 0, 0, 0, <SRID_VALUE>);
 
     insert into gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES(new.table_name, 'geom', new.isgeom, <SRID_VALUE>, 0, 0);
 
