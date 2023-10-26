@@ -72,18 +72,23 @@ class GwCreateMeshTask(GwTask):
                 layers[layer] = l
 
             # Validate inputs
-            error_layers = validate_input_layers(layers)
+            error_layers, warning_layers = validate_input_layers(layers)
 
             # Add errors to TOC
-            if error_layers:
+            if error_layers or warning_layers:
                 group_name = "Mesh inputs errors & warnings"
                 for layer in error_layers:
                     tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+                for layer in warning_layers:
+                    tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+                project.layerTreeRoot().removeChildrenGroupWithoutLayers()
                 iface.layerTreeView().model().sourceModel().modelReset.emit()
-                self.message = (
-                    "There are errors in input data. Please, check the error layers."
-                )
-                return False
+                
+                if error_layers:
+                    self.message = (
+                        "There are errors in input data. Please, check the error layers."
+                    )
+                    return False
             project.layerTreeRoot().removeChildrenGroupWithoutLayers()
             iface.layerTreeView().model().sourceModel().modelReset.emit()
 
