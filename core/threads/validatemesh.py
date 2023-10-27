@@ -75,7 +75,6 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
 
 def validate_vert_edge(layers_dict: dict) -> QgsVectorLayer:
     data = pd.concat(map(layer_to_gdf, layers_dict.values()))
-    # data: gpd.GeoDataFrame = layer_to_gdf(layer_input)
 
     output_layer = QgsVectorLayer("Point", "Vertex-Edge Errors", "memory")
     output_layer.setCrs(list(layers_dict.values())[0].crs())
@@ -132,8 +131,8 @@ def validate_roof_layer(layer: QgsVectorLayer):
         roughness = feature["roughness"]
         elev = feature["elev"]
         if (
-            type(roughness) in [int, float] and roughness > 0 and
-            type(elev) in [int, float] and elev > 0
+            type(roughness) in [int, float] and roughness >= 0 and
+            type(elev) in [int, float]
         ):
             continue
 
