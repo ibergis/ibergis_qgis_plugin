@@ -165,7 +165,7 @@ def validate_distance(layer: QgsVectorLayer) -> QgsVectorLayer:
         vertices_gdf, max_distance=max(cellsize), distance_col="dist", exclusive=True
     )
     join = join[join['dist'] > 1e-5]
-    join["cellsize"] = join[['cellsize_left', 'cellsize_right']].max(axis=1)ç
+    join["cellsize"] = join[['cellsize_left', 'cellsize_right']].max(axis=1)
     join = join[join['dist'] < join["cellsize"]]
 
     output_layer = QgsVectorLayer("Point", "Close Vertices Warning", "memory")
