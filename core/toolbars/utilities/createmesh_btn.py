@@ -69,6 +69,7 @@ class GwCreateMeshButton(GwAction):
         if dem_layer == "":
             tools_qt.show_info_box("Please, select a DEM layer!")
             return
+        fill_roughness = dlg.chk_roughness.isChecked()
 
         self.feedback = Feedback()
         self.thread_triangulation = GwCreateMeshTask(
@@ -78,6 +79,7 @@ class GwCreateMeshButton(GwAction):
             transition_start,
             transition_extent,
             dem_layer,
+            fill_roughness,
             feedback=self.feedback,
         )
 
