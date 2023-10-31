@@ -27,6 +27,7 @@ class GwCreateMeshTask(GwTask):
     def __init__(
         self,
         description,
+        execute_validation,
         enable_transition,
         transition_slope,
         transition_start,
@@ -36,6 +37,7 @@ class GwCreateMeshTask(GwTask):
         feedback=None,
     ):
         super().__init__(description)
+        self.execute_validation = execute_validation
         self.enable_transition = enable_transition
         self.transition_slope = transition_slope
         self.transition_start = transition_start
@@ -74,25 +76,26 @@ class GwCreateMeshTask(GwTask):
                 layers[layer] = l
 
             # Validate inputs
-            error_layers, warning_layers = validate_input_layers(layers)
+            if self.execute_validation:
+                error_layers, warning_layers = validate_input_layers(layers)
 
-            # Add errors to TOC
-            if error_layers or warning_layers:
-                group_name = "Mesh inputs errors & warnings"
-                for layer in error_layers:
-                    tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
-                for layer in warning_layers:
-                    tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+                # Add errors to TOC
+                if error_layers or warning_layers:
+                    group_name = "Mesh inputs errors & warnings"
+                    for layer in error_layers:
+                        tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+                    for layer in warning_layers:
+                        tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+                    project.layerTreeRoot().removeChildrenGroupWithoutLayers()
+                    iface.layerTreeView().model().sourceModel().modelReset.emit()
+                    
+                    if error_layers:
+                        self.message = (
+                            "There are errors in input data. Please, check the error layers."
+                        )
+                        return False
                 project.layerTreeRoot().removeChildrenGroupWithoutLayers()
                 iface.layerTreeView().model().sourceModel().modelReset.emit()
-                
-                if error_layers:
-                    self.message = (
-                        "There are errors in input data. Please, check the error layers."
-                    )
-                    return False
-            project.layerTreeRoot().removeChildrenGroupWithoutLayers()
-            iface.layerTreeView().model().sourceModel().modelReset.emit()
 
             # Create mesh
             triangulations = []
