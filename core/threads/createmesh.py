@@ -88,11 +88,9 @@ class GwCreateMeshTask(GwTask):
                         tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
                     project.layerTreeRoot().removeChildrenGroupWithoutLayers()
                     iface.layerTreeView().model().sourceModel().modelReset.emit()
-                    
+
                     if error_layers:
-                        self.message = (
-                            "There are errors in input data. Please, check the error layers."
-                        )
+                        self.message = "There are errors in input data. Please, check the error layers."
                         return False
                 project.layerTreeRoot().removeChildrenGroupWithoutLayers()
                 iface.layerTreeView().model().sourceModel().modelReset.emit()
@@ -112,19 +110,7 @@ class GwCreateMeshTask(GwTask):
             triangulations.append((*ground_triang, {"category": "ground"}))
 
             self.feedback.setProgressText("Creating roof mesh...")
-            crs = layers["roof"].crs()
-            for feature in layers["roof"].getFeatures():
-                layer = core.feature_to_layer(feature, crs)
-                roof_triang = triangulate_custom(
-                    layer, enable_transition=False, feedback=self.feedback
-                )
-                roof_metadata = {
-                    "category": "roof",
-                    "roof_id": feature["fid"],
-                    "elevation": feature["elev"],
-                    "roughness": feature["roughness"],
-                }
-                triangulations.append((*roof_triang, roof_metadata))
+            triangulations += core.triangulate_roof(layers["roof"])
 
             self.mesh = core.create_mesh_dict(triangulations)
 
