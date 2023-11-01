@@ -1,5 +1,6 @@
 import traceback
 
+from qgis import processing
 from qgis.core import (
     QgsCategorizedSymbolRenderer,
     QgsCoordinateTransform,
@@ -68,7 +69,6 @@ class GwCreateMeshTask(GwTask):
             self.dao = global_vars.gpkg_dao_data.clone()
             path = f"{self.dao.db_filepath}|layername="
             layers = {"ground": None, "roof": None, "ground_roughness": None}
-            # layers = {"ground": None, "roof": None}
             for layer in layers:
                 if layer == "ground_roughness" and not self.fill_roughness:
                     continue
@@ -141,15 +141,15 @@ class GwCreateMeshTask(GwTask):
 
             self.mesh = core.create_mesh_dict(triangulations)
 
-            # Get elevation
-            # FIXME use following line after fixing GPKG CRS issue
-            # ground_crs = layers["ground"].crs()
+            # Get ground elevation
             self.feedback.setProgressText("Getting vertice elevations...")
             if self.dem_layer is None:
                 for vertice in self.mesh["vertices"].values():
                     if vertice["category"] == "ground":
                         vertice["elevation"] = 0
             else:
+                # FIXME use following line after fixing GPKG CRS issue
+                # ground_crs = layers["ground"].crs()
                 ground_crs = QgsProject.instance().crs()
                 dem_crs = self.dem_layer.crs()
                 qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
@@ -158,6 +158,16 @@ class GwCreateMeshTask(GwTask):
                         point = qct.transform(QgsPointXY(*vertice["coordinates"]))
                         val, res = self.dem_layer.dataProvider().sample(point, 1)
                         vertice["elevation"] = val if res else 0
+
+            # Get ground roughness
+            if self.fill_roughness:
+                self.feedback.setProgressText("Getting ground roughness...")
+                roughness_dict = core.get_ground_roughness(
+                    self.mesh, layers["ground_roughness"], landuses
+                )
+                for triangle_id, roughness in roughness_dict:
+                    triangle = self.mesh["triangles"][triangle_id]
+                    triangle["roughness"] = roughness
 
             # Create temp layer
             self.feedback.setProgressText("Creating temp layer for visualization...")
@@ -171,6 +181,7 @@ class GwCreateMeshTask(GwTask):
                 QgsField("vertex_id2", QVariant.Int),
                 QgsField("vertex_id3", QVariant.Int),
                 QgsField("vertex_id4", QVariant.Int),
+                QgsField("roughness", QVariant.Double),
             ]
             provider.addAttributes(fields)
             temp_layer.updateFields()
@@ -184,7 +195,9 @@ class GwCreateMeshTask(GwTask):
                     for vert in tri["vertice_ids"]
                 ]
                 feature.setGeometry(QgsGeometry.fromPolygonXY([polygon_points]))
-                feature.setAttributes([i, tri["category"], *tri["vertice_ids"]])
+                feature.setAttributes(
+                    [i, tri["category"], *tri["vertice_ids"], tri["roughness"]]
+                )
                 provider.addFeature(feature)
 
             temp_layer.updateExtents()

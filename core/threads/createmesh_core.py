@@ -1,5 +1,6 @@
 from qgis import processing
-from qgis.core import QgsGeometry, QgsVectorLayer, QgsField
+from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsPointXY, QgsVectorLayer
+from qgis.PyQt.QtCore import QVariant
 
 
 def create_mesh_dict(triangulations_list):
@@ -32,6 +33,82 @@ def feature_to_layer(feature, crs):
     layer.commitChanges()
     layer.updateExtents()
     return layer
+
+
+def get_ground_roughness(mesh_dict, roughness_layer, landuses):
+    # Calculate concrete values for each roughness polygon
+    # (landuse or custom_roughness)
+    url = "MultiPolygon?index=yes"
+    temp_roughness = QgsVectorLayer(url, "roughness", "memory")
+    temp_roughness.setCrs(roughness_layer.crs())
+    provider = temp_roughness.dataProvider()
+    fields = [
+        QgsField("fid", QVariant.Int),
+        QgsField("roughness", QVariant.Double),
+    ]
+    provider.addAttributes(fields)
+    temp_roughness.updateFields()
+    for feature in roughness_layer.getFeatures():
+        new_feature = QgsFeature()
+        new_feature.setGeometry(feature.geometry())
+        if type(feature["custom_roughness"]) in [int, float]:
+            roughness = feature["custom_roughness"]
+        else:
+            roughness = landuses[feature["landuse"]]
+        new_feature.setAttributes([feature["fid"], roughness])
+        provider.addFeature(new_feature)
+    temp_roughness.updateExtents()
+
+    # Rasterize temp_roughness layer
+    resolution = 1
+    e = temp_roughness.extent()
+    params = {
+        "BURN": 0,
+        "DATA_TYPE": 5,
+        "EXTENT": f"{e.xMinimum()},{e.xMaximum()},{e.yMinimum()},{e.yMaximum()}",
+        "EXTRA": "",
+        "FIELD": "roughness",
+        "HEIGHT": resolution,
+        "INIT": None,
+        "INPUT": temp_roughness,
+        "INVERT": False,
+        "NODATA": 0,
+        "OPTIONS": "",
+        "OUTPUT": "TEMPORARY_OUTPUT",
+        "UNITS": 1,
+        "USE_Z": False,
+        "WIDTH": resolution,
+    }
+    res = processing.run("gdal:rasterize", params)
+    raster_layer = res["OUTPUT"]
+
+    # Get roughness for each ground triangle
+    url = "Polygon?field=fid:integer&index=yes"
+    ground_triangles = QgsVectorLayer(url, "gt", "memory")
+    ground_triangles.setCrs(roughness_layer.crs())
+    for i, tri in mesh_dict["triangles"].items():
+        if tri["category"] == "ground":
+            feature = QgsFeature()
+            polygon_points = [
+                QgsPointXY(*mesh_dict["vertices"][vert]["coordinates"])
+                for vert in tri["vertice_ids"]
+            ]
+            feature.setGeometry(QgsGeometry.fromPolygonXY([polygon_points]))
+            feature.setAttributes([i])
+            ground_triangles.dataProvider().addFeature(feature)
+    ground_triangles.updateExtents()
+    params = {
+        "COLUMN_PREFIX": "_",
+        "INPUT": ground_triangles,
+        "INPUT_RASTER": raster_layer,
+        "OUTPUT": "TEMPORARY_OUTPUT",
+        "RASTER_BAND": 1,
+        "STATISTICS": [9],
+    }
+    res = processing.run("native:zonalstatisticsfb", params)
+    res_layer = res["OUTPUT"]
+    roughness_by_triangle = {ft["fid"]: round(ft["_majority"], 8) for ft in res_layer}
+    return roughness_by_triangle
 
 
 def triangulate_roof(roof_layer):

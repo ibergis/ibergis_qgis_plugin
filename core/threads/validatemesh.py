@@ -74,7 +74,8 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
     return verts
 
 def validate_vert_edge(layers_dict: dict) -> QgsVectorLayer:
-    data = pd.concat(map(layer_to_gdf, layers_dict.values()))
+    layers = [layers_dict["ground"], layers_dict["roof"]]
+    data = pd.concat(map(layer_to_gdf, layers))
 
     output_layer = QgsVectorLayer("Point", "Vertex-Edge Errors", "memory")
     output_layer.setCrs(list(layers_dict.values())[0].crs())
