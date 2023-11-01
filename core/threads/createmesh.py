@@ -67,13 +67,40 @@ class GwCreateMeshTask(GwTask):
             # Load input layers
             self.dao = global_vars.gpkg_dao_data.clone()
             path = f"{self.dao.db_filepath}|layername="
-            layers = {"ground": None, "roof": None}
+            layers = {"ground": None, "roof": None, "ground_roughness": None}
+            # layers = {"ground": None, "roof": None}
             for layer in layers:
+                if layer == "ground_roughness" and not self.fill_roughness:
+                    continue
                 l = QgsVectorLayer(f"{path}{layer}", layer, "ogr")
                 if not l.isValid():
                     self.message = f"Layer '{layer}' is not valid. Check if GPKG file has a '{layer}' layer."
                     return False
                 layers[layer] = l
+
+            # Validate landuses roughness values
+            if self.fill_roughness:
+                sql = "SELECT id, manning FROM cat_landuses"
+                rows = self.dao.get_rows(sql)
+                landuses = {} if rows is None else dict(rows)
+
+                sql = "SELECT DISTINCT landuse FROM ground_roughness WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
+                rows = self.dao.get_rows(sql)
+                used_landuses = [] if rows is None else [row[0] for row in rows]
+
+                missing_roughness = [
+                    str(l)
+                    for l in landuses
+                    if l in used_landuses and landuses[l] is None
+                ]
+
+                if missing_roughness:
+                    self.message = "The following landuses are used, but don't have a value for roughness: "
+                    self.message += f"{', '.join(missing_roughness)}. "
+                    self.message += (
+                        "Please, verify the 'cat_landuses' table and try again."
+                    )
+                    return False
 
             # Validate inputs
             if self.execute_validation:
