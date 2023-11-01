@@ -86,7 +86,7 @@ def validate_vert_edge(layers_dict: dict) -> QgsVectorLayer:
 
         # Get all neighbor polygons
         neighbors: gpd.GeoDataFrame = data[data.intersects(geom.buffer(1))]
-        neighbors = neighbors.drop(i) # Exclude the current polygon
+        neighbors = neighbors.drop(i, errors='ignore') # Exclude the current polygon
         
         # For each vertex in the current polygon
         for p in get_polygon_vertices(geom):
