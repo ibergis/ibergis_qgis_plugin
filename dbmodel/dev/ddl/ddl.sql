@@ -173,7 +173,6 @@ CREATE TABLE ground (
     code text check (typeof(code) = 'text' or code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
-    structured boolean CHECK (typeof(structured) IN (0,1,NULL)),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
