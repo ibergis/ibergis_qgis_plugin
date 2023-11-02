@@ -127,9 +127,11 @@ CREATE TABLE cat_timeseries (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
     timser_type text check (typeof(timser_type) in ('text', null) and timser_type in ('EVAPORATION', 'INFLOW_HYDROGRAPH', 'INFLOW_POLLUTOGRAPH', 'ORIFICE', 'OTHER', 'RAINFALL', 'TEMPERATURE')),
-    timeseries_type text CHECK (typeof(timeseries_type) in ('text', null) and timeseries_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
+    times_type text CHECK (typeof(times_type) in ('text', null) and times_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
     file text CHECK (typeof(file) = 'text' or file = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
+    fname text check (typeof(fname='text' or fname = null)),
+    "log" text check (typeof("log")='text' or "log" = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
 
