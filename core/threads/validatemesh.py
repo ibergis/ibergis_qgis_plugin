@@ -38,7 +38,8 @@ def validate_cellsize(layer: QgsVectorLayer) -> QgsVectorLayer:
 
 def validate_intersect(layers_dict: dict) -> QgsVectorLayer:
     # Combine ground and roofs layers
-    data = pd.concat(map(layer_to_gdf, layers_dict.values()))
+    layers = [layers_dict["ground"], layers_dict["roof"]]
+    data = pd.concat(map(layer_to_gdf, layers))
 
     # Get overlap
     data["name"] = data.index
@@ -49,7 +50,7 @@ def validate_intersect(layers_dict: dict) -> QgsVectorLayer:
 
     # Fill error layer
     output_layer = QgsVectorLayer("Polygon", "Intersection Errors", "memory")
-    output_layer.setCrs(list(layers_dict.values())[0].crs())
+    output_layer.setCrs(layers_dict["ground"].crs())
     provider = output_layer.dataProvider()
     for geom in overlap.geometry:
         feature = QgsFeature()
@@ -78,7 +79,7 @@ def validate_vert_edge(layers_dict: dict) -> QgsVectorLayer:
     data = pd.concat(map(layer_to_gdf, layers))
 
     output_layer = QgsVectorLayer("Point", "Vertex-Edge Errors", "memory")
-    output_layer.setCrs(list(layers_dict.values())[0].crs())
+    output_layer.setCrs(layers_dict["ground"].crs())
     provider = output_layer.dataProvider()
 
     # For each polygon
