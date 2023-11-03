@@ -8,7 +8,7 @@ This version of Giswater is provided by Giswater Association
 -- ----------------------------
 -- SRID
 -- ----------------------------
-INSERT INTO gpkg_spatial_ref_sys (srs_name, srs_id, organization, organization_coordsys_id, definition) VALUES('USER SRID', <SRID_VALUE>, 'user SRID', <SRID_VALUE>, 'user_srid');
+INSERT INTO gpkg_spatial_ref_sys (srs_name, srs_id, organization, organization_coordsys_id, definition) VALUES('USER SRID', <SRID_VALUE>, 'EPSG', <SRID_VALUE>, 'user_srid');
 
 
 
