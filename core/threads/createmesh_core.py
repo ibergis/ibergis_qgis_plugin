@@ -107,7 +107,9 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses):
     }
     res = processing.run("native:zonalstatisticsfb", params)
     res_layer = res["OUTPUT"]
-    roughness_by_triangle = {ft["fid"]: round(ft["_majority"], 8) for ft in res_layer}
+    roughness_by_triangle = {
+        ft["fid"]: round(ft["_majority"], 8) for ft in res_layer.getFeatures()
+    }
     return roughness_by_triangle
 
 

@@ -165,7 +165,7 @@ class GwCreateMeshTask(GwTask):
                 roughness_dict = core.get_ground_roughness(
                     self.mesh, layers["ground_roughness"], landuses
                 )
-                for triangle_id, roughness in roughness_dict:
+                for triangle_id, roughness in roughness_dict.items():
                     triangle = self.mesh["triangles"][triangle_id]
                     triangle["roughness"] = roughness
 
