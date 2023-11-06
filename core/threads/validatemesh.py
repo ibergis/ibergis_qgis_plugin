@@ -114,6 +114,37 @@ def validate_vert_edge(layers_dict: dict) -> QgsVectorLayer:
     
     return output_layer
 
+def validate_ground_roughness_layer(layer: QgsVectorLayer):
+    # Create layer
+    output_layer = QgsVectorLayer("Polygon", "Invalid Roughness Params", "memory")
+    output_layer.setCrs(layer.crs())
+    provider = output_layer.dataProvider()
+
+    fid_field = QgsField("fid", QVariant.Int)
+    landuse_field = QgsField("landuse", QVariant.Int)
+    roughness_field = QgsField("custom_roughness", QVariant.Double)
+    provider.addAttributes([fid_field, landuse_field, roughness_field])
+    output_layer.updateFields()
+
+    # Fill layer the with errors
+    output_layer.startEditing()
+    for feature in layer.getFeatures():
+        landuse = feature["landuse"]
+        roughness = feature["custom_roughness"]
+        if (
+            type(landuse) in [int, float] or
+            type(roughness) in [int, float] and roughness > 0
+        ):
+            continue
+
+        invalid_feature = QgsFeature(output_layer.fields())
+        attributes = [feature["fid"], feature["landuse"], feature["custom_roughness"]]
+        invalid_feature.setAttributes(attributes)
+        invalid_feature.setGeometry(feature.geometry())
+        output_layer.addFeature(invalid_feature)
+    output_layer.commitChanges()
+
+    return output_layer
 
 def validate_roof_layer(layer: QgsVectorLayer):
     # Create layer
@@ -217,5 +248,10 @@ def validate_input_layers(layers_dict: dict) -> Tuple[list, list]:
     roof_cellsize_layer = validate_cellsize(layers_dict["roof"])
     if roof_cellsize_layer.hasFeatures():
         error_layers.append(roof_cellsize_layer)
+
+    # Validate ground_roughness layer
+    ground_roughness_layer = validate_ground_roughness_layer(layers_dict["ground_roughness"])
+    if ground_roughness_layer.hasFeatures():
+        error_layers.append(ground_roughness_layer)
 
     return error_layers, warning_layers
