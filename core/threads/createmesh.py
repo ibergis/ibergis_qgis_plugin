@@ -190,11 +190,14 @@ class GwCreateMeshTask(GwTask):
                     self.message = "Task canceled."
                     return False
                 feature = QgsFeature()
-                polygon_points = [
-                    QgsPointXY(*self.mesh["vertices"][vert]["coordinates"])
-                    for vert in tri["vertice_ids"]
-                ]
-                feature.setGeometry(QgsGeometry.fromPolygonXY([polygon_points]))
+                vertices = (self.mesh["vertices"][vert] for vert in tri["vertice_ids"])
+                wkt = "TRIANGLE(("
+                wkt += ",".join(
+                    f"{v['coordinates'][0]} {v['coordinates'][1]} {v['elevation']}"
+                    for v in vertices
+                )
+                wkt += "))"
+                feature.setGeometry(QgsGeometry.fromWkt(wkt))
                 feature.setAttributes(
                     [i, tri["category"], *tri["vertice_ids"], tri["roughness"]]
                 )
