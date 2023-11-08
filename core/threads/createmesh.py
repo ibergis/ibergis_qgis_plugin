@@ -104,6 +104,7 @@ class GwCreateMeshTask(GwTask):
                     return False
 
             # Validate inputs
+            self.feedback.setProgressText("Validating inputs...")
             if self.execute_validation:
                 error_layers, warning_layers = validate_input_layers(layers)
 

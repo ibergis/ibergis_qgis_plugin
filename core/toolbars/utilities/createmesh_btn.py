@@ -84,17 +84,18 @@ class GwCreateMeshButton(GwAction):
             fill_roughness,
             feedback=self.feedback,
         )
+        thread = self.thread_triangulation
 
         # Set signals
         dlg.btn_ok.setEnabled(False)
         dlg.btn_save.setEnabled(False)
         dlg.btn_cancel.clicked.disconnect()
-        dlg.btn_cancel.clicked.connect(self.thread_triangulation.cancel)
+        dlg.btn_cancel.clicked.connect(thread.cancel)
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
-        self.thread_triangulation.taskCompleted.connect(self._on_task_completed)
-        self.thread_triangulation.taskTerminated.connect(self._on_task_terminated)
-        self.thread_triangulation.feedback.progressText.connect(self._set_progress_text)
-        self.thread_triangulation.feedback.progress.connect(dlg.progress_bar.setValue)
+        thread.taskCompleted.connect(self._on_task_completed)
+        thread.taskTerminated.connect(self._on_task_terminated)
+        thread.feedback.progressText.connect(self._set_progress_text)
+        thread.feedback.progressChanged.connect(dlg.progress_bar.setValue)
 
         # Timer
         self.t0 = time()
@@ -103,7 +104,7 @@ class GwCreateMeshButton(GwAction):
         self.timer.start(500)
         dlg.rejected.connect(self.timer.stop)
 
-        QgsApplication.taskManager().addTask(self.thread_triangulation)
+        QgsApplication.taskManager().addTask(thread)
 
     def _get_layer(self, dao, layer_name):
         path = f"{dao.db_filepath}|layername={layer_name}"

@@ -53,7 +53,7 @@ class GwImportINPButton(GwAction):
         dlg.btn_cancel.clicked.connect(self.thread.cancel)
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
         self.thread.feedback.progressText.connect(self._set_progress_text)
-        self.thread.feedback.progress.connect(dlg.progress_bar.setValue)
+        self.thread.feedback.progressChanged.connect(dlg.progress_bar.setValue)
         self.thread.taskCompleted.connect(self._on_task_completed)
         self.thread.taskTerminated.connect(self._on_task_terminated)
 
