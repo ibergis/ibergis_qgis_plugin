@@ -1,4 +1,5 @@
 import traceback
+from pathlib import Path
 
 from qgis import processing
 from qgis.core import (
@@ -206,17 +207,11 @@ class GwCreateMeshTask(GwTask):
             temp_layer.updateExtents()
 
             # Set the style of the layer
-            renderer = QgsCategorizedSymbolRenderer()
-            categories = [
-                QgsRendererCategory(
-                    "ground", QgsFillSymbol.createSimple({"color": "#a6cee3"}), "Ground"
-                ),
-                QgsRendererCategory(
-                    "roof", QgsFillSymbol.createSimple({"color": "#fb9a99"}), "Roof"
-                ),
-            ]
-            renderer = QgsCategorizedSymbolRenderer("category", categories)
-            temp_layer.setRenderer(renderer)
+            style_path = "resources/templates/mesh_temp_layer.qml"
+            style_path = Path(global_vars.plugin_dir) / style_path
+            style_path = str(style_path)
+            temp_layer.loadNamedStyle(style_path)
+            temp_layer.triggerRepaint()
 
             # Add temp layer to TOC
             tools_qt.add_layer_to_toc(temp_layer)
