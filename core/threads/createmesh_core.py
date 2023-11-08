@@ -35,7 +35,7 @@ def feature_to_layer(feature, crs):
     return layer
 
 
-def get_ground_roughness(mesh_dict, roughness_layer, landuses):
+def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
     # Calculate concrete values for each roughness polygon
     # (landuse or custom_roughness)
     url = "MultiPolygon?index=yes"
@@ -79,7 +79,9 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses):
         "USE_Z": False,
         "WIDTH": resolution,
     }
-    res = processing.run("gdal:rasterize", params)
+    res = processing.run("gdal:rasterize", params, feedback=feedback)
+    if feedback.isCanceled():
+        return
     raster_layer = res["OUTPUT"]
 
     # Get roughness for each ground triangle
@@ -87,6 +89,8 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses):
     ground_triangles = QgsVectorLayer(url, "gt", "memory")
     ground_triangles.setCrs(roughness_layer.crs())
     for i, tri in mesh_dict["triangles"].items():
+        if feedback.isCanceled():
+            return
         if tri["category"] == "ground":
             feature = QgsFeature()
             polygon_points = [
@@ -105,7 +109,9 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses):
         "RASTER_BAND": 1,
         "STATISTICS": [9],
     }
-    res = processing.run("native:zonalstatisticsfb", params)
+    res = processing.run("native:zonalstatisticsfb", params, feedback=feedback)
+    if feedback.isCanceled():
+        return
     res_layer = res["OUTPUT"]
     roughness_by_triangle = {
         ft["fid"]: round(ft["_majority"], 8) for ft in res_layer.getFeatures()
@@ -113,9 +119,11 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses):
     return roughness_by_triangle
 
 
-def triangulate_roof(roof_layer):
+def triangulate_roof(roof_layer, feedback):
     params = {"INPUT": roof_layer, "OUTPUT": "TEMPORARY_OUTPUT"}
-    res = processing.run("3d:tessellate", params)
+    res = processing.run("3d:tessellate", params, feedback=feedback)
+    if feedback.isCanceled():
+        return
 
     roof_meshes = []
     for feature in res["OUTPUT"].getFeatures():

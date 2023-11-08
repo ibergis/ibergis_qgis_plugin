@@ -71,6 +71,9 @@ class GwCreateMeshTask(GwTask):
             path = f"{self.dao.db_filepath}|layername="
             layers = {"ground": None, "roof": None, "ground_roughness": None}
             for layer in layers:
+                if self.feedback.isCanceled():
+                    self.message = "Task canceled."
+                    return False
                 if layer == "ground_roughness" and not self.fill_roughness:
                     continue
                 l = QgsVectorLayer(f"{path}{layer}", layer, "ogr")
@@ -106,7 +109,12 @@ class GwCreateMeshTask(GwTask):
             # Validate inputs
             self.feedback.setProgressText("Validating inputs...")
             if self.execute_validation:
-                error_layers, warning_layers = validate_input_layers(layers)
+                validation_layers = validate_input_layers(layers, self.feedback)
+                if self.feedback.isCanceled():
+                    self.message = "Task canceled."
+                    return False
+                
+                error_layers, warning_layers = validation_layers
 
                 # Add errors to TOC
                 if error_layers or warning_layers:
@@ -136,10 +144,16 @@ class GwCreateMeshTask(GwTask):
                 transition_extent=self.transition_extent,
                 feedback=self.feedback,
             )
+            if self.feedback.isCanceled():
+                self.message = "Task canceled."
+                return False
             triangulations.append((*ground_triang, {"category": "ground"}))
 
             self.feedback.setProgressText("Creating roof mesh...")
-            triangulations += core.triangulate_roof(layers["roof"])
+            triangulations += core.triangulate_roof(layers["roof"], self.feedback)
+            if self.feedback.isCanceled():
+                self.message = "Task canceled."
+                return False
 
             self.mesh = core.create_mesh_dict(triangulations)
 
@@ -156,6 +170,9 @@ class GwCreateMeshTask(GwTask):
                 dem_crs = self.dem_layer.crs()
                 qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
                 for vertice in self.mesh["vertices"].values():
+                    if self.feedback.isCanceled():
+                        self.message = "Task canceled."
+                        return False
                     if vertice["category"] == "ground":
                         point = qct.transform(QgsPointXY(*vertice["coordinates"]))
                         val, res = self.dem_layer.dataProvider().sample(point, 1)
@@ -167,6 +184,9 @@ class GwCreateMeshTask(GwTask):
                 roughness_dict = core.get_ground_roughness(
                     self.mesh, layers["ground_roughness"], landuses
                 )
+                if self.feedback.isCanceled():
+                    self.message = "Task canceled."
+                    return False
                 for triangle_id, roughness in roughness_dict.items():
                     triangle = self.mesh["triangles"][triangle_id]
                     triangle["roughness"] = roughness

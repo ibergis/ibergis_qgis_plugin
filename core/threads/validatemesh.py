@@ -1,16 +1,17 @@
 from qgis.core import QgsFeature, QgsVectorLayer, QgsField, QgsGeometry, QgsPointXY
 from qgis.PyQt.QtCore import QVariant
+from ..utils.feedback import Feedback
 from ..utils.meshing_process import layer_to_gdf
 from ...ext_libs import geopandas as gpd
 
-from typing import Tuple
+from typing import Tuple, Union
 import pandas as pd
 import shapely
 import itertools
 import time
 
 
-def validate_cellsize(layer: QgsVectorLayer) -> QgsVectorLayer:
+def validate_cellsize(layer: QgsVectorLayer, feedback: Feedback) -> Union[QgsVectorLayer, None]:
     # Create layer
     layer_name = f"{layer.name()}: Invalid cellsize"
     output_layer = QgsVectorLayer("Polygon", layer_name, "memory")
@@ -24,6 +25,8 @@ def validate_cellsize(layer: QgsVectorLayer) -> QgsVectorLayer:
     # Fill layer with cellsize errors
     output_layer.startEditing()
     for feature in layer.getFeatures():
+        if feedback.isCanceled():
+            return
         cellsize = feature["cellsize"]
         if type(cellsize) in [int, float] and cellsize > 0:
             continue
@@ -36,7 +39,7 @@ def validate_cellsize(layer: QgsVectorLayer) -> QgsVectorLayer:
     return output_layer
 
 
-def validate_intersect(layers_dict: dict) -> QgsVectorLayer:
+def validate_intersect(layers_dict: dict, feedback: Feedback) -> Union[QgsVectorLayer, None]:
     # Combine ground and roofs layers
     layers = [layers_dict["ground"], layers_dict["roof"]]
     data = pd.concat(map(layer_to_gdf, layers))
@@ -44,9 +47,13 @@ def validate_intersect(layers_dict: dict) -> QgsVectorLayer:
     # Get overlap
     data["name"] = data.index
     overlap = data.overlay(data, how="intersection", keep_geom_type=False)
+    if feedback.isCanceled():
+        return
     overlap = overlap.loc[overlap["name_1"] != overlap["name_2"]]
     overlap = overlap.explode()
     overlap = overlap.loc[overlap.geometry.geom_type=='Polygon'] # Ignore Line overlap
+    if feedback.isCanceled():
+        return
 
     # Fill error layer
     output_layer = QgsVectorLayer("Polygon", "Intersection Errors", "memory")
@@ -74,7 +81,7 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
         verts += get_polygon_vertices(poly)
     return verts
 
-def validate_vert_edge(layers_dict: dict) -> QgsVectorLayer:
+def validate_vert_edge(layers_dict: dict, feedback: Feedback) -> Union[QgsVectorLayer, None]:
     layers = [layers_dict["ground"], layers_dict["roof"]]
     data = pd.concat(map(layer_to_gdf, layers))
 
@@ -84,6 +91,8 @@ def validate_vert_edge(layers_dict: dict) -> QgsVectorLayer:
 
     # For each polygon
     for i, row in data.iterrows():
+        if feedback.isCanceled():
+            return
         geom: shapely.Polygon = row['geometry']
 
         # Get all neighbor polygons
@@ -114,7 +123,7 @@ def validate_vert_edge(layers_dict: dict) -> QgsVectorLayer:
     
     return output_layer
 
-def validate_ground_roughness_layer(layer: QgsVectorLayer):
+def validate_ground_roughness_layer(layer: QgsVectorLayer, feedback: Feedback):
     # Create layer
     output_layer = QgsVectorLayer("Polygon", "Invalid Roughness Params", "memory")
     output_layer.setCrs(layer.crs())
@@ -129,6 +138,8 @@ def validate_ground_roughness_layer(layer: QgsVectorLayer):
     # Fill layer the with errors
     output_layer.startEditing()
     for feature in layer.getFeatures():
+        if feedback.isCanceled():
+            return
         landuse = feature["landuse"]
         roughness = feature["custom_roughness"]
         if (
@@ -146,7 +157,7 @@ def validate_ground_roughness_layer(layer: QgsVectorLayer):
 
     return output_layer
 
-def validate_roof_layer(layer: QgsVectorLayer):
+def validate_roof_layer(layer: QgsVectorLayer, feedback: Feedback):
     # Create layer
     output_layer = QgsVectorLayer("Polygon", "Invalid Roof Params", "memory")
     output_layer.setCrs(layer.crs())
@@ -161,6 +172,8 @@ def validate_roof_layer(layer: QgsVectorLayer):
     # Fill layer the with errors
     output_layer.startEditing()
     for feature in layer.getFeatures():
+        if feedback.isCanceled():
+            return
         roughness = feature["roughness"]
         elev = feature["elev"]
         if (
@@ -178,11 +191,13 @@ def validate_roof_layer(layer: QgsVectorLayer):
     return output_layer
 
 
-def validate_distance(layer: QgsVectorLayer) -> QgsVectorLayer:
+def validate_distance(layer: QgsVectorLayer, feedback: Feedback) -> Union[QgsVectorLayer, None]:
     data: gpd.GeoDataFrame = layer_to_gdf(layer)
     vertices = []
     cellsize = []
     for i, row in data.iterrows():
+        if feedback.isCanceled():
+            return
         geom = row['geometry']
         assert type(geom) == shapely.Polygon, f"{type(geom)}"
         new_verts = list(map(shapely.Point, get_polygon_vertices(geom)))
@@ -197,6 +212,8 @@ def validate_distance(layer: QgsVectorLayer) -> QgsVectorLayer:
     join = vertices_gdf.sjoin_nearest(
         vertices_gdf, max_distance=max(cellsize), distance_col="dist", exclusive=True
     )
+    if feedback.isCanceled():
+        return
     join = join[join['dist'] > 1e-5]
     join["cellsize"] = join[['cellsize_left', 'cellsize_right']].max(axis=1)
     join = join[join['dist'] < join["cellsize"]]
@@ -214,44 +231,29 @@ def validate_distance(layer: QgsVectorLayer) -> QgsVectorLayer:
     return output_layer
 
 
-def validate_input_layers(layers_dict: dict) -> Tuple[list, list]:
+def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Union[Tuple[list, list], None]:
     error_layers = []
     warning_layers = []
 
-    small_vertex_distance_layer = validate_distance(layers_dict["ground"])
-    if small_vertex_distance_layer.hasFeatures():
-        warning_layers.append(small_vertex_distance_layer)
+    validations = [
+        (warning_layers, validate_distance, layers_dict["ground"]),
+        (error_layers, validate_roof_layer, layers_dict["roof"]),
+        (error_layers, validate_vert_edge, layers_dict),
+        (error_layers, validate_intersect, layers_dict),
+        (error_layers, validate_cellsize, layers_dict["ground"]),
+        (error_layers, validate_cellsize, layers_dict["roof"]),
+        (
+            error_layers,
+            validate_ground_roughness_layer,
+            layers_dict["ground_roughness"],
+        ),
+    ]
 
-    # Validate ground layer
-    roof_attrs_layer = validate_roof_layer(layers_dict["roof"])
-    if roof_attrs_layer.hasFeatures():
-        error_layers.append(roof_attrs_layer)
-
-    # Validate vert-edge
-    start = time.time()
-    vert_edge_layer = validate_vert_edge(layers_dict)
-    print(f"{time.time() - start} to vert-edge")
-    if vert_edge_layer.hasFeatures():
-        error_layers.append(vert_edge_layer)
-
-    # Validate intersections
-    intersect_layer = validate_intersect(layers_dict)
-    if intersect_layer.hasFeatures():
-        error_layers.append(intersect_layer)
-
-    # Validate ground layer
-    ground_cellsize_layer = validate_cellsize(layers_dict["ground"])
-    if ground_cellsize_layer.hasFeatures():
-        error_layers.append(ground_cellsize_layer)
-
-    # Validate roof layer
-    roof_cellsize_layer = validate_cellsize(layers_dict["roof"])
-    if roof_cellsize_layer.hasFeatures():
-        error_layers.append(roof_cellsize_layer)
-
-    # Validate ground_roughness layer
-    ground_roughness_layer = validate_ground_roughness_layer(layers_dict["ground_roughness"])
-    if ground_roughness_layer.hasFeatures():
-        error_layers.append(ground_roughness_layer)
+    for result_list, validation_function, parameters in validations:
+        result_layer = validation_function(parameters, feedback)
+        if feedback.isCanceled():
+            return
+        if result_layer.hasFeatures():
+            result_list.append(result_layer)
 
     return error_layers, warning_layers
