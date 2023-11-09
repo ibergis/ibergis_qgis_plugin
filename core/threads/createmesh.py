@@ -182,7 +182,7 @@ class GwCreateMeshTask(GwTask):
             if self.fill_roughness:
                 self.feedback.setProgressText("Getting ground roughness...")
                 roughness_dict = core.get_ground_roughness(
-                    self.mesh, layers["ground_roughness"], landuses
+                    self.mesh, layers["ground_roughness"], landuses, self.feedback
                 )
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."

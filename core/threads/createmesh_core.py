@@ -79,7 +79,7 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
         "USE_Z": False,
         "WIDTH": resolution,
     }
-    res = processing.run("gdal:rasterize", params, feedback=feedback)
+    res = processing.run("gdal:rasterize", params)
     if feedback.isCanceled():
         return
     raster_layer = res["OUTPUT"]
@@ -109,7 +109,7 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
         "RASTER_BAND": 1,
         "STATISTICS": [9],
     }
-    res = processing.run("native:zonalstatisticsfb", params, feedback=feedback)
+    res = processing.run("native:zonalstatisticsfb", params)
     if feedback.isCanceled():
         return
     res_layer = res["OUTPUT"]
@@ -121,7 +121,7 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
 
 def triangulate_roof(roof_layer, feedback):
     params = {"INPUT": roof_layer, "OUTPUT": "TEMPORARY_OUTPUT"}
-    res = processing.run("3d:tessellate", params, feedback=feedback)
+    res = processing.run("3d:tessellate", params)
     if feedback.isCanceled():
         return
 
