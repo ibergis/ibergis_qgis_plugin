@@ -5,6 +5,7 @@ from time import time
 
 from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QTimer
+from qgis.PyQt.QtWidgets import QFileDialog
 
 from ..dialog import GwAction
 from ...threads.createmesh import GwCreateMeshTask
@@ -147,10 +148,18 @@ class GwCreateMeshButton(GwAction):
     def _save_mesh(self):
         self.dlg_mesh.btn_save.setEnabled(False)
 
+        project_folder = str(Path(self.dao.db_filepath).parent)
+        file_path = QFileDialog.getSaveFileName(
+            caption="Save mesh file",
+            directory=project_folder,
+            filter="DAT file (*.dat)",
+        )[0]
+
+        if not file_path:
+            self.dlg_mesh.btn_save.setEnabled(True)
+            return
+
         self.feedback.setProgressText("Saving mesh...")
-        file_name = "mesh.dat"
-        project_folder = Path(self.dao.db_filepath).parent
-        file_path = project_folder / file_name
 
         with open(file_path, "w") as file:
             file.write("MATRIU\n")
