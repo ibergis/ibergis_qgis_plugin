@@ -130,7 +130,7 @@ CREATE TABLE cat_timeseries (
     times_type text CHECK (typeof(times_type) in ('text', null) and times_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
     file text CHECK (typeof(file) = 'text' or file = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    fname text check (typeof(fname='text' or fname = null)),
+    fname text check (typeof(fname)='text' or fname = null),
     "log" text check (typeof("log")='text' or "log" = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
