@@ -5,62 +5,190 @@ as published by the Free Software Foundation, either version 3 of the License, o
 This version of Giswater is provided by Giswater Association
 */
 
+-- ----------------------------
+-- SRID
+-- ----------------------------
+INSERT INTO gpkg_spatial_ref_sys (srs_name, srs_id, organization, organization_coordsys_id, definition) VALUES('USER SRID', <SRID_VALUE>, 'EPSG', <SRID_VALUE>, 'user_srid');
+
+
+
+
 -- ---------------------------
 -- INSERTS INTO SYS GPKG TABLES
 -- ---------------------------
 
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_selector', 'attributes', 'sys_selector', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_parameter', 'attributes', 'sys_parameter', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('sys_typevalue', 'attributes', 'sys_typevalue', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('cat_scenario', 'attributes', 'cat_scenario', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_landuses', 'attributes', 'inp_landuses', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_landuses_value', 'attributes', 'inp_landuses_value', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_curves', 'attributes', 'inp_curves', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_curves_value', 'attributes', 'inp_curves_value', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_timeseries', 'attributes', 'inp_timeseries', '',  0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_timeseries_value', 'attributes', 'inp_timeseries_value', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_losses', 'attributes', 'inp_losses', '', 0, 0, 0, 0, 0, 0);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('inp_losses_values', 'attributes', 'inp_losses_values', '', 0, 0, 0, 0, 0, 0);
+INSERT INTO tables_geom (table_name, isgeom) values
+('sector', 'MULTIPOLYGON'),
+('ground', 'MULTIPOLYGON'),
+('ground_roughness', 'MULTIPOLYGON'),
+('ground_losses', 'MULTIPOLYGON'),
+('roof', 'MULTIPOLYGON'),
+('mesh_tin', 'MULTIPOLYGON'),
+('mesh_roof', 'MULTIPOLYGON'),
+('mesh_anchor_points', 'POINT'),
+('mesh_anchor_lines', 'LINESTRING'),
+('boundary_conditions', 'LINESTRING'),
+('link', 'LINESTRING'),
+('gully', 'POINT'),
+('inp_conduit', 'LINESTRING'),
+('inp_subcatchment', 'MULTIPOLYGON'),
+('inp_outlet', 'LINESTRING'),
+('inp_orifice', 'LINESTRING'),
+('inp_weir', 'LINESTRING'),
+('inp_pump', 'LINESTRING'),
+('inp_outfall', 'POINT'),
+('inp_divider', 'POINT'),
+('inp_storage', 'POINT'),
+('inp_junction', 'POINT'),
+('inp_raingage', 'POINT'),
+('inp_dwf', 'POINT'),
+('inp_inflow', 'POINT'),
+('v_node', 'POINT'),
+('v_arc', 'LINESTRING');
 
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('polygon', 'features', 'polygon', '', 0, 0, 0, 0, 0, 4326);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('point', 'features', 'point', '', 0, 0, 0, 0, 0, 4326);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('manzone', 'features', 'manzone', '', 0, 0, 0, 0, 0, 4326);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('losszone', 'features', 'losszone', '', 0, 0, 0, 0, 0, 4326);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('roof', 'features', 'roof', '', 0, 0, 0, 0, 0, 4326);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('element', 'features', 'element', '', 0, 0, 0, 0, 0, 4326);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('edge', 'features', 'edge', '', 0, 0, 0, 0, 0, 4326);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('vertex', 'features', 'vertex', '', 0, 0, 0, 0, 0, 4326);
-INSERT INTO gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id) VALUES('raingage', 'features', 'raingage', '', 0, 0, 0, 0, 0, 4326);
 
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_selector', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_parameter', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('sys_typevalue', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('cat_scenario', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_landuses', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_landuses_value', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_curves', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_curves_value', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_timeseries', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_timeseries_value', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_losses', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('inp_losses_values', 0);
 
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('polygon', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('point', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('manzone', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('losszone', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('roof', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('element', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('edge', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('vertex', 0);
-INSERT INTO gpkg_ogr_contents (table_name, feature_count) VALUES('raingage', 0);
+insert into tables_nogeom (table_name) values
+('selector_sector'),
+('selector_scenario'),
+('config_param_user'),
+('config_csv'),
+('config_typevalue'),
+('cat_scenario'),
+('cat_arc'),
+('cat_transects'),
+('cat_curve'),
+('cat_curve_value'),
+('cat_timeseries'),
+('cat_timeseries_value'),
+('cat_landuses'),
+('cat_grate'),
+('cat_pattern'),
+('cat_controls'),
+('inp_files'),
+('rpt_arc'),
+('rpt_arcflow_sum'),
+('rpt_arcpolload_sum'),
+('rpt_arcpollutant_sum'),
+('rpt_cat_result'),
+('rpt_condsurcharge_sum'),
+('rpt_continuity_errors'),
+('rpt_control_actions_taken'),
+('rpt_critical_elements'),
+('rpt_flowclass_sum'),
+('rpt_flowrouting_cont'),
+('rpt_groundwater_cont'),
+('rpt_high_conterrors'),
+('rpt_high_flowinest_ind'),
+('rpt_instability_index'),
+('rpt_lidperformance_sum'),
+('rpt_node'),
+('rpt_nodedepth_sum'),
+('rpt_nodeflooding_sum'),
+('rpt_nodeinflow_sum'),
+('rpt_nodesurcharge_sum'),
+('rpt_outfallflow_sum'),
+('rpt_outfallload_sum'),
+('rpt_pumping_sum'),
+('rpt_qualrouting_cont'),
+('rpt_rainfall_dep'),
+('rpt_routing_timestep'),
+('rpt_runoff_qual'),
+('rpt_runoff_quant'),
+('rpt_storagevol_sum'),
+('rpt_subcatchment'),
+('rpt_subcatchrunoff_sum'),
+('rpt_subcatchwashoff_sum'),
+('rpt_summary_arc'),
+('rpt_summary_crossection'),
+('rpt_summary_node'),
+('rpt_summary_raingage'),
+('rpt_summary_subcatchment'),
+('rpt_timestep_critelem'),
+('rpt_warning_summary'),
+('selector_rpt_compare'),
+('selector_rpt_compare_tstep'),
+('selector_rpt_main'),
+('selector_rpt_main_tstep'),
+('vi_curves'),
+('vi_timeseries'),
+('vi_patterns'),
+('vi_landuses'),
+('vi_subareas'),
+('vi_losses'),
+('vi_xsections'),
+('vi_dwf'),
+('vi_infiltration'),
+('vi_raingages'),
+('vi_conduits'),
+('vi_subcatchments'),
+('vi_outlets'),
+('vi_orifices'),
+('vi_weirs'),
+('vi_pumps'),
+('vi_outfalls'),
+('vi_dividers'),
+('vi_storage'),
+('vi_junctions'),
+('vi_title'),
+('vi_files'),
+('vi_options'),
+('vi_controls'),
+('vi_inflows'),
+('vi_transects');
 
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('polygon', 'geom', 'MULTIPOLYGON', 4326, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('point', 'geom', 'POINT', 4326, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('manzone', 'geom', 'MULTIPOLYGON', 4326, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('losszone', 'geom', 'MULTIPOLYGON', 4326, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('roof', 'geom', 'MULTIPOLYGON', 4326, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('element', 'geom', 'MULTIPOLYGON', 4326, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('edge', 'geom', 'LINESTRING', 4326, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('vertex', 'geom', 'POINT', 4326, 0, 0);
-INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES('raingage', 'geom', 'MULTIPOLYGON', 4326, 0, 0);
+
+
+
+-- --------------
+-- CONFIG_TYPEVALUE
+-- --------------
+INSERT INTO config_typevalue (typevalue, id, idval, descript, addparam) VALUES
+(1, 'nullvalue', '0', 'UNDEFINED', NULL),
+(2, 'options_order', '0', 'Order 0', NULL),
+(3, 'options_order', '1', 'Order 1', NULL),
+(4, 'options_order', '10', 'Order 10', NULL),
+(5, 'options_order', '101', 'Order 101', NULL),
+(6, 'options_simulation_new', '0', 'New simulation', NULL),
+(7, 'options_simulation_new', '1', 'Continue simulation', NULL),
+(8, 'losses_zonal_assign', '1', 'Lineal	Type of zonal losses', NULL),
+(9, 'losses_zonal_assign', '2', 'SCS', NULL),
+(10, 'losses_zonal_assign', '3', 'Horton', NULL),
+(11, 'losses_zonal_assign', '4', 'Green ampt', NULL),
+(12, 'losses_zonal_assign', '5', 'SCSC', NULL),
+(13, 'rain_class', '0', 'No_rain', NULL),
+(14, 'rain_class', '1', 'Hyetogram', NULL),
+(15, 'rain_class', '2', 'Raster', NULL),
+(16, 'rain_class', '3', 'Raster interpolation', NULL),
+(17, 'rain_format', '0', 'Intensity', NULL),
+(18, 'rain_format', '1', 'Volume', NULL),
+(19, 'plg_swmm_options', '0', 'Only gullies', NULL),
+(20, 'plg_swmm_options', '1', 'Complete network', NULL),
+(21, 'inp_value_yesno', 'YES', 'YES', NULL),
+(22, 'inp_value_yesno', 'NO', 'NO', NULL),
+(23, 'inp_options_dwfscenario', '1', 'Default', ''),
+(24, 'inp_options_dwfscenario', '0', 'UNDEFINED', NULL),
+(25, 'inp_options_force_main_eq', 'H-W', 'H-W', NULL),
+(26, 'inp_options_force_main_eq', 'D-W', 'D-W', NULL),
+(27, 'inp_options_inertial_damping', 'FULL', 'FULL', ''),
+(28, 'inp_options_inertial_damping', 'NONE', 'NONE', NULL),
+(29, 'inp_options_normal_flow_limited', 'BOTH', 'BOTH', NULL),
+(30, 'inp_options_normal_flow_limited', 'FLOWDE', 'FLOWDE', NULL),
+(31, 'inp_options_normal_flow_limited', 'SLOPE', 'SLOPE', NULL),
+(32, 'inp_options_hydro_scenario', '1', 'Infiltration default value', NULL),
+(33, 'inp_options_hydro_scenario', '0', 'UNDEFINED', NULL),
+(34, 'inp_options_flow_units', 'CFS', 'CFS', NULL),
+(35, 'inp_options_flow_units', 'CMS', 'CMS', NULL),
+(36, 'inp_options_flow_units', 'GPM', 'GPM', NULL),
+(37, 'inp_options_flow_units', 'LPS', 'LPS', NULL),
+(38, 'inp_options_flow_units', 'MGD', 'MGD', NULL),
+(39, 'inp_options_flow_units', 'MLD', 'MLD', NULL),
+(40, 'inp_options_flow_routing', 'DYNWAVE', 'DYNWAVE', NULL),
+(41, 'inp_options_flow_routing', 'KINWAVE', 'KINWAVE', NULL),
+(42, 'inp_options_flow_routing', 'STEADY', 'STEADY', NULL),
+(43, 'inp_options_link_offsets', 'ELEVATION', 'ELEVATION', NULL),
+(44, 'inp_options_link_offsets', 'DEPTH', 'DEPTH', NULL),
+(45, 'inp_options_networkmode', '1D', '1D SWMM', NULL),
+(46, 'inp_options_networkmode', '1D2D', '1D/2D SWMM_IBER', NULL);
+
+

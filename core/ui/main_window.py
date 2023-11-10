@@ -8,13 +8,12 @@ or (at your option) any later version.
 import os
 
 from qgis.PyQt import QtCore
-from qgis.PyQt.QtWidgets import QMainWindow, QShortcut, QSizePolicy
-from qgis.PyQt.QtGui import QKeySequence, QIcon
+from qgis.PyQt.QtWidgets import QMainWindow, QSizePolicy
+from qgis.PyQt.QtGui import QIcon
 
 from qgis.gui import QgsMessageBar
 
 from ... import global_vars
-
 
 
 class GwMainWindow(QMainWindow):
@@ -23,7 +22,7 @@ class GwMainWindow(QMainWindow):
     key_escape = QtCore.pyqtSignal()
     key_enter = QtCore.pyqtSignal()
 
-    def __init__(self, subtag=None):
+    def __init__(self):
 
         super().__init__()
         self.setupUi(self)
@@ -44,14 +43,11 @@ class GwMainWindow(QMainWindow):
         except Exception:
             self._messageBar = global_vars.iface
 
-        self.subtag = subtag
         # Set window icon
         icon_folder = f"{global_vars.plugin_dir}{os.sep}icons"
-        icon_path = f"{icon_folder}{os.sep}dialogs{os.sep}20x20{os.sep}giswater.png"
+        icon_path = f"{icon_folder}{os.sep}dialogs{os.sep}20x20{os.sep}drain.png"
         giswater_icon = QIcon(icon_path)
         self.setWindowIcon(giswater_icon)
-        # Enable event filter
-        self.installEventFilter(self)
 
 
     def closeEvent(self, event):
@@ -63,20 +59,6 @@ class GwMainWindow(QMainWindow):
             # This exception jumps, for example, when closing the mincut dialog when it is in docker
             # RuntimeError: wrapped C/C++ object of type Mincut has been deleted
             pass
-
-
-    def eventFilter(self, object, event):
-
-        if hasattr(self, "subtag") and self.subtag is not None:
-            tag = f'{self.objectName()}_{self.subtag}'
-        else:
-            tag = str(self.objectName())
-
-        if event.type() == QtCore.QEvent.ActivationChange and self.isActiveWindow():
-            global_vars.session_vars['last_focus'] = tag
-            return True
-
-        return False
 
 
     def keyPressEvent(self, event):

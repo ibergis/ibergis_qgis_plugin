@@ -5,230 +5,24 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
-from qgis.PyQt.QtSql import QSqlDatabase
-from qgis.core import QgsCredentials, QgsDataSourceUri
-from qgis.PyQt.QtCore import QSettings
+from qgis.core import QgsDataSourceUri
 
 from .. import global_vars
-from . import tools_log, tools_qt, tools_qgis, tools_pgdao, tools_os
+from . import tools_log, tools_qt
 
 
-def create_list_for_completer(sql):
-    """
-    Prepare a list with the necessary items for the completer
-        :param sql: Query to be executed, where will we get the list of items (string)
-        :return: list_items: List with the result of the query executed (List) ["item1","item2","..."]
-    """
-
-    rows = get_rows(sql)
-    list_items = []
-    if rows:
-        for row in rows:
-            list_items.append(str(row[0]))
-    return list_items
-
-
-def check_table(tablename, schemaname=None):
-    """ Check if selected table exists in selected schema """
-
-    if schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-        if schemaname in (None, 'null', ''):
-            get_layer_source_from_credentials('prefer')
-            schemaname = global_vars.schema_name
-            if schemaname in (None, 'null', ''):
-                return None
-
-    schemaname = schemaname.replace('"', '')
-    sql = "SELECT * FROM pg_tables WHERE schemaname = %s AND tablename = %s"
-    params = [schemaname, tablename]
-    row = get_row(sql, log_info=False, params=params)
-    return row
-
-
-def check_role(role_name, is_admin=None):
-    """ Check if @role_name exists """
-
-    sql = f"SELECT * FROM pg_roles WHERE rolname = '{role_name}'"
-    row = get_row(sql, log_info=False, is_admin=is_admin)
-    return row
-
-
-def get_srid(tablename, schemaname=None):
-    """ Find SRID of selected @tablename """
-
-    if schemaname in (None, 'null', ''):
-        schemaname = global_vars.schema_name
-
-    schemaname = schemaname.replace('"', '')
-    srid = None
-    sql = "SELECT Find_SRID(%s, %s, 'the_geom');"
-    params = [schemaname, tablename]
-    row = get_row(sql, params=params)
-    if row:
-        srid = row[0]
-
-    return srid
-
-
-def set_database_connection():
-    """ Set database connection """
-
-    global_vars.dao = None
-    global_vars.session_vars['last_error'] = None
-    global_vars.session_vars['logged_status'] = False
-    global_vars.current_user = None
-
-    layer_source, not_version = get_layer_source_from_credentials('prefer')
-    if layer_source:
-        if layer_source['service'] is None and \
-                (layer_source['db'] is None or layer_source['host'] is None or layer_source['user'] is None
-                 or layer_source['password'] is None or layer_source['port'] is None):
-            return False, not_version, layer_source
-    else:
-        return False, not_version, layer_source
-
-    global_vars.session_vars['logged_status'] = True
-
-    return True, not_version, layer_source
-
-
-def check_db_connection():
-    """ Check database connection. Reconnect if needed """
-
-    opened = True
-    try:
-        was_closed = global_vars.dao.check_connection()
-        if was_closed:
-            tools_log.log_warning(f"Database connection was closed and reconnected")
-            opened = global_vars.qgis_db_credentials.open()
-            if not opened:
-                msg = global_vars.qgis_db_credentials.lastError().databaseText()
-                tools_log.log_warning(f"Database connection error (QSqlDatabase): {msg}")
-    except Exception as e:
-        tools_log.log_warning(f"check_db_connection Exception: {e}")
-    finally:
-        return opened
-
-
-def get_pg_version():
-    """ Get PostgreSQL version (integer value) """
-
-    pg_version = None
-    sql = "SELECT current_setting('server_version_num');"
-    row = get_row(sql)
-    if row:
-        pg_version = row[0]
-
-    return pg_version
-
-
-def connect_to_database(host, port, db, user, pwd, sslmode):
-    """ Connect to database with selected parameters """
-
-    # Check if selected parameters is correct
-    if None in (host, port, db, user, pwd):
-        message = "Database connection error. Please check your connection parameters."
-        global_vars.session_vars['last_error'] = tools_qt.tr(message)
-        return False
-
-    # Update current user
-    global_vars.current_user = user
-
-    # QSqlDatabase connection for Table Views
-    global_vars.qgis_db_credentials = QSqlDatabase.addDatabase("QPSQL", global_vars.plugin_name)
-    global_vars.qgis_db_credentials.setHostName(host)
-    if port != '':
-        global_vars.qgis_db_credentials.setPort(int(port))
-    global_vars.qgis_db_credentials.setDatabaseName(db)
-    global_vars.qgis_db_credentials.setUserName(user)
-    global_vars.qgis_db_credentials.setPassword(pwd)
-    status = global_vars.qgis_db_credentials.open()
-    if not status:
-        msg = "Database connection error (QSqlDatabase). Please open plugin log file to get more details"
-        global_vars.session_vars['last_error'] = tools_qt.tr(msg)
-        details = global_vars.qgis_db_credentials.lastError().databaseText()
-        tools_log.log_warning(str(details))
-        return False
-
-    # psycopg2 connection
-    global_vars.dao = tools_pgdao.GwPgDao()
-    global_vars.dao.set_params(host, port, db, user, pwd, sslmode)
-    status = global_vars.dao.init_db()
-    tools_log.log_info(f"PostgreSQL PID: {global_vars.dao.pid}")
-    if not status:
-        msg = "Database connection error (psycopg2). Please open plugin log file to get more details"
-        global_vars.session_vars['last_error'] = tools_qt.tr(msg)
-        tools_log.log_warning(str(global_vars.dao.last_error))
-        return False
-
-    return status
-
-
-def connect_to_database_service(service, sslmode=None):
-    """ Connect to database trough selected service
-    This service must exist in file pg_service.conf """
-
-    conn_string = f"service={service}"
-    if sslmode:
-        conn_string += f" sslmode={sslmode}"
-
-    # Get credentials from .pg_service.conf
-    credentials = tools_os.manage_pg_service(service)
-    if credentials:
-        status = connect_to_database(credentials['host'], credentials['port'], credentials['dbname'],
-                                     credentials['user'], credentials['password'], credentials['sslmode'])
-
-    else:
-        # Try to connect using name defined in service file
-        # QSqlDatabase connection
-        global_vars.qgis_db_credentials = QSqlDatabase.addDatabase("QPSQL", global_vars.plugin_name)
-        global_vars.qgis_db_credentials.setConnectOptions(conn_string)
-        status = global_vars.qgis_db_credentials.open()
-        if not status:
-            msg = "Service database connection error (QSqlDatabase). Please open plugin log file to get more details"
-            global_vars.session_vars['last_error'] = tools_qt.tr(msg)
-            details = global_vars.qgis_db_credentials.lastError().databaseText()
-            tools_log.log_warning(str(details))
-            return False
-
-        # psycopg2 connection
-        global_vars.dao = tools_pgdao.GwPgDao()
-        global_vars.dao.set_conn_string(conn_string)
-        status = global_vars.dao.init_db()
-        tools_log.log_info(f"PostgreSQL PID: {global_vars.dao.pid}")
-        if not status:
-            msg = "Service database connection error (psycopg2). Please open plugin log file to get more details"
-            global_vars.session_vars['last_error'] = tools_qt.tr(msg)
-            tools_log.log_warning(str(global_vars.dao.last_error))
-            return False
-
-    return status
-
-
-def get_postgis_version():
-    """ Get Postgis version (integer value) """
-
-    postgis_version = None
-    sql = "SELECT postgis_lib_version()"
-    row = global_vars.dao.get_row(sql)
-    if row:
-        postgis_version = row[0]
-
-    return postgis_version
-
-
-def get_row(sql, log_info=True, log_sql=False, commit=True, params=None, aux_conn=None, is_admin=None, is_thread=False):
+def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_thread=False):
     """ Execute SQL. Check its result in log tables, and show it to the user """
 
     if global_vars.dao is None:
         tools_log.log_warning("The connection to the database is broken.", parameter=sql)
         return None
-    sql = _get_sql(sql, log_sql, params)
+    if log_sql:
+        tools_log.log_db(sql, bold='b', stack_level_increase=2)
     row = global_vars.dao.get_row(sql, commit, aux_conn=aux_conn)
     global_vars.session_vars['last_error'] = global_vars.dao.last_error
 
-    if not row and not is_admin:
+    if not row:
         # Check if any error has been raised
         if global_vars.session_vars['last_error'] and not is_thread:
             tools_qt.manage_exception_db(global_vars.session_vars['last_error'], sql)
@@ -238,13 +32,14 @@ def get_row(sql, log_info=True, log_sql=False, commit=True, params=None, aux_con
     return row
 
 
-def get_rows(sql, log_info=True, log_sql=False, commit=True, params=None, add_empty_row=False, is_thread=False):
+def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False, is_thread=False):
     """ Execute SQL. Check its result in log tables, and show it to the user """
 
     if global_vars.dao is None:
         tools_log.log_warning("The connection to the database is broken.", parameter=sql)
         return None
-    sql = _get_sql(sql, log_sql, params)
+    if log_sql:
+        tools_log.log_db(sql, bold='b', stack_level_increase=2)
     rows = None
     rows2 = global_vars.dao.get_rows(sql, commit)
     global_vars.session_vars['last_error'] = global_vars.dao.last_error
@@ -296,116 +91,6 @@ def check_function(function_name, schema_name=None, commit=True, aux_conn=None):
     return row
 
 
-def connect_to_database_credentials(credentials, conn_info=None, max_attempts=2):
-    """ Connect to database with selected database @credentials """
-
-    # Check if credential parameter 'service' is set
-    if credentials.get('service'):
-        logged = connect_to_database_service(credentials['service'], credentials['sslmode'])
-        return logged, credentials
-
-    attempt = 0
-    logged = False
-    while not logged and attempt <= max_attempts:
-        attempt += 1
-        if conn_info and attempt > 1:
-            (success, credentials['user'], credentials['password']) = \
-                QgsCredentials.instance().get(conn_info, credentials['user'], credentials['password'])
-        logged = connect_to_database(credentials['host'], credentials['port'], credentials['db'],
-                                     credentials['user'], credentials['password'], credentials['sslmode'])
-
-    return logged, credentials
-
-
-def get_layer_source_from_credentials(sslmode_default, layer_name='v_edit_node'):
-    """ Get database parameters from layer @layer_name or database connection settings
-    sslmode_default should be (disable, allow, prefer, require, verify-ca, verify-full)"""
-
-    # Get layer @layer_name
-    layer = tools_qgis.get_layer_by_tablename(layer_name)
-
-    # Get database connection settings
-    settings = QSettings()
-    settings.beginGroup("PostgreSQL/connections")
-
-    if layer is None and settings is None:
-        not_version = False
-        tools_log.log_warning(f"Layer '{layer_name}' is None and settings is None")
-        global_vars.session_vars['last_error'] = f"Layer not found: '{layer_name}'"
-        return None, not_version
-
-    credentials = None
-    not_version = True
-    if layer:
-
-        not_version = False
-        credentials = tools_qgis.get_layer_source(layer)
-
-        # If sslmode is not defined
-        sslmode = sslmode_default
-        if not credentials['sslmode']:
-            # If service is defined: get sslmode from .pg_service file
-            if credentials['service']:
-                tools_log.log_info(f"Getting sslmode from .pg_service file")
-                credentials_service = tools_os.manage_pg_service(credentials['service'])
-                sslmode = credentials_service['sslmode'] if credentials_service['sslmode'] else sslmode_default
-            credentials['sslmode'] = sslmode
-
-        global_vars.schema_name = credentials['schema']
-        conn_info = QgsDataSourceUri(layer.dataProvider().dataSourceUri()).connectionInfo()
-        status, credentials = connect_to_database_credentials(credentials, conn_info)
-        if not status:
-            tools_log.log_warning("Error connecting to database (layer)")
-            global_vars.session_vars['last_error'] = tools_qt.tr("Error connecting to database", None, 'ui_message')
-            return None, not_version
-
-        # Put the credentials back (for yourself and the provider), as QGIS removes it when you "get" it
-        QgsCredentials.instance().put(conn_info, credentials['user'], credentials['password'])
-
-    elif settings:
-
-        not_version = True
-        default_connection = settings.value('selected')
-        settings.endGroup()
-        credentials = {'db': None, 'schema': None, 'table': None, 'service': None,
-                       'host': None, 'port': None, 'user': None, 'password': None, 'sslmode': None}
-
-        if default_connection:
-            settings.beginGroup(f"PostgreSQL/connections/{default_connection}")
-            credentials['host'] = settings.value('host')
-            if settings.value('host') in (None, ""):
-                credentials['host'] = 'localhost'
-            credentials['port'] = settings.value('port')
-            credentials['db'] = settings.value('database')
-            credentials['user'] = settings.value('username')
-            credentials['password'] = settings.value('password')
-            credentials['service'] = settings.value('service')
-
-            sslmode_settings = settings.value('sslmode')
-            try:
-                sslmode_dict = {0: 'prefer', 1: 'disable', 3: 'require'}
-                sslmode = sslmode_dict.get(sslmode_settings, sslmode_default)
-            except ValueError:
-                sslmode = sslmode_settings
-            credentials['sslmode'] = sslmode
-            settings.endGroup()
-
-            status, credentials = connect_to_database_credentials(credentials, max_attempts=0)
-            if not status:
-                tools_log.log_warning("Error connecting to database (settings)")
-                global_vars.session_vars['last_error'] = tools_qt.tr("Error connecting to database", None, 'ui_message')
-                return None, not_version
-
-        else:
-            tools_log.log_warning("Error getting default connection (settings)")
-            global_vars.session_vars['last_error'] = tools_qt.tr("Error getting default connection", None, 'ui_message')
-            return None, not_version
-
-    global_vars.dao_db_credentials = credentials
-
-    return credentials, not_version
-
-
 def get_uri():
     """ Set the component parts of a RDBMS data source URI
     :return: QgsDataSourceUri() with the connection established according to the parameters of the credentials.
@@ -423,18 +108,3 @@ def get_uri():
 
     return uri
 
-# region private functions
-
-
-def _get_sql(sql, log_sql=False, params=None):
-    """ Generate SQL with params. Useful for debugging """
-
-    if params:
-        sql = global_vars.dao.mogrify(sql, params)
-    if log_sql:
-        tools_log.log_db(sql, bold='b', stack_level_increase=2)
-
-    return sql
-
-
-# endregion

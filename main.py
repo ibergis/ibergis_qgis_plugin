@@ -125,14 +125,6 @@ class Drain(QObject):
                 global_vars.logger.close_logger()
         except Exception as e:
             tools_log.log_info(f"Exception in unload when global_vars.logger.close_logger(): {e}")
-        try:
-            # Unlisten notify channel and stop thread
-            if hasattr(global_vars, 'notify'):
-                list_channels = ['desktop', global_vars.current_user]
-                if global_vars.notify:
-                    global_vars.notify.stop_listening(list_channels)
-        except Exception as e:
-            tools_log.log_info(f"Exception in unload when global_vars.notify.stop_listening(list_channels): {e}")
 
         try:
             # Check if project is current loaded and remove giswater action from PluginMenu and Toolbars
@@ -196,7 +188,7 @@ class Drain(QObject):
             return False
 
         # Set plugin and QGIS settings: stored in the registry (on Windows) or .ini file (on Unix)
-        global_vars.init_giswater_settings(setting_file)
+        global_vars.init_plugin_settings(setting_file)
         global_vars.init_qgis_settings(self.plugin_name)
 
         # Check if user config folder exists
@@ -311,7 +303,7 @@ class Drain(QObject):
 
         main_toolbutton.setDefaultAction(self.action)
         admin_button = GwAdminButton()
-        self.action.triggered.connect(partial(admin_button.init_sql, True))
+        self.action.triggered.connect(partial(admin_button.init_sql))
 
 
     def _unset_info_button(self):

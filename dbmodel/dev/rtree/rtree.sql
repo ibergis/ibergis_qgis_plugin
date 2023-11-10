@@ -10,12 +10,29 @@ This version of Giswater is provided by Giswater Association
 -- -------------------------
 
 
-CREATE VIRTUAL TABLE rtree_polygon_geom USING rtree(id, minx, maxx, miny, maxy);
-CREATE VIRTUAL TABLE rtree_point_geom USING rtree(id, minx, maxx, miny, maxy);
-CREATE VIRTUAL TABLE rtree_manzone_geom USING rtree(id, minx, maxx, miny, maxy);
-CREATE VIRTUAL TABLE rtree_losszone_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_ground_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_ground_roughness_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_ground_losses_geom USING rtree(id, minx, maxx, miny, maxy);
 CREATE VIRTUAL TABLE rtree_roof_geom USING rtree(id, minx, maxx, miny, maxy);
-CREATE VIRTUAL TABLE rtree_element_geom USING rtree(id, minx, maxx, miny, maxy);
-CREATE VIRTUAL TABLE rtree_edge_geom USING rtree(id, minx, maxx, miny, maxy);
-CREATE VIRTUAL TABLE rtree_vertex_geom USING rtree(id, minx, maxx, miny, maxy);
-CREATE VIRTUAL TABLE rtree_raingage_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_mesh_tin_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_mesh_roof_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_mesh_anchor_points_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_mesh_anchor_lines_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_boundary_conditions_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_link_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_gully_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_raingage_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_conduit_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_subcatchment_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_outlet_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_orifice_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_weir_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_pump_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_outfall_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_divider_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_storage_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_junction_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_dwf_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_inp_inflow_geom USING rtree(id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_v_node_geom USING rtree (id, minx, maxx, miny, maxy);
+CREATE VIRTUAL TABLE rtree_v_arc_geom USING rtree (id, minx, maxx, miny, maxy);

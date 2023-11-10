@@ -10,9 +10,10 @@ from functools import partial
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QCheckBox, QGridLayout, QLabel, QLineEdit, QSizePolicy, QSpacerItem, QTabWidget,\
     QWidget, QApplication, QDockWidget, QToolButton, QAction
+from qgis._core import QgsProject
 
 from ..ui.ui_manager import GwSelectorUi
-from ..utils import tools_gw
+from ..utils import tools_gw, tools_fct
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt, tools_os
 
@@ -31,11 +32,7 @@ class GwSelector:
         """
         if reload_dlg:
             aux_params = None
-            if selector_type == "selector_mincut":
-                current_tab = tools_gw.get_config_parser('dialogs_tab', "dlg_selector_mincut", "user", "session")
-                aux_params = tools_gw.get_config_parser("selector_mincut", f"aux_params", "user", "session")
-            else:
-                current_tab = tools_gw.get_config_parser('dialogs_tab', "dlg_selector_basic", "user", "session")
+            current_tab = tools_gw.get_config_parser('dialogs_tab', "dlg_selector_basic", "user", "session")
             reload_dlg.main_tab.clear()
             if self.scrolled_amount:
                 reload_dlg.scrollArea.verticalScrollBar().setValue(self.scrolled_amount)
@@ -116,12 +113,8 @@ class GwSelector:
         # Built querytext
         form = f'"currentTab":"{current_tab}"'
         extras = f'"selectorType":"{selector_type}", "filterText":"{text_filter}"'
-        if aux_params:
-            tools_gw.set_config_parser("selector_mincut", f"aux_params", f"{aux_params}", "user", "session")
-            extras = f"{extras}, {aux_params}"
         body = tools_gw.create_body(form=form, extras=extras)
-        json_result = tools_gw.execute_procedure('gw_fct_getselectors', body)
-
+        json_result = tools_fct.getselectors(body)
 
         if not json_result or json_result['status'] == 'Failed':
             return False
@@ -274,7 +267,8 @@ class GwSelector:
             msg += "Checking any item will uncheck all other items unless Shift is pressed.\n"
         elif selection_mode == 'removePrevious':
             msg += "Checking any item will uncheck all other items.\n"
-        msg += f"This behaviour can be configured in the table 'config_param_system' (parameter = 'basic_selector_{tab_name}')."
+
+        msg += f"This behaviour can be configured in the table 'config_param_user' (parameter = 'basic_selector_{tab_name}')."
         tools_qt.show_info_box(msg, "Selector help")
 
 
@@ -318,7 +312,6 @@ class GwSelector:
             :param widget: QCheckBox that contains the information to generate the json (QCheckBox)
             :param is_alone: Defines if the selector is unique (True) or multiple (False) (Boolean)
         """
-
         # Get current tab name
         index = dialog.main_tab.currentIndex()
         tab_name = dialog.main_tab.widget(index).objectName()
@@ -339,62 +332,17 @@ class GwSelector:
                       f'"addSchema":"{qgis_project_add_schema}"')
 
         body = tools_gw.create_body(extras=extras)
-        json_result = tools_gw.execute_procedure('gw_fct_setselectors', body)
-        if json_result is None or json_result['status'] == 'Failed':
-            return
-        level = json_result['body']['message']['level']
-        if level == 0:
-            message = json_result['body']['message']['text']
-            tools_qgis.show_message(message, level)
+        tools_fct.setselectors(body)
 
-        try:
-            # Zoom to feature
-            x1 = json_result['body']['data']['geometry']['x1']
-            y1 = json_result['body']['data']['geometry']['y1']
-            x2 = json_result['body']['data']['geometry']['x2']
-            y2 = json_result['body']['data']['geometry']['y2']
-            if x1 is not None:
-                tools_qgis.zoom_to_rectangle(x1, y1, x2, y2, margin=0)
-        except KeyError:
-            pass
+        layers = [layer.layer() for layer in QgsProject.instance().layerTreeRoot().findLayers()]
 
-        # Refresh canvas
-        tools_qgis.set_layer_index('v_edit_arc')
-        tools_qgis.set_layer_index('v_edit_node')
-        tools_qgis.set_layer_index('v_edit_connec')
-        tools_qgis.set_layer_index('v_edit_gully')
-        tools_qgis.set_layer_index('v_edit_link')
-        tools_qgis.set_layer_index('v_edit_plan_psector')
-        tools_qgis.refresh_map_canvas()
+        sectors = tools_fct.get_sectors()
+        scenarios = tools_fct.get_scenarios()
 
-        # Refresh raster layer
-        layer = tools_qgis.get_layer_by_tablename('v_ext_raster_dem', schema_name='')
-        if layer:
-            layer.dataProvider().reloadData()
-            layer.triggerRepaint()
-            canvas_extent = global_vars.iface.mapCanvas().extent()
-            layer.setExtent(canvas_extent)
-            global_vars.iface.mapCanvas().refresh()
-
-        self.scrolled_amount = dialog.scrollArea.verticalScrollBar().value()
-        # Reload selectors dlg
-        self.open_selector(selector_type, reload_dlg=dialog)
-
-        # Update current_workspace label (status bar)
-        tools_gw.manage_current_selections_docker(json_result)
-
-        if tab_name == 'tab_exploitation':
-            docker_search = global_vars.iface.mainWindow().findChild(QDockWidget, 'dlg_search')
-            if docker_search:
-                search_class = docker_search.property('class')
-                search_class.refresh_tab()
-        elif tab_name == 'tab_sector':
-            # Reload epa world filters if sector changed
-            tools_gw.set_epa_world(selector_change=True)
-
-        widget_filter = tools_qt.get_widget(dialog, f"txt_filter_{tab_name}")
-        if widget_filter and tools_qt.get_text(dialog, widget_filter, False, False) not in (None, ''):
-            widget_filter.textChanged.emit(widget_filter.text())
+        sql = f"sector_id IN ({sectors}) and scenario_id IN ({scenarios})"
+        for layer in layers:
+            if layer.isSpatial():
+                layer.setSubsetString(sql)
 
 
     def _remove_previuos(self, dialog, widget, widget_all, widget_list):

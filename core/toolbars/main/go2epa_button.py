@@ -16,7 +16,7 @@ from datetime import timedelta
 
 from qgis.PyQt.QtCore import QStringListModel, Qt, QTimer
 from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGroupBox, QSpacerItem, QSizePolicy, \
-    QGridLayout, QLabel, QTabWidget
+    QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout
 from qgis.core import QgsApplication
 
 from ...shared.selector import GwSelector
@@ -28,7 +28,7 @@ from ....lib import tools_qgis, tools_qt, tools_db
 from ..dialog import GwAction
 
 
-class GwGo2EpaButton(GwAction):
+class GwGo2IberButton(GwAction):
     """ Button 23: Go2epa """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -399,7 +399,7 @@ class GwGo2EpaButton(GwAction):
         # Check for sector selector
         if self.export_inp:
             sql = "SELECT sector_id FROM selector_sector WHERE sector_id > 0 LIMIT 1"
-            row = tools_db.get_row(sql)
+            row = global_vars.gpkg_dao_data.get_row(sql)
             if row is None:
                 msg = "You need to select some sector"
                 tools_qt.show_info_box(msg)
@@ -437,24 +437,54 @@ class GwGo2EpaButton(GwAction):
         self.dlg_go2epa_options = GwGo2EpaOptionsUi()
         tools_gw.load_settings(self.dlg_go2epa_options)
 
+        # Call getconfig
         form = '"formName":"epaoptions"'
         body = tools_gw.create_body(form=form)
-        json_result = tools_gw.execute_procedure('gw_fct_getconfig', body)
+        json_result = tools_gw.execute_procedure('getconfig', body)
         if not json_result or json_result['status'] == 'Failed':
             return False
 
+        # Get sys_param values
+        v_sql = f"SELECT distinct tabname FROM sys_param_user WHERE tabname IS NOT NULL"
+        tab_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        v_sql = f"select distinct (layoutname), tabname FROM sys_param_user WHERE layoutname IS NOT NULL"
+        lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+
+        main_tab = self.dlg_go2epa_options.findChild(QTabWidget, 'main_tab')
+
+        # Mount form tabs
+        for tab in tab_list:
+
+            tab_widget = QWidget(main_tab)
+            tab_widget.setObjectName(f"{tab[0]}")
+            main_tab.addTab(tab_widget, f"{tab[0]}")
+
+            # Mount layout tabs
+            layout = QGridLayout()
+
+            for i, lyt in enumerate(lyt_list):
+                if lyt[1] == tab[0]:
+
+                    groupBox = QGroupBox()
+                    gridlayout = QGridLayout()
+                    gridlayout.setObjectName(f"{lyt[0]}")
+
+                    row = i // 2
+                    col = i % 2
+
+                    layout.addWidget(groupBox, row, col)
+
+                    groupBox.setLayout(gridlayout)
+
+            # Add Vertical Spacer widget
+            vertical_spacer1 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+            layout.addItem(vertical_spacer1)
+
+            tab_widget.setLayout(layout)
+
+        # Build dialog widgets
         tools_gw.build_dialog_options(
             self.dlg_go2epa_options, json_result['body']['form']['formTabs'], 0, self.epa_options_list)
-        grbox_list = self.dlg_go2epa_options.findChildren(QGroupBox)
-        for grbox in grbox_list:
-            widget_list = grbox.findChildren(QWidget)
-            if len(widget_list) == 0:
-                grbox.setVisible(False)
-            else:
-                layout_list = grbox.findChildren(QGridLayout)
-                for lyt in layout_list:
-                    spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-                    lyt.addItem(spacer)
 
         # Event on change from combo parent
         self._get_event_combo_parent(json_result)
@@ -471,7 +501,7 @@ class GwGo2EpaButton(GwAction):
         form = '"formName":"epaoptions"'
         extras = f'"fields":{my_json}'
         body = tools_gw.create_body(form=form, extras=extras)
-        json_result = tools_gw.execute_procedure('gw_fct_setconfig', body)
+        json_result = tools_gw.execute_procedure('setconfig', body)
         if not json_result or json_result['status'] == 'Failed':
             return False
 

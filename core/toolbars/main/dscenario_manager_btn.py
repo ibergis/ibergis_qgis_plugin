@@ -9,11 +9,10 @@ from functools import partial
 from sip import isdeleted
 
 from qgis.core import QgsProject
-from qgis.PyQt.QtGui import QRegExpValidator, QStandardItemModel, QCursor
+from qgis.PyQt.QtGui import QCursor
 from qgis.PyQt.QtSql import QSqlTableModel
-from qgis.PyQt.QtCore import QRegExp, QPoint
+from qgis.PyQt.QtCore import QPoint
 from qgis.PyQt.QtWidgets import QTableView, QAbstractItemView, QMenu, QCheckBox, QWidgetAction, QComboBox
-from qgis.PyQt.QtWidgets import QLineEdit
 
 from ..dialog import GwAction
 from ..utilities.toolbox_btn import GwToolBoxButton
@@ -69,7 +68,7 @@ class GwDscenarioManagerButton(GwAction):
         tools_gw.load_settings(self.dlg_dscenario_manager)
 
         # Manage btn create
-        # self._manage_btn_create()
+        self._manage_btn_create()
 
         # Apply filter validator
         # self.filter_name = self.dlg_dscenario_manager.findChild(QLineEdit, 'txt_name')
@@ -126,41 +125,51 @@ class GwDscenarioManagerButton(GwAction):
         if message:
             tools_qgis.show_warning(message)
 
+        # Set widget & model properties
+        tools_qt.set_tableview_config(self.tbl_dscenario, selection=QAbstractItemView.SelectRows,
+                                      sectionResizeMode=2, stretchLastSection=True)
+
 
     def _manage_btn_create(self):
         """ Fill btn_create QMenu """
 
         # Functions
-        values = [[3134, "Create empty dscenario"]]
-        if global_vars.project_type == 'ws':
-            values.append([3110, "Create from CRM"])
-            values.append([3112, "Create demand from ToC"])
-            values.append([3108, "Create network from ToC"])
-            values.append([3158, "Create from Mincut"])
-        if global_vars.project_type == 'ud':
-            values.append([3118, "Create from ToC"])
+        # values = [[3134, "Create empty dscenario"]]
+        values = [["_create_empty_dscenario", "Create empty dscenario"]]
+        # if global_vars.project_type == 'ws':
+        #     values.append(["3110", "Create from CRM"])
+        #     values.append(["3112", "Create demand from ToC"])
+        #     values.append(["3108", "Create network from ToC"])
+        #     values.append(["3158", "Create from Mincut"])
+        # if global_vars.project_type == 'ud':
+        #     values.append(["3118", "Create from ToC"])
 
         # Create and populate QMenu
         create_menu = QMenu()
         for value in values:
-            num = value[0]
+            function = value[0]
             label = value[1]
             action = create_menu.addAction(f"{label}")
-            action.triggered.connect(partial(self._open_toolbox_function, num))
+            action.triggered.connect(getattr(self, function))
 
         self.dlg_dscenario_manager.btn_create.setMenu(create_menu)
+
+
+    def _create_empty_dscenario(self):
+        print("_create_empty_dscenario")
 
 
     def _open_toolbox_function(self, function, signal=None, connect=None):
         """ Execute currently selected function from combobox """
 
         toolbox_btn = GwToolBoxButton(None, None, None, None, None)
-        if connect is None:
-            connect = [partial(self._fill_manager_table, self.filter_name.text()), partial(tools_gw.refresh_selectors)]
-        else:
-            if type(connect) != list:
-                connect = [connect]
-        dlg_functions = toolbox_btn.open_function_by_id(function, connect_signal=connect)
+        # if connect is None:
+        #     connect = [partial(self._fill_manager_table, self.filter_name.text()), partial(tools_gw.refresh_selectors)]
+        # else:
+        #     if type(connect) != list:
+        #         connect = [connect]
+        # dlg_functions = toolbox_btn.open_function_by_id(function, connect_signal=connect)
+        dlg_functions = toolbox_btn.open_function_by_id(function)
         return dlg_functions
 
 
@@ -283,7 +292,7 @@ class GwDscenarioManagerButton(GwAction):
             self.table_name = self.schema_name + "." + self.table_name
 
         # Set model
-        model = QSqlTableModel(db=global_vars.qgis_db_credentials)
+        model = QSqlTableModel(db=global_vars.db_qsql_data)
         model.setTable(self.table_name)
         model.setFilter(f"dscenario_id = {self.selected_dscenario_id}")
         model.setEditStrategy(QSqlTableModel.OnFieldChange)
@@ -296,7 +305,6 @@ class GwDscenarioManagerButton(GwAction):
         editable_delegate = EditableDelegate(widget)
         for x in range(2, model.columnCount()):
             widget.setItemDelegateForColumn(x, editable_delegate)
-
 
         # Check for errors
         if model.lastError().isValid():

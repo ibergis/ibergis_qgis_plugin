@@ -20,9 +20,10 @@ class GwGpkgDao(object):
         self.conn = None
         self.cursor = None
         self.db_qsql = None
+        self.enable_spatial = None
 
 
-    def init_db(self, filename):
+    def init_db(self, filename, enable_spatial=True):
         """ Initializes database connection (sqlite3) """
 
         if filename is None:
@@ -35,6 +36,11 @@ class GwGpkgDao(object):
         self.db_filepath = filename
         try:
             self.conn = sqlite3.connect(filename)
+            if enable_spatial:
+                self.conn.enable_load_extension(True)
+                self.conn.execute("SELECT load_extension('mod_spatialite')")
+                self.conn.enable_load_extension(False)
+                self.enable_spatial = True
             self.cursor = self.get_cursor()
             status = True
         except Exception as e:
@@ -55,6 +61,7 @@ class GwGpkgDao(object):
                 self.conn.close()
             del self.cursor
             del self.conn
+            self.enable_spatial = None
         except Exception as e:
             self.last_error = e
             status = False
@@ -66,24 +73,6 @@ class GwGpkgDao(object):
 
         cursor = self.conn.cursor()
         return cursor
-
-
-    def check_cursor(self):
-        """ Check if cursor is closed """
-
-        status = True
-        if self.cursor.closed:
-            self.init_db()
-            status = not self.cursor.closed
-
-        return status
-
-
-    def cursor_execute(self, sql):
-        """ Check if cursor is closed before execution """
-
-        if self.check_cursor():
-            self.cursor.execute(sql)
 
 
     def get_rows(self, sql, commit=False):
@@ -107,7 +96,7 @@ class GwGpkgDao(object):
         self.last_error = None
         row = None
         try:
-            self.cursor_execute(sql)
+            self.cursor.execute(sql)
             row = self.cursor.fetchone()
         except Exception as e:
             self.last_error = e
@@ -123,6 +112,40 @@ class GwGpkgDao(object):
         try:
             cursor = self.get_cursor()
             cursor.execute(sql)
+        except Exception as e:
+            self.last_error = e
+            status = False
+            self.conn.rollback()
+        finally:
+            if status:
+                self.conn.commit()
+            return status
+
+    def execute_sql_placeholder(self, sql, data, commit=True):
+        """ Execute selected query """
+
+        self.last_error = None
+        status = True
+        try:
+            cursor = self.get_cursor()
+            cursor.execute(sql, data)
+        except Exception as e:
+            self.last_error = e
+            status = False
+            self.conn.rollback()
+        finally:
+            if status:
+                self.conn.commit()
+            return status
+
+    def execute_script_sql(self, sql, commit=True):
+        """ Execute selected query """
+
+        self.last_error = None
+        status = True
+        try:
+            cursor = self.get_cursor()
+            cursor.executescript(sql)
         except Exception as e:
             self.last_error = e
             status = False
@@ -145,3 +168,9 @@ class GwGpkgDao(object):
         self.db_qsql = db_qsql
         return status, db_qsql
 
+
+    def clone(self):
+        new_dao = GwGpkgDao()
+        if self.db_filepath:
+            new_dao.init_db(self.db_filepath, enable_spatial=self.enable_spatial)
+        return new_dao

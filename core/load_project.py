@@ -8,17 +8,15 @@ or (at your option) any later version.
 import os
 from functools import partial
 
-from qgis.core import QgsProject, QgsApplication, QgsSnappingUtils
-from qgis.PyQt.QtCore import QObject, Qt
+from qgis.core import QgsProject, QgsSnappingUtils
+from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtWidgets import QToolBar, QActionGroup, QDockWidget, QApplication, QDialog
 
 from .models.plugin_toolbar import GwPluginToolbar
 from .toolbars import buttons
 from .utils import tools_gw
-from .threads.project_layers_config import GwProjectLayersConfig
-from .threads.project_check import GwProjectCheckTask
 from .. import global_vars
-from ..lib import tools_qgis, tools_log, tools_db, tools_qt, tools_os, tools_gpkgdao
+from ..lib import tools_qgis, tools_log, tools_qt, tools_os, tools_gpkgdao
 
 
 class GwLoadProject(QObject):
@@ -57,7 +55,7 @@ class GwLoadProject(QObject):
         global_vars.project_type = "ud"
 
         # Removes all deprecated variables defined at drain.config
-        tools_gw.remove_deprecated_config_vars()
+        #tools_gw.remove_deprecated_config_vars()
 
         project_role = global_vars.project_vars.get('project_role')
         global_vars.project_vars['project_role'] = None
@@ -74,9 +72,6 @@ class GwLoadProject(QObject):
         # Manage locale and corresponding 'i18n' file
         global_vars.plugin_name = tools_qgis.get_plugin_metadata('name', 'drain', global_vars.plugin_dir)
         tools_qt.manage_translation(global_vars.plugin_name)
-
-        # Get 'utils_use_gw_snapping' parameter
-        global_vars.use_gw_snapping = False
 
         # Manage actions of the different plugin_toolbars
         self._manage_toolbars()
@@ -116,9 +111,6 @@ class GwLoadProject(QObject):
         # Reset dialogs position
         tools_gw.reset_position_dialog()
 
-        # Call gw_fct_setcheckproject and create GwProjectLayersConfig thread
-        #self._config_layers()
-
 
     # region private functions
 
@@ -131,6 +123,7 @@ class GwLoadProject(QObject):
         global_vars.project_vars['main_schema'] = tools_qgis.get_project_variable('gwMainSchema')
         global_vars.project_vars['project_role'] = tools_qgis.get_project_variable('gwProjectRole')
         global_vars.project_vars['project_type'] = tools_qgis.get_project_variable('gwProjectType')
+        global_vars.project_vars['project_gpkg'] = tools_qgis.get_project_variable('project_gpkg_path')
 
 
     def _get_user_variables(self):
@@ -151,32 +144,6 @@ class GwLoadProject(QObject):
 
     def _check_database_connection(self):
         """ Set database connection to Geopackage file """
-
-        # Create object to manage GPKG database connection
-        gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
-        global_vars.gpkg_dao_data = gpkg_dao_data
-
-        # Define filepath of data GPKG
-        filename = "sample.gpkg"
-        db_filepath = os.path.join(global_vars.plugin_dir, "samples", filename)
-        tools_log.log_info(db_filepath)
-        if not os.path.exists(db_filepath):
-            tools_log.log_info(f"File not found: {db_filepath}")
-            return False
-
-        # Set DB connection
-        tools_log.log_info(f"Set database connection")
-        database_name = f"{global_vars.plugin_name}_data"
-        status, global_vars.db_qsql_data = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
-        if not status:
-            last_error = global_vars.gpkg_dao_data.last_error
-            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
-            return False
-        status = global_vars.gpkg_dao_data.init_db(db_filepath)
-        if not status:
-            last_error = global_vars.gpkg_dao_data.last_error
-            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
-            return False
 
         # Create object to manage GPKG database connection
         gpkg_dao_config = tools_gpkgdao.GwGpkgDao()
@@ -202,6 +169,39 @@ class GwLoadProject(QObject):
             last_error = global_vars.gpkg_dao_config.last_error
             tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
             return False
+
+        # Create object to manage GPKG database connection
+        gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
+        global_vars.gpkg_dao_data = gpkg_dao_data
+
+
+        # Define filepath of data GPKG
+        db_filepath =f"{global_vars.project_vars['project_gpkg']}"
+
+        if db_filepath is None:
+            filename = "sample.gpkg"
+            db_filepath = os.path.join(global_vars.plugin_dir, "samples", filename)
+
+        tools_log.log_info(db_filepath)
+        if not os.path.exists(db_filepath):
+            tools_log.log_info(f"File not found: {db_filepath}")
+            return False
+
+        # Set DB connection
+        tools_log.log_info(f"Set database connection")
+        database_name = f"{global_vars.plugin_name}_data"
+        status, global_vars.db_qsql_data = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
+        if not status:
+            last_error = global_vars.gpkg_dao_data.last_error
+            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            return False
+        status = global_vars.gpkg_dao_data.init_db(db_filepath)
+        if not status:
+            last_error = global_vars.gpkg_dao_data.last_error
+            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
+            return False
+
+
 
         tools_log.log_info(f"Database connection successful")
         return True
@@ -323,134 +323,6 @@ class GwLoadProject(QObject):
         plugin_toolbar.toolbar.setProperty('gw_name', toolbar_id)
         plugin_toolbar.list_actions = list_actions
         self.plugin_toolbars[toolbar_id] = plugin_toolbar
-
-
-    def _config_layers(self):
-        """ Call gw_fct_setcheckproject and create GwProjectLayersConfig thread """
-
-        status, result = self._manage_layers()
-        if not status:
-            return False
-        if result:
-            variables = result['body'].get('variables')
-            if variables:
-                setQgisLayers = variables.get('setQgisLayers')
-                if setQgisLayers in (False, 'False', 'false'):
-                    return
-
-        # Set project layers with gw_fct_getinfofromid: This process takes time for user
-        # Manage if task is already running
-        if hasattr(self, 'task_get_layers') and self.task_get_layers is not None:
-            try:
-                if self.task_get_layers.isActive():
-                    message = "ConfigLayerFields task is already active!"
-                    tools_qgis.show_warning(message)
-                    return
-            except RuntimeError:
-                pass
-        # Set background task 'ConfigLayerFields'
-        schema_name = global_vars.schema_name.replace('"', '')
-        sql = (f"SELECT DISTINCT(parent_layer) FROM cat_feature "
-               f"UNION "
-               f"SELECT DISTINCT(child_layer) FROM cat_feature "
-               f"WHERE child_layer IN ("
-               f"     SELECT table_name FROM information_schema.tables"
-               f"     WHERE table_schema = '{schema_name}')")
-        rows = tools_db.get_rows(sql)
-        description = f"ConfigLayerFields"
-        params = {"project_type": global_vars.project_type, "schema_name": global_vars.schema_name, "db_layers": rows,
-                  "qgis_project_infotype": global_vars.project_vars['info_type']}
-        self.task_get_layers = GwProjectLayersConfig(description, params)
-        QgsApplication.taskManager().addTask(self.task_get_layers)
-        QgsApplication.taskManager().triggerTask(self.task_get_layers)
-
-        return True
-
-
-    def _manage_layers(self):
-        """ Get references to project main layers """
-
-        # Check if we have any layer loaded
-        layers = tools_qgis.get_project_layers()
-        if len(layers) == 0:
-            return False
-
-        if global_vars.project_type in ('ws', 'ud'):
-            QApplication.setOverrideCursor(Qt.ArrowCursor)
-            self.check_project = GwProjectCheckTask()
-
-            # check project
-            status, result = self.check_project.fill_check_project_table(layers, "true")
-            try:
-                variables = result['body'].get('variables')
-                if variables:
-                    guided_map = variables.get('useGuideMap')
-                    if guided_map:
-                        tools_log.log_info("manage_guided_map")
-                        self._manage_guided_map()
-            except Exception as e:
-                tools_log.log_info(str(e))
-            finally:
-                QApplication.restoreOverrideCursor()
-                return status, result
-
-        return True
-
-
-    def _manage_guided_map(self):
-        """ Guide map works using ext_municipality """
-
-        self.layer_muni = tools_qgis.get_layer_by_tablename('ext_municipality')
-        if self.layer_muni is None:
-            return
-
-        self.iface.setActiveLayer(self.layer_muni)
-        tools_qgis.set_layer_visible(self.layer_muni)
-        self.layer_muni.selectAll()
-        self.layer_muni.removeSelection()
-        self.iface.actionSelect().trigger()
-        tools_gw.connect_signal(self.iface.mapCanvas().selectionChanged, self._selection_changed,
-                                'load_project', 'manage_guided_map_mapCanvas_selectionChanged_selection_changed')
-        cursor = tools_gw.get_cursor_multiple_selection()
-        if cursor:
-            self.iface.mapCanvas().setCursor(cursor)
-
-
-    def _selection_changed(self):
-        """ Get selected muni_id and execute function setselectors """
-
-        muni_id = None
-        features = self.layer_muni.getSelectedFeatures()
-        for feature in features:
-            muni_id = feature["muni_id"]
-            tools_log.log_info(f"Selected muni_id: {muni_id}")
-            break
-
-        tools_gw.disconnect_signal('load_project', 'manage_guided_map_mapCanvas_selectionChanged_selection_changed')
-        self.iface.actionZoomToSelected().trigger()
-        self.layer_muni.removeSelection()
-
-        if muni_id is None:
-            return
-
-        extras = f'"selectorType":"explfrommuni", "id":{muni_id}, "value":true, "isAlone":true, '
-        extras += f'"addSchema":"{global_vars.project_vars["add_schema"]}"'
-        body = tools_gw.create_body(extras=extras)
-        complet_result = tools_gw.execute_procedure('gw_fct_setselectors', body)
-        if complet_result:
-            self.iface.mapCanvas().refreshAllLayers()
-            self.layer_muni.triggerRepaint()
-            self.iface.actionPan().trigger()
-            # Zoom to feature
-            try:
-                x1 = complet_result['body']['data']['geometry']['x1']
-                y1 = complet_result['body']['data']['geometry']['y1']
-                x2 = complet_result['body']['data']['geometry']['x2']
-                y2 = complet_result['body']['data']['geometry']['y2']
-                if x1 is not None:
-                    tools_qgis.zoom_to_rectangle(x1, y1, x2, y2, margin=0)
-            except KeyError:
-                pass
 
 
     def _enable_toolbars(self, visible=True):

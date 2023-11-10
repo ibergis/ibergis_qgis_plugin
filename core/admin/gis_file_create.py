@@ -8,36 +8,35 @@ or (at your option) any later version.
 import os
 import shutil
 
-from ...lib import tools_log, tools_qt, tools_db, tools_qgis
+from ...lib import tools_log, tools_qt, tools_qgis
+from ... import global_vars
 
 
-class GwGisFileCreate:
+class DrGisFileCreate:
 
     def __init__(self, plugin_dir):
 
         self.plugin_dir = plugin_dir
         self.layer_source = None
-        self.srid = None
 
 
-    def gis_project_database(self, folder_path=None, filename=None, project_type='ws', schema='ws_sample',
-                             export_passwd=False, roletype='admin', layer_source=None):
+    def gis_project_database(self, folder_path, filename, gpkg_file, srid, roletype='admin'):
 
         # Get locale of QGIS application
         locale = tools_qgis.get_locale()
 
         # Get folder with QGS templates
         gis_extension = "qgs"
-        gis_folder = self.plugin_dir + os.sep + "resources" + os.sep + "templates" + os.sep + "qgisproject"
-        gis_locale_path = gis_folder + os.sep + locale
+        gis_folder = os.path.join(self.plugin_dir, "resources", "templates", "qgisproject")
+        gis_locale_path = os.path.join(gis_folder, locale)
 
         # If QGIS template locale folder not found, use English one
         if not os.path.exists(gis_locale_path):
             tools_log.log_info("Locale gis folder not found", parameter=gis_locale_path)
-            gis_locale_path = gis_folder + os.sep + "en_US"
+            gis_locale_path = os.path.join(gis_folder, "en_US")
 
         # Check if template_path and folder_path exists
-        template_path = f"{gis_locale_path}{os.sep}{project_type}_{roletype}.{gis_extension}"
+        template_path = os.path.join(gis_locale_path, f"{roletype}.{gis_extension}")
         if not os.path.exists(template_path):
             tools_qgis.show_warning("Template GIS file not found", parameter=template_path, duration=20)
             return False, None
@@ -45,9 +44,6 @@ class GwGisFileCreate:
         # Manage default parameters
         if folder_path is None:
             folder_path = gis_locale_path
-
-        if filename is None:
-            filename = schema
 
         if not os.path.exists(folder_path):
             os.mkdir(folder_path)
@@ -64,22 +60,21 @@ class GwGisFileCreate:
         tools_log.log_info(f"Creating GIS file... {qgs_path}")
         shutil.copyfile(template_path, qgs_path)
 
-        # Get database parameters from layer source
-        self.layer_source = layer_source
-        if self.layer_source is None:
-            status, self.layer_source = self._get_database_parameters(schema)
-            if not status:
-                return False, None
+        # Set layer source parameters
+        self.layer_source = {}
+        if srid is None:
+            srid = "25831"
+        self.layer_source['srid'] = srid
+        self.layer_source['gpkg_filepath'] = gpkg_file
 
         # Read file content
         with open(qgs_path) as f:
             content = f.read()
 
-        # Replace spatialrefsys, extent parameters, connection parameters and schema name
         content = self._replace_spatial_parameters(self.layer_source['srid'], content)
-        content = self._replace_extent_parameters(schema, content)
-        content = self._replace_connection_parameters(content, export_passwd)
-        content = content.replace("SCHEMA_NAME", schema)
+        content = self._replace_extent_parameters(content)
+        content = self._replace_connection_parameters(content, self.layer_source['gpkg_filepath'])
+        content = self._replace_gpkg_path_var(content, self.layer_source['gpkg_filepath'])
 
         # Write contents and show message
         try:
@@ -98,86 +93,66 @@ class GwGisFileCreate:
 
     # region private functions
 
-
-    def _get_database_parameters(self, schema):
-        """ Get database parameters from layer source """
-
-        layer_source, not_version = tools_db.get_layer_source_from_credentials('prefer')
-        if layer_source is None:
-            tools_qgis.show_warning("Error getting database parameters")
-            return False, None
-        else:
-            layer_source['srid'] = tools_db.get_srid('v_edit_node', schema)
-            return True, layer_source
-
-
     def _replace_spatial_parameters(self, srid, content):
 
         aux = content
-        sql = (f"SELECT 2104 as srs_id, srid, auth_name || ':' || auth_srid as auth_id "
-               f"FROM spatial_ref_sys "
+        sql = (f"SELECT srid, auth_name || ':' || auth_id as auth_id "
+               f"FROM srs "
                f"WHERE srid = '{srid}'")
-        row = tools_db.get_row(sql)
-
+        row = global_vars.gpkg_dao_config.get_row(sql)
         if row:
             aux = aux.replace("__SRSID__", str(row[0]))
-            aux = aux.replace("__SRID__", str(row[1]))
-            aux = aux.replace("__AUTHID__", row[2])
+            aux = aux.replace("__SRID__", str(row[0]))
+            aux = aux.replace("__AUTHID__", row[1])
+        else:
+            tools_log.log_info(f"Database error: {global_vars.gpkg_dao_config.last_error}")
 
         return aux
 
 
-    def _replace_extent_parameters(self, schema_name, content):
+    def _replace_extent_parameters(self, content):
 
         aux = content
-        table_name = "node"
-        geom_name = "the_geom"
-        sql = (f"SELECT ST_XMax(gometries) AS xmax, ST_XMin(gometries) AS xmin, "
-               f"ST_YMax(gometries) AS ymax, ST_YMin(gometries) AS ymin "
-               f"FROM "
-               f"(SELECT ST_Collect({geom_name}) AS gometries FROM {schema_name}.{table_name}) AS foo")
-        row = tools_db.get_row(sql)
+        table_name = "ground"
+        sql = (f"SELECT max(ST_MaxX(geom)), min(ST_MinX(geom)), max(ST_MaxY(geom)), min(ST_MinY(geom)) "
+               f"FROM {table_name}")
+        row = global_vars.gpkg_dao_data.get_row(sql)
         if row:
-            valor = row["xmin"]
-            if valor is None:
-                valor = -1.555992
-            aux = aux.replace("__XMIN__", str(valor))
 
-            valor = row["ymin"]
-            if valor is None:
-                valor = -1.000000
-            aux = aux.replace("__YMIN__", str(valor))
-
-            valor = row["xmax"]
+            valor = row[0]
             if valor is None:
                 valor = 1.555992
             aux = aux.replace("__XMAX__", str(valor))
 
-            valor = row["ymax"]
+            valor = row[1]
+            if valor is None:
+                valor = -1.555992
+            aux = aux.replace("__XMIN__", str(valor))
+
+            valor = row[2]
             if valor is None:
                 valor = 1.000000
             aux = aux.replace("__YMAX__", str(valor))
 
+            valor = row[3]
+            if valor is None:
+                valor = -1.000000
+            aux = aux.replace("__YMIN__", str(valor))
+
+        else:
+            tools_log.log_info(f"Database error: {global_vars.gpkg_dao_data.last_error}")
+
         return aux
 
 
-    def _replace_connection_parameters(self, content, export_passwd):
+    def _replace_connection_parameters(self, content, filename):
 
-        if self.layer_source['service']:
-            datasource = f"service='{self.layer_source['service']}'"
+        content = content.replace("__DATASOURCE__", filename)
+        return content
 
-        else:
-            datasource = (f"dbname='{self.layer_source['db']}' host={self.layer_source['host']} "
-                          f"port={self.layer_source['port']}")
+    def _replace_gpkg_path_var(self, content, path):
 
-            if export_passwd:
-                username = self.layer_source['user']
-                password = self.layer_source['password']
-                datasource += f" username={username} password={password}"
-
-        content = content.replace("__SSLMODE__", self.layer_source['sslmode'])
-        content = content.replace("__DATASOURCE__", datasource)
-
+        content = content.replace("__GPKGPATH__", path)
         return content
 
     # endregion
