@@ -175,9 +175,7 @@ class GwCreateMeshTask(GwTask):
                     if vertice["category"] == "ground":
                         vertice["elevation"] = 0
             else:
-                # FIXME use following line after fixing GPKG CRS issue
-                # ground_crs = layers["ground"].crs()
-                ground_crs = QgsProject.instance().crs()
+                ground_crs = layers["ground"].crs()
                 dem_crs = self.dem_layer.crs()
                 qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
                 for vertice in self.mesh["vertices"].values():
