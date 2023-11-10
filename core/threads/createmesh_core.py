@@ -109,7 +109,7 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
         "RASTER_BAND": 1,
         "STATISTICS": [9],
     }
-    res = processing.run("native:zonalstatisticsfb", params)
+    res = processing.run("native:zonalstatisticsfb", params, feedback=feedback)
     if feedback.isCanceled():
         return
     res_layer = res["OUTPUT"]

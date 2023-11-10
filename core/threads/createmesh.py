@@ -6,10 +6,12 @@ from qgis.core import (
     QgsCategorizedSymbolRenderer,
     QgsCoordinateTransform,
     QgsFeature,
+    QgsFeedback,
     QgsField,
     QgsFillSymbol,
     QgsGeometry,
     QgsPointXY,
+    QgsProcessingFeedback,
     QgsProject,
     QgsRendererCategory,
     QgsVectorLayer,
@@ -106,14 +108,16 @@ class GwCreateMeshTask(GwTask):
                     )
                     return False
 
+            self.feedback.setProgress(5)
+
             # Validate inputs
-            self.feedback.setProgressText("Validating inputs...")
             if self.execute_validation:
+                self.feedback.setProgressText("Validating inputs...")
                 validation_layers = validate_input_layers(layers, self.feedback)
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
                     return False
-                
+
                 error_layers, warning_layers = validation_layers
 
                 # Add errors to TOC
@@ -128,6 +132,7 @@ class GwCreateMeshTask(GwTask):
 
                     if error_layers:
                         self.message = "There are errors in input data. Please, check the error layers."
+                        self.feedback.setProgress(100)
                         return False
                 project.layerTreeRoot().removeChildrenGroupWithoutLayers()
                 iface.layerTreeView().model().sourceModel().modelReset.emit()
@@ -136,13 +141,17 @@ class GwCreateMeshTask(GwTask):
             triangulations = []
 
             self.feedback.setProgressText("Creating ground mesh...")
+            self.feedback.setProgress(15)
+            gt_feedback = QgsFeedback()
+            gt_progress = lambda x: self.feedback.setProgress(x / 100 * (30 - 15) + 15)
+            gt_feedback.progressChanged.connect(gt_progress)
             ground_triang = triangulate_custom(
                 layers["ground"],
                 enable_transition=self.enable_transition,
                 transition_slope=self.transition_slope,
                 transition_start=self.transition_start,
                 transition_extent=self.transition_extent,
-                feedback=self.feedback,
+                feedback=gt_feedback,
             )
             if self.feedback.isCanceled():
                 self.message = "Task canceled."
@@ -150,6 +159,7 @@ class GwCreateMeshTask(GwTask):
             triangulations.append((*ground_triang, {"category": "ground"}))
 
             self.feedback.setProgressText("Creating roof mesh...")
+            self.feedback.setProgress(30)
             triangulations += core.triangulate_roof(layers["roof"], self.feedback)
             if self.feedback.isCanceled():
                 self.message = "Task canceled."
@@ -159,6 +169,7 @@ class GwCreateMeshTask(GwTask):
 
             # Get ground elevation
             self.feedback.setProgressText("Getting vertice elevations...")
+            self.feedback.setProgress(40)
             if self.dem_layer is None:
                 for vertice in self.mesh["vertices"].values():
                     if vertice["category"] == "ground":
@@ -181,8 +192,15 @@ class GwCreateMeshTask(GwTask):
             # Get ground roughness
             if self.fill_roughness:
                 self.feedback.setProgressText("Getting ground roughness...")
+                self.feedback.setProgress(50)
+                ggr_feedback = QgsProcessingFeedback()
+                ggr_progress = lambda x: self.feedback.setProgress(
+                    x / 100 * (80 - 50) + 50
+                )
+                ggr_feedback.progressChanged.connect(ggr_progress)
+                ggr_feedback.canceled.connect(self.feedback.cancel)
                 roughness_dict = core.get_ground_roughness(
-                    self.mesh, layers["ground_roughness"], landuses, self.feedback
+                    self.mesh, layers["ground_roughness"], landuses, ggr_feedback
                 )
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
@@ -193,6 +211,7 @@ class GwCreateMeshTask(GwTask):
 
             # Create temp layer
             self.feedback.setProgressText("Creating temp layer for visualization...")
+            self.feedback.setProgress(80)
             temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
             temp_layer.setCrs(layers["ground"].crs())
             provider = temp_layer.dataProvider()
@@ -241,6 +260,7 @@ class GwCreateMeshTask(GwTask):
             iface.layerTreeView().model().sourceModel().modelReset.emit()
 
             self.message = "Triangulation finished! Check the temporary layer and click the button bellow to proceed to the next step."
+            self.feedback.setProgress(100)
             return True
         except Exception:
             self.exception = traceback.format_exc()

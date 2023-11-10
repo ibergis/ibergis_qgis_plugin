@@ -255,5 +255,6 @@ def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Union[Tuple[
             return
         if result_layer.hasFeatures():
             result_list.append(result_layer)
+        feedback.setProgress(feedback.progress() + 1)
 
     return error_layers, warning_layers

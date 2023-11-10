@@ -155,7 +155,6 @@ try:
             sizes.append(feature["cellsize"])
 
             if feedback:
-                feedback.setProgress(100 * i / total)
                 if feedback.isCanceled():
                     return {}
 
@@ -239,10 +238,14 @@ try:
         gmsh.option.setNumber("Mesh.MeshSizeFromPoints", True)
         gmsh.option.setNumber("Mesh.Algorithm", algorithm)
 
+        feedback.setProgress(10)
+
         start = time.time()
         print("Generating Mesh (1/2)... ", end="")
         gmsh.model.mesh.generate(dim=2)
         print(f"Done! {time.time() - start}s")
+
+        feedback.setProgress(50)
 
         if enable_transition:
             start = time.time()
@@ -306,6 +309,8 @@ try:
         else:
             print("Skipping step (2/2)")
 
+        feedback.setProgress(95)
+
         start = time.time()
         print("Cleaning up... ", end="")
         # cleaning up of mesh in order to obtain unique elements and nodes
@@ -317,6 +322,8 @@ try:
 
         vertices = get_vertices()
         triangles = get_faces()
+
+        feedback.setProgress(100)
 
         return triangles, vertices
 
