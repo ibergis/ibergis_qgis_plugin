@@ -71,7 +71,12 @@ class GwCreateMeshTask(GwTask):
             # Load input layers
             self.dao = global_vars.gpkg_dao_data.clone()
             path = f"{self.dao.db_filepath}|layername="
-            layers = {"ground": None, "roof": None, "ground_roughness": None}
+            layers = {
+                "ground": None,
+                "roof": None,
+                "mesh_anchor_points": None,
+                "ground_roughness": None,
+            }
             for layer in layers:
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
@@ -147,6 +152,7 @@ class GwCreateMeshTask(GwTask):
             gt_feedback.progressChanged.connect(gt_progress)
             ground_triang = triangulate_custom(
                 layers["ground"],
+                point_anchor_layer=layers["mesh_anchor_points"],
                 enable_transition=self.enable_transition,
                 transition_slope=self.transition_slope,
                 transition_start=self.transition_start,

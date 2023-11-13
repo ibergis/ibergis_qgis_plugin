@@ -152,7 +152,8 @@ try:
                 geoms.append(shapely.wkt.loads(wkt))
             except Exception as e:
                 print(e, wkt)
-            sizes.append(feature["cellsize"])
+            if feature.fieldNameIndex("cellsize") != -1:
+                sizes.append(feature["cellsize"])
 
             if feedback:
                 if feedback.isCanceled():
