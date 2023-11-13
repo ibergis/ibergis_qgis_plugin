@@ -20,7 +20,7 @@ from qgis.PyQt.QtCore import QVariant
 from qgis.utils import iface
 
 from . import createmesh_core as core
-from .validatemesh import validate_input_layers
+from .validatemesh import validate_input_layers, validate_gullies_in_triangles
 from .task import GwTask
 from ..utils.meshing_process import triangulate_custom
 from ... import global_vars
@@ -76,6 +76,7 @@ class GwCreateMeshTask(GwTask):
                 "roof": None,
                 "mesh_anchor_points": None,
                 "ground_roughness": None,
+                "gully": None,
             }
             for layer in layers:
                 if self.feedback.isCanceled():
@@ -259,6 +260,14 @@ class GwCreateMeshTask(GwTask):
 
             # Add temp layer to TOC
             tools_qt.add_layer_to_toc(temp_layer)
+
+            # Check for triangles with more than one gully
+            gully_warning = validate_gullies_in_triangles(temp_layer, layers["gully"])
+            if gully_warning.hasFeatures():
+                group_name = "Mesh inputs errors & warnings"
+                tools_qt.add_layer_to_toc(gully_warning, group_name, create_groups=True)
+                project.layerTreeRoot().removeChildrenGroupWithoutLayers()
+                iface.layerTreeView().model().sourceModel().modelReset.emit()
 
             # Refresh TOC
             iface.layerTreeView().model().sourceModel().modelReset.emit()

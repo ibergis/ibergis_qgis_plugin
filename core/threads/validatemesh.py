@@ -1,4 +1,4 @@
-from qgis.core import QgsFeature, QgsVectorLayer, QgsField, QgsGeometry, QgsPointXY
+from qgis.core import QgsFeature, QgsVectorLayer, QgsField, QgsGeometry, QgsPointXY, QgsSpatialIndexKDBush
 from qgis.PyQt.QtCore import QVariant
 from ..utils.feedback import Feedback
 from ..utils.meshing_process import layer_to_gdf
@@ -8,7 +8,6 @@ from typing import Tuple, Union
 import pandas as pd
 import shapely
 import itertools
-import time
 
 
 def validate_cellsize(layer: QgsVectorLayer, feedback: Feedback) -> Union[QgsVectorLayer, None]:
@@ -258,3 +257,34 @@ def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Union[Tuple[
         feedback.setProgress(feedback.progress() + 1)
 
     return error_layers, warning_layers
+
+def validate_gullies_in_triangles(
+    mesh_layer: QgsVectorLayer, gully_layer: QgsVectorLayer
+) -> QgsVectorLayer:
+    
+    # Create layer
+    output_layer = QgsVectorLayer("Polygon", "Triangles with more than one gully", "memory")
+    output_layer.setCrs(mesh_layer.crs())
+    provider = output_layer.dataProvider()
+    provider.addAttributes([QgsField("fid", QVariant.Int)])
+    output_layer.updateFields()
+
+    # Filter errors
+    spatial_index = QgsSpatialIndexKDBush(gully_layer)
+    ground_triangles = (
+        feature.geometry()
+        for feature in mesh_layer.getFeatures()
+        if feature["category"] == "ground"
+    )
+    for triangle in ground_triangles:
+        points_in_triangle = [
+            index_data
+            for index_data in spatial_index.intersects(triangle.boundingBox())
+            if triangle.contains(index_data.point())
+        ]
+        if len(points_in_triangle) >= 2:
+            feature = QgsFeature()
+            feature.setGeometry(triangle)
+            provider.addFeature(feature)
+
+    return output_layer
