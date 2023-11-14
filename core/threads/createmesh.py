@@ -1,19 +1,15 @@
 import traceback
 from pathlib import Path
 
-from qgis import processing
 from qgis.core import (
-    QgsCategorizedSymbolRenderer,
     QgsCoordinateTransform,
     QgsFeature,
     QgsFeedback,
     QgsField,
-    QgsFillSymbol,
     QgsGeometry,
     QgsPointXY,
     QgsProcessingFeedback,
     QgsProject,
-    QgsRendererCategory,
     QgsVectorLayer,
 )
 from qgis.PyQt.QtCore import QVariant
