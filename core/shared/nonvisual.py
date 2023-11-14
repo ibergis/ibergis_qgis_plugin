@@ -456,12 +456,12 @@ class GwNonVisual:
             tools_qt.set_widget_text(self.dialog, txt_id, curve_id)
             tools_qt.set_widget_enabled(self.dialog, txt_id, False)
 
-        tools_qt.set_widget_text(self.dialog, txt_descript, row[4])
+        tools_qt.set_widget_text(self.dialog, txt_descript, row[3])
         #tools_qt.set_combo_value(cmb_sector_id, str(row['sector_id']), 0)
         tools_qt.set_widget_text(self.dialog, cmb_curve_type, row[2])
 
         # Populate table curve_values
-        sql = f"SELECT x_value, y_value FROM cat_curve_value WHERE curve_id = '{curve_id}'"
+        sql = f"SELECT xcoord, ycoord FROM cat_curve_value WHERE id = '{curve_id}'"
         rows = global_vars.gpkg_dao_data.get_rows(sql)
         if not rows:
             return
