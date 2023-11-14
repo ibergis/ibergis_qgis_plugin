@@ -3,14 +3,15 @@ from qgis.PyQt.QtCore import QVariant
 from ..utils.feedback import Feedback
 from ..utils.meshing_process import layer_to_gdf
 from ...ext_libs import geopandas as gpd
+from qgis import processing
 
-from typing import Tuple, Union
+from typing import Tuple, Optional
 import pandas as pd
 import shapely
 import itertools
 
 
-def validate_cellsize(layer: QgsVectorLayer, feedback: Feedback) -> Union[QgsVectorLayer, None]:
+def validate_cellsize(layer: QgsVectorLayer, feedback: Feedback) -> Optional[QgsVectorLayer]:
     # Create layer
     layer_name = f"{layer.name()}: Invalid cellsize"
     output_layer = QgsVectorLayer("Polygon", layer_name, "memory")
@@ -38,7 +39,7 @@ def validate_cellsize(layer: QgsVectorLayer, feedback: Feedback) -> Union[QgsVec
     return output_layer
 
 
-def validate_intersect(layers_dict: dict, feedback: Feedback) -> Union[QgsVectorLayer, None]:
+def validate_intersect(layers_dict: dict, feedback: Feedback) -> Optional[QgsVectorLayer]:
     # Combine ground and roofs layers
     layers = [layers_dict["ground"], layers_dict["roof"]]
     data = pd.concat(map(layer_to_gdf, layers))
@@ -80,7 +81,7 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
         verts += get_polygon_vertices(poly)
     return verts
 
-def validate_vert_edge(layers_dict: dict, feedback: Feedback) -> Union[QgsVectorLayer, None]:
+def validate_vert_edge(layers_dict: dict, feedback: Feedback) -> Optional[QgsVectorLayer]:
     layers = [layers_dict["ground"], layers_dict["roof"]]
     data = pd.concat(map(layer_to_gdf, layers))
 
@@ -122,7 +123,7 @@ def validate_vert_edge(layers_dict: dict, feedback: Feedback) -> Union[QgsVector
     
     return output_layer
 
-def validate_ground_roughness_layer(layer: QgsVectorLayer, feedback: Feedback):
+def validate_ground_roughness_layer(layer: QgsVectorLayer, feedback: Feedback) -> Optional[QgsVectorLayer]:
     # Create layer
     output_layer = QgsVectorLayer("Polygon", "Invalid Roughness Params", "memory")
     output_layer.setCrs(layer.crs())
@@ -156,7 +157,7 @@ def validate_ground_roughness_layer(layer: QgsVectorLayer, feedback: Feedback):
 
     return output_layer
 
-def validate_roof_layer(layer: QgsVectorLayer, feedback: Feedback):
+def validate_roof_layer(layer: QgsVectorLayer, feedback: Feedback) -> Optional[QgsVectorLayer]:
     # Create layer
     output_layer = QgsVectorLayer("Polygon", "Invalid Roof Params", "memory")
     output_layer.setCrs(layer.crs())
@@ -190,7 +191,7 @@ def validate_roof_layer(layer: QgsVectorLayer, feedback: Feedback):
     return output_layer
 
 
-def validate_distance(layer: QgsVectorLayer, feedback: Feedback) -> Union[QgsVectorLayer, None]:
+def validate_distance(layer: QgsVectorLayer, feedback: Feedback) -> Optional[QgsVectorLayer]:
     data: gpd.GeoDataFrame = layer_to_gdf(layer)
     vertices = []
     cellsize = []
@@ -230,7 +231,19 @@ def validate_distance(layer: QgsVectorLayer, feedback: Feedback) -> Union[QgsVec
     return output_layer
 
 
-def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Union[Tuple[list, list], None]:
+def validate_ground_roughness_coverage(layers_dict: dict, feedback: Feedback) -> Optional[QgsVectorLayer]:
+    output_layer: QgsVectorLayer = processing.run("native:difference", {
+        'INPUT':layers_dict["ground"],
+        'OVERLAY':layers_dict["ground_roughness"],
+        'OUTPUT':'TEMPORARY_OUTPUT',
+        'GRID_SIZE':None}
+    )["OUTPUT"]
+    output_layer.setCrs(layers_dict["ground"].crs())
+
+    return output_layer
+
+
+def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Optional[Tuple[list, list]]:
     error_layers = []
     warning_layers = []
 
@@ -246,6 +259,7 @@ def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Union[Tuple[
             validate_ground_roughness_layer,
             layers_dict["ground_roughness"],
         ),
+        (error_layers, validate_ground_roughness_coverage, layers_dict),
     ]
 
     for result_list, validation_function, parameters in validations:
