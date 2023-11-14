@@ -16,6 +16,7 @@ from .main.nonvisual_manager_button import GwNonVisualManagerButton
 from .utilities.csv_btn import GwCSVButton
 from .utilities.createmesh_btn import GwCreateMeshButton
 from .utilities.importinp_btn import GwImportINPButton
+from .utilities.openmesh_btn import GwOpenMeshButton
 from .utilities.toolbox_btn import GwToolBoxButton
 
 # ToC
