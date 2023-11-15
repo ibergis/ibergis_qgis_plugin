@@ -11,16 +11,18 @@ from .. import global_vars
 from . import tools_log, tools_qt
 
 
-def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_thread=False):
+def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_thread=False, dao=None):
     """ Execute SQL. Check its result in log tables, and show it to the user """
 
-    if global_vars.dao is None:
+    if dao is None:
+        dao = global_vars.gpkg_dao_data
+    if dao is None:
         tools_log.log_warning("The connection to the database is broken.", parameter=sql)
         return None
     if log_sql:
         tools_log.log_db(sql, bold='b', stack_level_increase=2)
-    row = global_vars.dao.get_row(sql, commit, aux_conn=aux_conn)
-    global_vars.session_vars['last_error'] = global_vars.dao.last_error
+    row = dao.get_row(sql, commit, aux_conn=aux_conn)
+    global_vars.session_vars['last_error'] = dao.last_error
 
     if not row:
         # Check if any error has been raised
@@ -32,17 +34,19 @@ def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_th
     return row
 
 
-def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False, is_thread=False):
+def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False, is_thread=False, dao=None):
     """ Execute SQL. Check its result in log tables, and show it to the user """
 
-    if global_vars.dao is None:
+    if dao is None:
+        dao = global_vars.gpkg_dao_data
+    if dao is None:
         tools_log.log_warning("The connection to the database is broken.", parameter=sql)
         return None
     if log_sql:
         tools_log.log_db(sql, bold='b', stack_level_increase=2)
     rows = None
-    rows2 = global_vars.dao.get_rows(sql, commit)
-    global_vars.session_vars['last_error'] = global_vars.dao.last_error
+    rows2 = dao.get_rows(sql, commit)
+    global_vars.session_vars['last_error'] = dao.last_error
     if not rows2:
         # Check if any error has been raised
         if global_vars.session_vars['last_error'] and not is_thread:
@@ -59,13 +63,15 @@ def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False
     return rows
 
 
-def execute_sql(sql, log_sql=False, log_error=False, commit=True, filepath=None, is_thread=False, show_exception=True):
+def execute_sql(sql, log_sql=False, log_error=False, commit=True, filepath=None, is_thread=False, show_exception=True, dao=None):
     """ Execute SQL. Check its result in log tables, and show it to the user """
 
+    if dao is None:
+        dao = global_vars.gpkg_dao_data
     if log_sql:
         tools_log.log_db(sql, stack_level_increase=1)
-    result = global_vars.dao.execute_sql(sql, commit)
-    global_vars.session_vars['last_error'] = global_vars.dao.last_error
+    result = dao.execute_sql(sql, commit)
+    global_vars.session_vars['last_error'] = dao.last_error
     if not result:
         if log_error:
             tools_log.log_info(sql, stack_level_increase=1)
