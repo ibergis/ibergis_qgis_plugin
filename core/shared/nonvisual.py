@@ -44,7 +44,7 @@ class GwNonVisual:
                            'cat_timeseries': 'timeseries',
                            'cat_controls': 'controls',
                            }
-        self.dict_ids = {'cat_curve': 'id', 'cat_curve_value': 'curve_id',
+        self.dict_ids = {'cat_curve': 'idval', 'cat_curve_value': 'idval',
                          'cat_pattern': 'pattern_id', 'cat_pattern_value': 'pattern_id',
                          'cat_controls': 'id',
                          'cat_timeseries': 'id', 'cat_timeseries_value': 'timser_id',
@@ -251,7 +251,7 @@ class GwNonVisual:
         id_list = []
         values = []
         for idx in selected_list:
-            value = idx.sibling(idx.row(), 0).data()
+            value = idx.sibling(idx.row(), 1).data()
             id_list.append(value)
 
         message = "Are you sure you want to delete these records?"
@@ -267,6 +267,7 @@ class GwNonVisual:
             if id_field is not None:
                 for value in values:
                     sql = f"DELETE FROM {tablename_value} WHERE {id_field} = {value}"
+                    print(sql)
                     result = tools_db.execute_sql(sql, commit=False)
                     if not result:
                         msg = "There was an error deleting object values."
@@ -278,6 +279,7 @@ class GwNonVisual:
             for value in values:
                 id_field = self.dict_ids.get(tablename)
                 sql = f"DELETE FROM {tablename} WHERE {id_field} = {value}"
+                print(sql)
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
                     msg = "There was an error deleting object."
@@ -359,10 +361,10 @@ class GwNonVisual:
         cmb_curve_type = self.dialog.cmb_curve_type
 
         # Populate combobox
-        # sql = "SELECT fid as id, code as idval FROM sector WHERE fid > 0"
-        # rows = global_vars.gpkg_dao_data.get_rows(sql)
-        # if rows:
-        #     tools_qt.fill_combo_values(cmb_sector_id, rows, index_to_show=1, add_empty=True)
+        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
+        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        if rows:
+            tools_qt.fill_combo_values(cmb_curve_type, rows, index_to_show=1, add_empty=True)
 
         # Create & fill cmb_curve_type
         curve_type_headers, curve_type_list = self._create_curve_type_lists()
@@ -455,12 +457,6 @@ class GwNonVisual:
         descript = row[3]
         active = row[4]
 
-        # Populate combobox
-        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
-        if rows:
-            tools_qt.fill_combo_values(cmb_curve_type, rows, index_to_show=1, add_empty=True)
-
         # Populate text & combobox widgets
         if not duplicate:
             tools_qt.set_widget_text(self.dialog, txt_id, curve_id)
@@ -473,7 +469,7 @@ class GwNonVisual:
 
         # Populate table curve_values
         sql = f"SELECT xcoord, ycoord FROM cat_curve_value WHERE idval = '{curve_name}'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        rows = tools_db.get_rows(sql)
         if not rows:
             return
         print(f"ROWS -> {rows}")
@@ -513,7 +509,7 @@ class GwNonVisual:
         """ Manage curve values table headers """
 
         curve_type = tools_qt.get_text(dialog, 'cmb_curve_type', return_string_null=False)
-        if curve_type:
+        if curve_type and curve_type_headers:
             headers = curve_type_headers.get(curve_type)
             table.setHorizontalHeaderLabels(headers)
 
@@ -731,11 +727,14 @@ class GwNonVisual:
                 return
             tools_qt.set_stylesheet(txt_id, style="")
 
+            curve_name = curve_name.strip("'")
+            descript = descript.strip("'")
+
             # Insert cat_curve
-            sql = f"INSERT INTO cat_curve (idval, curve_type, descript)" \
-                  f"VALUES({curve_id}, '{curve_type}', {descript})"
+            sql = f"""INSERT INTO cat_curve (idval, curve_type, descript) """ \
+                  f"""VALUES ('{curve_name}', '{curve_type}', '{descript}')"""
             print(f"SQL -> {sql}")
-            result = global_vars.gpkg_dao_data.execute_sql(sql, commit=False)
+            result = tools_db.execute_sql(sql, commit=False)
             print(f"result {result}")
             if not result:
                 msg = "There was an error inserting curve."
@@ -744,7 +743,7 @@ class GwNonVisual:
                 return
 
             # Insert cat_curve_value
-            result = self._insert_curve_values(dialog, tbl_curve_value, curve_id)
+            result = self._insert_curve_values(dialog, tbl_curve_value, curve_name)
             if not result:
                 return
 
