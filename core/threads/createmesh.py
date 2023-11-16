@@ -73,6 +73,7 @@ class GwCreateMeshTask(GwTask):
                 "mesh_anchor_points": None,
                 "ground_roughness": None,
                 "gully": None,
+                "sector": None,
             }
             for layer in layers:
                 if self.feedback.isCanceled():
@@ -85,6 +86,8 @@ class GwCreateMeshTask(GwTask):
                     self.message = f"Layer '{layer}' is not valid. Check if GPKG file has a '{layer}' layer."
                     return False
                 layers[layer] = l
+
+            layers["dem"] = self.dem_layer
 
             # Validate landuses roughness values
             if self.fill_roughness:

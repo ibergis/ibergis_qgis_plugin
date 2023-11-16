@@ -278,6 +278,33 @@ def validate_null_geometry(layer: QgsVectorLayer, feedback: Feedback) -> Optiona
     return output_layer
 
 
+def validate_dem_coverage(layers_dict: dict, feedback: Feedback) -> QgsVectorLayer:
+    if layers_dict["dem"] == None:
+        return QgsVectorLayer("Polygon", "Empty", "memory")
+
+    ground = layers_dict["ground"]
+    cliped_raster = processing.run("gdal:cliprasterbymasklayer", {
+        'INPUT':layers_dict["dem"],
+        'MASK':layers_dict["sector"],
+        'OUTPUT':'TEMPORARY_OUTPUT'
+    })["OUTPUT"]
+    polygon = processing.run("native:pixelstopolygons", {
+        'INPUT_RASTER':cliped_raster,
+        'RASTER_BAND':1,
+        'FIELD_NAME':'VALUE',
+        'OUTPUT':'TEMPORARY_OUTPUT'
+    })["OUTPUT"]
+    diff = processing.run("native:difference", {
+        'INPUT':ground,
+        'OVERLAY':polygon,
+        'OUTPUT':'TEMPORARY_OUTPUT'
+    })["OUTPUT"]
+    diff.setCrs(ground.crs())
+    diff.setName(f"Raster Ground Coverage Error")
+
+    return diff
+
+
 def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Optional[Tuple[list, list]]:
     error_layers = []
     warning_layers = []
@@ -299,6 +326,7 @@ def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Optional[Tup
         ],
         [
             (warning_layers, validate_distance, layers_dict["ground"]),
+            (error_layers, validate_dem_coverage, layers_dict),
             (error_layers, validate_ground_roughness_coverage, layers_dict),
             (error_layers, validate_vert_edge, layers_dict),
             (error_layers, validate_intersect, layers_dict),
