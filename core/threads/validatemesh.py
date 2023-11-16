@@ -231,7 +231,7 @@ def validate_distance(layer: QgsVectorLayer, feedback: Feedback) -> Optional[Qgs
     return output_layer
 
 
-def validate_ground_roughness_coverage(layers_dict: dict, feedback: Feedback) -> Optional[QgsVectorLayer]:
+def validate_ground_roughness_coverage(layers_dict: dict, feedback: Feedback) -> QgsVectorLayer:
     output_layer: QgsVectorLayer = processing.run("native:difference", {
         'INPUT':layers_dict["ground"],
         'OVERLAY':layers_dict["ground_roughness"],
@@ -239,7 +239,42 @@ def validate_ground_roughness_coverage(layers_dict: dict, feedback: Feedback) ->
         'GRID_SIZE':None}
     )["OUTPUT"]
     output_layer.setCrs(layers_dict["ground"].crs())
+    output_layer.setName(f"Ground Roughness Misscoverage")
 
+    return output_layer
+
+
+def validate_validity(layer: QgsVectorLayer, feedback: Feedback) -> Tuple[QgsVectorLayer, QgsVectorLayer]:
+    output = processing.run("qgis:checkvalidity", {
+        'INPUT_LAYER':layer,
+        'VALID_OUTPUT':'TEMPORARY_OUTPUT',
+        'INVALID_OUTPUT':'TEMPORARY_OUTPUT',
+        'ERROR_OUTPUT':'TEMPORARY_OUTPUT'
+    })
+
+    invalid: QgsVectorLayer = output["INVALID_OUTPUT"]
+    invalid.setName(f"{layer.name()} Invalid Output")
+    invalid.setCrs(layer.crs())
+    
+    error: QgsVectorLayer = output["ERROR_OUTPUT"]
+    error.setName(f"{layer.name()} Error Output")
+    error.setCrs(layer.crs())
+
+    return invalid, error
+
+
+def validate_null_geometry(layer: QgsVectorLayer, feedback: Feedback) -> Optional[QgsVectorLayer]:
+    # Fill error layer
+    output_layer = QgsVectorLayer("Polygon", f"'{layer.name()}' Null Geometry", "memory")
+    output_layer.setCrs(layer.crs())
+    attributes = layer.dataProvider().fields().toList()
+    provider = output_layer.dataProvider()
+    provider.addAttributes(attributes)
+    for feature in layer.getFeatures():
+        if not feature.hasGeometry():
+            provider.addFeature(feature)
+    
+    output_layer.updateExtents()
     return output_layer
 
 
@@ -247,29 +282,45 @@ def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Optional[Tup
     error_layers = []
     warning_layers = []
 
-    validations = [
-        (warning_layers, validate_distance, layers_dict["ground"]),
-        (error_layers, validate_roof_layer, layers_dict["roof"]),
-        (error_layers, validate_vert_edge, layers_dict),
-        (error_layers, validate_intersect, layers_dict),
-        (error_layers, validate_cellsize, layers_dict["ground"]),
-        (error_layers, validate_cellsize, layers_dict["roof"]),
-        (
-            error_layers,
-            validate_ground_roughness_layer,
-            layers_dict["ground_roughness"],
-        ),
-        (error_layers, validate_ground_roughness_coverage, layers_dict),
+    validation_steps = [
+        [
+            (error_layers, validate_null_geometry, layers_dict["ground"]),
+            (error_layers, validate_null_geometry, layers_dict["roof"]),
+            (error_layers, validate_validity, layers_dict["ground"]),
+            (error_layers, validate_validity, layers_dict["roof"]),
+            (error_layers, validate_cellsize, layers_dict["ground"]),
+            (error_layers, validate_cellsize, layers_dict["roof"]),
+            (
+                error_layers,
+                validate_ground_roughness_layer,
+                layers_dict["ground_roughness"],
+            ),
+            (error_layers, validate_roof_layer, layers_dict["roof"]),
+        ],
+        [
+            (warning_layers, validate_distance, layers_dict["ground"]),
+            (error_layers, validate_ground_roughness_coverage, layers_dict),
+            (error_layers, validate_vert_edge, layers_dict),
+            (error_layers, validate_intersect, layers_dict),
+        ]
     ]
 
-    for result_list, validation_function, parameters in validations:
-        result_layer = validation_function(parameters, feedback)
-        if feedback.isCanceled():
-            return
-        if result_layer.hasFeatures():
-            result_list.append(result_layer)
-        feedback.setProgress(feedback.progress() + 1)
+    for validations in validation_steps:
+        for result_list, validation_function, parameters in validations:
+            result_layers = validation_function(parameters, feedback)
+            if type(result_layers) not in (tuple, list):
+                result_layers = [result_layers]
+            
+            if feedback.isCanceled():
+                return
+            
+            for layer in result_layers:
+                if layer.hasFeatures():
+                    result_list.append(layer)
+            feedback.setProgress(feedback.progress() + 1)
 
+        if error_layers:
+            return error_layers, warning_layers
     return error_layers, warning_layers
 
 def validate_gullies_in_triangles(
