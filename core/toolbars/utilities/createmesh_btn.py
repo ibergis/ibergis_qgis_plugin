@@ -149,19 +149,27 @@ class GwCreateMeshButton(GwAction):
         self.dlg_mesh.btn_save.setEnabled(False)
 
         project_folder = str(Path(self.dao.db_filepath).parent)
-        file_path = QFileDialog.getSaveFileName(
-            caption="Save mesh file",
+        folder_path = QFileDialog.getExistingDirectory(
+            caption="Select folder",
             directory=project_folder,
-            filter="DAT file (*.dat)",
-        )[0]
+        )
 
-        if not file_path:
+        if not folder_path:
+            self.dlg_mesh.btn_save.setEnabled(True)
+            return
+
+        MESH_FILE = "Iber2D.dat"
+        mesh_path = Path(folder_path) / MESH_FILE
+
+        if mesh_path.exists() and not tools_qt.show_question(
+            "Do you want to overwrite the existing mesh files?"
+        ):
             self.dlg_mesh.btn_save.setEnabled(True)
             return
 
         self.feedback.setProgressText("Saving mesh...")
 
-        with open(file_path, "w") as file:
+        with open(mesh_path, "w") as file:
             file.write("MATRIU\n")
             file.write(f"\t{len(self.thread_triangulation.mesh['triangles'])}\n")
             for i, tri in self.thread_triangulation.mesh["triangles"].items():

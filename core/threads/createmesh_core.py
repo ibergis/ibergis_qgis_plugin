@@ -60,7 +60,7 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
     temp_roughness.updateExtents()
 
     # Rasterize temp_roughness layer
-    resolution = 2
+    resolution = 1
     e = temp_roughness.extent()
     params = {
         "BURN": 0,
