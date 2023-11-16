@@ -360,12 +360,6 @@ class GwNonVisual:
         tbl_curve_value = self.dialog.tbl_curve_value
         cmb_curve_type = self.dialog.cmb_curve_type
 
-        # Populate combobox
-        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
-        if rows:
-            tools_qt.fill_combo_values(cmb_curve_type, rows, index_to_show=1, add_empty=True)
-
         # Create & fill cmb_curve_type
         curve_type_headers, curve_type_list = self._create_curve_type_lists()
         if curve_type_list:
@@ -427,8 +421,8 @@ class GwNonVisual:
 
         curve_type_list = []
         curve_type_headers = {}
-        sql = f"SELECT id, idval, json(addparam) FROM inp_typevalue WHERE typevalue = 'inp_value_curve'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        sql = f"SELECT id, idval, json(addparam) FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
+        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
 
         if rows:
             curve_type_list = [[row[0], row[1]] for row in rows]
