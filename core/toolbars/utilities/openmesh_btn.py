@@ -19,16 +19,22 @@ class GwOpenMeshButton(GwAction):
     def clicked_event(self):
         self.dao = global_vars.gpkg_dao_data.clone()
         project_folder = str(Path(self.dao.db_filepath).parent)
-        file_path = QFileDialog.getOpenFileName(
-            caption="Open mesh file",
+        folder_path = QFileDialog.getExistingDirectory(
+            caption="Select folder",
             directory=project_folder,
-            filter="DAT file (*.dat)",
-        )[0]
+        )
 
-        if not file_path:
+        if not folder_path:
             return
 
-        self.thread = GwOpenMeshTask("Open mesh file", file_path)
+        MESH_FILE = "Iber2D.dat"
+        mesh_path = Path(folder_path) / MESH_FILE
+
+        if not mesh_path.exists():
+            tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
+            return
+
+        self.thread = GwOpenMeshTask("Open mesh file", mesh_path)
         self.thread.taskCompleted.connect(self._load_layer)
         QgsApplication.taskManager().addTask(self.thread)
 
