@@ -253,11 +253,11 @@ def validate_validity(layer: QgsVectorLayer, feedback: Feedback) -> Tuple[QgsVec
     })
 
     invalid: QgsVectorLayer = output["INVALID_OUTPUT"]
-    invalid.setName(f"{layer.name()} Invalid Output")
+    invalid.setName(f"'{layer.name()}' Invalid Output")
     invalid.setCrs(layer.crs())
     
     error: QgsVectorLayer = output["ERROR_OUTPUT"]
-    error.setName(f"{layer.name()} Error Output")
+    error.setName(f"'{layer.name()}' Error Output")
     error.setCrs(layer.crs())
 
     return invalid, error
