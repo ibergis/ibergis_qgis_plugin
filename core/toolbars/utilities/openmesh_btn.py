@@ -2,10 +2,12 @@ from pathlib import Path
 
 from qgis.core import QgsApplication
 from qgis.PyQt.QtWidgets import QFileDialog
+from qgis.utils import iface
 
 from ..dialog import GwAction
 from ...threads.openmesh import GwOpenMeshTask
 from .... import global_vars
+from ....lib import tools_qt
 
 
 class GwOpenMeshButton(GwAction):
@@ -25,6 +27,13 @@ class GwOpenMeshButton(GwAction):
 
         if not file_path:
             return
-        
+
         self.thread = GwOpenMeshTask("Open mesh file", file_path)
+        self.thread.taskCompleted.connect(self._load_layer)
         QgsApplication.taskManager().addTask(self.thread)
+
+    def _load_layer(self):
+        """Add temp layer to TOC"""
+        tools_qt.add_layer_to_toc(self.thread.layer)
+        iface.setActiveLayer(self.thread.layer)
+        iface.zoomToActiveLayer()

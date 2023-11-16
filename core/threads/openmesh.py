@@ -2,25 +2,24 @@ from pathlib import Path
 
 from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QVariant
-from qgis.utils import iface
 
 from .task import GwTask
 from ... import global_vars
-from ...lib import tools_qt
+
 
 class GwOpenMeshTask(GwTask):
-    def __init__(
-        self,
-        description,
-        file_path
-    ):
+    def __init__(self, description, file_path):
         super().__init__(description)
         self.file_path = file_path
-
+        self.INITIAL_PROGRESS = 1
+        self.POST_FILE_PROGRESS = 5
+        self.POST_LAYER_PROGRESS = 95
 
     def run(self):
         super().run()
         mesh = {"triangles": {}, "vertices": {}}
+
+        self.setProgress(self.INITIAL_PROGRESS)
 
         with open(self.file_path) as file:
             section = ""
@@ -66,6 +65,8 @@ class GwOpenMeshTask(GwTask):
                         "elevation": float(z),
                     }
 
+        self.setProgress(self.POST_FILE_PROGRESS)
+
         temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
         temp_layer.setCrs(QgsProject.instance().crs())
         provider = temp_layer.dataProvider()
@@ -80,6 +81,9 @@ class GwOpenMeshTask(GwTask):
         ]
         provider.addAttributes(fields)
         temp_layer.updateFields()
+
+        total_tri = len(mesh["triangles"])
+        counter_tri = 0
         for i, tri in mesh["triangles"].items():
             feature = QgsFeature()
             vertices = (mesh["vertices"][vert] for vert in tri["vertice_ids"])
@@ -94,8 +98,12 @@ class GwOpenMeshTask(GwTask):
                 [i, tri["category"], *tri["vertice_ids"], tri["roughness"]]
             )
             provider.addFeature(feature)
+            counter_tri += 1
+            self.update_triangle_progress(counter_tri / total_tri)
 
         temp_layer.updateExtents()
+
+        self.setProgress(self.POST_LAYER_PROGRESS)
 
         # Set the style of the layer
         style_path = "resources/templates/mesh_temp_layer.qml"
@@ -104,7 +112,11 @@ class GwOpenMeshTask(GwTask):
         temp_layer.loadNamedStyle(style_path)
         temp_layer.triggerRepaint()
 
-        # Add temp layer to TOC
-        tools_qt.add_layer_to_toc(temp_layer)
-        iface.setActiveLayer(temp_layer)
-        iface.zoomToActiveLayer()
+        self.layer = temp_layer
+        return True
+
+    def update_triangle_progress(self, tri_progress: float):
+        progress = (
+            self.POST_LAYER_PROGRESS - self.POST_FILE_PROGRESS
+        ) * tri_progress + self.POST_FILE_PROGRESS
+        self.setProgress(progress)
