@@ -1477,8 +1477,8 @@ class GwNonVisual:
                 return
             tools_qt.set_stylesheet(txt_text, style="")
 
-            # Insert inp_controls
-            sql = f"INSERT INTO inp_controls (text,active)" \
+            # Insert cat_controls
+            sql = f"INSERT INTO cat_controls (text,active)" \
                   f"VALUES({text}, {active})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
