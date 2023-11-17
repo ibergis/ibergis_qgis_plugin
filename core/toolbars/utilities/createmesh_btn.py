@@ -185,6 +185,51 @@ class GwCreateMeshButton(GwAction):
                 z = v["elevation"]
                 file.write(f"\t\t{x}\t\t{y}\t\t{z}\t\t{i}\n")
 
+        ROOF_FILE = "Iber_SWMM_roof.dat"
+        roof_path = Path(folder_path) / ROOF_FILE
+
+        sql = """
+            SELECT
+                code,
+                fid,
+                slope,
+                width,
+                roughness,
+                isconnected,
+                outlet_id,
+                outlet_vol,
+                street_vol,
+                infiltr_vol
+            FROM roof
+        """
+        rows = self.dao.get_rows(sql)
+        if rows is not None:
+            with open(roof_path, "w") as file:
+                file.write("Number of roofs\n")
+                file.write(str(len(rows)) + "\n")
+                file.write("Roofs properties\n")
+                for row in rows:
+                    (
+                        code,
+                        fid,
+                        slope,
+                        width,
+                        roughness,
+                        isconnected,
+                        outlet_id,
+                        outlet_vol,
+                        street_vol,
+                        infiltr_vol,
+                    ) = row
+                    first_col = code or fid
+                    file.write(
+                        f"{first_col} {fid} {slope} {width} {roughness} {isconnected} {outlet_id} {outlet_vol} {street_vol} {infiltr_vol}\n"
+                    )
+                file.write("Roof elements\n")
+                for i, tri in self.thread_triangulation.mesh["triangles"].items():
+                    if tri["category"] == "roof":
+                        file.write(f"{i} {tri['roof_id']}\n")
+
         # Remove temp layer
         project = QgsProject.instance()
         for layer in project.mapLayersByName("Mesh Temp Layer"):
