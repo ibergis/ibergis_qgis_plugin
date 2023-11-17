@@ -45,9 +45,9 @@ class GwNonVisual:
                            'cat_controls': 'controls',
                            }
         self.dict_ids = {'cat_curve': 'idval', 'cat_curve_value': 'idval',
-                         'cat_pattern': 'pattern_id', 'cat_pattern_value': 'pattern_id',
+                         'cat_pattern': 'idval', 'cat_pattern_value': 'idval',
                          'cat_controls': 'id',
-                         'cat_timeseries': 'id', 'cat_timeseries_value': 'timser_id',
+                         'cat_timeseries': 'idval', 'cat_timeseries_value': 'idval',
                          }
         self.valid = (True, "")
 
@@ -1670,11 +1670,11 @@ class GwNonVisual:
         """ Populates timeseries dialog combos """
 
         sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_value_timserid'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
             tools_qt.fill_combo_values(cmb_timeser_type, rows, index_to_show=1)
         sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_timeseries'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
             tools_qt.fill_combo_values(cmb_times_type, rows, index_to_show=1)
 
@@ -1691,46 +1691,54 @@ class GwNonVisual:
         txt_fname = self.dialog.txt_fname
         tbl_timeseries_value = self.dialog.tbl_timeseries_value
 
-        sql = f"SELECT * FROM cat_timeseries WHERE id = '{timser_id}'"
-        row = global_vars.gpkg_dao_data.get_row(sql)
+        sql = f"SELECT id, idval, timser_type, times_type, descript, fname, log, active FROM cat_timeseries WHERE id = '{timser_id}'"
+        row = tools_db.get_row(sql)
         if not row:
             return
+
+        idval = row[1]
+        timeser_type = row[2]
+        times_type = row[3]
+        descript = row[4]
+        fname = row[5]
 
         # Populate text & combobox widgets
         if not duplicate:
             tools_qt.set_widget_text(self.dialog, txt_id, timser_id)
             tools_qt.set_widget_enabled(self.dialog, txt_id, False)
-        tools_qt.set_widget_text(self.dialog, txt_idval, row[1])
-        tools_qt.set_widget_text(self.dialog, cmb_timeser_type, row[3])
-        tools_qt.set_widget_text(self.dialog, cmb_times_type, row[4])
-        tools_qt.set_widget_text(self.dialog, txt_descript, row[6])
-        tools_qt.set_widget_text(self.dialog, txt_fname, row[5])
+        tools_qt.set_widget_text(self.dialog, txt_idval, idval)
+        tools_qt.set_widget_text(self.dialog, cmb_timeser_type, timeser_type)
+        tools_qt.set_widget_text(self.dialog, cmb_times_type, times_type)
+        tools_qt.set_widget_text(self.dialog, txt_descript, descript)
+        tools_qt.set_widget_text(self.dialog, txt_fname, fname)
 
         # Populate table timeseries_values
-        sql = f"SELECT id, date, time, value FROM cat_timeseries_value WHERE timser_id = '{timser_id}'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        sql = f"SELECT id, date, time, value FROM cat_timeseries_value WHERE idval = '{idval}'"
+        rows = tools_db.get_rows(sql)
         if not rows:
             return
 
         row0, row1, row2 = None, None, None
-        if row[4] == 'FILE':
+        if times_type == 'FILE':
             return
-        elif row[4] == 'RELATIVE':
+        elif times_type == 'RELATIVE':
             row0, row1, row2 = None, 'time', 'value'
-        elif row[4] == 'ABSOLUTE':
+        elif times_type == 'ABSOLUTE':
             row0, row1, row2 = 'date', None, 'value'
+
+        headers_rel_dict = {'date': 1, 'time': 2, 'value': 3}
 
         for n, row in enumerate(rows):
             if row0:
-                value = f"{row[row0]}"
+                value = f"{row[headers_rel_dict.get(row0)]}"
                 if value in (None, 'None', 'null'):
                     value = ''
                 tbl_timeseries_value.setItem(n, 0, QTableWidgetItem(value))
-            value = f"{row[row1]}"
+            value = f"{row[headers_rel_dict.get(row1)]}"
             if value in (None, 'None', 'null'):
                 value = ''
             tbl_timeseries_value.setItem(n, 1, QTableWidgetItem(value))
-            value = f"{row[row2]}"
+            value = f"{row[headers_rel_dict.get(row2)]}"
             if value in (None, 'None', 'null'):
                 value = ''
             tbl_timeseries_value.setItem(n, 2, QTableWidgetItem(f"{value}"))
@@ -1798,16 +1806,17 @@ class GwNonVisual:
         descript = tools_qt.get_text(dialog, txt_descript, add_quote=True)
         fname = tools_qt.get_text(dialog, txt_fname, add_quote=True)
 
-        if is_new:
-            # Check that there are no empty fields
-            if not timeseries_id or timeseries_id == 'null':
-                tools_qt.set_stylesheet(txt_id)
-                return
-            tools_qt.set_stylesheet(txt_id, style="")
+        # Check that there are no empty fields
+        if not idval or idval == 'null':
+            tools_qt.set_stylesheet(txt_id)
+            return
+        tools_qt.set_stylesheet(txt_id, style="")
+        idval = idval.strip("'")
 
+        if is_new:
             # Insert inp_timeseries
-            sql = f"INSERT INTO cat_timeseries_value (id, timser_type, times_type, idval, descript, fname)" \
-                  f"VALUES({timeseries_id}, '{timser_type}', '{times_type}', {idval}, {descript}, {fname})"
+            sql = f"INSERT INTO cat_timeseries (idval, timser_type, times_type, descript, fname)" \
+                  f"VALUES('{idval}', '{timser_type}', '{times_type}', {descript}, {fname})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting timeseries."
@@ -1819,7 +1828,7 @@ class GwNonVisual:
                 sql = ""  # No need to insert to inp_timeseries_value?
 
             # Insert inp_timeseries_value
-            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, timeseries_id)
+            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, idval)
             if not result:
                 return
 
@@ -1831,26 +1840,25 @@ class GwNonVisual:
             # Update inp_timeseries
             table_name = 'cat_timeseries'
 
-            idval = idval.strip("'")
             timser_type = timser_type.strip("'")
             times_type = times_type.strip("'")
             descript = descript.strip("'")
             fname = fname.strip("'")
             fields = f"""{{"idval": "{idval}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}"}}"""
 
-            result = self._setfields(timeseries_id.strip("'"), table_name, fields)
+            result = self._setfields(idval, table_name, fields)
             if not result:
                 return
 
             # Update inp_timeseries_value
-            sql = f"DELETE FROM cat_timeseries_value WHERE timser_id = {timeseries_id}"
+            sql = f"DELETE FROM cat_timeseries_value WHERE idval = '{idval}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old timeseries values."
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
-            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, timeseries_id)
+            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, idval)
             if not result:
                 return
 
@@ -1863,7 +1871,7 @@ class GwNonVisual:
         tools_gw.close_dialog(dialog)
 
 
-    def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, timeseries_id):
+    def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, idval):
         """ Insert table values into cat_timeseries_value """
 
         values = list()
@@ -1903,8 +1911,8 @@ class GwNonVisual:
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (timser_id, date, value) "
-                sql += f"VALUES ({timeseries_id}, {row[0]}, {row[2]})"
+                sql = f"INSERT INTO cat_timeseries_value (idval, date, value) "
+                sql += f"VALUES ('{idval}', {row[0]}, {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
@@ -1923,8 +1931,8 @@ class GwNonVisual:
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (timser_id, time, value) "
-                sql += f"VALUES ({timeseries_id}, {row[1]}, {row[2]})"
+                sql = f"INSERT INTO cat_timeseries_value (idval, time, value) "
+                sql += f"VALUES ('{idval}', {row[1]}, {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
