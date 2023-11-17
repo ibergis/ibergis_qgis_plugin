@@ -220,8 +220,12 @@ class GwNonVisual:
             return
 
         # Get selected workspace id
+        col = self.dict_ids.get(table.objectName())
+        col_idx = tools_qt.get_col_index_by_col_name(table, col)
+        if not col_idx:
+            col_idx = 0
         index = table.selectionModel().currentIndex()
-        value = index.sibling(index.row(), 0).data()
+        value = index.sibling(index.row(), col_idx).data()
 
         try:
             value = int(value)
@@ -247,11 +251,15 @@ class GwNonVisual:
             tools_qgis.show_warning(message, dialog=dialog)
             return
 
-        # Get selected workspace IDs
+        # Get selected object IDs
+        col = self.dict_ids.get(tablename)
+        col_idx = tools_qt.get_col_index_by_col_name(table, col)
+        if not col_idx:
+            col_idx = 0
         id_list = []
         values = []
         for idx in selected_list:
-            value = idx.sibling(idx.row(), 1).data()
+            value = idx.sibling(idx.row(), col_idx).data()
             id_list.append(value)
 
         message = "Are you sure you want to delete these records?"
