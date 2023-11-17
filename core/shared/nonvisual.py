@@ -718,13 +718,13 @@ class GwNonVisual:
             tools_qgis.show_warning(msg, dialog=dialog)
             return
 
-        if is_new:
-            # Check that there are no empty fields
-            if not curve_id or curve_id == 'null':
-                tools_qt.set_stylesheet(txt_id)
-                return
-            tools_qt.set_stylesheet(txt_id, style="")
+        # Check that there are no empty fields
+        if not curve_name or curve_name == 'null':
+            tools_qt.set_stylesheet(txt_name)
+            return
+        tools_qt.set_stylesheet(txt_name, style="")
 
+        if is_new:
             curve_name = curve_name.strip("'")
             descript = descript.strip("'")
 
@@ -1253,13 +1253,13 @@ class GwNonVisual:
         active = tools_qt.is_checked(dialog, chk_active)
         descript = tools_qt.get_text(dialog, txt_descript, add_quote=True)
 
-        if is_new:
-            # Check that there are no empty fields
-            if not pattern_id or pattern_id == 'null':
-                tools_qt.set_stylesheet(txt_id)
-                return
-            tools_qt.set_stylesheet(txt_id, style="")
+        # Check that there are no empty fields
+        if not pattern_name or pattern_name == 'null':
+            tools_qt.set_stylesheet(txt_name)
+            return
+        tools_qt.set_stylesheet(txt_name, style="")
 
+        if is_new:
             # Insert inp_pattern
             sql = f"INSERT INTO cat_pattern (idval, pattern_type, descript, active)" \
                   f"VALUES({pattern_name}, '{pattern_type}', {descript}, {int(active)})"
@@ -1474,13 +1474,13 @@ class GwNonVisual:
         active = tools_qt.is_checked(dialog, chk_active)
         text = tools_qt.get_text(dialog, txt_text, add_quote=True)
 
-        if is_new:
-            # Check that there are no empty fields
-            if not text or text == 'null':
-                tools_qt.set_stylesheet(txt_text)
-                return
-            tools_qt.set_stylesheet(txt_text, style="")
+        # Check that there are no empty fields
+        if not text or text == 'null':
+            tools_qt.set_stylesheet(txt_text)
+            return
+        tools_qt.set_stylesheet(txt_text, style="")
 
+        if is_new:
             # Insert cat_controls
             sql = f"INSERT INTO cat_controls (text,active)" \
                   f"VALUES({text}, {active})"
@@ -1812,9 +1812,9 @@ class GwNonVisual:
 
         # Check that there are no empty fields
         if not idval or idval == 'null':
-            tools_qt.set_stylesheet(txt_id)
+            tools_qt.set_stylesheet(txt_idval)
             return
-        tools_qt.set_stylesheet(txt_id, style="")
+        tools_qt.set_stylesheet(txt_idval, style="")
         idval = idval.strip("'")
 
         if is_new:
