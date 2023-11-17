@@ -220,12 +220,8 @@ class GwNonVisual:
             return
 
         # Get selected workspace id
-        col = self.dict_ids.get(table.objectName())
-        col_idx = tools_qt.get_col_index_by_col_name(table, col)
-        if not col_idx:
-            col_idx = 0
         index = table.selectionModel().currentIndex()
-        value = index.sibling(index.row(), col_idx).data()
+        value = index.sibling(index.row(), 0).data()
 
         try:
             value = int(value)
