@@ -34,7 +34,7 @@ class GwOpenMeshButton(GwAction):
             tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
             return
 
-        self.thread = GwOpenMeshTask("Open mesh file", mesh_path)
+        self.thread = GwOpenMeshTask("Open mesh file", folder_path)
         self.thread.taskCompleted.connect(self._load_layer)
         QgsApplication.taskManager().addTask(self.thread)
 

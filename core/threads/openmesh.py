@@ -8,20 +8,23 @@ from ... import global_vars
 
 
 class GwOpenMeshTask(GwTask):
-    def __init__(self, description, file_path):
+    def __init__(self, description, folder_path):
         super().__init__(description)
-        self.file_path = file_path
+        self.folder_path = folder_path
         self.INITIAL_PROGRESS = 1
         self.POST_FILE_PROGRESS = 5
         self.POST_LAYER_PROGRESS = 95
 
     def run(self):
         super().run()
-        mesh = {"triangles": {}, "vertices": {}}
+        mesh = {"polygons": {}, "vertices": {}}
 
         self.setProgress(self.INITIAL_PROGRESS)
 
-        with open(self.file_path) as file:
+        MESH_FILE = "Iber2D.dat"
+        mesh_path = Path(self.folder_path) / MESH_FILE
+
+        with open(mesh_path) as file:
             section = ""
             for line in file:
                 tokens = line.split()
@@ -46,7 +49,7 @@ class GwOpenMeshTask(GwTask):
                         continue
 
                     v1, v2, v3, v4, roughness, fid = tokens
-                    mesh["triangles"][fid] = {
+                    mesh["polygons"][fid] = {
                         "vertice_ids": [v1, v2, v3, v4],
                         "category": "ground",
                         "roughness": float(roughness),
@@ -65,6 +68,49 @@ class GwOpenMeshTask(GwTask):
                         "elevation": float(z),
                     }
 
+        ROOF_FILE = "Iber_SWMM_roof.dat"
+        roof_path = Path(self.folder_path) / ROOF_FILE
+
+        if roof_path.exists():
+            with open(roof_path) as file:
+
+                section = ""
+                for line in file:
+                    line = line.strip()
+
+                    # skip empty lines
+                    if not line:
+                        continue
+
+                    # section lines
+                    section_headers = [
+                        "Number of roofs",
+                        "Roofs properties",
+                        "Roof elements",
+                    ]
+                    if line in section_headers:
+                        section = line
+
+                    # ignore lines before first section
+                    if not section:
+                        continue
+
+                    # TODO: process 'Roofs properties' section
+
+                    # 'Roof elements' section
+                    if section == "Roof elements":
+                        tokens = line.split()
+
+                        # skip lines that don't have 4 itens
+                        # the count of polygons is also skipped
+                        if len(tokens) != 2:
+                            continue
+
+                        polygon_id, roof_id = tokens
+                        if polygon_id in mesh["polygons"]:
+                            mesh["polygons"][polygon_id]["category"] = "roof"
+                            mesh["polygons"][polygon_id]["roof_id"] = roof_id
+
         self.setProgress(self.POST_FILE_PROGRESS)
 
         temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
@@ -82,12 +128,12 @@ class GwOpenMeshTask(GwTask):
         provider.addAttributes(fields)
         temp_layer.updateFields()
 
-        total_tri = len(mesh["triangles"])
+        total_tri = len(mesh["polygons"])
         counter_tri = 0
-        for i, tri in mesh["triangles"].items():
+        for i, tri in mesh["polygons"].items():
             feature = QgsFeature()
             vertices = (mesh["vertices"][vert] for vert in tri["vertice_ids"])
-            wkt = "TRIANGLE(("
+            wkt = "POLYGON(("
             wkt += ",".join(
                 f"{v['coordinates'][0]} {v['coordinates'][1]} {v['elevation']}"
                 for v in vertices
@@ -99,7 +145,7 @@ class GwOpenMeshTask(GwTask):
             )
             provider.addFeature(feature)
             counter_tri += 1
-            self.update_triangle_progress(counter_tri / total_tri)
+            self.update_polygon_progress(counter_tri / total_tri)
 
         temp_layer.updateExtents()
 
@@ -115,7 +161,7 @@ class GwOpenMeshTask(GwTask):
         self.layer = temp_layer
         return True
 
-    def update_triangle_progress(self, tri_progress: float):
+    def update_polygon_progress(self, tri_progress: float):
         progress = (
             self.POST_LAYER_PROGRESS - self.POST_FILE_PROGRESS
         ) * tri_progress + self.POST_FILE_PROGRESS
