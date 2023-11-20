@@ -95,7 +95,6 @@ class GwAdminButton:
         tools_log.log_info(f"Create schema: Executing function 'create_gpkg'")
         create_gpkg_status = self.create_gpkg()
         if not create_gpkg_status:
-            tools_qt.show_info_box("Geopackage already exists.")
             return
         tools_log.log_info(f"Create schema: Executing function '_check_database_connection'")
         connection_status = self._check_database_connection(self.gpkg_full_path, self.gpkg_name)
@@ -599,7 +598,11 @@ class GwAdminButton:
 
         self.gpkg_full_path = path + "/" + gpkg_name + ".gpkg"
         if os.path.exists(self.gpkg_full_path):
-            return False
+            text = f"Geopackage already exists. Do you want to overwrite it?"
+            response = tools_qt.show_question(text)
+            if not response:
+                return False
+
         driver = gdal.GetDriverByName('GPKG')
         dataset = driver.Create(self.gpkg_full_path, 0, 0, 0, gdal.GDT_Unknown)
         del dataset

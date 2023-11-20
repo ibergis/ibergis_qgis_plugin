@@ -84,8 +84,12 @@ class GwGpkgDao(object):
             cursor = self.get_cursor()
             cursor.execute(sql)
             rows = cursor.fetchall()
+            if commit:
+                self.commit()
         except Exception as e:
             self.last_error = e
+            if commit:
+                self.rollback()
         finally:
             return rows
 
@@ -98,8 +102,12 @@ class GwGpkgDao(object):
         try:
             self.cursor.execute(sql)
             row = self.cursor.fetchone()
+            if commit:
+                self.commit()
         except Exception as e:
             self.last_error = e
+            if commit:
+                self.rollback()
         finally:
             return row
 
@@ -112,13 +120,14 @@ class GwGpkgDao(object):
         try:
             cursor = self.get_cursor()
             cursor.execute(sql)
+            if commit:
+                self.commit()
         except Exception as e:
             self.last_error = e
             status = False
-            self.conn.rollback()
+            if commit:
+                self.rollback()
         finally:
-            if status:
-                self.conn.commit()
             return status
 
     def execute_sql_placeholder(self, sql, data, commit=True):
@@ -151,6 +160,24 @@ class GwGpkgDao(object):
             status = False
         finally:
             return status
+
+
+    def commit(self):
+        """ Commit current database transaction """
+
+        try:
+            self.conn.commit()
+        except Exception as e:
+            pass
+
+
+    def rollback(self):
+        """ Rollback current database transaction """
+
+        try:
+            self.conn.rollback()
+        except Exception:
+            pass
 
 
     def init_qsql_db(self, filepath, database_name):

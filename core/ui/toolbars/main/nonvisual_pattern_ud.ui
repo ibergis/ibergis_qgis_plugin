@@ -82,6 +82,16 @@
           </property>
          </widget>
         </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="lbl_pattern_type">
+          <property name="text">
+           <string>Pattern Type</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QComboBox" name="cmb_pattern_type"/>
+        </item>
         <item row="0" column="0">
          <widget class="QLabel" name="lbl_pattern_id">
           <property name="sizePolicy">
@@ -95,34 +105,8 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="lbl_expl_id">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Sector ID</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QComboBox" name="cmb_sector_id"/>
-        </item>
-        <item row="1" column="1">
-         <widget class="QComboBox" name="cmb_pattern_type"/>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="lbl_pattern_type">
-          <property name="text">
-           <string>Pattern Type</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="3">
-         <widget class="QLineEdit" name="txt_observ">
+        <item row="3" column="0" colspan="4">
+         <widget class="QLineEdit" name="txt_descript">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -131,8 +115,8 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0" colspan="3">
-         <widget class="QLabel" name="lbl_observ">
+        <item row="2" column="0" colspan="4">
+         <widget class="QLabel" name="lbl_descript">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -140,7 +124,31 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Observation</string>
+           <string>Descript</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="lbl_name">
+          <property name="text">
+           <string>Pattern Name</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="txt_name">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QCheckBox" name="chk_active">
+          <property name="text">
+           <string>Active</string>
           </property>
          </widget>
         </item>

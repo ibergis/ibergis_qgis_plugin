@@ -44,10 +44,10 @@ class GwNonVisual:
                            'cat_timeseries': 'timeseries',
                            'cat_controls': 'controls',
                            }
-        self.dict_ids = {'cat_curve': 'id', 'cat_curve_value': 'curve_id',
-                         'cat_pattern': 'pattern_id', 'cat_pattern_value': 'pattern_id',
+        self.dict_ids = {'cat_curve': 'idval', 'cat_curve_value': 'idval',
+                         'cat_pattern': 'idval', 'cat_pattern_value': 'idval',
                          'cat_controls': 'id',
-                         'cat_timeseries': 'id', 'cat_timeseries_value': 'timser_id',
+                         'cat_timeseries': 'idval', 'cat_timeseries_value': 'idval',
                          }
         self.valid = (True, "")
 
@@ -247,11 +247,15 @@ class GwNonVisual:
             tools_qgis.show_warning(message, dialog=dialog)
             return
 
-        # Get selected workspace IDs
+        # Get selected object IDs
+        col = self.dict_ids.get(tablename)
+        col_idx = tools_qt.get_col_index_by_col_name(table, col)
+        if not col_idx:
+            col_idx = 0
         id_list = []
         values = []
         for idx in selected_list:
-            value = idx.sibling(idx.row(), 0).data()
+            value = idx.sibling(idx.row(), col_idx).data()
             id_list.append(value)
 
         message = "Are you sure you want to delete these records?"
@@ -267,26 +271,28 @@ class GwNonVisual:
             if id_field is not None:
                 for value in values:
                     sql = f"DELETE FROM {tablename_value} WHERE {id_field} = {value}"
+                    print(sql)
                     result = tools_db.execute_sql(sql, commit=False)
                     if not result:
                         msg = "There was an error deleting object values."
                         tools_qgis.show_warning(msg, dialog=dialog)
-                        global_vars.dao.rollback()
+                        global_vars.gpkg_dao_data.rollback()
                         return
 
             # Delete object from main table
             for value in values:
                 id_field = self.dict_ids.get(tablename)
                 sql = f"DELETE FROM {tablename} WHERE {id_field} = {value}"
+                print(sql)
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
                     msg = "There was an error deleting object."
                     tools_qgis.show_warning(msg, dialog=dialog)
-                    global_vars.dao.rollback()
+                    global_vars.gpkg_dao_data.rollback()
                     return
 
             # Commit & refresh table
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             self._reload_manager_table()
 
     def _print_object(self):
@@ -356,14 +362,7 @@ class GwNonVisual:
 
         # Define variables
         tbl_curve_value = self.dialog.tbl_curve_value
-        cmb_sector_id = self.dialog.cmb_sector_id
         cmb_curve_type = self.dialog.cmb_curve_type
-
-        # Populate combobox
-        sql = "SELECT fid as id, code as idval FROM sector WHERE fid > 0"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
-        if rows:
-            tools_qt.fill_combo_values(cmb_sector_id, rows, index_to_show=1, add_empty=True)
 
         # Create & fill cmb_curve_type
         curve_type_headers, curve_type_list = self._create_curve_type_lists()
@@ -426,8 +425,8 @@ class GwNonVisual:
 
         curve_type_list = []
         curve_type_headers = {}
-        sql = f"SELECT id, idval, json(addparam) FROM inp_typevalue WHERE typevalue = 'inp_value_curve'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        sql = f"SELECT id, idval, json(addparam) FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
+        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
 
         if rows:
             curve_type_list = [[row[0], row[1]] for row in rows]
@@ -441,28 +440,34 @@ class GwNonVisual:
 
         # Variables
         txt_id = self.dialog.txt_curve_id
+        txt_name = self.dialog.txt_curve_name
         txt_descript = self.dialog.txt_descript
-        cmb_sector_id = self.dialog.cmb_sector_id
         cmb_curve_type = self.dialog.cmb_curve_type
+        chk_active = self.dialog.chk_active
         tbl_curve_value = self.dialog.tbl_curve_value
 
         sql = f"SELECT * FROM cat_curve WHERE id = '{curve_id}'"
         row = global_vars.gpkg_dao_data.get_row(sql)
         if not row:
             return
+        curve_name = row[1]
+        curve_type = row[2]
+        descript = row[3]
+        active = row[4]
 
         # Populate text & combobox widgets
         if not duplicate:
             tools_qt.set_widget_text(self.dialog, txt_id, curve_id)
             tools_qt.set_widget_enabled(self.dialog, txt_id, False)
+            tools_qt.set_widget_text(self.dialog, txt_name, curve_name)
 
-        tools_qt.set_widget_text(self.dialog, txt_descript, row[4])
-        #tools_qt.set_combo_value(cmb_sector_id, str(row['sector_id']), 0)
-        tools_qt.set_widget_text(self.dialog, cmb_curve_type, row[2])
+        tools_qt.set_combo_value(cmb_curve_type, curve_type, 0)
+        tools_qt.set_widget_text(self.dialog, txt_descript, descript)
+        tools_qt.set_checked(self.dialog, chk_active, bool(active))
 
         # Populate table curve_values
-        sql = f"SELECT x_value, y_value FROM cat_curve_value WHERE curve_id = '{curve_id}'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        sql = f"SELECT xcoord, ycoord FROM cat_curve_value WHERE idval = '{curve_name}'"
+        rows = tools_db.get_rows(sql)
         if not rows:
             return
         print(f"ROWS -> {rows}")
@@ -476,15 +481,12 @@ class GwNonVisual:
         """ Load values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         cmb_curve_type = dialog.cmb_curve_type
 
         # Get values
-        sector_id = tools_gw.get_config_parser('nonvisual_curves', 'cmb_sector_id', "user", "session")
         curve_type = tools_gw.get_config_parser('nonvisual_curves', 'cmb_curve_type', "user", "session")
 
         # Populate widgets
-        tools_qt.set_combo_value(cmb_sector_id, str(sector_id), 0)
         tools_qt.set_widget_text(dialog, cmb_curve_type, curve_type)
 
 
@@ -492,15 +494,12 @@ class GwNonVisual:
         """ Save values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         cmb_curve_type = dialog.cmb_curve_type
 
         # Get values
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
         curve_type = tools_qt.get_combo_value(dialog, cmb_curve_type)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_curves', 'cmb_sector_id', sector_id)
         tools_gw.set_config_parser('nonvisual_curves', 'cmb_curve_type', curve_type)
 
 
@@ -508,7 +507,7 @@ class GwNonVisual:
         """ Manage curve values table headers """
 
         curve_type = tools_qt.get_text(dialog, 'cmb_curve_type', return_string_null=False)
-        if curve_type:
+        if curve_type and curve_type_headers:
             headers = curve_type_headers.get(curve_type)
             table.setHorizontalHeaderLabels(headers)
 
@@ -701,80 +700,87 @@ class GwNonVisual:
 
         # Variables
         txt_id = dialog.txt_curve_id
+        txt_name = dialog.txt_curve_name
         txt_descript = dialog.txt_descript
-        cmb_sector_id = dialog.cmb_sector_id
         cmb_curve_type = dialog.cmb_curve_type
+        chk_active = dialog.chk_active
         tbl_curve_value = dialog.tbl_curve_value
 
         # Get widget values
         curve_id = tools_qt.get_text(dialog, txt_id, add_quote=True)
+        curve_name = tools_qt.get_text(dialog, txt_name, add_quote=True)
         curve_type = tools_qt.get_combo_value(dialog, cmb_curve_type)
         descript = tools_qt.get_text(dialog, txt_descript, add_quote=True)
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
-        if sector_id in (None, '', -1):
-            sector_id = "null"
+        active = int(tools_qt.is_checked(dialog, chk_active))
 
         valid, msg = self.valid
         if not valid:
             tools_qgis.show_warning(msg, dialog=dialog)
             return
 
+        # Check that there are no empty fields
+        if not curve_name or curve_name == 'null':
+            tools_qt.set_stylesheet(txt_name)
+            return
+        tools_qt.set_stylesheet(txt_name, style="")
+
         if is_new:
-            # Check that there are no empty fields
-            if not curve_id or curve_id == 'null':
-                tools_qt.set_stylesheet(txt_id)
-                return
-            tools_qt.set_stylesheet(txt_id, style="")
+            curve_name = curve_name.strip("'")
+            descript = descript.strip("'")
 
             # Insert cat_curve
-            sql = f"INSERT INTO cat_curve (idval, curve_type, descript, sector_id)" \
-                  f"VALUES({curve_id}, '{curve_type}', {descript}, {sector_id})"
+            sql = f"""INSERT INTO cat_curve (idval, curve_type, descript) """ \
+                  f"""VALUES ('{curve_name}', '{curve_type}', '{descript}')"""
             print(f"SQL -> {sql}")
-            result = global_vars.gpkg_dao_data.execute_sql(sql, commit=False)
+            result = tools_db.execute_sql(sql, commit=False)
             print(f"result {result}")
             if not result:
                 msg = "There was an error inserting curve."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
 
             # Insert cat_curve_value
-            result = self._insert_curve_values(dialog, tbl_curve_value, curve_id)
+            result = self._insert_curve_values(dialog, tbl_curve_value, curve_name)
             if not result:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
         elif curve_id is not None:
             # Update curve fields
             table_name = 'cat_curve'
 
-            curve_type = curve_type.strip("'")
+            # curve_type = curve_type.strip("'")
+            curve_name = curve_name.strip("'")
             descript = descript.strip("'")
-            fields = f"""{{"curve_type": "{curve_type}", "descript": "{descript}", "sector_id": {sector_id}}}"""
+            if curve_type == -1:
+                curve_type = 'null'
+            fields = f"""{{"idval": "{curve_name}", "curve_type": "{curve_type}", "descript": "{descript}", "active": {active}}}"""
 
             result = self._setfields(curve_id.strip("'"), table_name, fields)
+            print(f"{result=}")
             if not result:
                 return
 
             # Delete existing curve values
-            sql = f"DELETE FROM cat_curve_value WHERE curve_id = {curve_id}"
+            sql = f"DELETE FROM cat_curve_value WHERE idval = '{curve_name}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old curve values."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
 
             # Insert new curve values
-            result = self._insert_curve_values(dialog, tbl_curve_value, curve_id)
+            result = self._insert_curve_values(dialog, tbl_curve_value, curve_name)
             if not result:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
 
@@ -782,7 +788,7 @@ class GwNonVisual:
         tools_gw.close_dialog(dialog)
 
 
-    def _insert_curve_values(self, dialog, tbl_curve_value, curve_id):
+    def _insert_curve_values(self, dialog, tbl_curve_value, curve_name):
         """ Insert table values into cat_curve_values """
 
         values = self._read_tbl_values(tbl_curve_value)
@@ -796,15 +802,15 @@ class GwNonVisual:
         if is_empty:
             msg = "You need at least one row of values."
             tools_qgis.show_warning(msg, dialog=dialog)
-            global_vars.dao.rollback()
+            global_vars.gpkg_dao_data.rollback()
             return False
 
         for row in values:
             if row == (['null'] * tbl_curve_value.columnCount()):
                 continue
 
-            sql = f"INSERT INTO cat_curve_value (curve_id, x_value, y_value) " \
-                  f"VALUES ({curve_id}, "
+            sql = f"INSERT INTO cat_curve_value (idval, xcoord, ycoord) " \
+                  f"VALUES ('{curve_name}', "
             for x in row:
                 sql += f"{x}, "
             sql = sql.rstrip(', ') + ")"
@@ -812,7 +818,7 @@ class GwNonVisual:
             if not result:
                 msg = "There was an error inserting curve value."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return False
         return True
     # endregion
@@ -846,7 +852,6 @@ class GwNonVisual:
     def _manage_ws_patterns_dlg(self, pattern_id, duplicate=False):
         # Variables
         tbl_pattern_value = self.dialog.tbl_pattern_value
-        cmb_sector_id = self.dialog.cmb_sector_id
 
         # Set scale-to-fit for tableview
         tbl_pattern_value.horizontalHeader().setSectionResizeMode(1)
@@ -854,12 +859,6 @@ class GwNonVisual:
 
         # Create plot widget
         plot_widget = self._create_plot_widget(self.dialog)
-
-        # Populate combobox
-        sql = "SELECT fid as id, code as idval FROM sector WHERE fid > 0"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
-        if rows:
-            tools_qt.fill_combo_values(cmb_sector_id, rows, index_to_show=1, add_empty=True)
 
         if pattern_id:
             self._populate_ws_patterns_widgets(pattern_id, duplicate=duplicate)
@@ -882,7 +881,6 @@ class GwNonVisual:
         # Variables
         txt_id = self.dialog.txt_pattern_id
         txt_observ = self.dialog.txt_observ
-        cmb_sector_id = self.dialog.cmb_sector_id
         tbl_pattern_value = self.dialog.tbl_pattern_value
 
         sql = f"SELECT * FROM v_edit_inp_pattern WHERE pattern_id = '{pattern_id}'"
@@ -895,7 +893,6 @@ class GwNonVisual:
             tools_qt.set_widget_text(self.dialog, txt_id, pattern_id)
             tools_qt.set_widget_enabled(self.dialog, txt_id, False)
         tools_qt.set_widget_text(self.dialog, txt_observ, row['observ'])
-        tools_qt.set_combo_value(cmb_sector_id, str(row['sector_id']), 0)
 
         # Populate table pattern_values
         sql = f"SELECT factor_1, factor_2, factor_3, factor_4, factor_5, factor_6, factor_7, factor_8, factor_9, " \
@@ -920,27 +917,29 @@ class GwNonVisual:
     def _load_ws_pattern_widgets(self, dialog):
         """ Load values from session.config """
 
-        # Variables
-        cmb_sector_id = dialog.cmb_sector_id
-
-        # Get values
-        sector_id = tools_gw.get_config_parser('nonvisual_patterns', 'cmb_sector_id', "user", "session")
-
-        # Populate widgets
-        tools_qt.set_combo_value(cmb_sector_id, str(sector_id), 0)
+        pass
+        # # Variables
+        # cmb_sector_id = dialog.cmb_sector_id
+        #
+        # # Get values
+        # sector_id = tools_gw.get_config_parser('nonvisual_patterns', 'cmb_sector_id', "user", "session")
+        #
+        # # Populate widgets
+        # tools_qt.set_combo_value(cmb_sector_id, str(sector_id), 0)
 
 
     def _save_ws_pattern_widgets(self, dialog):
         """ Save values from session.config """
 
-        # Variables
-        cmb_sector_id = dialog.cmb_sector_id
-
-        # Get values
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
-
-        # Populate widgets
-        tools_gw.set_config_parser('nonvisual_patterns', 'cmb_sector_id', sector_id)
+        pass
+        # # Variables
+        # cmb_sector_id = dialog.cmb_sector_id
+        #
+        # # Get values
+        # sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
+        #
+        # # Populate widgets
+        # tools_gw.set_config_parser('nonvisual_patterns', 'cmb_sector_id', sector_id)
 
 
     def _accept_pattern_ws(self, dialog, is_new):
@@ -949,15 +948,11 @@ class GwNonVisual:
         # Variables
         txt_id = dialog.txt_pattern_id
         txt_observ = dialog.txt_observ
-        cmb_sector_id = dialog.cmb_sector_id
         tbl_pattern_value = dialog.tbl_pattern_value
 
         # Get widget values
         pattern_id = tools_qt.get_text(dialog, txt_id, add_quote=True)
         observ = tools_qt.get_text(dialog, txt_observ, add_quote=True)
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
-        if sector_id in (None, ''):
-            sector_id = "null"
 
         if is_new:
             # Check that there are no empty fields
@@ -967,13 +962,13 @@ class GwNonVisual:
             tools_qt.set_stylesheet(txt_id, style="")
 
             # Insert inp_pattern
-            sql = f"INSERT INTO inp_pattern (pattern_id, observ, sector_id)" \
-                  f"VALUES({pattern_id}, {observ}, {sector_id})"
+            sql = f"INSERT INTO inp_pattern (pattern_id, observ)" \
+                  f"VALUES({pattern_id}, {observ})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting pattern."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
 
             # Insert inp_pattern_value
@@ -982,7 +977,7 @@ class GwNonVisual:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
         elif pattern_id is not None:
@@ -990,7 +985,7 @@ class GwNonVisual:
             table_name = 'v_edit_inp_pattern'
 
             observ = observ.strip("'")
-            fields = f"""{{"sector_id": {sector_id}, "observ": "{observ}"}}"""
+            fields = f"""{{"observ": "{observ}"}}"""
 
             result = self._setfields(pattern_id.strip("'"), table_name, fields)
             if not result:
@@ -1002,14 +997,14 @@ class GwNonVisual:
             if not result:
                 msg = "There was an error deleting old curve values."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
             result = self._insert_ws_pattern_values(dialog, tbl_pattern_value, pattern_id)
             if not result:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
 
@@ -1032,7 +1027,7 @@ class GwNonVisual:
         if is_empty:
             msg = "You need at least one row of values."
             tools_qgis.show_warning(msg, dialog=dialog)
-            global_vars.dao.rollback()
+            global_vars.gpkg_dao_data.rollback()
             return False
 
         for row in values:
@@ -1050,7 +1045,7 @@ class GwNonVisual:
             if not result:
                 msg = "There was an error inserting pattern value."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return False
 
         return True
@@ -1109,7 +1104,6 @@ class GwNonVisual:
     def _manage_ud_patterns_dlg(self, pattern_id, duplicate=False):
         # Variables
         cmb_pattern_type = self.dialog.cmb_pattern_type
-        cmb_sector_id = self.dialog.cmb_sector_id
 
         # Set scale-to-fit for tableview
         self._scale_to_fit_pattern_tableviews(self.dialog)
@@ -1117,14 +1111,9 @@ class GwNonVisual:
         # Create plot widget
         plot_widget = self._create_plot_widget(self.dialog)
 
-        # Populate combobox
-        sql = "SELECT fid as id, code as idval FROM sector WHERE fid > 0"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
-        if rows:
-            tools_qt.fill_combo_values(cmb_sector_id, rows, index_to_show=1, add_empty=True)
-
-        sql = "SELECT id, idval FROM inp_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
+        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        print(rows)
         if rows:
             tools_qt.fill_combo_values(cmb_pattern_type, rows)
 
@@ -1155,51 +1144,56 @@ class GwNonVisual:
 
         # Variables
         txt_id = self.dialog.txt_pattern_id
-        txt_observ = self.dialog.txt_observ
-        cmb_sector_id = self.dialog.cmb_sector_id
+        txt_name = self.dialog.txt_name
         cmb_pattern_type = self.dialog.cmb_pattern_type
+        chk_active = self.dialog.chk_active
+        txt_descript = self.dialog.txt_descript
 
-        sql = f"SELECT * FROM v_edit_inp_pattern WHERE pattern_id = '{pattern_id}'"
+        sql = f"SELECT * FROM cat_pattern WHERE id = '{pattern_id}'"
         row = global_vars.gpkg_dao_data.get_row(sql)
         if not row:
             return
+
+        name = row[1]
+        pattern_type = row[2]
+        descript = row[3]
+        active = row[4]
 
         # Populate text & combobox widgets
         if not duplicate:
             tools_qt.set_widget_text(self.dialog, txt_id, pattern_id)
             tools_qt.set_widget_enabled(self.dialog, txt_id, False)
-        tools_qt.set_widget_text(self.dialog, txt_observ, row['observ'])
-        tools_qt.set_combo_value(cmb_sector_id, str(row['sector_id']), 0)
-        tools_qt.set_widget_text(self.dialog, cmb_pattern_type, row['pattern_type'])
+        tools_qt.set_widget_text(self.dialog, txt_name, name)
+        tools_qt.set_widget_text(self.dialog, cmb_pattern_type, pattern_type)
+        tools_qt.set_widget_text(self.dialog, txt_descript, descript)
+        tools_qt.set_checked(self.dialog, chk_active, bool(active))
 
         # Populate table pattern_values
-        sql = f"SELECT * FROM v_edit_inp_pattern_value WHERE pattern_id = '{pattern_id}'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        sql = f"SELECT * FROM cat_pattern_value WHERE idval = '{name}'"
+        rows = tools_db.get_rows(sql)
         if not rows:
             return
-
-        table = self.dialog.findChild(QTableWidget, f"tbl_{row['pattern_type'].lower()}")
-        for n, row in enumerate(rows):
-            for i in range(0, table.columnCount()):
-                value = f"{row[f'factor_{i+1}']}"
-                if value == 'None':
-                    value = ''
-                table.setItem(n, i, QTableWidgetItem(value))
+        values = {}
+        for row in rows:
+            values[row[3]] = row[4]
+        table = self.dialog.findChild(QTableWidget, f"tbl_{pattern_type.lower()}")
+        for i in range(0, table.columnCount()):
+            value = f"{values.get(i+1)}"
+            if value == 'None':
+                value = ''
+            table.setItem(0, i, QTableWidgetItem(value))
 
 
     def _load_ud_pattern_widgets(self, dialog):
         """ Load values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         cmb_pattern_type = dialog.cmb_pattern_type
 
         # Get values
-        sector_id = tools_gw.get_config_parser('nonvisual_patterns', 'cmb_sector_id', "user", "session")
         pattern_type = tools_gw.get_config_parser('nonvisual_patterns', 'cmb_pattern_type', "user", "session")
 
         # Populate widgets
-        tools_qt.set_combo_value(cmb_sector_id, str(sector_id), 0)
         tools_qt.set_combo_value(cmb_pattern_type, str(pattern_type), 0)
 
 
@@ -1207,15 +1201,12 @@ class GwNonVisual:
         """ Save values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         cmb_pattern_type = dialog.cmb_pattern_type
 
         # Get values
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
         pattern_type = tools_qt.get_combo_value(dialog, cmb_pattern_type)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_patterns', 'cmb_sector_id', sector_id)
         tools_gw.set_config_parser('nonvisual_patterns', 'cmb_pattern_type', pattern_type)
 
 
@@ -1250,69 +1241,69 @@ class GwNonVisual:
 
         # Variables
         txt_id = dialog.txt_pattern_id
-        txt_observ = dialog.txt_observ
-        cmb_sector_id = dialog.cmb_sector_id
+        txt_name = dialog.txt_name
+        txt_descript = dialog.txt_descript
         cmb_pattern_type = dialog.cmb_pattern_type
+        chk_active = dialog.chk_active
 
         # Get widget values
         pattern_id = tools_qt.get_text(dialog, txt_id, add_quote=True)
+        pattern_name = tools_qt.get_text(dialog, txt_name, add_quote=True)
         pattern_type = tools_qt.get_combo_value(dialog, cmb_pattern_type)
-        observ = tools_qt.get_text(dialog, txt_observ, add_quote=True)
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
-        if sector_id in (None, ''):
-            sector_id = "null"
+        active = tools_qt.is_checked(dialog, chk_active)
+        descript = tools_qt.get_text(dialog, txt_descript, add_quote=True)
+
+        # Check that there are no empty fields
+        if not pattern_name or pattern_name == 'null':
+            tools_qt.set_stylesheet(txt_name)
+            return
+        tools_qt.set_stylesheet(txt_name, style="")
 
         if is_new:
-            # Check that there are no empty fields
-            if not pattern_id or pattern_id == 'null':
-                tools_qt.set_stylesheet(txt_id)
-                return
-            tools_qt.set_stylesheet(txt_id, style="")
-
             # Insert inp_pattern
-            sql = f"INSERT INTO inp_pattern (pattern_id, pattern_type, observ, sector_id)" \
-                  f"VALUES({pattern_id}, '{pattern_type}', {observ}, {sector_id})"
+            sql = f"INSERT INTO cat_pattern (idval, pattern_type, descript, active)" \
+                  f"VALUES({pattern_name}, '{pattern_type}', {descript}, {int(active)})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting pattern."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
 
             # Insert inp_pattern_value
-            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_id)
+            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_name)
             if not result:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
         elif pattern_id is not None:
             # Update inp_pattern
-            table_name = 'v_edit_inp_pattern'
+            table_name = 'cat_pattern'
 
-            observ = observ.strip("'")
-            fields = f"""{{"pattern_type": "{pattern_type}", "sector_id": {sector_id}, "observ": "{observ}"}}"""
+            descript = descript.strip("'")
+            fields = f"""{{"pattern_type": "{pattern_type}", "descript": "{descript}", "active": "{int(active)}"}}"""
 
             result = self._setfields(pattern_id.strip("'"), table_name, fields)
             if not result:
                 return
 
             # Update inp_pattern_value
-            sql = f"DELETE FROM v_edit_inp_pattern_value WHERE pattern_id = {pattern_id}"
+            sql = f"DELETE FROM cat_pattern_value WHERE idval = {pattern_name}"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old pattern values."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
-            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_id)
+            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_name)
             if not result:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
 
@@ -1320,7 +1311,7 @@ class GwNonVisual:
         tools_gw.close_dialog(dialog)
 
 
-    def _insert_ud_pattern_values(self, dialog, pattern_type, pattern_id):
+    def _insert_ud_pattern_values(self, dialog, pattern_type, pattern_name):
         """ Insert table values into v_edit_inp_pattern_values """
 
         table = dialog.findChild(QTableWidget, f"tbl_{pattern_type.lower()}")
@@ -1336,27 +1327,22 @@ class GwNonVisual:
         if is_empty:
             msg = "You need at least one row of values."
             tools_qgis.show_warning(msg, dialog=dialog)
-            global_vars.dao.rollback()
+            global_vars.gpkg_dao_data.rollback()
             return False
 
         for row in values:
             if row == (['null'] * table.columnCount()):
                 continue
 
-            sql = f"INSERT INTO v_edit_inp_pattern_value (pattern_id, "
             for n, x in enumerate(row):
-                sql += f"factor_{n + 1}, "
-            sql = sql.rstrip(', ') + ")"
-            sql += f"VALUES ({pattern_id}, "
-            for x in row:
-                sql += f"{x}, "
-            sql = sql.rstrip(', ') + ")"
-            result = tools_db.execute_sql(sql, commit=False)
-            if not result:
-                msg = "There was an error inserting pattern value."
-                tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
-                return False
+                sql = f"INSERT INTO cat_pattern_value (idval, timestep, value) "
+                sql += f"VALUES ({pattern_name}, {n+1}, {x});"
+                result = tools_db.execute_sql(sql, commit=False)
+                if not result:
+                    msg = "There was an error inserting pattern value."
+                    tools_qgis.show_warning(msg, dialog=dialog)
+                    global_vars.gpkg_dao_data.rollback()
+                    return False
 
         return True
 
@@ -1420,9 +1406,6 @@ class GwNonVisual:
         self.dialog = GwNonVisualControlsUi()
         tools_gw.load_settings(self.dialog)
 
-        # Populate sector id combobox
-        self._populate_cmb_sector_id(self.dialog.cmb_sector_id)
-
         if control_id is not None:
             self._populate_controls_widgets(control_id)
         else:
@@ -1441,34 +1424,29 @@ class GwNonVisual:
         """ Fills in all the values for control dialog """
 
         # Variables
-        cmb_sector_id = self.dialog.cmb_sector_id
         chk_active = self.dialog.chk_active
         txt_text = self.dialog.txt_text
 
         sql = f"SELECT * FROM cat_controls WHERE id = '{control_id}'"
-        row = global_vars.gpkg_dao_data.get_row(sql)
+        row = tools_db.get_row(sql)
         if not row:
             return
 
         # Populate text & combobox widgets
-        tools_qt.set_combo_value(cmb_sector_id, str(row[1]), 0)
-        tools_qt.set_checked(self.dialog, chk_active, row[3])
-        tools_qt.set_widget_text(self.dialog, txt_text, row[2])
+        tools_qt.set_checked(self.dialog, chk_active, row[2])
+        tools_qt.set_widget_text(self.dialog, txt_text, row[1])
 
 
     def _load_controls_widgets(self, dialog):
         """ Load values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         chk_active = dialog.chk_active
 
         # Get values
-        sector_id = tools_gw.get_config_parser('nonvisual_controls', 'cmb_sector_id', "user", "session")
         active = tools_gw.get_config_parser('nonvisual_controls', 'chk_active', "user", "session")
 
         # Populate widgets
-        tools_qt.set_combo_value(cmb_sector_id, str(sector_id), 0)
         tools_qt.set_checked(dialog, chk_active, active)
 
 
@@ -1476,15 +1454,12 @@ class GwNonVisual:
         """ Save values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         chk_active = dialog.chk_active
 
         # Get values
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
         active = tools_qt.is_checked(dialog, chk_active)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_controls', 'cmb_sector_id', sector_id)
         tools_gw.set_config_parser('nonvisual_controls', 'chk_active', active)
 
 
@@ -1492,34 +1467,32 @@ class GwNonVisual:
         """ Manage accept button (insert & update) """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         chk_active = dialog.chk_active
         txt_text = dialog.txt_text
 
         # Get widget values
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
         active = tools_qt.is_checked(dialog, chk_active)
         text = tools_qt.get_text(dialog, txt_text, add_quote=True)
 
-        if is_new:
-            # Check that there are no empty fields
-            if not text or text == 'null':
-                tools_qt.set_stylesheet(txt_text)
-                return
-            tools_qt.set_stylesheet(txt_text, style="")
+        # Check that there are no empty fields
+        if not text or text == 'null':
+            tools_qt.set_stylesheet(txt_text)
+            return
+        tools_qt.set_stylesheet(txt_text, style="")
 
-            # Insert inp_controls
-            sql = f"INSERT INTO inp_controls (sector_id,text,active)" \
-                  f"VALUES({sector_id}, {text}, {active})"
+        if is_new:
+            # Insert cat_controls
+            sql = f"INSERT INTO cat_controls (text,active)" \
+                  f"VALUES({text}, {active})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting control."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
         elif control_id is not None:
@@ -1527,13 +1500,13 @@ class GwNonVisual:
 
             text = text.strip("'")
             text = text.replace("\n", "\\n")
-            fields = f"""{{"sector_id": {sector_id}, "active": "{active}", "text": "{text}"}}"""
+            fields = f"""{{"active": "{active}", "text": "{text}"}}"""
 
             result = self._setfields(control_id, table_name, fields)
             if not result:
                 return
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
 
@@ -1549,9 +1522,6 @@ class GwNonVisual:
         # Get dialog
         self.dialog = GwNonVisualRulesUi()
         tools_gw.load_settings(self.dialog)
-
-        # Populate sector id combobox
-        self._populate_cmb_sector_id(self.dialog.cmb_sector_id)
 
         if rule_id is not None:
             self._populate_rules_widgets(rule_id)
@@ -1571,7 +1541,6 @@ class GwNonVisual:
         """ Fills in all the values for rule dialog """
 
         # Variables
-        cmb_sector_id = self.dialog.cmb_sector_id
         chk_active = self.dialog.chk_active
         txt_text = self.dialog.txt_text
 
@@ -1581,7 +1550,6 @@ class GwNonVisual:
             return
 
         # Populate text & combobox widgets
-        tools_qt.set_combo_value(cmb_sector_id, str(row['sector_id']), 0)
         tools_qt.set_checked(self.dialog, chk_active, row['active'])
         tools_qt.set_widget_text(self.dialog, txt_text, row['text'])
 
@@ -1590,15 +1558,12 @@ class GwNonVisual:
         """ Load values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         chk_active = dialog.chk_active
 
         # Get values
-        sector_id = tools_gw.get_config_parser('nonvisual_rules', 'cmb_sector_id', "user", "session")
         active = tools_gw.get_config_parser('nonvisual_rules', 'chk_active', "user", "session")
 
         # Populate widgets
-        tools_qt.set_combo_value(cmb_sector_id, str(sector_id), 0)
         tools_qt.set_checked(dialog, chk_active, active)
 
 
@@ -1606,15 +1571,12 @@ class GwNonVisual:
         """ Save values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         chk_active = dialog.chk_active
 
         # Get values
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
         active = tools_qt.is_checked(dialog, chk_active)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_rules', 'cmb_sector_id', sector_id)
         tools_gw.set_config_parser('nonvisual_rules', 'chk_active', active)
 
 
@@ -1622,12 +1584,10 @@ class GwNonVisual:
         """ Manage accept button (insert & update) """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         chk_active = dialog.chk_active
         txt_text = dialog.txt_text
 
         # Get widget values
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
         active = tools_qt.is_checked(dialog, chk_active)
         text = tools_qt.get_text(dialog, txt_text, add_quote=True)
 
@@ -1639,17 +1599,17 @@ class GwNonVisual:
             tools_qt.set_stylesheet(txt_text, style="")
 
             # Insert inp_controls
-            sql = f"INSERT INTO inp_rules (sector_id,text,active)" \
-                  f"VALUES({sector_id}, {text}, {active})"
+            sql = f"INSERT INTO inp_rules (text,active)" \
+                  f"VALUES({text}, {active})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting control."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
         elif rule_id is not None:
@@ -1657,13 +1617,13 @@ class GwNonVisual:
 
             text = text.strip("'")
             text = text.replace("\n", "\\n")
-            fields = f"""{{"sector_id": {sector_id}, "active": "{active}", "text": "{text}"}}"""
+            fields = f"""{{"active": "{active}", "text": "{text}"}}"""
 
             result = self._setfields(rule_id, table_name, fields)
             if not result:
                 return
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
 
@@ -1683,11 +1643,10 @@ class GwNonVisual:
         # Variables
         cmb_timeser_type = self.dialog.cmb_timeser_type
         cmb_times_type = self.dialog.cmb_times_type
-        cmb_sector_id = self.dialog.cmb_sector_id
         tbl_timeseries_value = self.dialog.tbl_timeseries_value
 
         # Populate combobox
-        self._populate_timeser_combos(cmb_sector_id, cmb_times_type, cmb_timeser_type)
+        self._populate_timeser_combos(cmb_times_type, cmb_timeser_type)
 
         if timser_id is not None:
             self._populate_timeser_widgets(timser_id, duplicate=duplicate)
@@ -1711,21 +1670,17 @@ class GwNonVisual:
         tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_timeseries')
 
 
-    def _populate_timeser_combos(self, cmb_sector_id, cmb_times_type, cmb_timeser_type):
+    def _populate_timeser_combos(self, cmb_times_type, cmb_timeser_type):
         """ Populates timeseries dialog combos """
 
-        sql = "SELECT id, idval FROM inp_typevalue WHERE typevalue = 'inp_value_timserid'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_value_timserid'"
+        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
             tools_qt.fill_combo_values(cmb_timeser_type, rows, index_to_show=1)
-        sql = "SELECT id, idval FROM inp_typevalue WHERE typevalue = 'inp_typevalue_timeseries'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_timeseries'"
+        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
             tools_qt.fill_combo_values(cmb_times_type, rows, index_to_show=1)
-        sql = "SELECT fid as id, code as idval FROM sector WHERE fid > 0"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
-        if rows:
-            tools_qt.fill_combo_values(cmb_sector_id, rows, index_to_show=1, add_empty=True)
 
 
     def _populate_timeser_widgets(self, timser_id, duplicate=False):
@@ -1737,51 +1692,57 @@ class GwNonVisual:
         cmb_timeser_type = self.dialog.cmb_timeser_type
         cmb_times_type = self.dialog.cmb_times_type
         txt_descript = self.dialog.txt_descript
-        cmb_sector_id = self.dialog.cmb_sector_id
         txt_fname = self.dialog.txt_fname
         tbl_timeseries_value = self.dialog.tbl_timeseries_value
 
-        sql = f"SELECT * FROM cat_timeseries WHERE id = '{timser_id}'"
-        row = global_vars.gpkg_dao_data.get_row(sql)
+        sql = f"SELECT id, idval, timser_type, times_type, descript, fname, log, active FROM cat_timeseries WHERE id = '{timser_id}'"
+        row = tools_db.get_row(sql)
         if not row:
             return
+
+        idval = row[1]
+        timeser_type = row[2]
+        times_type = row[3]
+        descript = row[4]
+        fname = row[5]
 
         # Populate text & combobox widgets
         if not duplicate:
             tools_qt.set_widget_text(self.dialog, txt_id, timser_id)
             tools_qt.set_widget_enabled(self.dialog, txt_id, False)
-        tools_qt.set_widget_text(self.dialog, txt_idval, row[1])
-        tools_qt.set_widget_text(self.dialog, cmb_timeser_type, row[3])
-        tools_qt.set_widget_text(self.dialog, cmb_times_type, row[4])
-        tools_qt.set_widget_text(self.dialog, txt_descript, row[6])
-        tools_qt.set_combo_value(cmb_sector_id, str(row[2]), 0)
-        tools_qt.set_widget_text(self.dialog, txt_fname, row[5])
+        tools_qt.set_widget_text(self.dialog, txt_idval, idval)
+        tools_qt.set_widget_text(self.dialog, cmb_timeser_type, timeser_type)
+        tools_qt.set_widget_text(self.dialog, cmb_times_type, times_type)
+        tools_qt.set_widget_text(self.dialog, txt_descript, descript)
+        tools_qt.set_widget_text(self.dialog, txt_fname, fname)
 
         # Populate table timeseries_values
-        sql = f"SELECT id, date, time, value FROM cat_timeseries_value WHERE timser_id = '{timser_id}'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
+        sql = f"SELECT id, date, time, value FROM cat_timeseries_value WHERE idval = '{idval}'"
+        rows = tools_db.get_rows(sql)
         if not rows:
             return
 
         row0, row1, row2 = None, None, None
-        if row[4] == 'FILE':
+        if times_type == 'FILE':
             return
-        elif row[4] == 'RELATIVE':
+        elif times_type == 'RELATIVE':
             row0, row1, row2 = None, 'time', 'value'
-        elif row[4] == 'ABSOLUTE':
+        elif times_type == 'ABSOLUTE':
             row0, row1, row2 = 'date', None, 'value'
+
+        headers_rel_dict = {'date': 1, 'time': 2, 'value': 3}
 
         for n, row in enumerate(rows):
             if row0:
-                value = f"{row[row0]}"
+                value = f"{row[headers_rel_dict.get(row0)]}"
                 if value in (None, 'None', 'null'):
                     value = ''
                 tbl_timeseries_value.setItem(n, 0, QTableWidgetItem(value))
-            value = f"{row[row1]}"
+            value = f"{row[headers_rel_dict.get(row1)]}"
             if value in (None, 'None', 'null'):
                 value = ''
             tbl_timeseries_value.setItem(n, 1, QTableWidgetItem(value))
-            value = f"{row[row2]}"
+            value = f"{row[headers_rel_dict.get(row2)]}"
             if value in (None, 'None', 'null'):
                 value = ''
             tbl_timeseries_value.setItem(n, 2, QTableWidgetItem(f"{value}"))
@@ -1801,17 +1762,14 @@ class GwNonVisual:
         """ Load values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         cmb_timeser_type = dialog.cmb_timeser_type
         cmb_times_type = dialog.cmb_times_type
 
         # Get values
-        sector_id = tools_gw.get_config_parser('nonvisual_timeseries', 'cmb_sector_id', "user", "session")
         timeser_type = tools_gw.get_config_parser('nonvisual_timeseries', 'cmb_timeser_type', "user", "session")
         times_type = tools_gw.get_config_parser('nonvisual_timeseries', 'cmb_times_type', "user", "session")
 
         # Populate widgets
-        tools_qt.set_combo_value(cmb_sector_id, str(sector_id), 0)
         tools_qt.set_combo_value(cmb_timeser_type, str(timeser_type), 0)
         tools_qt.set_combo_value(cmb_times_type, str(times_type), 0)
 
@@ -1820,17 +1778,14 @@ class GwNonVisual:
         """ Save values from session.config """
 
         # Variables
-        cmb_sector_id = dialog.cmb_sector_id
         cmb_timeser_type = dialog.cmb_timeser_type
         cmb_times_type = dialog.cmb_times_type
 
         # Get values
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
         timeser_type = tools_qt.get_combo_value(dialog, cmb_timeser_type)
         times_type = tools_qt.get_combo_value(dialog, cmb_times_type)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_timeseries', 'cmb_sector_id', sector_id)
         tools_gw.set_config_parser('nonvisual_timeseries', 'cmb_timeser_type', timeser_type)
         tools_gw.set_config_parser('nonvisual_timeseries', 'cmb_times_type', times_type)
 
@@ -1844,7 +1799,6 @@ class GwNonVisual:
         cmb_timeser_type = dialog.cmb_timeser_type
         cmb_times_type = dialog.cmb_times_type
         txt_descript = dialog.txt_descript
-        cmb_sector_id = dialog.cmb_sector_id
         txt_fname = dialog.txt_fname
         tbl_timeseries_value = dialog.tbl_timeseries_value
 
@@ -1855,68 +1809,65 @@ class GwNonVisual:
         times_type = tools_qt.get_combo_value(dialog, cmb_times_type)
         descript = tools_qt.get_text(dialog, txt_descript, add_quote=True)
         fname = tools_qt.get_text(dialog, txt_fname, add_quote=True)
-        sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
-        if sector_id in (None, ''):
-            sector_id = "null"
+
+        # Check that there are no empty fields
+        if not idval or idval == 'null':
+            tools_qt.set_stylesheet(txt_idval)
+            return
+        tools_qt.set_stylesheet(txt_idval, style="")
+        idval = idval.strip("'")
 
         if is_new:
-            # Check that there are no empty fields
-            if not timeseries_id or timeseries_id == 'null':
-                tools_qt.set_stylesheet(txt_id)
-                return
-            tools_qt.set_stylesheet(txt_id, style="")
-
             # Insert inp_timeseries
-            sql = f"INSERT INTO cat_timeseries_value (id, timser_type, times_type, idval, descript, fname, sector_id)" \
-                  f"VALUES({timeseries_id}, '{timser_type}', '{times_type}', {idval}, {descript}, {fname}, {sector_id})"
+            sql = f"INSERT INTO cat_timeseries (idval, timser_type, times_type, descript, fname)" \
+                  f"VALUES('{idval}', '{timser_type}', '{times_type}', {descript}, {fname})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting timeseries."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
 
             if fname not in (None, 'null'):
                 sql = ""  # No need to insert to inp_timeseries_value?
 
             # Insert inp_timeseries_value
-            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, timeseries_id)
+            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, idval)
             if not result:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
         elif timeseries_id is not None:
             # Update inp_timeseries
             table_name = 'cat_timeseries'
 
-            idval = idval.strip("'")
             timser_type = timser_type.strip("'")
             times_type = times_type.strip("'")
             descript = descript.strip("'")
             fname = fname.strip("'")
-            fields = f"""{{"sector_id": {sector_id}, "idval": "{idval}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}"}}"""
+            fields = f"""{{"idval": "{idval}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}"}}"""
 
-            result = self._setfields(timeseries_id.strip("'"), table_name, fields)
+            result = self._setfields(idval, table_name, fields)
             if not result:
                 return
 
             # Update inp_timeseries_value
-            sql = f"DELETE FROM cat_timeseries_value WHERE timser_id = {timeseries_id}"
+            sql = f"DELETE FROM cat_timeseries_value WHERE idval = '{idval}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old timeseries values."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
-            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, timeseries_id)
+            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, idval)
             if not result:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
 
@@ -1924,7 +1875,7 @@ class GwNonVisual:
         tools_gw.close_dialog(dialog)
 
 
-    def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, timeseries_id):
+    def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, idval):
         """ Insert table values into cat_timeseries_value """
 
         values = list()
@@ -1951,7 +1902,7 @@ class GwNonVisual:
         if is_empty:
             msg = "You need at least one row of values."
             tools_qgis.show_warning(msg, dialog=dialog)
-            global_vars.dao.rollback()
+            global_vars.gpkg_dao_data.rollback()
             return False
 
         if times_type == 'ABSOLUTE':
@@ -1961,17 +1912,17 @@ class GwNonVisual:
                 if 'null' in (row[0], row[2]):
                     msg = "You have to fill in 'date', 'time' and 'value' fields!"
                     tools_qgis.show_warning(msg, dialog=dialog)
-                    global_vars.dao.rollback()
+                    global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (timser_id, date, value) "
-                sql += f"VALUES ({timeseries_id}, {row[0]}, {row[2]})"
+                sql = f"INSERT INTO cat_timeseries_value (idval, date, value) "
+                sql += f"VALUES ('{idval}', {row[0]}, {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
                     msg = "There was an error inserting pattern value."
                     tools_qgis.show_warning(msg, dialog=dialog)
-                    global_vars.dao.rollback()
+                    global_vars.gpkg_dao_data.rollback()
                     return False
         elif times_type == 'RELATIVE':
 
@@ -1981,17 +1932,17 @@ class GwNonVisual:
                 if 'null' in (row[1], row[2]):
                     msg = "You have to fill in 'time' and 'value' fields!"
                     tools_qgis.show_warning(msg, dialog=dialog)
-                    global_vars.dao.rollback()
+                    global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (timser_id, time, value) "
-                sql += f"VALUES ({timeseries_id}, {row[1]}, {row[2]})"
+                sql = f"INSERT INTO cat_timeseries_value (idval, time, value) "
+                sql += f"VALUES ('{idval}', {row[1]}, {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
                     msg = "There was an error inserting pattern value."
                     tools_qgis.show_warning(msg, dialog=dialog)
-                    global_vars.dao.rollback()
+                    global_vars.gpkg_dao_data.rollback()
                     return False
 
         return True
@@ -2288,7 +2239,7 @@ class GwNonVisual:
                 if not result:
                     msg = "There was an error inserting lid."
                     tools_qgis.show_warning(msg, dialog=dialog)
-                    global_vars.dao.rollback()
+                    global_vars.gpkg_dao_data.rollback()
                     return False
 
             # Inserts in table inp_lid_value
@@ -2299,7 +2250,7 @@ class GwNonVisual:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
 
@@ -2319,7 +2270,7 @@ class GwNonVisual:
             if not result:
                 msg = "There was an error deleting old lid values."
                 tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.dao.rollback()
+                global_vars.gpkg_dao_data.rollback()
                 return
 
             # Inserts in table inp_lid_value
@@ -2328,7 +2279,7 @@ class GwNonVisual:
                 return
 
             # Commit
-            global_vars.dao.commit()
+            global_vars.gpkg_dao_data.commit()
             # Reload manager table
             self._reload_manager_table()
 
@@ -2381,7 +2332,7 @@ class GwNonVisual:
                 if not result:
                     msg = "There was an error inserting lid."
                     tools_qgis.show_warning(msg, dialog=dialog)
-                    global_vars.dao.rollback()
+                    global_vars.gpkg_dao_data.rollback()
                     return False
         return True
 
@@ -2394,10 +2345,11 @@ class GwNonVisual:
         feature += f'"tableName":"{table_name}" '
         extras = f'"fields":{fields}'
         body = tools_gw.create_body(feature=feature, extras=extras)
-        json_result = tools_gw.execute_procedure('gw_fct_setfields', body, commit=False)
-
+        print(f"body :>> {body}")
+        json_result = tools_gw.execute_procedure('setfields', body, commit=False)
+        print(f"json_result :>> {json_result}")
         if (not json_result) or (json_result.get('status') in (None, 'Failed')):
-            global_vars.dao.rollback()
+            global_vars.gpkg_dao_data.rollback()
             return False
 
         return True

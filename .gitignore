@@ -17,3 +17,4 @@ resources/templates/*.gpkg-shm
 resources/templates/*.gpkg-wal
 samples/test_*
 samples/*.qgs~
+samples/test_*.qgz

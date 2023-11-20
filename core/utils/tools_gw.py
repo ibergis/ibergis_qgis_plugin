@@ -1781,6 +1781,8 @@ def execute_procedure(function_name, parameters=None, schema_name=None, commit=T
     if type(parameters) == str:
         parameters = json.loads(parameters)
     json_result = getattr(tools_fct, function_name)(parameters)
+    if commit:
+        global_vars.gpkg_dao_data.commit()
 
     # Manage schema_name and parameters
     # if schema_name:

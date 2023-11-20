@@ -269,6 +269,54 @@ def get_scenarios():
 
     return scenarios
 
+
+def setfields(p_input: dict) -> dict:
+    accepted: bool = True
+    v_return: dict = {}
+    v_sql: str
+    v_message: str
+    v_id: str
+    v_idname: str
+    v_table_name: str
+    v_fields: dict
+
+    try:
+        v_return = _create_return(v_return, accepted=True, message="Process done successfully")
+
+        v_id = p_input['feature'].get('id')
+        v_idname = p_input['feature'].get('idname')
+        v_table_name = p_input['feature'].get('tableName')
+        v_fields = p_input['data'].get('fields', {})
+
+        if v_idname is None:
+            v_sql = f'SELECT l.name FROM pragma_table_info("{v_table_name}") as l WHERE l.pk <> 0;'
+            rows = tools_db.get_rows(v_sql)
+            if rows and rows[0]:
+                v_idname = rows[0][0]
+
+        v_sql = f"UPDATE {v_table_name} SET "
+        for field, value in v_fields.items():
+            # TODO: check column type, if integer don't let it put a string
+            v_sql += f"{field} = '{value}', "
+
+        v_sql = v_sql[:-2]
+        v_sql += f" WHERE {v_idname} = '{v_id}'"
+
+        print(v_sql)
+        tools_db.execute_sql(v_sql, commit=False)
+
+        v_message = "Process done succesfully."
+
+    except Exception as e:
+        print(f"EXCEPTION IN setfields: {e}")
+        accepted = False
+        v_message = f"{e}"
+        global_vars.gpkg_dao_data.rollback()
+
+    v_return = _create_return(v_return, accepted=accepted, message=v_message)
+    return v_return
+
+
 def _create_return(p_data: dict, accepted: bool = True, message: str = "") -> dict:
     """ Creates a return json & ensures that the format is consistent """
 
@@ -276,10 +324,10 @@ def _create_return(p_data: dict, accepted: bool = True, message: str = "") -> di
     v_message: dict = {"level": 1 if accepted else 2, "message": message}
 
     # status
-    v_return.setdefault("status", "Accepted" if accepted else "Failed")
+    v_return["status"] = "Accepted" if accepted else "Failed"
     # message
     if message:
-        v_return.setdefault("message", v_message)
+        v_return["message"] = v_message
     # body
     v_return.setdefault("body", {"form": {}, "feature": {}, "data": {}})
     # form

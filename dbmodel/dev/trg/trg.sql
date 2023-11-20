@@ -97,7 +97,6 @@ CREATE TRIGGER "trigger_delete_feature_count_vi_controls" INSTEAD OF DELETE ON "
 CREATE TRIGGER "trigger_delete_feature_count_vi_transects" INSTEAD OF DELETE ON "vi_transects" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_transects'); END;
 CREATE TRIGGER "trigger_delete_feature_count_vi_inflows" INSTEAD OF DELETE ON "vi_inflows" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_inflows'); END;
 
-CREATE TRIGGER "trigger_delete_feature_count_sector" AFTER DELETE ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_delete_feature_count_ground" AFTER DELETE ON "ground"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('ground'); END;
 CREATE TRIGGER "trigger_delete_feature_count_ground_roughness" AFTER DELETE ON "ground_roughness"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('ground_roughness'); END;
 CREATE TRIGGER "trigger_delete_feature_count_ground_losses" AFTER DELETE ON "ground_losses"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('ground_losses'); END;
@@ -211,7 +210,6 @@ CREATE TRIGGER "trigger_insert_feature_count_vi_controls" INSTEAD OF INSERT ON "
 CREATE TRIGGER "trigger_insert_feature_count_vi_transects" INSTEAD OF INSERT ON "vi_transects" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_transects'); END;
 CREATE TRIGGER "trigger_insert_feature_count_vi_inflows" INSTEAD OF INSERT ON "vi_inflows" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_inflows'); END;
 
-CREATE TRIGGER "trigger_insert_feature_count_sector" AFTER INSERT ON "sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('sector'); END;
 CREATE TRIGGER "trigger_insert_feature_count_ground" AFTER INSERT ON "ground"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('ground'); END;
 CREATE TRIGGER "trigger_insert_feature_count_ground_roughness" AFTER INSERT ON "ground_roughness"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('ground_roughness'); END;
 CREATE TRIGGER "trigger_insert_feature_count_ground_losses" AFTER INSERT ON "ground_losses" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('ground_losses'); END;
@@ -239,7 +237,6 @@ CREATE TRIGGER "trigger_insert_feature_count_inp_inflow" AFTER INSERT ON "inp_in
 
 
 
-CREATE TRIGGER "rtree_sector_geom_delete" AFTER DELETE ON "sector" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_sector_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_ground_geom_delete" AFTER DELETE ON "ground" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_ground_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_ground_roughness_geom_delete" AFTER DELETE ON "ground_roughness" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_ground_roughness_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_ground_losses_geom_delete" AFTER DELETE ON "ground_losses" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_ground_losses_geom" WHERE id= OLD."fid"; END;
@@ -265,7 +262,6 @@ CREATE TRIGGER "rtree_inp_junction_geom_delete" AFTER DELETE ON "inp_junction" W
 CREATE TRIGGER "rtree_inp_dwf_geom_delete" AFTER DELETE ON "inp_dwf" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_inp_dwf_geom" WHERE id = OLD."fid"; END;
 CREATE TRIGGER "rtree_inp_inflow_geom_delete" AFTER DELETE ON "inp_inflow" WHEN (old."geom" NOT NULL) BEGIN DELETE FROM "rtree_inp_inflow_geom" WHERE id = OLD."fid"; END;
 
-CREATE TRIGGER "rtree_sector_geom_insert" AFTER INSERT ON "sector" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_ground_geom_insert" AFTER INSERT ON "ground" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_ground_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_ground_roughness_geom_insert" AFTER INSERT ON "ground_roughness" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_ground_roughness_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_ground_losses_geom_insert" AFTER INSERT ON "ground_losses" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_ground_losses_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
@@ -291,7 +287,6 @@ CREATE TRIGGER "rtree_inp_junction_geom_insert" AFTER INSERT ON "inp_junction" W
 CREATE TRIGGER "rtree_inp_dwf_geom_insert" AFTER INSERT ON "inp_dwf" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_dwf_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 CREATE TRIGGER "rtree_inp_inflow_geom_insert" AFTER INSERT ON "inp_inflow" WHEN (new."geom" NOT NULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_inflow_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom") ); END;
 
-CREATE TRIGGER "rtree_sector_geom_update1" AFTER UPDATE OF "geom" ON "sector" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_ground_geom_update1" AFTER UPDATE OF "geom" ON "ground" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_ground_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_ground_roughness_geom_update1" AFTER UPDATE OF "geom" ON "ground_roughness" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_ground_roughness_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_ground_losses_geom_update1" AFTER UPDATE OF "geom" ON "ground_losses" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN INSERT OR REPLACE INTO "rtree_ground_losses_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
@@ -317,7 +312,6 @@ CREATE TRIGGER "rtree_inp_junction_geom_update1" AFTER UPDATE OF "geom" ON "inp_
 CREATE TRIGGER "rtree_inp_dwf_geom_update1" AFTER UPDATE OF "geom" ON "inp_dwf" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_dwf_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_inp_inflow_geom_update1" AFTER UPDATE OF "geom" ON "inp_inflow" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN INSERT OR REPLACE INTO "rtree_inp_inflow_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 
-CREATE TRIGGER "rtree_sector_geom_update2" AFTER UPDATE OF "geom" ON "sector" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_sector_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_ground_geom_update2" AFTER UPDATE OF "geom" ON "ground" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_ground_roughness_geom_update2" AFTER UPDATE OF "geom" ON "ground_roughness" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_roughness_geom" WHERE id= OLD."fid"; END;
 CREATE TRIGGER "rtree_ground_losses_geom_update2" AFTER UPDATE OF "geom" ON "ground_losses" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_losses_geom" WHERE id= OLD."fid"; END;
@@ -343,7 +337,6 @@ CREATE TRIGGER "rtree_inp_junction_geom_update2" AFTER UPDATE OF "geom" ON "inp_
 CREATE TRIGGER "rtree_inp_dwf_geom_update2" AFTER UPDATE OF "geom" ON "inp_dwf" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_dwf_geom" WHERE id = OLD."fid"; END;
 CREATE TRIGGER "rtree_inp_inflow_geom_update2" AFTER UPDATE OF "geom" ON "inp_inflow" WHEN OLD."fid" = NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_inflow_geom" WHERE id = OLD."fid"; END;
 
-CREATE TRIGGER "rtree_sector_geom_update3" AFTER UPDATE ON "sector" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_sector_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_sector_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_ground_geom_update3" AFTER UPDATE ON "ground" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_ground_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_ground_roughness_geom_update3" AFTER UPDATE ON "ground_roughness" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_roughness_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_ground_roughness_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_ground_losses_geom_update3" AFTER UPDATE ON "ground_losses" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_losses_geom" WHERE id= OLD."fid"; INSERT OR REPLACE INTO "rtree_ground_losses_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
@@ -369,7 +362,6 @@ CREATE TRIGGER "rtree_inp_junction_geom_update3" AFTER UPDATE ON "inp_junction" 
 CREATE TRIGGER "rtree_inp_dwf_geom_update3" AFTER UPDATE ON "inp_dwf" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_dwf_geom" WHERE id = OLD."fid"; INSERT OR REPLACE INTO "rtree_inp_dwf_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 CREATE TRIGGER "rtree_inp_inflow_geom_update3" AFTER UPDATE ON "inp_inflow" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" NOTNULL AND NOT ST_IsEmpty(NEW."geom")) BEGIN DELETE FROM "rtree_inp_inflow_geom" WHERE id = OLD."fid"; INSERT OR REPLACE INTO "rtree_inp_inflow_geom" VALUES (NEW."fid", ST_MinX(NEW."geom"), ST_MaxX(NEW."geom"), ST_MinY(NEW."geom"), ST_MaxY(NEW."geom")); END;
 
-CREATE TRIGGER "rtree_sector_geom_update4" AFTER UPDATE ON "sector" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_sector_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_ground_geom_update4" AFTER UPDATE ON "ground" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_ground_roughness_geom_update4" AFTER UPDATE ON "ground_roughness" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_roughness_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
 CREATE TRIGGER "rtree_ground_losses_geom_update4" AFTER UPDATE ON "ground_losses" WHEN OLD."fid" != NEW."fid" AND (NEW."geom" ISNULL OR ST_IsEmpty(NEW."geom") ) BEGIN DELETE FROM "rtree_ground_losses_geom" WHERE id IN (OLD."fid", NEW."fid"); END;
