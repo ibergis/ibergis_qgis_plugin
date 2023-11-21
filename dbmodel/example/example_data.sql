@@ -67,18 +67,18 @@ INSERT INTO cat_controls (id) VALUES (1);
 INSERT INTO cat_curve (id, idval) VALUES(1, 'EBAR_02');
 INSERT INTO cat_curve (id, idval) VALUES(2, 'PUMP_01');
 
-INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(1, 'EBAR_02', 10.0000, 50.0000);
-INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(2, 'PUMP_01', 10.0000, 0.0160);
-INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(3, 'PUMP_01', 20.0000, 0.0150);
-INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(4, 'PUMP_01', 30.0000, 0.1300);
-INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(5, 'PUMP_01', 40.0000, 0.0080);
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(1, 1, 10.0000, 50.0000);
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(2, 2, 10.0000, 0.0160);
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(3, 2, 20.0000, 0.0150);
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(4, 2, 30.0000, 0.1300);
+INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(5, 2, 40.0000, 0.0080);
 
 
 INSERT INTO cat_pattern (id, idval, pattern_type, active) VALUES(1, 'PATTERN_1', 'MONTHLY', 1);
 
-INSERT INTO cat_pattern_value (id, idval, timestep, value) VALUES(1, 'PATTERN_1', 1, 20);
-INSERT INTO cat_pattern_value (id, idval, timestep, value) VALUES(2, 'PATTERN_1', 2, 30);
-INSERT INTO cat_pattern_value (id, idval, timestep, value) VALUES(3, 'PATTERN_1', 3, 40);
+INSERT INTO cat_pattern_value (id, idval, timestep, value) VALUES(1, 1, 1, 20);
+INSERT INTO cat_pattern_value (id, idval, timestep, value) VALUES(2, 1, 2, 30);
+INSERT INTO cat_pattern_value (id, idval, timestep, value) VALUES(3, 1, 3, 40);
 
 
 -- ----
