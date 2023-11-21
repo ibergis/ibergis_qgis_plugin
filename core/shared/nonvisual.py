@@ -337,9 +337,9 @@ class GwNonVisual:
                 name = f"{curve[0]} - {curve[1]}"
                 self.get_print_curves(curve[0], path, name, geom1, geom2)
         else:
-            sql = f"select id as curve_id from ud.cat_curve ic " \
-                  f"WHERE ic.curve_type = 'SHAPE' and ic.id ILIKE '%{filter}%'"
-            curve_results = global_vars.gpkg_dao_data.get_rows(sql)
+            sql = f"select id as curve_id from cat_curve ic " \
+                  f"WHERE ic.curve_type = 'SHAPE' and UPPER(ic.id) LIKE '%{filter.upper()}%'"
+            curve_results = tools_db.get_rows(sql)
             for curve in curve_results:
                 name = f"{curve[0]}"
                 self.get_print_curves(curve[0], path, name)
@@ -370,6 +370,8 @@ class GwNonVisual:
             tools_qt.fill_combo_values(cmb_curve_type, curve_type_list)
 
         # Populate data if editing curve
+        tools_qt.set_widget_text(self.dialog, self.dialog.txt_curve_id, curve_id)
+        tools_qt.set_widget_enabled(self.dialog, self.dialog.txt_curve_id, False)
         if curve_id:
             self._populate_curve_widgets(curve_id, duplicate=duplicate)
         else:
@@ -439,7 +441,6 @@ class GwNonVisual:
         """ Fills in all the values for curve dialog """
 
         # Variables
-        txt_id = self.dialog.txt_curve_id
         txt_name = self.dialog.txt_curve_name
         txt_descript = self.dialog.txt_descript
         cmb_curve_type = self.dialog.cmb_curve_type
@@ -457,16 +458,15 @@ class GwNonVisual:
 
         # Populate text & combobox widgets
         if not duplicate:
-            tools_qt.set_widget_text(self.dialog, txt_id, curve_id)
-            tools_qt.set_widget_enabled(self.dialog, txt_id, False)
             tools_qt.set_widget_text(self.dialog, txt_name, curve_name)
+            tools_qt.set_widget_enabled(self.dialog, txt_name, False)
 
         tools_qt.set_combo_value(cmb_curve_type, curve_type, 0)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
         tools_qt.set_checked(self.dialog, chk_active, bool(active))
 
         # Populate table curve_values
-        sql = f"SELECT xcoord, ycoord FROM cat_curve_value WHERE idval = '{curve_name}'"
+        sql = f"SELECT xcoord, ycoord FROM cat_curve_value WHERE idval = '{curve_id}'"
         rows = tools_db.get_rows(sql)
         if not rows:
             return
@@ -739,9 +739,12 @@ class GwNonVisual:
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
+            # Get inserted curve id
+            sql = "SELECT last_insert_rowid();"
+            curve_id = tools_db.get_row(sql, commit=False)[0]
 
             # Insert cat_curve_value
-            result = self._insert_curve_values(dialog, tbl_curve_value, curve_name)
+            result = self._insert_curve_values(dialog, tbl_curve_value, curve_id)
             if not result:
                 return
 
@@ -754,19 +757,20 @@ class GwNonVisual:
             table_name = 'cat_curve'
 
             # curve_type = curve_type.strip("'")
+            curve_id = curve_id.strip("'")
             curve_name = curve_name.strip("'")
             descript = descript.strip("'")
             if curve_type == -1:
                 curve_type = 'null'
             fields = f"""{{"idval": "{curve_name}", "curve_type": "{curve_type}", "descript": "{descript}", "active": {active}}}"""
 
-            result = self._setfields(curve_id.strip("'"), table_name, fields)
+            result = self._setfields(curve_id, table_name, fields)
             print(f"{result=}")
             if not result:
                 return
 
             # Delete existing curve values
-            sql = f"DELETE FROM cat_curve_value WHERE idval = '{curve_name}'"
+            sql = f"DELETE FROM cat_curve_value WHERE idval = '{curve_id}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old curve values."
@@ -775,7 +779,7 @@ class GwNonVisual:
                 return
 
             # Insert new curve values
-            result = self._insert_curve_values(dialog, tbl_curve_value, curve_name)
+            result = self._insert_curve_values(dialog, tbl_curve_value, curve_id)
             if not result:
                 return
 
@@ -788,7 +792,7 @@ class GwNonVisual:
         tools_gw.close_dialog(dialog)
 
 
-    def _insert_curve_values(self, dialog, tbl_curve_value, curve_name):
+    def _insert_curve_values(self, dialog, tbl_curve_value, curve_id):
         """ Insert table values into cat_curve_values """
 
         values = self._read_tbl_values(tbl_curve_value)
@@ -810,7 +814,7 @@ class GwNonVisual:
                 continue
 
             sql = f"INSERT INTO cat_curve_value (idval, xcoord, ycoord) " \
-                  f"VALUES ('{curve_name}', "
+                  f"VALUES ('{curve_id}', "
             for x in row:
                 sql += f"{x}, "
             sql = sql.rstrip(', ') + ")"
@@ -1113,10 +1117,11 @@ class GwNonVisual:
 
         sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
-        print(rows)
         if rows:
             tools_qt.fill_combo_values(cmb_pattern_type, rows)
 
+        tools_qt.set_widget_text(self.dialog, self.dialog.txt_pattern_id, pattern_id)
+        tools_qt.set_widget_enabled(self.dialog, self.dialog.txt_pattern_id, False)
         if pattern_id:
             self._populate_ud_patterns_widgets(pattern_id, duplicate=duplicate)
         else:
@@ -1161,15 +1166,14 @@ class GwNonVisual:
 
         # Populate text & combobox widgets
         if not duplicate:
-            tools_qt.set_widget_text(self.dialog, txt_id, pattern_id)
-            tools_qt.set_widget_enabled(self.dialog, txt_id, False)
-        tools_qt.set_widget_text(self.dialog, txt_name, name)
+            tools_qt.set_widget_enabled(self.dialog, txt_name, False)
+            tools_qt.set_widget_text(self.dialog, txt_name, name)
         tools_qt.set_widget_text(self.dialog, cmb_pattern_type, pattern_type)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
         tools_qt.set_checked(self.dialog, chk_active, bool(active))
 
         # Populate table pattern_values
-        sql = f"SELECT * FROM cat_pattern_value WHERE idval = '{name}'"
+        sql = f"SELECT * FROM cat_pattern_value WHERE idval = '{pattern_id}'"
         rows = tools_db.get_rows(sql)
         if not rows:
             return
@@ -1269,9 +1273,12 @@ class GwNonVisual:
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
+            # Get inserted pattern id
+            sql = "SELECT last_insert_rowid();"
+            pattern_id = tools_db.get_row(sql, commit=False)[0]
 
             # Insert inp_pattern_value
-            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_name)
+            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_id)
             if not result:
                 return
 
@@ -1283,22 +1290,23 @@ class GwNonVisual:
             # Update inp_pattern
             table_name = 'cat_pattern'
 
+            pattern_id = pattern_id.strip("'")
             descript = descript.strip("'")
             fields = f"""{{"pattern_type": "{pattern_type}", "descript": "{descript}", "active": "{int(active)}"}}"""
 
-            result = self._setfields(pattern_id.strip("'"), table_name, fields)
+            result = self._setfields(pattern_id, table_name, fields)
             if not result:
                 return
 
             # Update inp_pattern_value
-            sql = f"DELETE FROM cat_pattern_value WHERE idval = {pattern_name}"
+            sql = f"DELETE FROM cat_pattern_value WHERE idval = '{pattern_id}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old pattern values."
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
-            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_name)
+            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_id)
             if not result:
                 return
 
@@ -1311,7 +1319,7 @@ class GwNonVisual:
         tools_gw.close_dialog(dialog)
 
 
-    def _insert_ud_pattern_values(self, dialog, pattern_type, pattern_name):
+    def _insert_ud_pattern_values(self, dialog, pattern_type, pattern_id):
         """ Insert table values into v_edit_inp_pattern_values """
 
         table = dialog.findChild(QTableWidget, f"tbl_{pattern_type.lower()}")
@@ -1336,7 +1344,7 @@ class GwNonVisual:
 
             for n, x in enumerate(row):
                 sql = f"INSERT INTO cat_pattern_value (idval, timestep, value) "
-                sql += f"VALUES ({pattern_name}, {n+1}, {x});"
+                sql += f"VALUES ({pattern_id}, {n+1}, {x});"
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
                     msg = "There was an error inserting pattern value."
@@ -1648,6 +1656,8 @@ class GwNonVisual:
         # Populate combobox
         self._populate_timeser_combos(cmb_times_type, cmb_timeser_type)
 
+        tools_qt.set_widget_text(self.dialog, self.dialog.txt_id, timser_id)
+        tools_qt.set_widget_enabled(self.dialog, self.dialog.txt_id, False)
         if timser_id is not None:
             self._populate_timeser_widgets(timser_id, duplicate=duplicate)
         else:
@@ -1673,7 +1683,7 @@ class GwNonVisual:
     def _populate_timeser_combos(self, cmb_times_type, cmb_timeser_type):
         """ Populates timeseries dialog combos """
 
-        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_value_timserid'"
+        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_timeserid'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
             tools_qt.fill_combo_values(cmb_timeser_type, rows, index_to_show=1)
@@ -1708,16 +1718,15 @@ class GwNonVisual:
 
         # Populate text & combobox widgets
         if not duplicate:
-            tools_qt.set_widget_text(self.dialog, txt_id, timser_id)
-            tools_qt.set_widget_enabled(self.dialog, txt_id, False)
-        tools_qt.set_widget_text(self.dialog, txt_idval, idval)
+            tools_qt.set_widget_text(self.dialog, txt_idval, idval)
+            tools_qt.set_widget_enabled(self.dialog, txt_idval, False)
         tools_qt.set_widget_text(self.dialog, cmb_timeser_type, timeser_type)
         tools_qt.set_widget_text(self.dialog, cmb_times_type, times_type)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
         tools_qt.set_widget_text(self.dialog, txt_fname, fname)
 
         # Populate table timeseries_values
-        sql = f"SELECT id, date, time, value FROM cat_timeseries_value WHERE idval = '{idval}'"
+        sql = f"SELECT id, date, time, value FROM cat_timeseries_value WHERE idval = '{timser_id}'"
         rows = tools_db.get_rows(sql)
         if not rows:
             return
@@ -1827,12 +1836,15 @@ class GwNonVisual:
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
+            # Get inserted curve id
+            sql = "SELECT last_insert_rowid();"
+            timeseries_id = tools_db.get_row(sql, commit=False)[0]
 
             if fname not in (None, 'null'):
                 sql = ""  # No need to insert to inp_timeseries_value?
 
             # Insert inp_timeseries_value
-            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, idval)
+            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, timeseries_id)
             if not result:
                 return
 
@@ -1844,25 +1856,26 @@ class GwNonVisual:
             # Update inp_timeseries
             table_name = 'cat_timeseries'
 
+            timeseries_id = timeseries_id.strip("'")
             timser_type = timser_type.strip("'")
             times_type = times_type.strip("'")
             descript = descript.strip("'")
             fname = fname.strip("'")
-            fields = f"""{{"idval": "{idval}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}"}}"""
+            fields = f"""{{"idval": "{timeseries_id}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}"}}"""
 
-            result = self._setfields(idval, table_name, fields)
+            result = self._setfields(timeseries_id, table_name, fields)
             if not result:
                 return
 
             # Update inp_timeseries_value
-            sql = f"DELETE FROM cat_timeseries_value WHERE idval = '{idval}'"
+            sql = f"DELETE FROM cat_timeseries_value WHERE idval = '{timeseries_id}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old timeseries values."
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
-            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, idval)
+            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, timeseries_id)
             if not result:
                 return
 
@@ -1875,7 +1888,7 @@ class GwNonVisual:
         tools_gw.close_dialog(dialog)
 
 
-    def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, idval):
+    def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, timeseries_id):
         """ Insert table values into cat_timeseries_value """
 
         values = list()
@@ -1916,7 +1929,7 @@ class GwNonVisual:
                     return False
 
                 sql = f"INSERT INTO cat_timeseries_value (idval, date, value) "
-                sql += f"VALUES ('{idval}', {row[0]}, {row[2]})"
+                sql += f"VALUES ('{timeseries_id}', {row[0]}, {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
@@ -1936,7 +1949,7 @@ class GwNonVisual:
                     return False
 
                 sql = f"INSERT INTO cat_timeseries_value (idval, time, value) "
-                sql += f"VALUES ('{idval}', {row[1]}, {row[2]})"
+                sql += f"VALUES ('{timeseries_id}', {row[1]}, {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
