@@ -1178,18 +1178,13 @@ CREATE VIEW if not exists v_node as
     select node_id, sector_id, scenario_id, geom from inp_storage union
     select node_id, sector_id, scenario_id, geom from inp_outfall union
     select node_id, sector_id, scenario_id, geom from inp_junction union
-    select node_id, sector_id, scenario_id, geom from inp_divider
-    JOIN selector_sector USING (sector_id)
-    JOIN selector_scenario USING (scenario_id);
-
+    select node_id, sector_id, scenario_id, geom from inp_divider;
 CREATE VIEW if not exists v_arc as
     select arc_id, sector_id, scenario_id, geom from inp_outlet union
     select arc_id, sector_id, scenario_id, geom from inp_weir union
     select arc_id, sector_id, scenario_id, geom from inp_orifice union
     select arc_id, sector_id, scenario_id, geom from inp_pump union
-    select arc_id, sector_id, scenario_id, geom from inp_conduit
-    JOIN selector_sector USING (sector_id)
-    JOIN selector_scenario USING (scenario_id);
+    select arc_id, sector_id, scenario_id, geom from inp_conduit;
 
 
 create table tables_nogeom (table_name text primary key);
