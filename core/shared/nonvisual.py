@@ -922,28 +922,12 @@ class GwNonVisual:
         """ Load values from session.config """
 
         pass
-        # # Variables
-        # cmb_sector_id = dialog.cmb_sector_id
-        #
-        # # Get values
-        # sector_id = tools_gw.get_config_parser('nonvisual_patterns', 'cmb_sector_id', "user", "session")
-        #
-        # # Populate widgets
-        # tools_qt.set_combo_value(cmb_sector_id, str(sector_id), 0)
 
 
     def _save_ws_pattern_widgets(self, dialog):
         """ Save values from session.config """
 
         pass
-        # # Variables
-        # cmb_sector_id = dialog.cmb_sector_id
-        #
-        # # Get values
-        # sector_id = tools_qt.get_combo_value(dialog, cmb_sector_id)
-        #
-        # # Populate widgets
-        # tools_gw.set_config_parser('nonvisual_patterns', 'cmb_sector_id', sector_id)
 
 
     def _accept_pattern_ws(self, dialog, is_new):
@@ -2414,14 +2398,6 @@ class GwNonVisual:
                     continue
                 values[y].append(value)
         return values
-
-
-    def _populate_cmb_sector_id(self, combobox):
-
-        sql = f"SELECT fid as id, code as idval FROM sector WHERE fid > 0"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
-        if rows:
-            tools_qt.fill_combo_values(combobox, rows, index_to_show=1)
 
 
     def _create_plot_widget(self, dialog):
