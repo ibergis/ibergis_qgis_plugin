@@ -25,7 +25,8 @@ from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QCo
     QWidget, QApplication, QDockWidget
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
-    QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer
+    QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
+    QgsWkbTypes
 from qgis.gui import QgsDateTimeEdit, QgsRubberBand
 
 from ..ui.dialog import GwDialog
@@ -2385,6 +2386,61 @@ def set_multi_completer_widget(tablenames: list, widget, fields_id: list, add_id
 
     rows = tools_db.get_rows(sql)
     tools_qt.set_completer_rows(widget, rows)
+
+
+def current_layer_changed(layer):
+    if layer is None:
+        return
+
+    disconnect_signal('layer_changed')
+    connect_signal(layer.featureAdded, partial(check_topology), 'layer_changed', f'{layer.id()}')
+
+
+def check_topology(fid):
+    """ Checks that the inserted features are correct """
+
+    cur_layer = global_vars.iface.activeLayer()
+    print(f"check topology {cur_layer.id()}, {fid}")
+    feature = cur_layer.getFeature(fid)
+    feature_geom = feature.geometry()
+    # Lines -- find node_1 & node_2 and set them as attributes
+    if feature_geom.type() == QgsWkbTypes.LineGeometry:
+        if feature['node_1'] is not None and feature['node_2'] is not None:
+            return
+        point_1 = feature_geom.vertexAt(0)
+        vertices = len([n for n in feature_geom.vertices()])
+        point_2 = feature_geom.vertexAt(vertices - 1)
+        node_layer = None
+        layers = tools_qgis.get_project_layers()
+        for layer in layers:
+            if layer.name() == 'v_node':
+                node_layer = layer
+                break
+        if node_layer is None:
+            print("node layer not found")
+            return
+        spatial_index = QgsSpatialIndex(node_layer.getFeatures())
+        node_1 = spatial_index.nearestNeighbor(QgsPointXY(point_1), 1, 2)
+        node_2 = spatial_index.nearestNeighbor(QgsPointXY(point_2), 1, 2)
+        print(f"{node_1=}, {node_2=}")
+        if node_1:
+            node_fid = node_1[0]
+            node = node_layer.getFeature(node_fid)
+            feature.setAttribute('node_1', node['node_id'])
+        if node_2:
+            node_fid = node_2[0]
+            node = node_layer.getFeature(node_fid)
+            feature.setAttribute('node_2', node['node_id'])
+    # Points
+    elif feature_geom.type() == QgsWkbTypes.PointGeometry:
+        pass
+    # Polygons
+    elif feature_geom.type() == QgsWkbTypes.PolygonGeometry:
+        pass
+    # Other / No geometry
+    else:
+        pass
+    cur_layer.updateFeature(feature)
 
 
 def create_rubberband(canvas, geometry_type=1):

@@ -105,6 +105,9 @@ class GwLoadProject(QObject):
         except Exception:
             pass
 
+        tools_gw.connect_signal(self.iface.layerTreeView().currentLayerChanged, tools_gw.current_layer_changed,
+                                'load_project', 'currentLayerChanged')
+
         message = f"Project read finished. Plugin version: {plugin_version}"
         tools_log.log_info(message)
 
