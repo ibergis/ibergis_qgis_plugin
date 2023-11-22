@@ -347,12 +347,11 @@ _tables = (
 )
 
 
-def get_dataframe(data, sector_id, scenario_id, table_info, columns, epsg):
+def get_dataframe(data, scenario_id, table_info, columns, epsg):
     mapper = table_info["mapper"]
     df = data.rename(columns=mapper).applymap(null2none)
     gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
     gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
-    gdf["sector_id"] = sector_id
     gdf["scenario_id"] = scenario_id
     missing_columns = columns - set(gdf.columns)
     for column in missing_columns:
@@ -360,7 +359,7 @@ def get_dataframe(data, sector_id, scenario_id, table_info, columns, epsg):
     return gdf
 
 
-def get_dataframes(dicts, sector_id, scenario_id, columns, epsg):
+def get_dataframes(dicts, scenario_id, columns, epsg):
     dict_all, dict_text_tables = dicts
     dataframes = []
     for table in _tables:
@@ -374,7 +373,6 @@ def get_dataframes(dicts, sector_id, scenario_id, columns, epsg):
             continue
         df = get_dataframe(
             the_dict[section]["data"],
-            sector_id,
             scenario_id,
             table,
             columns[table_name],

@@ -42,7 +42,6 @@ class GwImportINPButton(GwAction):
             "Import INP file",
             self.input_file,
             global_vars.gpkg_dao_data.db_filepath,
-            self.sector,
             self.scenario,
             self.feedback,
         )
@@ -72,7 +71,7 @@ class GwImportINPButton(GwAction):
         query = "SELECT DISTINCT id || ' - ' || idval, id FROM cat_scenario WHERE active = true"
         rows = global_vars.gpkg_dao_data.get_rows(query)
         if not rows:
-            message = "You need to have at least one active sector and one active scenario before importing a INP file."
+            message = "You need to have at least one active scenario before importing a INP file."
             tools_qt.show_info_box(message)
             return
         tools_qt.fill_combo_values(self.dlg_import.cmb_scenario, rows, add_empty=True)
