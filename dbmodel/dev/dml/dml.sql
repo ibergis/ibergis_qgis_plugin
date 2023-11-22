@@ -64,6 +64,7 @@ insert into tables_nogeom (table_name) values
 ('cat_landuses'),
 ('cat_grate'),
 ('cat_pattern'),
+('cat_pattern_value'),
 ('cat_controls'),
 ('inp_files'),
 ('rpt_arc'),

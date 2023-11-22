@@ -108,6 +108,16 @@ class Drain(QObject):
             tools_log.log_info(f"Exception in unload when disconnecting focusChanged signal: {e}")
 
         try:
+            tools_gw.disconnect_signal('load_project', 'currentLayerChanged')
+        except Exception as e:
+            tools_log.log_info(f"Exception in unload when disconnecting currentLayerChanged signal: {e}")
+
+        try:
+            tools_gw.disconnect_signal('layer_changed')
+        except Exception as e:
+            tools_log.log_info(f"Exception in unload when disconnecting layer_changed signals: {e}")
+
+        try:
             # Remove 'Main Info button'
             self._unset_info_button()
         except Exception as e:

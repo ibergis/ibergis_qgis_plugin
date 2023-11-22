@@ -117,10 +117,10 @@ CREATE TABLE cat_curve (
 
 CREATE TABLE cat_curve_value (
     id integer primary key,
-    idval text check (typeof(idval)='text') NOT NULL,
+    idval integer NOT NULL,
     xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
     ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
-    FOREIGN KEY (idval) references cat_curve (idval) on update cascade
+    FOREIGN KEY (idval) references cat_curve (id) on update cascade
 );
 
 CREATE TABLE cat_timeseries (
@@ -128,7 +128,6 @@ CREATE TABLE cat_timeseries (
     idval text unique check (typeof(idval)='text') NOT NULL,
     timser_type text check (typeof(timser_type) in ('text', null) and timser_type in ('EVAPORATION', 'INFLOW_HYDROGRAPH', 'INFLOW_POLLUTOGRAPH', 'ORIFICE', 'OTHER', 'RAINFALL', 'TEMPERATURE')),
     times_type text CHECK (typeof(times_type) in ('text', null) and times_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
-    file text CHECK (typeof(file) = 'text' or file = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     fname text check (typeof(fname)='text' or fname = null),
     "log" text check (typeof("log")='text' or "log" = null),
@@ -137,12 +136,12 @@ CREATE TABLE cat_timeseries (
 
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
-    idval text check (typeof(idval)='text') NOT NULL,
+    idval integer NOT NULL,
     hour text check (typeof(hour)='text' or hour=null),
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
-    FOREIGN KEY (idval) references cat_timeseries(idval) on update cascade
+    FOREIGN KEY (idval) references cat_timeseries(id) on update cascade
 );
 
 CREATE TABLE cat_pattern (
@@ -155,11 +154,11 @@ CREATE TABLE cat_pattern (
 
 CREATE TABLE cat_pattern_value (
     id integer primary key,
-    idval text check (typeof(idval)='text') NOT NULL,
+    idval integer NOT NULL,
     pattern_type text check (typeof(pattern_type) in ('text', null) and pattern_type in ('DAILY', 'HOURLY', 'MONTHLY', 'WEEKEND')),
     timestep datetime CHECK (typeof(timestep)='datetime' OR timestep=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
-    FOREIGN KEY (idval) references cat_pattern(idval) on update cascade
+    FOREIGN KEY (idval) references cat_pattern(id) on update cascade
 );
 
 CREATE TABLE cat_controls (
@@ -1178,18 +1177,13 @@ CREATE VIEW if not exists v_node as
     select node_id, sector_id, scenario_id, geom from inp_storage union
     select node_id, sector_id, scenario_id, geom from inp_outfall union
     select node_id, sector_id, scenario_id, geom from inp_junction union
-    select node_id, sector_id, scenario_id, geom from inp_divider
-    JOIN selector_sector USING (sector_id)
-    JOIN selector_scenario USING (scenario_id);
-
+    select node_id, sector_id, scenario_id, geom from inp_divider;
 CREATE VIEW if not exists v_arc as
     select arc_id, sector_id, scenario_id, geom from inp_outlet union
     select arc_id, sector_id, scenario_id, geom from inp_weir union
     select arc_id, sector_id, scenario_id, geom from inp_orifice union
     select arc_id, sector_id, scenario_id, geom from inp_pump union
-    select arc_id, sector_id, scenario_id, geom from inp_conduit
-    JOIN selector_sector USING (sector_id)
-    JOIN selector_scenario USING (scenario_id);
+    select arc_id, sector_id, scenario_id, geom from inp_conduit;
 
 
 create table tables_nogeom (table_name text primary key);

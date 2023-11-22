@@ -42,7 +42,6 @@ class GwImportINPButton(GwAction):
             "Import INP file",
             self.input_file,
             global_vars.gpkg_dao_data.db_filepath,
-            self.sector,
             self.scenario,
             self.feedback,
         )
@@ -67,20 +66,12 @@ class GwImportINPButton(GwAction):
         QgsApplication.taskManager().addTask(self.thread)
 
     def _fill_combos(self):
-        # Sector
-        query = "SELECT DISTINCT code || ' - ' || descript, code FROM sector WHERE active = true"
-        rows = global_vars.gpkg_dao_data.get_rows(query)
-        if not rows:
-            message = "You need to have at least one active sector and one active scenario before importing a INP file."
-            tools_qt.show_info_box(message)
-            return
-        tools_qt.fill_combo_values(self.dlg_import.cmb_sector, rows, add_empty=True)
 
         # Scenario
         query = "SELECT DISTINCT id || ' - ' || idval, id FROM cat_scenario WHERE active = true"
         rows = global_vars.gpkg_dao_data.get_rows(query)
         if not rows:
-            message = "You need to have at least one active sector and one active scenario before importing a INP file."
+            message = "You need to have at least one active scenario before importing a INP file."
             tools_qt.show_info_box(message)
             return
         tools_qt.fill_combo_values(self.dlg_import.cmb_scenario, rows, add_empty=True)
@@ -182,17 +173,11 @@ class GwImportINPButton(GwAction):
             tools_qt.show_info_box("You should select an input INP file!")
             return False
 
-        sector = tools_qt.get_combo_value(dlg, dlg.cmb_sector, index=1)
-        if not sector or sector == -1:
-            tools_qt.show_info_box("You should select a sector!")
-            return False
-
         scenario = tools_qt.get_combo_value(dlg, dlg.cmb_scenario, index=1)
         if not scenario or scenario == -1:
             tools_qt.show_info_box("You should select a scenario!")
             return False
 
         self.input_file = input_file
-        self.sector = sector
         self.scenario = scenario
         return True
