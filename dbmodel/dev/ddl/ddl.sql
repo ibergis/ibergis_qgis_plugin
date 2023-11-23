@@ -1174,16 +1174,16 @@ create view if not exists vi_xsections as
     select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, null as other3, null as other4, null as other5, null as other6 from inp_weir;
 
 CREATE VIEW if not exists v_node as
-    select node_id, sector_id, scenario_id, geom from inp_storage union
-    select node_id, sector_id, scenario_id, geom from inp_outfall union
-    select node_id, sector_id, scenario_id, geom from inp_junction union
-    select node_id, sector_id, scenario_id, geom from inp_divider;
+    select node_id, geom from inp_storage union
+    select node_id, geom from inp_outfall union
+    select node_id, geom from inp_junction union
+    select node_id, scenario_id, geom from inp_divider;
 CREATE VIEW if not exists v_arc as
-    select arc_id, sector_id, scenario_id, geom from inp_outlet union
-    select arc_id, sector_id, scenario_id, geom from inp_weir union
-    select arc_id, sector_id, scenario_id, geom from inp_orifice union
-    select arc_id, sector_id, scenario_id, geom from inp_pump union
-    select arc_id, sector_id, scenario_id, geom from inp_conduit;
+    select arc_id, geom from inp_outlet union
+    select arc_id, geom from inp_weir union
+    select arc_id, geom from inp_orifice union
+    select arc_id, geom from inp_pump union
+    select arc_id, geom from inp_conduit;
 
 
 create table tables_nogeom (table_name text primary key);
