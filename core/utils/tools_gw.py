@@ -2402,8 +2402,14 @@ def current_layer_changed(layer):
 def check_topology(fid):
     """ Checks that the inserted features are correct """
 
+    node_layers_to_check = ['inp_storage', 'inp_outfall', 'inp_junction', 'inp_divider']
+    arc_layers_to_check = ['inp_outlet', 'inp_weir', 'inp_orifice', 'inp_pump', 'inp_conduit']
+    polygon_layers_to_check = []
+    layers_to_check = node_layers_to_check + arc_layers_to_check + polygon_layers_to_check
     cur_layer = global_vars.iface.activeLayer()
-    print(f"check topology {cur_layer.id()}, {fid}")
+    if cur_layer not in layers_to_check:
+        return
+
     feature = cur_layer.getFeature(fid)
     feature_geom = feature.geometry()
     # Lines -- find node_1 & node_2 and set them as attributes
