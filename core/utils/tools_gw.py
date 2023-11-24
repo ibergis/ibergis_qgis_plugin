@@ -2419,27 +2419,41 @@ def check_topology(fid):
         point_1 = feature_geom.vertexAt(0)
         vertices = len([n for n in feature_geom.vertices()])
         point_2 = feature_geom.vertexAt(vertices - 1)
-        node_layer = None
+        node_layers = []
         layers = tools_qgis.get_project_layers()
         for layer in layers:
-            if layer.name() == 'v_node':
-                node_layer = layer
-                break
-        if node_layer is None:
-            print("node layer not found")
+            # TODO: get the actual db table name, instead of layer name
+            if layer.name() in node_layers_to_check:
+                node_layers.append(layer)
+        if not node_layers:
+            print("node layers not found")
             return
-        spatial_index = QgsSpatialIndex(node_layer.getFeatures())
-        node_1 = spatial_index.nearestNeighbor(QgsPointXY(point_1), 1, 2)
-        node_2 = spatial_index.nearestNeighbor(QgsPointXY(point_2), 1, 2)
-        print(f"{node_1=}, {node_2=}")
-        if node_1:
+
+        for node_layer in node_layers:
+            spatial_index = QgsSpatialIndex(node_layer.getFeatures())
+            node_1 = spatial_index.nearestNeighbor(QgsPointXY(point_1), 1, 2)
+            node_2 = spatial_index.nearestNeighbor(QgsPointXY(point_2), 1, 2)
+            print(f"{node_layer.name()}: {node_1=}, {node_2=}")
+            if not node_1 or not node_2:
+                continue
+
+            # node_1
             node_fid = node_1[0]
             node = node_layer.getFeature(node_fid)
             feature.setAttribute('node_1', node['node_id'])
-        if node_2:
+
+            # node_2
             node_fid = node_2[0]
             node = node_layer.getFeature(node_fid)
             feature.setAttribute('node_2', node['node_id'])
+
+            break
+        if feature['node_1'] is None or feature['node_2'] is None:
+            edit_buffer = cur_layer.editBuffer()
+            edit_buffer.deleteFeature(fid)
+            msg = f"One or more arcs was not inserted because it has not start/end node. Please use or check the configuration of the snapping tool."
+            tools_qgis.show_critical(msg)
+
     # Points
     elif feature_geom.type() == QgsWkbTypes.PointGeometry:
         pass
