@@ -74,6 +74,7 @@ class GwGo2IberButton(GwAction):
         # Set shortcut keys
         self.dlg_go2epa.key_escape.connect(partial(tools_gw.close_docker))
 
+        tools_qt.set_widget_visible(self.dlg_go2epa, 'btn_hs_ds', False)
         self.dlg_go2epa.btn_hs_ds.clicked.connect(partial(self._sector_selection))
 
         # Check OS and enable/disable checkbox execute EPA software
