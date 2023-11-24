@@ -51,9 +51,10 @@ CREATE TABLE selector_scenario (
 -- CATALOGS
 -- --------
 
-CREATE TABLE cat_scenario (
+CREATE TABLE cat_bscenario (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
+    name text check (typeof(name)='text' OR name=NULL),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
@@ -105,7 +106,6 @@ CREATE TABLE cat_transects (
     "text" text check (typeof("text" = 'text') or "text" = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
-
 
 CREATE TABLE cat_curve (
     id integer primary key,
@@ -636,12 +636,13 @@ create table inp_inflow (
 
 create table boundary_conditions (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text UNIQUE check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     tin_id text check (typeof(tin_id) = 'text' or tin_id=null),
     edge_id text check (typeof(edge_id) = 'text' or edge_id=null),
     boundary_type text check (typeof(boundary_type) = 'text' or boundary_type=null),
-    geom geometry
+    geom geometry,
+    FOREIGN KEY (code) REFERENCES cat_bscenario(idval) on update cascade
 );
 
 
