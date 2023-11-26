@@ -225,7 +225,7 @@ class GwCreateMeshButton(GwAction):
                     file.write(
                         f"{first_col} {fid} {slope} {width} {roughness} {isconnected} {outlet_id} {outlet_vol} {street_vol} {infiltr_vol}\n"
                     )
-                file.write("Roof elements\n")
+                file.write("\nRoof elements\n")
                 for i, tri in self.thread_triangulation.mesh["triangles"].items():
                     if tri["category"] == "roof":
                         file.write(f"{i} {tri['roof_id']}\n")
