@@ -36,6 +36,7 @@ class GwGpkgDao(object):
         self.db_filepath = filename
         try:
             self.conn = sqlite3.connect(filename)
+            self.conn.row_factory = sqlite3.Row
             if enable_spatial:
                 self.conn.enable_load_extension(True)
                 self.conn.execute("SELECT load_extension('mod_spatialite')")

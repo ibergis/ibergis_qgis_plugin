@@ -31,15 +31,17 @@ The csv file must containts next columns on same position:
 timeseries, type, mode, date, hour, time, value (fill date/hour for ABSOLUTE or time for RELATIVE)', 'gw_fct_import_inp_timeseries', 1, 9, NULL);
 
 
--- ------------
--- CAT_SCENARIO
--- ------------
-INSERT INTO cat_scenario (id, idval, descript, active) VALUES(1, 'default', 'Default', 1);
-INSERT INTO cat_scenario (id, idval, descript, active) VALUES(2, 'scenario2', 'Scenario 2', 1);
-INSERT INTO cat_scenario (id, idval, descript, active) VALUES(3, 'scenario3', 'Scenario 3', 1);
-INSERT INTO cat_scenario (id, idval, descript, active) VALUES(4, 'scenario4', 'Scenario 4', 1);
+-- ---------------------------------
+-- BOUNDARY CONDITIONS CAT_BSCENARIO
+-- ---------------------------------
+INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(1, 'B1', 'Default', 1);
+INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(2, 'B2', 'Scenario 2', 1);
+INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(3, 'B3', 'Scenario 3', 1);
+INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(4, 'B4', 'Scenario 4', 1);
 
 
+INSERT INTO boundary_conditions (fid, code, geom) VALUES(1, 'B1', ST_GeomFromText('LINESTRING (418611.5221 4578144.500309, 418649.052514 4578149.067503)', <SRID_VALUE>));
+INSERT INTO boundary_conditions (fid, code, geom) VALUES(2, 'B2', ST_GeomFromText('LINESTRING (418683.102935 4578122.986887, 418686.811488 4578102.347982)', <SRID_VALUE>));
 -- --------------
 -- CAT_TIMESERIES
 -- --------------
