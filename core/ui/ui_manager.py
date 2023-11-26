@@ -106,6 +106,10 @@ class GwToolboxUi(GwDialog, FORM_CLASS):
 FORM_CLASS = _get_ui_class('toolbox_tool.ui', 'utilities')
 class GwToolboxManagerUi(GwDialog, FORM_CLASS):
     pass
+
+FORM_CLASS = _get_ui_class('bc_scenario_manager.ui', 'utilities')
+class GwBCScenarioManagerUi(GwDialog, FORM_CLASS):
+    pass
 # endregion
 
 

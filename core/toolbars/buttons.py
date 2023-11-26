@@ -13,6 +13,7 @@ from .main.dscenario_manager_btn import GwDscenarioManagerButton
 from .main.nonvisual_manager_button import GwNonVisualManagerButton
 
 # Utilities
+from .utilities.bc_scenario_manager import GwBCScenarioManagerButton
 from .utilities.csv_btn import GwCSVButton
 from .utilities.createmesh_btn import GwCreateMeshButton
 from .utilities.importinp_btn import GwImportINPButton
