@@ -1178,7 +1178,7 @@ CREATE VIEW if not exists v_node as
     select node_id, geom from inp_storage union
     select node_id, geom from inp_outfall union
     select node_id, geom from inp_junction union
-    select node_id, scenario_id, geom from inp_divider;
+    select node_id, geom from inp_divider;
 CREATE VIEW if not exists v_arc as
     select arc_id, geom from inp_outlet union
     select arc_id, geom from inp_weir union
