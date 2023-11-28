@@ -4,6 +4,7 @@ from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsProject, QgsVectorLa
 from qgis.PyQt.QtCore import QVariant
 
 from .task import GwTask
+from ..utils import mesh_parser
 from ... import global_vars
 
 
@@ -17,99 +18,20 @@ class GwOpenMeshTask(GwTask):
 
     def run(self):
         super().run()
-        mesh = {"polygons": {}, "vertices": {}}
-
         self.setProgress(self.INITIAL_PROGRESS)
 
         MESH_FILE = "Iber2D.dat"
         mesh_path = Path(self.folder_path) / MESH_FILE
 
-        with open(mesh_path) as file:
-            section = ""
-            for line in file:
-                tokens = line.split()
-
-                # skip empty lines
-                if not len(tokens):
-                    continue
-
-                # section lines
-                if tokens[0] in ["MATRIU", "VERTEXS", "CONDICIONS"]:
-                    section = tokens[0]
-
-                # ignore lines before first section
-                if not section:
-                    continue
-
-                # MATRIU section
-                if section == "MATRIU":
-                    # skip lines that don't have 6 itens
-                    # the count of polygons is also skipped
-                    if len(tokens) != 6:
-                        continue
-
-                    v1, v2, v3, v4, roughness, fid = tokens
-                    mesh["polygons"][fid] = {
-                        "vertice_ids": [v1, v2, v3, v4],
-                        "category": "ground",
-                        "roughness": float(roughness),
-                    }
-
-                # VERTEXS section
-                if section == "VERTEXS":
-                    # skip lines that don't have 4 itens
-                    # the count of polygons is also skipped
-                    if len(tokens) != 4:
-                        continue
-
-                    x, y, z, fid = tokens
-                    mesh["vertices"][fid] = {
-                        "coordinates": (float(x), float(y)),
-                        "elevation": float(z),
-                    }
-
         ROOF_FILE = "Iber_SWMM_roof.dat"
         roof_path = Path(self.folder_path) / ROOF_FILE
 
-        if roof_path.exists():
-            with open(roof_path) as file:
-
-                section = ""
-                for line in file:
-                    line = line.strip()
-
-                    # skip empty lines
-                    if not line:
-                        continue
-
-                    # section lines
-                    section_headers = [
-                        "Number of roofs",
-                        "Roofs properties",
-                        "Roof elements",
-                    ]
-                    if line in section_headers:
-                        section = line
-
-                    # ignore lines before first section
-                    if not section:
-                        continue
-
-                    # TODO: process 'Roofs properties' section
-
-                    # 'Roof elements' section
-                    if section == "Roof elements":
-                        tokens = line.split()
-
-                        # skip lines that don't have 4 itens
-                        # the count of polygons is also skipped
-                        if len(tokens) != 2:
-                            continue
-
-                        polygon_id, roof_id = tokens
-                        if polygon_id in mesh["polygons"]:
-                            mesh["polygons"][polygon_id]["category"] = "roof"
-                            mesh["polygons"][polygon_id]["roof_id"] = roof_id
+        with open(mesh_path) as mesh_file:
+            if roof_path.exists():
+                with open(roof_path) as roof_file:
+                    mesh = mesh_parser.load(mesh_file, roof_file)
+            else:
+                mesh = mesh_parser.load(mesh_file)
 
         self.setProgress(self.POST_FILE_PROGRESS)
 
