@@ -1,4 +1,4 @@
-from qgis.core import QgsFeature, QgsVectorLayer, QgsField, QgsGeometry, QgsPointXY, QgsSpatialIndexKDBush
+from qgis.core import QgsFeature, QgsVectorLayer, QgsField, QgsGeometry, QgsPointXY, QgsSpatialIndexKDBush, QgsRasterLayer
 from qgis.PyQt.QtCore import QVariant
 from ..utils.feedback import Feedback
 from ..utils.meshing_process import layer_to_gdf
@@ -248,10 +248,10 @@ def validate_distance(layer: QgsVectorLayer, feedback: Feedback) -> Optional[Qgs
 
 def validate_ground_roughness_coverage(layers_dict: dict, feedback: Feedback) -> QgsVectorLayer:
     output_layer: QgsVectorLayer = processing.run("native:difference", {
-        'INPUT':layers_dict["ground"],
-        'OVERLAY':layers_dict["ground_roughness"],
-        'OUTPUT':'TEMPORARY_OUTPUT',
-        'GRID_SIZE':None}
+        'INPUT': layers_dict["ground"],
+        'OVERLAY': layers_dict["ground_roughness"],
+        'OUTPUT': 'TEMPORARY_OUTPUT',
+        'GRID_SIZE': None}
     )["OUTPUT"]
     output_layer.setCrs(layers_dict["ground"].crs())
     output_layer.setName(f"Ground Roughness Misscoverage")
@@ -261,10 +261,10 @@ def validate_ground_roughness_coverage(layers_dict: dict, feedback: Feedback) ->
 
 def validate_validity(layer: QgsVectorLayer, feedback: Feedback) -> Tuple[QgsVectorLayer, QgsVectorLayer]:
     output = processing.run("qgis:checkvalidity", {
-        'INPUT_LAYER':layer,
-        'VALID_OUTPUT':'TEMPORARY_OUTPUT',
-        'INVALID_OUTPUT':'TEMPORARY_OUTPUT',
-        'ERROR_OUTPUT':'TEMPORARY_OUTPUT'
+        'INPUT_LAYER': layer,
+        'VALID_OUTPUT': 'TEMPORARY_OUTPUT',
+        'INVALID_OUTPUT': 'TEMPORARY_OUTPUT',
+        'ERROR_OUTPUT': 'TEMPORARY_OUTPUT'
     })
 
     invalid: QgsVectorLayer = output["INVALID_OUTPUT"]
@@ -297,22 +297,34 @@ def validate_dem_coverage(layers_dict: dict, feedback: Feedback) -> QgsVectorLay
     if layers_dict["dem"] == None:
         return QgsVectorLayer("Polygon", "Empty", "memory")
 
+    dem: QgsRasterLayer = layers_dict["dem"]
+    raster_pixel_size = max(
+        dem.rasterUnitsPerPixelX(),
+        dem.rasterUnitsPerPixelY()
+    )
     ground = layers_dict["ground"]
+    mask = processing.run("native:buffer", {
+        'INPUT': ground,
+        'DISTANCE': raster_pixel_size * 2,
+        'SEGMENTS': 5,
+        'END_CAP_STYLE': 0,'JOIN_STYLE': 0,'MITER_LIMIT': 2,'DISSOLVE': False,
+        'OUTPUT': 'TEMPORARY_OUTPUT'
+    })['OUTPUT']
     cliped_raster = processing.run("gdal:cliprasterbymasklayer", {
-        'INPUT':layers_dict["dem"],
-        'MASK':layers_dict["sector"],
-        'OUTPUT':'TEMPORARY_OUTPUT'
+        'INPUT': dem,
+        'MASK': mask,
+        'OUTPUT': 'TEMPORARY_OUTPUT'
     })["OUTPUT"]
     polygon = processing.run("native:pixelstopolygons", {
-        'INPUT_RASTER':cliped_raster,
-        'RASTER_BAND':1,
-        'FIELD_NAME':'VALUE',
-        'OUTPUT':'TEMPORARY_OUTPUT'
+        'INPUT_RASTER': cliped_raster,
+        'RASTER_BAND': 1,
+        'FIELD_NAME': 'VALUE',
+        'OUTPUT': 'TEMPORARY_OUTPUT'
     })["OUTPUT"]
     diff = processing.run("native:difference", {
-        'INPUT':ground,
-        'OVERLAY':polygon,
-        'OUTPUT':'TEMPORARY_OUTPUT'
+        'INPUT': ground,
+        'OVERLAY': polygon,
+        'OUTPUT': 'TEMPORARY_OUTPUT'
     })["OUTPUT"]
     diff.setCrs(ground.crs())
     diff.setName(f"Raster Ground Coverage Error")

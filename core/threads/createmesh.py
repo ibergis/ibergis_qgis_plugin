@@ -73,7 +73,6 @@ class GwCreateMeshTask(GwTask):
                 "mesh_anchor_points": None,
                 "ground_roughness": None,
                 "gully": None,
-                "sector": None,
             }
             for layer in layers:
                 if self.feedback.isCanceled():
