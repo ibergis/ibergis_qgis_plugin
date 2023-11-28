@@ -66,7 +66,7 @@
       <widget class="QLabel" name="lbl_current_scenario"/>
      </item>
      <item>
-      <widget class="QPushButton" name="btn_update_scenario">
+      <widget class="QPushButton" name="btn_set_current_scenario">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
          <horstretch>0</horstretch>
