@@ -176,9 +176,24 @@ def validate_roof_layer(layer: QgsVectorLayer, feedback: Feedback) -> Optional[Q
             return
         roughness = feature["roughness"]
         elev = feature["elev"]
+        slope = feature["slope"]
+        width = feature["width"]
+        isconnected = feature["isconnected"]
+        outlet_id = feature["outlet_id"]
+        outlet_vol = feature["outlet_vol"]
+        street_vol = feature["street_vol"]
+        infiltr_vol = feature["infiltr_vol"]
         if (
             type(roughness) in [int, float] and roughness >= 0 and
-            type(elev) in [int, float]
+            type(elev) in [int, float] and
+            type(slope) in [int, float] and
+            type(width) in [int, float] and
+            type(isconnected) == int and
+            type(outlet_id) == int and
+            type(outlet_vol) in [int, float] and
+            type(street_vol) in [int, float] and
+            type(infiltr_vol) in [int, float] and
+            outlet_vol + street_vol + infiltr_vol == 100
         ):
             continue
 
