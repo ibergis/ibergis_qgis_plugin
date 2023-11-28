@@ -7,23 +7,32 @@ def dumps():
 
 
 def load(mesh_fp, roof_fp=None):
-    mesh = {"polygons": {}, "vertices": {}}
+    mesh = {"polygons": {}, "vertices": {}, "boundary_conditions": {}}
 
     section = ""
     for line in mesh_fp:
-        tokens = line.split()
+        line = line.strip()
 
         # skip empty lines
-        if not len(tokens):
+        if not line:
             continue
 
         # section lines
-        if tokens[0] in ["MATRIU", "VERTEXS", "CONDICIONS"]:
-            section = tokens[0]
+        section_headers = [
+            "MATRIU",
+            "VERTEXS",
+            "CONDICIONS INICIALS",
+            "CC: CONDICIONS CONTORN",
+        ]
+        if line in section_headers:
+            section = line
+            continue
 
         # ignore lines before first section
         if not section:
             continue
+
+        tokens = line.split()
 
         # MATRIU section
         if section == "MATRIU":
@@ -38,6 +47,7 @@ def load(mesh_fp, roof_fp=None):
                 "category": "ground",
                 "roughness": float(roughness),
             }
+            continue
 
         # VERTEXS section
         if section == "VERTEXS":
@@ -51,6 +61,19 @@ def load(mesh_fp, roof_fp=None):
                 "coordinates": (float(x), float(y)),
                 "elevation": float(z),
             }
+            continue
+
+        # CC: CONDICIONS CONTORN section
+        if section == "CC: CONDICIONS CONTORN":
+            # skip lines that have less than 2 items
+            if len(tokens) < 2:
+                continue
+
+            # TODO: handle all boundary conditions parameters
+            polygon, edge, *parameters = tokens
+            edge = int(edge)
+            mesh["boundary_conditions"][(polygon, edge)] = parameters
+            continue
 
     if roof_fp:
         section = ""
