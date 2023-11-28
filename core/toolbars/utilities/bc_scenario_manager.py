@@ -1,12 +1,13 @@
 from functools import partial
+from pathlib import Path
 
-from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QLineEdit, QComboBox
+from qgis.PyQt.QtWidgets import QAbstractItemView, QFileDialog, QTableView, QLineEdit, QComboBox
 from qgis.PyQt.QtSql import QSqlTableModel
 
 from ..dialog import GwAction
 from ...ui.ui_manager import GwBCScenarioManagerUi, GwBCScenarioUi
 from ....lib import tools_qgis, tools_qt, tools_db
-from ...utils import tools_gw
+from ...utils import tools_gw, mesh_parser
 from .... import global_vars
 
 
@@ -84,7 +85,56 @@ class GwBCScenarioManagerButton(GwAction):
     # region Buttons
 
     def _save_to_mesh(self):
-        pass
+        # Variables
+        table = self.dlg_manager.tbl_bcs
+        dao = global_vars.gpkg_dao_data.clone()
+
+        # Get selected row
+        selected_list = table.selectionModel().selectedRows()
+        if len(selected_list) != 1:
+            message = "Select only one scenario to save to mesh"
+            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            return
+        
+        # Get selected object IDs
+        col = 'idval'
+        col_idx = tools_qt.get_col_index_by_col_name(table, col)
+        if not col_idx:
+            col_idx = 0
+        idval = selected_list[0].sibling(selected_list[0].row(), col_idx).data()
+
+        project_folder = str(Path(dao.db_filepath).parent)
+        folder_path = QFileDialog.getExistingDirectory(
+            caption="Select folder",
+            directory=project_folder,
+        )
+
+        if not folder_path:
+            return
+
+        MESH_FILE = "Iber2D.dat"
+        mesh_path = Path(folder_path) / MESH_FILE
+
+        if not mesh_path.exists():
+            tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
+            return
+        
+        ROOF_FILE = "Iber_SWMM_roof.dat"
+        roof_path = Path(folder_path) / ROOF_FILE
+
+        with open(mesh_path) as mesh_file:
+            if roof_path.exists():
+                with open(roof_path) as roof_file:
+                    mesh = mesh_parser.load(mesh_file, roof_file)
+            else:
+                mesh = mesh_parser.load(mesh_file)
+
+        if mesh["boundary_conditions"]:
+            message = "This process will override the boundary conditions of this mesh. Are you sure?"
+            answer = tools_qt.show_question(message, "Override boundary conditions")
+            if not answer:
+                return
+            
 
     def _set_current_scenario(self):
         # Variables
