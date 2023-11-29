@@ -35,9 +35,9 @@ timeseries, type, mode, date, hour, time, value (fill date/hour for ABSOLUTE or 
 -- BOUNDARY CONDITIONS CAT_BSCENARIO
 -- ---------------------------------
 INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(1, 'B1', 'Default', 1);
-INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(2, 'B2', 'Scenario 2', 1);
-INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(3, 'B3', 'Scenario 3', 1);
-INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(4, 'B4', 'Scenario 4', 1);
+INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(2, 'B2', 'Scenario 2', 0);
+INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(3, 'B3', 'Scenario 3', 0);
+INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(4, 'B4', 'Scenario 4', 0);
 
 
 INSERT INTO boundary_conditions (fid, code, geom) VALUES(1, 'B1', ST_GeomFromText('LINESTRING (418611.5221 4578144.500309, 418649.052514 4578149.067503)', <SRID_VALUE>));
