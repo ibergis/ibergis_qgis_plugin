@@ -184,7 +184,44 @@ class GwBCScenarioManagerButton(GwAction):
         tools_gw.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
 
     def _duplicate_scenario(self):
-        pass
+        # Variables
+        table = self.dlg_manager.tbl_bcs
+
+        # Get selected row
+        selected_list = table.selectionModel().selectedRows()
+        if len(selected_list) == 0:
+            message = "Any record selected"
+            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            return
+
+        # Get selected object IDs
+        col = 'idval'
+        col_idx = tools_qt.get_col_index_by_col_name(table, col)
+        if not col_idx:
+            col_idx = 0
+        idval = selected_list[0].sibling(selected_list[0].row(), col_idx).data()
+
+        sql = f"""SELECT idval FROM {self.tablename} WHERE {col} = '{idval}'"""
+        row = tools_db.get_row(sql)
+        if not row:
+            msg = f"There was an error getting the scenario information"
+            tools_qgis.show_warning(msg, dialog=self.dlg_bc)
+            return
+
+        # Get scenario values
+        idval = row['idval']
+
+        # Create dialog
+        self.dlg_bc = GwBCScenarioUi()
+
+        # Populate widgets
+        tools_qt.set_widget_text(self.dlg_bc, 'txt_idval', f"{idval}_copy")
+
+        # Signals
+        self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_duplicate_scenario, idval))
+
+        # Open dialog
+        tools_gw.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
 
     def _edit_scenario(self):
         # Variables
@@ -340,6 +377,40 @@ class GwBCScenarioManagerButton(GwAction):
             msg = f"There was an error updating the scenario"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
+        tools_gw.close_dialog(self.dlg_bc)
+        self._reload_manager_table()
+
+    def _accept_duplicate_scenario(self, code_from):
+        txt_idval = self.dlg_bc.txt_idval
+        txt_name = self.dlg_bc.txt_name
+        txt_descript = self.dlg_bc.txt_descript
+
+        idval = tools_qt.get_text(self.dlg_bc, txt_idval, add_quote=True)
+        name = tools_qt.get_text(self.dlg_bc, txt_name, add_quote=True)
+        descript = tools_qt.get_text(self.dlg_bc, txt_descript, add_quote=True)
+
+        if not idval or idval == "null":
+            tools_qt.set_stylesheet(txt_idval)
+            return
+        tools_qt.set_stylesheet(txt_idval, style="")
+
+        sql = f"""INSERT INTO {self.tablename} (idval, name, descript, active) VALUES ({idval}, {name}, {descript}, 0)"""
+        status = tools_db.execute_sql(sql, commit=False)
+        if status is False:
+            msg = f"There was an error inserting the scenario"
+            tools_qgis.show_warning(msg, dialog=self.dlg_bc)
+            return
+
+        sql = f"""INSERT INTO {self.tablename_value} (code, descript, tin_id, edge_id, boundary_type, geom) 
+            SELECT {idval}, descript, tin_id, edge_id, boundary_type, geom FROM {self.tablename_value} WHERE code = '{code_from}' """
+        status = tools_db.execute_sql(sql, commit=False)
+        if status is False:
+            msg = f"There was an error inserting the scenario geometries"
+            tools_qgis.show_warning(msg, dialog=self.dlg_bc)
+            global_vars.gpkg_dao_data.rollback()
+            return
+
+        global_vars.gpkg_dao_data.commit()
         tools_gw.close_dialog(self.dlg_bc)
         self._reload_manager_table()
 
