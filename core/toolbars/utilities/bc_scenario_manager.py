@@ -29,6 +29,7 @@ class GwBCScenarioManagerButton(GwAction):
 
         # Variables
         tbl_bcs = self.dlg_manager.tbl_bcs
+        txt_filter = self.dlg_manager.txt_filter
         btn_save_to_mesh = self.dlg_manager.btn_save_to_mesh
         btn_set_current_scenario = self.dlg_manager.btn_set_current_scenario
         btn_create_scenario = self.dlg_manager.btn_create_scenario
@@ -41,6 +42,7 @@ class GwBCScenarioManagerButton(GwAction):
         self._set_lbl_current_scenario()
 
         # Signals
+        txt_filter.textChanged.connect(partial(self._filter_table))
         btn_save_to_mesh.clicked.connect(partial(self._save_to_mesh))
         btn_set_current_scenario.clicked.connect(partial(self._set_current_scenario))
         btn_create_scenario.clicked.connect(partial(self._create_scenario))
@@ -88,6 +90,20 @@ class GwBCScenarioManagerButton(GwAction):
             self.dlg_manager.tbl_bcs.model().select()
         except:
             pass
+
+    def _filter_table(self, text):
+        """ Filters manager table by id """
+
+        widget_table = self.dlg_manager.tbl_bcs
+        id_field = 'idval'
+
+        if text is None:
+            text = tools_qt.get_text(self.dlg_manager, self.dlg_manager.txt_filter, return_string_null=False)
+
+        expr = f"CAST({id_field} AS TEXT) LIKE '%{text}%'"
+        # Refresh model with selected filter
+        widget_table.model().setFilter(expr)
+        widget_table.model().select()
 
     # region Buttons
 
