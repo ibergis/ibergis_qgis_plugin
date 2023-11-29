@@ -15,6 +15,8 @@ class GwBCScenarioManagerButton(GwAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
+        self.tablename = 'cat_bscenario'
+        self.tablename_value = 'boundary_conditions'
         self.dlg_manager = None
         self.dlg_bc = None
 
@@ -139,8 +141,6 @@ class GwBCScenarioManagerButton(GwAction):
     def _set_current_scenario(self):
         # Variables
         table = self.dlg_manager.tbl_bcs
-        tablename = 'cat_bscenario'
-        tablename_value = 'boundary_conditions'
 
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
@@ -157,7 +157,7 @@ class GwBCScenarioManagerButton(GwAction):
         idval = selected_list[0].sibling(selected_list[0].row(), col_idx).data()
 
         # Set all scenarios as not active
-        sql = f"""UPDATE {tablename} SET active = 0"""
+        sql = f"""UPDATE {self.tablename} SET active = 0"""
         status = tools_db.execute_sql(sql)
         if status is False:
             msg = f"There was an error setting the scenario as active"
@@ -165,7 +165,7 @@ class GwBCScenarioManagerButton(GwAction):
             return
 
         # Set current scenario as active
-        sql = f"""UPDATE {tablename} SET active = 1 WHERE {col} = '{idval}'"""
+        sql = f"""UPDATE {self.tablename} SET active = 1 WHERE {col} = '{idval}'"""
         status = tools_db.execute_sql(sql)
         if status is False:
             msg = f"There was an error setting the scenario as active"
@@ -189,8 +189,6 @@ class GwBCScenarioManagerButton(GwAction):
     def _edit_scenario(self):
         # Variables
         table = self.dlg_manager.tbl_bcs
-        tablename = 'cat_bscenario'
-        tablename_value = 'boundary_conditions'
 
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
@@ -206,7 +204,7 @@ class GwBCScenarioManagerButton(GwAction):
             col_idx = 0
         idval = selected_list[0].sibling(selected_list[0].row(), col_idx).data()
 
-        sql = f"""SELECT id, idval, name, descript FROM {tablename} WHERE {col} = '{idval}'"""
+        sql = f"""SELECT id, idval, name, descript FROM {self.tablename} WHERE {col} = '{idval}'"""
         print(sql)
         row = tools_db.get_row(sql)
         if not row:
@@ -238,8 +236,6 @@ class GwBCScenarioManagerButton(GwAction):
     def _delete_scenario(self):
         # Variables
         table = self.dlg_manager.tbl_bcs
-        tablename = 'cat_bscenario'
-        tablename_value = 'boundary_conditions'
 
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
@@ -269,7 +265,7 @@ class GwBCScenarioManagerButton(GwAction):
             id_field = 'code'
             if id_field is not None:
                 for value in values:
-                    sql = f"DELETE FROM {tablename_value} WHERE {id_field} = {value}"
+                    sql = f"DELETE FROM {self.tablename_value} WHERE {id_field} = {value}"
                     print(sql)
                     result = tools_db.execute_sql(sql, commit=False)
                     if not result:
@@ -281,7 +277,7 @@ class GwBCScenarioManagerButton(GwAction):
             # Delete object from main table
             for value in values:
                 id_field = 'idval'
-                sql = f"DELETE FROM {tablename} WHERE {id_field} = {value}"
+                sql = f"DELETE FROM {self.tablename} WHERE {id_field} = {value}"
                 print(sql)
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
@@ -303,8 +299,6 @@ class GwBCScenarioManagerButton(GwAction):
         txt_name = self.dlg_bc.txt_name
         txt_descript = self.dlg_bc.txt_descript
 
-        tablename = "cat_bscenario"
-
         idval = tools_qt.get_text(self.dlg_bc, txt_idval, add_quote=True)
         name = tools_qt.get_text(self.dlg_bc, txt_name, add_quote=True)
         descript = tools_qt.get_text(self.dlg_bc, txt_descript, add_quote=True)
@@ -314,7 +308,7 @@ class GwBCScenarioManagerButton(GwAction):
             return
         tools_qt.set_stylesheet(txt_idval, style="")
 
-        sql = f"""INSERT INTO {tablename} (idval, name, descript, active) VALUES ({idval}, {name}, {descript}, 0)"""
+        sql = f"""INSERT INTO {self.tablename} (idval, name, descript, active) VALUES ({idval}, {name}, {descript}, 0)"""
         status = tools_db.execute_sql(sql)
         if status is False:
             msg = f"There was an error inserting the scenario"
@@ -329,8 +323,6 @@ class GwBCScenarioManagerButton(GwAction):
         txt_name = self.dlg_bc.txt_name
         txt_descript = self.dlg_bc.txt_descript
 
-        tablename = "cat_bscenario"
-
         _id = tools_qt.get_text(self.dlg_bc, txt_id, add_quote=True)
         idval = tools_qt.get_text(self.dlg_bc, txt_idval, add_quote=True)
         name = tools_qt.get_text(self.dlg_bc, txt_name, add_quote=True)
@@ -341,7 +333,7 @@ class GwBCScenarioManagerButton(GwAction):
             return
         tools_qt.set_stylesheet(txt_idval, style="")
 
-        sql = f"""UPDATE {tablename} SET idval = {idval}, name = {name}, descript = {descript} WHERE id = {_id}"""
+        sql = f"""UPDATE {self.tablename} SET idval = {idval}, name = {name}, descript = {descript} WHERE id = {_id}"""
         print(sql)
         status = tools_db.execute_sql(sql)
         if status is False:
