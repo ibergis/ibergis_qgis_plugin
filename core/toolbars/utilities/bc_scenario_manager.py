@@ -38,6 +38,7 @@ class GwBCScenarioManagerButton(GwAction):
 
         # Populate
         self._fill_manager_table(tbl_bcs, 'cat_bscenario')
+        self._set_lbl_current_scenario()
 
         # Signals
         btn_save_to_mesh.clicked.connect(partial(self._save_to_mesh))
@@ -70,6 +71,10 @@ class GwBCScenarioManagerButton(GwAction):
         else:
             widget.setModel(model)
         widget.setSortingEnabled(True)
+
+        # Hide id and active columns
+        widget.setColumnHidden(0, True)
+        widget.setColumnHidden(4, True)
 
         # Set widget & model properties
         tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=set_edit_triggers,
@@ -171,6 +176,7 @@ class GwBCScenarioManagerButton(GwAction):
             msg = f"There was an error setting the scenario as active"
             tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
+        self._set_lbl_current_scenario(idval)
         self._reload_manager_table()
 
     def _create_scenario(self):
@@ -330,6 +336,21 @@ class GwBCScenarioManagerButton(GwAction):
     # endregion
 
     # region Private functions
+
+    def _set_lbl_current_scenario(self, idval=None):
+        # Get current scenario if not provided
+        if idval is None:
+            sql = f"""SELECT idval FROM {self.tablename} WHERE active = 1"""
+            row = tools_db.get_row(sql)
+            if not row:
+                msg = "No current scenario found."
+                tools_qgis.show_warning(msg, dialog=self.dlg_manager)
+                return
+            idval = row['idval']
+
+        # Set lbl_current_scenario text
+        lbl_current_scenario = self.dlg_manager.lbl_current_scenario
+        tools_qt.set_widget_text(self.dlg_manager, lbl_current_scenario, idval)
 
     def _accept_create_scenario(self):
         txt_idval = self.dlg_bc.txt_idval
