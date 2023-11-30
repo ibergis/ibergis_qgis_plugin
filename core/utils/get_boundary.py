@@ -20,7 +20,7 @@ class GetBoundary(QgsProcessingAlgorithm):
         self.addParameter(QgsProcessingParameterVectorLayer('ground_layer', 'Ground Layer', types=[QgsProcessing.TypeVectorPolygon], defaultValue=None))
         self.addParameter(QgsProcessingParameterNumber('polygon_id', 'Polygon ID', type=QgsProcessingParameterNumber.Integer, defaultValue=None))
         self.addParameter(QgsProcessingParameterVectorLayer('roof_layer', 'Roof Layer', types=[QgsProcessing.TypeVectorPolygon], defaultValue=None))
-        self.addParameter(QgsProcessingParameterFeatureSink('Boundary', 'Boundary', type=QgsProcessing.TypeVectorLine, createByDefault=True, supportsAppend=True, defaultValue=None))
+        self.addParameter(QgsProcessingParameterFeatureSink('OUTPUT', 'Boundary', type=QgsProcessing.TypeVectorLine, createByDefault=True, supportsAppend=True, defaultValue=None))
 
     def processAlgorithm(self, parameters, context, model_feedback):
         # Use a multi-step feedback, so that individual child algorithm progress reports are adjusted for the
@@ -138,10 +138,10 @@ class GetBoundary(QgsProcessingAlgorithm):
         # Merge lines
         alg_params = {
             'INPUT': outputs['Difference']['OUTPUT'],
-            'OUTPUT': parameters['Boundary']
+            'OUTPUT': parameters['OUTPUT']
         }
         outputs['MergeLines'] = processing.run('native:mergelines', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Boundary'] = outputs['MergeLines']['OUTPUT']
+        results['OUTPUT'] = outputs['MergeLines']['OUTPUT']
         return results
 
     def name(self):
