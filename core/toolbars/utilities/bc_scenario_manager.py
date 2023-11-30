@@ -55,6 +55,7 @@ class GwBCScenarioManagerButton(GwAction):
         btn_duplicate_scenario = self.dlg_manager.btn_duplicate_scenario
         btn_edit_scenario = self.dlg_manager.btn_edit_scenario
         btn_delete_scenario = self.dlg_manager.btn_delete_scenario
+        btn_cancel = self.dlg_manager.btn_cancel
 
         # Populate
         self._fill_manager_table(tbl_bcs, 'cat_bscenario')
@@ -69,6 +70,7 @@ class GwBCScenarioManagerButton(GwAction):
         btn_edit_scenario.clicked.connect(partial(self._edit_scenario))
         btn_delete_scenario.clicked.connect(partial(self._delete_scenario))
         tbl_bcs.doubleClicked.connect(partial(self._edit_scenario))
+        btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_manager))
 
         tools_gw.open_dialog(self.dlg_manager, dlg_name="bc_scenario_manager")
 
