@@ -38,9 +38,6 @@ class GwGo2EpaUI(GwDialog, FORM_CLASS):
 FORM_CLASS = _get_ui_class('go2epa_options.ui', 'main')
 class GwGo2EpaOptionsUi(GwDialog, FORM_CLASS):
     pass
-FROM_CLASS = _get_ui_class('dscenario_manager.ui', 'main')
-class GwDscenarioManagerUi(GwDialog, FROM_CLASS):
-    pass
 FROM_CLASS = _get_ui_class('nonvisual_curve.ui', 'main')
 class GwNonVisualCurveUi(GwDialog, FROM_CLASS):
     pass
@@ -126,7 +123,4 @@ FORM_CLASS = _get_ui_class('replace_in_file.ui')
 class GwReplaceInFileUi(GwDialog, FORM_CLASS):
     pass
 
-FROM_CLASS = _get_ui_class('dscenario.ui')
-class GwDscenarioUi(GwDialog, FROM_CLASS):
-    pass
 # endregion
