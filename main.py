@@ -238,7 +238,6 @@ class Drain(QObject):
 
         global_vars.signal_manager = GwSignalManager()
         global_vars.signal_manager.show_message.connect(tools_qgis.show_message)
-        global_vars.signal_manager.refresh_selectors.connect(tools_gw.refresh_selectors)
 
 
     def _manage_user_config_folder(self, user_folder_dir):

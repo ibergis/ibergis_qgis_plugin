@@ -648,7 +648,6 @@ def get_selector(**kwargs):
     """
 
     tab_name = kwargs.get('tab')
-    global_vars.signal_manager.refresh_selectors.emit(tab_name)
 
 
 def show_message(**kwargs):
