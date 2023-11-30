@@ -221,6 +221,9 @@ class GwBCScenarioManagerButton(GwAction):
         # Create dialog
         self.dlg_bc = GwBCScenarioUi()
 
+        tools_qt.set_widget_visible(self.dlg_bc, 'lbl_id', False)
+        tools_qt.set_widget_visible(self.dlg_bc, 'txt_id', False)
+
         # Signals
         self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_create_scenario))
 
@@ -307,6 +310,9 @@ class GwBCScenarioManagerButton(GwAction):
         tools_qt.set_widget_text(self.dlg_bc, 'txt_idval', idval)
         tools_qt.set_widget_text(self.dlg_bc, 'txt_name', name)
         tools_qt.set_widget_text(self.dlg_bc, 'txt_descript', descript)
+
+        tools_qt.set_widget_visible(self.dlg_bc, 'lbl_id', False)
+        tools_qt.set_widget_visible(self.dlg_bc, 'txt_id', False)
 
         # Signals
         self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_edit_scenario))
