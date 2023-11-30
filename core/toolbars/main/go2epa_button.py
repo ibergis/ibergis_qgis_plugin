@@ -19,10 +19,9 @@ from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGr
     QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout
 from qgis.core import QgsApplication
 
-from ...shared.selector import GwSelector
 from ...threads.epa_file_manager import GwEpaFileManager
 from ...utils import tools_gw
-from ...ui.ui_manager import GwGo2EpaUI, GwSelectorUi, GwGo2EpaOptionsUi
+from ...ui.ui_manager import GwGo2EpaUI, GwGo2EpaOptionsUi
 from .... import global_vars
 from ....lib import tools_qgis, tools_qt, tools_db
 from ..dialog import GwAction
@@ -73,9 +72,6 @@ class GwGo2IberButton(GwAction):
 
         # Set shortcut keys
         self.dlg_go2epa.key_escape.connect(partial(tools_gw.close_docker))
-
-        tools_qt.set_widget_visible(self.dlg_go2epa, 'btn_hs_ds', False)
-        self.dlg_go2epa.btn_hs_ds.clicked.connect(partial(self._sector_selection))
 
         # Check OS and enable/disable checkbox execute EPA software
         if sys.platform != "win32":
@@ -265,40 +261,6 @@ class GwGo2IberButton(GwAction):
         tools_gw.set_config_parser('btn_go2epa', 'go2epa_chk_EPA', f"{chk_exec}")
         chk_import_result = f"{tools_qt.is_checked(self.dlg_go2epa, self.dlg_go2epa.chk_import_result)}"
         tools_gw.set_config_parser('btn_go2epa', 'go2epa_chk_RPT', f"{chk_import_result}")
-
-
-
-    def _sector_selection(self):
-        """ Load the tables in the selection form """
-
-        # Get class Selector from selector.py
-        go2epa_selector = GwSelector()
-
-        # Create the dialog
-        dlg_selector = GwSelectorUi()
-        tools_gw.load_settings(dlg_selector)
-
-        # Create the common signals
-        go2epa_selector.get_selector(dlg_selector, '"selector_basic"', current_tab='tab_dscenario')
-        tools_gw.save_current_tab(dlg_selector, dlg_selector.main_tab, 'basic')
-
-        dlg_selector.findChild(QTabWidget, 'main_tab').currentChanged.connect(partial(
-            tools_gw.save_current_tab, dlg_selector, dlg_selector.main_tab, 'basic'))
-
-        # Open form
-        if global_vars.session_vars['dialog_docker']:
-            # Set signals when have docker form
-            dlg_selector.btn_close.clicked.connect(partial(tools_gw.docker_dialog, self.dlg_go2epa))
-            dlg_selector.btn_close.clicked.connect(partial(self._manage_form_settings, 'restore'))
-            # Save widgets settings from go2epa form
-            self._manage_form_settings('save')
-            # Open form
-            tools_gw.docker_dialog(dlg_selector)
-        else:
-            # Set signals when have not docker form
-            dlg_selector.btn_close.clicked.connect(partial(tools_gw.close_dialog, dlg_selector))
-            # Open form
-            tools_gw.open_dialog(dlg_selector)
 
 
     def _manage_form_settings(self, action):
