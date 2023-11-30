@@ -423,16 +423,15 @@ def get_layer_by_tablename(tablename, show_warning_=False, log_info=False, schem
 
     # Iterate over all layers
     layer = None
-    if schema_name is None:
-        if 'main_schema' in global_vars.project_vars:
-            schema_name = global_vars.project_vars['main_schema']
-        else:
-            tools_log.log_warning("Key not found", parameter='main_schema')
-
     for cur_layer in layers:
-        uri_table = get_layer_source_table_name(cur_layer)
-        table_schema = get_layer_schema(cur_layer)
-        if (uri_table is not None and uri_table == tablename) and schema_name in ('', None, table_schema):
+        cur_layer_tablename = cur_layer.name()
+        uri = cur_layer.dataProvider().uri().uri()
+        # Get the actual layername
+        for part in uri.split("|"):
+            if 'layername' in part:
+                cur_layer_tablename = part.split("=")[1].strip("'")
+
+        if cur_layer_tablename == tablename:
             layer = cur_layer
             break
 

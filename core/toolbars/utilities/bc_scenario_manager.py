@@ -11,6 +11,25 @@ from ...utils import tools_gw, mesh_parser
 from .... import global_vars
 
 
+def set_bc_filter():
+
+    sql = f"""SELECT idval FROM cat_bscenario WHERE active = 1"""
+    row = tools_db.get_row(sql)
+    if not row:
+        msg = "No current bcscenario found"
+        tools_qgis.show_warning(msg)
+        return
+    cur_scenario = row['idval']
+
+    layer_name = 'boundary_conditions'
+    bc_layer = tools_qgis.get_layer_by_tablename(layer_name)
+    if bc_layer is None:
+        msg = f"Layer {layer_name} not found."
+        tools_qgis.show_warning(msg)
+        return
+    bc_layer.setSubsetString(f"code = '{cur_scenario}'")
+
+
 class GwBCScenarioManagerButton(GwAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
@@ -194,6 +213,7 @@ class GwBCScenarioManagerButton(GwAction):
             return
         self._set_lbl_current_scenario(idval)
         self._reload_manager_table()
+        set_bc_filter()
 
     def _create_scenario(self):
         # Create dialog

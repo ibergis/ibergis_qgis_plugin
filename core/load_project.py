@@ -15,6 +15,7 @@ from qgis.PyQt.QtWidgets import QToolBar, QActionGroup, QDockWidget, QApplicatio
 from .models.plugin_toolbar import GwPluginToolbar
 from .toolbars import buttons
 from .utils import tools_gw
+from .toolbars.utilities.bc_scenario_manager import set_bc_filter
 from .. import global_vars
 from ..lib import tools_qgis, tools_log, tools_qt, tools_os, tools_gpkgdao
 
@@ -105,6 +106,10 @@ class GwLoadProject(QObject):
         except Exception:
             pass
 
+        # Set boundary_conditions filter
+        set_bc_filter()
+
+        # Connect signal for topocontrol
         tools_gw.connect_signal(self.iface.layerTreeView().currentLayerChanged, tools_gw.current_layer_changed,
                                 'load_project', 'currentLayerChanged')
 
