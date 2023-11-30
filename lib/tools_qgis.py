@@ -424,12 +424,7 @@ def get_layer_by_tablename(tablename, show_warning_=False, log_info=False, schem
     # Iterate over all layers
     layer = None
     for cur_layer in layers:
-        cur_layer_tablename = cur_layer.name()
-        uri = cur_layer.dataProvider().uri().uri()
-        # Get the actual layername
-        for part in uri.split("|"):
-            if 'layername' in part:
-                cur_layer_tablename = part.split("=")[1].strip("'")
+        cur_layer_tablename = get_tablename_from_layer(cur_layer)
 
         if cur_layer_tablename == tablename:
             layer = cur_layer
@@ -442,6 +437,19 @@ def get_layer_by_tablename(tablename, show_warning_=False, log_info=False, schem
         tools_log.log_info("Layer not found", parameter=tablename)
 
     return layer
+
+
+def get_tablename_from_layer(layer):
+    """ Gets tablename of a layer """
+    layer_tablename = layer.name()
+
+    uri = layer.dataProvider().uri().uri()
+    # Get the actual layername
+    for part in uri.split("|"):
+        if 'layername' in part:
+            layer_tablename = part.split("=")[1].strip("'")
+
+    return layer_tablename
 
 
 def manage_snapping_layer(layername, snapping_type=0, tolerance=15.0):

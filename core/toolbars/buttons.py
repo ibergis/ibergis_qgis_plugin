@@ -17,6 +17,7 @@ from .utilities.createmesh_btn import GwCreateMeshButton
 from .utilities.importinp_btn import GwImportINPButton
 from .utilities.openmesh_btn import GwOpenMeshButton
 from .utilities.toolbox_btn import GwToolBoxButton
+from .utilities.project_check_btn import GwProjectCheckButton
 
 # ToC
 from .toc.add_child_layer_button import GwAddChildLayerButton

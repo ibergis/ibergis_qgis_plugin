@@ -1,0 +1,242 @@
+"""
+This file is part of Giswater 3
+The program is free software: you can redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software Foundation, either version 3 of the License,
+or (at your option) any later version.
+"""
+# -*- coding: utf-8 -*-
+
+import platform
+from functools import partial
+import os
+
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QVariant
+from qgis.PyQt.QtWidgets import QCheckBox, QGridLayout, QLabel, QSizePolicy
+from qgis.PyQt.QtGui import QColor
+from qgis.core import Qgis, QgsWkbTypes, QgsSpatialIndex, QgsPointXY, QgsField, QgsProject, QgsVectorLayer, QgsFeature
+
+from .task import GwTask
+from ..utils import tools_gw
+from ..ui.ui_manager import GwProjectCheckUi
+from ... import global_vars
+from ...lib import tools_qgis, tools_log, tools_qt, tools_os
+
+
+class GwProjectCheckTask(GwTask):
+
+    task_finished = pyqtSignal(list)
+
+    def __init__(self, description='', params=None, timer=None):
+
+        super().__init__(description)
+        self.params = params
+        self.result = None
+        self.dlg_audit_project = None
+        self.timer = timer
+        self.exception = None
+
+        self.log_messages = []
+        self.log_features_arc = []
+        self.log_features_node = []
+
+
+    def run(self):
+
+        super().run()
+
+        layers = self.params['layers']
+        init_project = self.params['init_project']
+        self.dlg_audit_project = self.params['dialog']
+        tools_log.log_info(f"Task 'Check project' execute function 'check_project_execution'")
+        # Call functions
+        status, self.result = self.check_project_execution(layers, init_project)
+        if not status:
+            tools_log.log_info("Function check_project_execution returned False. Reason:", parameter=self.result)
+            return False
+
+        return True
+
+
+    def finished(self, result):
+
+        super().finished(result)
+
+        self.dlg_audit_project.progressBar.setVisible(False)
+        if self.timer:
+            self.timer.stop()
+        if self.isCanceled():
+            self.setProgress(100)
+            return
+
+        # Handle exception
+        if self.exception is not None:
+            msg = f"<b>Key: </b>{self.exception}<br>"
+            msg += f"<b>key container: </b>'body/data/ <br>"
+            msg += f"<b>Python file: </b>{__name__} <br>"
+            msg += f"<b>Python function:</b> {self.__class__.__name__} <br>"
+            tools_qt.show_exception_message("Key on returned json from ddbb is missed.", msg)
+            return
+
+        # Show dialog with audit check project result
+        self._show_check_project_result()
+
+        self.setProgress(100)
+
+
+    def check_project_execution(self, layers, init_project):
+        """ Execute python functions to check the project """
+
+        # Check the network topology
+        status, message = self._check_topology(layers)
+        if not status:
+            return False, f"Topology check failed: {message}"
+
+        return True, message
+
+    # region private functions
+
+
+    def _check_topology(self, layers):
+        """ Checks if there are node on top of eachother """
+
+        try:
+            node_layers_to_check = ['inp_storage', 'inp_outfall', 'inp_junction', 'inp_divider']
+            node_layers = [tools_qgis.get_layer_by_tablename(lyr) for lyr in node_layers_to_check]
+            node_layers = [lyr for lyr in node_layers if lyr is not None]
+            node_buffer = 2
+
+            arc_layers_to_check = ['inp_outlet', 'inp_weir', 'inp_orifice', 'inp_pump', 'inp_conduit']
+            arc_layers = [tools_qgis.get_layer_by_tablename(lyr) for lyr in arc_layers_to_check]
+            arc_layers = [lyr for lyr in arc_layers if lyr is not None]
+            arc_buffer = 2
+
+            polygon_layers_to_check = []
+            polygon_layers = [tools_qgis.get_layer_by_tablename(lyr) for lyr in polygon_layers_to_check]
+            polygon_layers = [lyr for lyr in polygon_layers if lyr is not None]
+
+            layers_to_check = node_layers_to_check + arc_layers_to_check + polygon_layers_to_check
+
+            for layer in layers:
+                if tools_qgis.get_tablename_from_layer(layer) not in layers_to_check:
+                    continue
+
+                for feature in layer.getFeatures():
+                    feature_geom = feature.geometry()
+                    # Lines
+                    if feature_geom.type() == QgsWkbTypes.LineGeometry:
+                        if any(feature[attr] in (None, 'NULL', 'null') for attr in ('node_1', 'node_2')):
+                            msg = f"WARNING! Arc {feature['arc_id']} doesn't have node_1 or node_2."
+                            self.log_messages.append(msg)
+                            self.log_features_arc.append(feature)
+                        continue
+
+                    # Points
+                    elif feature_geom.type() == QgsWkbTypes.PointGeometry:
+                        for node_layer in node_layers:
+                            spatial_index = QgsSpatialIndex(node_layer.getFeatures())
+                            node = spatial_index.nearestNeighbor(feature_geom.asPoint(), 2, node_buffer)
+                            if len(node) > 1:
+                                msg = f"WARNING! Node {feature['node_id']} has another node too close."
+                                self.log_messages.append(msg)
+                                self.log_features_node.append(feature)
+                                continue
+
+                    # Polygons
+                    elif feature_geom.type() == QgsWkbTypes.PolygonGeometry:
+                        pass
+                    # Other / No geometry
+                    else:
+                        pass
+        except Exception as e:
+            return False, e
+
+        return True, "Success"
+
+
+    def _show_check_project_result(self):
+        """ Show dialog with audit check project results """
+
+        # Populate info_log
+        txt_log = "CHECK PROJECT RESULT\n--------------------\n\n"
+
+        if self.result != "Success":
+            txt_log = f"{txt_log}Execution failed.\n{self.result}"
+            tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', txt_log)
+            tools_qt.hide_void_groupbox(self.dlg_audit_project)
+            return
+        for log_message in self.log_messages:
+            txt_log = f"{txt_log}{log_message}\n"
+        if not self.log_messages:
+            txt_log = f"{txt_log}Everything OK!\n"
+
+        tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', txt_log)
+        tools_qt.hide_void_groupbox(self.dlg_audit_project)
+
+        # Add temporal layers if needed
+        if self.log_features_node or self.log_features_arc:
+            self._add_temp_layers()
+
+
+    def _add_temp_layers(self):
+        """ Create temporal layers with the conflicting features """
+
+        # Create a group & add layers to the group
+        group_name = "Check Project Results"
+        root = QgsProject.instance().layerTreeRoot()
+        my_group = root.findGroup(group_name)
+        if my_group is None:
+            my_group = root.insertGroup(0, group_name)
+
+        if self.log_features_node:
+            # Create in-memory layers
+            node_fields = [QgsField("node_id", QVariant.String), QgsField("descript", QVariant.String)]
+            node_layer = self.create_in_memory_layer("Point", "node", node_fields)
+            # Add features to the layers
+            self.add_features_to_layer(node_layer, self.log_features_node, 'node_id')
+            # Add layer to ToC
+            QgsProject.instance().addMapLayer(node_layer, False)
+            my_group.insertLayer(0, node_layer)
+            # Set layer symbology
+            node_layer.renderer().symbol().setColor(QColor("red"))
+            node_layer.renderer().symbol().setSize(3.5)
+            node_layer.renderer().symbol().setOpacity(0.7)
+            global_vars.iface.layerTreeView().refreshLayerSymbology(node_layer.id())
+
+        if self.log_features_arc:
+            # Create in-memory layers
+            arc_fields = [QgsField("arc_id", QVariant.String), QgsField("descript", QVariant.String)]
+            arc_layer = self.create_in_memory_layer("LineString", "arc", arc_fields)
+            # Add features to the layers
+            self.add_features_to_layer(arc_layer, self.log_features_arc, 'arc_id')
+            # Add layer to ToC
+            QgsProject.instance().addMapLayer(arc_layer, False)
+            my_group.insertLayer(1, arc_layer)
+            # Set the rendering style
+            arc_layer.renderer().symbol().setColor(QColor("red"))
+            arc_layer.renderer().symbol().setWidth(1.5)
+            arc_layer.renderer().symbol().setOpacity(0.7)
+            global_vars.iface.layerTreeView().refreshLayerSymbology(arc_layer.id())
+
+        # Refresh the map canvas
+        global_vars.iface.mapCanvas().refresh()
+
+
+    def create_in_memory_layer(self, geometry_type, layer_name, fields):
+        srid = global_vars.project_epsg
+        layer = QgsVectorLayer(f"{geometry_type}?crs=epsg:{srid}", layer_name, "memory")
+        layer.dataProvider().addAttributes(fields)
+        layer.updateFields()
+        return layer
+
+
+    def add_features_to_layer(self, layer, features, field_id):
+        layer.startEditing()
+        for feature in features:
+            feature_geom = feature.geometry()
+            new_feature = QgsFeature(layer.fields())
+            new_feature.setGeometry(feature_geom)
+            new_feature.setAttribute(field_id, feature[field_id])
+            layer.addFeature(new_feature)
+        layer.commitChanges()
+
+    # endregion

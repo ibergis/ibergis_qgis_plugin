@@ -111,6 +111,10 @@ class GwBCScenarioManagerUi(GwDialog, FORM_CLASS):
 FORM_CLASS = _get_ui_class('bc_scenario.ui', 'utilities')
 class GwBCScenarioUi(GwDialog, FORM_CLASS):
     pass
+
+FORM_CLASS = _get_ui_class('project_check.ui', 'utilities')
+class GwProjectCheckUi(GwDialog, FORM_CLASS):
+    pass
 # endregion
 
 
