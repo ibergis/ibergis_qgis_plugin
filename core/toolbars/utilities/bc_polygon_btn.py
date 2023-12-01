@@ -11,8 +11,6 @@ from qgis.gui import QgsMapToolIdentifyFeature
 from qgis.utils import iface
 
 from ..dialog import GwAction
-from ....lib import tools_qgis, tools_qt, tools_db
-from ...utils import tools_gw
 from ...utils.get_boundary import GetBoundary
 from .... import global_vars
 
@@ -23,16 +21,15 @@ class GwCreateBCFromPolygon(GwAction):
         self.layers = {"ground": None, "roof": None, "boundary_conditions": None}
 
     def clicked_event(self):
-        # Get ground and roof layers
-        dbpath = Path(global_vars.gpkg_dao_data.db_filepath).as_posix()
-        uri_prefix = dbpath.lower() + "|layername="
+        # Get ground, roof and boundary_condition layers
+        dbpath = Path(global_vars.gpkg_dao_data.db_filepath).as_posix().lower()
         for layer in QgsProject.instance().mapLayers().values():
             layer_source = layer.dataProvider().dataSourceUri().lower()
-            if layer_source.startswith(uri_prefix):
-                layer_name = layer_source[len(uri_prefix) :]
-                print(layer_name)
-                if layer_name in self.layers:
-                    self.layers[layer_name] = layer
+            if layer_source.startswith(dbpath):
+                for layer_name in self.layers:
+                    if f"layername={layer_name}" in layer_source.split("|"):
+                        self.layers[layer_name] = layer
+                        break
 
         # TODO: Handle the case of Ground or Roof or BC layers not in TOC
         if not all(self.layers.values()):
