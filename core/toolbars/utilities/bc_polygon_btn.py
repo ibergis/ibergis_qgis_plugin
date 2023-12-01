@@ -13,6 +13,7 @@ from qgis.utils import iface
 from ..dialog import GwAction
 from ...utils.get_boundary import GetBoundary
 from .... import global_vars
+from ....lib import tools_qt
 
 
 class GwCreateBCFromPolygon(GwAction):
@@ -32,9 +33,14 @@ class GwCreateBCFromPolygon(GwAction):
                         self.layers[layer_name] = layer
                         break
 
-        # TODO: Handle the case of Ground or Roof or BC layers not in TOC
         if not all(self.layers.values()):
-            print(self.layers)
+            message = (
+                "To make 'Create Boundary Condition from Polygon' function properly, "
+                "you must have the ground, roof, and boundary conditions layers included in your project."
+            )
+            tools_qt.show_info_box(message)
+            self.action.setChecked(False)
+            return
 
         # Get polygon id
         canvas = iface.mapCanvas()
