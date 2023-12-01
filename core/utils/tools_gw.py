@@ -2413,7 +2413,8 @@ def check_topology(fid):
     feature_geom = feature.geometry()
     # Lines -- find node_1 & node_2 and set them as attributes
     if feature_geom.type() == QgsWkbTypes.LineGeometry:
-        if feature['node_1'] is not None and feature['node_2'] is not None:
+        # If it already has node_1 & node_2 set don't do anything
+        if feature['node_1'] not in (None, 'NULL', 'null') and feature['node_2'] not in (None, 'NULL', 'null'):
             return
         point_1 = feature_geom.vertexAt(0)
         vertices = len([n for n in feature_geom.vertices()])
@@ -2421,8 +2422,7 @@ def check_topology(fid):
         node_layers = []
         layers = tools_qgis.get_project_layers()
         for layer in layers:
-            # TODO: get the actual db table name, instead of layer name
-            if layer.name() in node_layers_to_check:
+            if tools_qgis.get_tablename_from_layer(layer) in node_layers_to_check:
                 node_layers.append(layer)
         if not node_layers:
             print("node layers not found")
@@ -2445,13 +2445,7 @@ def check_topology(fid):
             node_fid = node_2[0]
             node = node_layer.getFeature(node_fid)
             feature.setAttribute('node_2', node['node_id'])
-
             break
-        if feature['node_1'] is None or feature['node_2'] is None:
-            edit_buffer = cur_layer.editBuffer()
-            edit_buffer.deleteFeature(fid)
-            msg = f"One or more arcs was not inserted because it has not start/end node. Please use or check the configuration of the snapping tool."
-            tools_qgis.show_critical(msg)
 
     # Points
     elif feature_geom.type() == QgsWkbTypes.PointGeometry:
