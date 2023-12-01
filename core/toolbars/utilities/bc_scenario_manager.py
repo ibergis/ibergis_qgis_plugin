@@ -1,6 +1,9 @@
 from functools import partial
+from itertools import chain, tee
 from pathlib import Path
 
+from qgis.core import QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsField, QgsFields, QgsProject
+from qgis.PyQt.QtCore import QVariant
 from qgis.PyQt.QtWidgets import QAbstractItemView, QFileDialog, QTableView, QLineEdit, QComboBox
 from qgis.PyQt.QtSql import QSqlTableModel
 
@@ -9,6 +12,13 @@ from ...ui.ui_manager import GwBCScenarioManagerUi, GwBCScenarioUi
 from ....lib import tools_qgis, tools_qt, tools_db
 from ...utils import tools_gw, mesh_parser
 from .... import global_vars
+
+
+def pairwise(iterable):
+    # pairwise('ABCDEFG') --> AB BC CD DE EF FG
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
 
 
 def set_bc_filter():
@@ -146,7 +156,11 @@ class GwBCScenarioManagerButton(GwAction):
         if not col_idx:
             col_idx = 0
         idval = selected_list[0].sibling(selected_list[0].row(), col_idx).data()
+        bc_path = f"{dao.db_filepath}|layername=boundary_conditions|subset=code = '{idval}'"
+        bc_layer = QgsVectorLayer(bc_path, "boundary_conditions", "ogr")
+        # TODO: Handle empty scenarios
 
+        # Open mesh folder
         project_folder = str(Path(dao.db_filepath).parent)
         folder_path = QFileDialog.getExistingDirectory(
             caption="Select folder",
@@ -166,18 +180,60 @@ class GwBCScenarioManagerButton(GwAction):
         ROOF_FILE = "Iber_SWMM_roof.dat"
         roof_path = Path(folder_path) / ROOF_FILE
 
+        # Parse mesh and check for preexistent boundary conditions
         with open(mesh_path) as mesh_file:
-            if roof_path.exists():
-                with open(roof_path) as roof_file:
-                    mesh = mesh_parser.load(mesh_file, roof_file)
-            else:
-                mesh = mesh_parser.load(mesh_file)
+            mesh_str = mesh_file.read()
+
+        roof_str = None
+        if roof_path.exists():
+            with open(roof_path) as roof_file:
+                roof_str = roof_file.read()
+
+        mesh = mesh_parser.loads(mesh_str, roof_str)
 
         if mesh["boundary_conditions"]:
             message = "This process will override the boundary conditions of this mesh. Are you sure?"
             answer = tools_qt.show_question(message, "Override boundary conditions")
             if not answer:
                 return
+            
+        # Create a layer with mesh edges exclusive to only one polygon
+        boundary_edges = {}
+        for pol_id, pol in mesh["polygons"].items():
+            if pol["category"] != "ground":
+                continue
+            vert = pol["vertice_ids"]
+            # Add last and first vertices as a edge if they are distinct
+            last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
+            edges = chain(pairwise(vert), last_edge)
+            for side, verts in enumerate(edges, start=1):
+                edge = frozenset(verts)
+                if edge in boundary_edges:
+                    del boundary_edges[edge]
+                else:
+                    boundary_edges[edge] = (pol_id, side)
+        
+        layer = QgsVectorLayer("LineString", "boundary_edges", "memory")
+        layer.setCrs(bc_layer.crs())
+        provider = layer.dataProvider()
+
+        fields = QgsFields()
+        fields.append(QgsField("pol_id", QVariant.String))
+        fields.append(QgsField("side", QVariant.Int))
+        provider.addAttributes(fields)
+        layer.updateFields()
+
+        features = []
+        for edge, (pol_id, side) in boundary_edges.items():
+            coords = [mesh["vertices"][vert]["coordinates"] for vert in edge]
+            feature = QgsFeature()
+            feature.setGeometry(QgsGeometry.fromPolyline([QgsPoint(*coord) for coord in coords]))
+            feature.setAttributes([pol_id, side])
+            features.append(feature)
+        provider.addFeatures(features)
+        layer.updateExtents()
+
+        QgsProject.instance().addMapLayer(layer)
             
 
     def _set_current_scenario(self):

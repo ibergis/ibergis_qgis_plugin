@@ -1,3 +1,6 @@
+import io
+
+
 def dump():
     pass
 
@@ -116,5 +119,7 @@ def load(mesh_fp, roof_fp=None):
     return mesh
 
 
-def loads():
-    pass
+def loads(mesh_string, roof_string=None):
+    mesh_file = io.StringIO(mesh_string)
+    roof_file = io.StringIO(roof_string) if roof_string else None
+    return load(mesh_file, roof_file)
