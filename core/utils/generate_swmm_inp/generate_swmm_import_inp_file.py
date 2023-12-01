@@ -99,7 +99,8 @@ def inp2dict(readfile, feedback):
         df_options_converted = convert_options_format_for_import(
             df_options, import_parameters_dict, feedback
         )
-        dict_res_table["OPTIONS"] = {"OPTIONS": df_options_converted}
+        # dict_res_table["OPTIONS"] = {"OPTIONS": df_options_converted}
+        dict_res_table["OPTIONS"] = {"data": df_options_converted}
 
     if feedback.isCanceled():
         return
@@ -137,7 +138,8 @@ def inp2dict(readfile, feedback):
         "Hydrographs": df_hydrographs,
         "RDII": df_rdii,
     }
-    dict_res_table["INFLOWS"] = dict_inflows
+    # dict_res_table["INFLOWS"] = dict_inflows
+    dict_res_table["INFLOWS"] = {"data": dict_inflows}
 
     pattern_types = list(def_tables_dict["PATTERNS"]["tables"].keys())
     pattern_cols = {
@@ -185,7 +187,7 @@ def inp2dict(readfile, feedback):
             )
             all_patterns = all_patterns.join(occuring_patterns_types, on="Name")
             all_patterns = {
-                k: v.iloc[:, :-1] for k, v in all_patterns.groupby("PatternType")
+                'data': v.iloc[:, :-1] for k, v in all_patterns.groupby("PatternType")
             }
     else:
         all_patterns = dict()
@@ -222,7 +224,8 @@ def inp2dict(readfile, feedback):
             all_patterns[pattern_type] = build_df_from_vals_list(
                 [], pattern_cols[pattern_type]
             )
-    dict_res_table["PATTERNS"] = all_patterns
+    # dict_res_table["PATTERNS"] = all_patterns
+    dict_res_table["PATTERNS"] = {"data": all_patterns}
 
     if feedback.isCanceled():
         return
@@ -249,7 +252,8 @@ def inp2dict(readfile, feedback):
         all_curves["XVal"] = [float(x) for x in all_curves["XVal"]]
         all_curves["YVal"] = [float(x) for x in all_curves["YVal"]]
         all_curves = {
-            k: v[["Name", "XVal", "YVal"]] for k, v in all_curves.groupby("CurveType")
+            'data': v[["Name", "XVal", "YVal"]] for k, v in all_curves.groupby("CurveType")
+            # k: v[["Name", "XVal", "YVal"]] for k, v in all_curves.groupby("CurveType")
         }
     else:
         all_curves = dict()
@@ -260,6 +264,7 @@ def inp2dict(readfile, feedback):
             all_curves[curve_type] = build_df_from_vals_list(
                 [], curve_cols_dict[curve_type]
             )
+
     dict_res_table["CURVES"] = all_curves
 
     if feedback.isCanceled():
@@ -311,7 +316,8 @@ def inp2dict(readfile, feedback):
     del all_quality["BUILDUP"]
     del all_quality["WASHOFF"]
     all_quality = {
-        k: adjust_column_types(v, def_tables_dict["QUALITY"]["tables"][k])
+        # k: adjust_column_types(v, def_tables_dict["QUALITY"]["tables"][k])
+        'data': adjust_column_types(v, def_tables_dict["QUALITY"]["tables"][k])
         for k, v in all_quality.items()
     }
     dict_res_table["QUALITY"] = all_quality
@@ -335,7 +341,8 @@ def inp2dict(readfile, feedback):
         all_time_series = build_df_from_vals_list([], list(ts_cols_dict.keys()))
     # all_time_series = all_time_series.fillna('')
     all_time_series = adjust_column_types(all_time_series, ts_cols_dict)
-    dict_res_table["TIMESERIES"] = {"TIMESERIES": all_time_series}
+    # dict_res_table["TIMESERIES"] = {"TIMESERIES": all_time_series}
+    dict_res_table["TIMESERIES"] = {"data": all_time_series}
 
     if feedback.isCanceled():
         return
@@ -443,7 +450,8 @@ def inp2dict(readfile, feedback):
                 "ModifierMeander",
             ]
         ]  # order of columns according to swmm interface
-        transects_dict = {"Data": all_tr_dats_df, "XSections": all_tr_vals_df}
+        # transects_dict = {"Data": all_tr_dats_df, "XSections": all_tr_vals_df}
+        transects_dict = {"data": all_tr_dats_df, "XSections": all_tr_vals_df}
         feedback.setProgress(95)
         dict_res_table["TRANSECTS"] = transects_dict
         feedback.setProgress(100)
