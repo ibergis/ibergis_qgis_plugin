@@ -19,6 +19,7 @@ class GwCreateBCFromPolygon(GwAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
         self.layers = {"ground": None, "roof": None, "boundary_conditions": None}
+        self.action.setCheckable(True)
 
     def clicked_event(self):
         # Get ground, roof and boundary_condition layers
@@ -40,6 +41,7 @@ class GwCreateBCFromPolygon(GwAction):
         self.feature_identifier = QgsMapToolIdentifyFeature(canvas)
         self.feature_identifier.setLayer(self.layers["ground"])
         self.feature_identifier.featureIdentified.connect(self._get_feature_boundary)
+        canvas.mapToolSet.connect(self._uncheck)
         canvas.setMapTool(self.feature_identifier)
 
     def _get_feature_boundary(self, feature):
@@ -69,3 +71,9 @@ class GwCreateBCFromPolygon(GwAction):
         bc_layer.startEditing()
         bc_layer.addFeature(feat)
         iface.openFeatureForm(self.layers["boundary_conditions"], feat)
+
+    def _uncheck(self, old_tool):
+        canvas = iface.mapCanvas()
+        if canvas.mapTool() != self.feature_identifier:
+            self.action.setChecked(False)
+            canvas.mapToolSet.disconnect(self._uncheck)
