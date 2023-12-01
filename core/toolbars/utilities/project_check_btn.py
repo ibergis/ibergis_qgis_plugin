@@ -12,14 +12,14 @@ from datetime import timedelta
 
 from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
-from qgis.PyQt.QtWidgets import QLabel
+from qgis.PyQt.QtWidgets import QLabel, QTextEdit
 
 from ..dialog import GwAction
 from ...threads.project_check import GwProjectCheckTask
 from ...ui.ui_manager import GwProjectCheckUi
 
 from ...utils import tools_gw
-from ....lib import tools_qgis
+from ....lib import tools_qgis, tools_qt
 
 
 class GwProjectCheckButton(GwAction):
@@ -52,8 +52,18 @@ class GwProjectCheckButton(GwAction):
 
         params = {"layers": layers, "init_project": "false", "dialog": self.dlg_audit_project}
         self.project_check_task = GwProjectCheckTask('check_project', params, timer=self.timer)
+        self.project_check_task.progressUpdate.connect(partial(self._progress_update, self.dlg_audit_project))
         QgsApplication.taskManager().addTask(self.project_check_task)
         QgsApplication.taskManager().triggerTask(self.project_check_task)
+
+
+    def _progress_update(self, dialog, text):
+        txt_infolog = dialog.findChild(QTextEdit, 'txt_infolog')
+        cur_text = tools_qt.get_text(self.dlg_audit_project, txt_infolog, return_string_null=False)
+        text = f"{cur_text}{text}"
+        txt_infolog.setText(text)
+        txt_infolog.show()
+        # tools_qt.set_widget_text(self.dlg_audit_project, txt_infolog, text)
 
 
     def _open_dialog(self):

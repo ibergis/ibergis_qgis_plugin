@@ -25,6 +25,7 @@ from ...lib import tools_qgis, tools_log, tools_qt, tools_os
 class GwProjectCheckTask(GwTask):
 
     task_finished = pyqtSignal(list)
+    progressUpdate = pyqtSignal(str)
 
     def __init__(self, description='', params=None, timer=None):
 
@@ -96,10 +97,31 @@ class GwProjectCheckTask(GwTask):
     # region private functions
 
 
+    def _get_project_feature_count(self, layers_to_check=None):
+        # Initialize a variable to store the total feature count
+        if layers_to_check is None:
+            layers_to_check = []
+        total_feature_count = 0
+        layers = tools_qgis.get_project_layers()
+
+        # Iterate through each layer
+        for layer in layers:
+            if layers_to_check and tools_qgis.get_tablename_from_layer(layer) not in layers_to_check:
+                continue
+            # Check if the layer is valid and has features
+            if layer.isValid() and layer.featureCount() > 0:
+                # Add the feature count of the layer to the total count
+                total_feature_count += layer.featureCount()
+
+        self.total_feature_count = total_feature_count
+
+
     def _check_topology(self, layers):
         """ Checks if there are node on top of eachother """
 
         try:
+            update_text = 'Check topology process'
+            self.progressUpdate.emit(update_text)
             node_layers_to_check = ['inp_storage', 'inp_outfall', 'inp_junction', 'inp_divider']
             node_layers = [tools_qgis.get_layer_by_tablename(lyr) for lyr in node_layers_to_check]
             node_layers = [lyr for lyr in node_layers if lyr is not None]
@@ -115,12 +137,31 @@ class GwProjectCheckTask(GwTask):
             polygon_layers = [lyr for lyr in polygon_layers if lyr is not None]
 
             layers_to_check = node_layers_to_check + arc_layers_to_check + polygon_layers_to_check
+            # Get total number of features to provide accurate progress feedback
+            # TODO: this might take a while (3-10 seconds) depending on the size & speed of the data source.
+            #  Maybe this could be turned on/off
+            self._get_project_feature_count(layers_to_check)
 
+            progress_step = self.total_feature_count // 20  # 5% increments (20 steps)
+            aux_progress_step = self.total_feature_count // 4  # 25% increments (4 steps)
+            n = 0
             for layer in layers:
                 if tools_qgis.get_tablename_from_layer(layer) not in layers_to_check:
                     continue
 
                 for feature in layer.getFeatures():
+                    n += 1
+                    progress_percent = (n / self.total_feature_count) * 100
+                    # Give feedback
+                    if n % progress_step == 0:
+                        update_text = '.'
+                        self.progressUpdate.emit(update_text)
+                    if n % aux_progress_step == 0:
+                        update_text = f"{int(progress_percent)}%"
+                        self.progressUpdate.emit(update_text)
+                    if n >= self.total_feature_count:
+                        update_text = "100%"
+                        self.progressUpdate.emit(update_text)
                     feature_geom = feature.geometry()
                     # Lines
                     if feature_geom.type() == QgsWkbTypes.LineGeometry:
@@ -169,7 +210,8 @@ class GwProjectCheckTask(GwTask):
         if not self.log_messages:
             txt_log = f"{txt_log}Everything OK!\n"
 
-        tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', txt_log)
+        cur_text = tools_qt.get_text(self.dlg_audit_project, 'txt_infolog')
+        tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', f"{cur_text}\n\n{txt_log}")
         tools_qt.hide_void_groupbox(self.dlg_audit_project)
 
         # Add temporal layers if needed
