@@ -59,6 +59,13 @@ CREATE TABLE cat_bscenario (
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
 
+CREATE TABLE cat_file (
+    id integer primary key,
+    name text check (typeof(name)='text' OR name=NULL),
+    file_name text null,
+    conent text null
+);
+
 CREATE TABLE cat_landuses (
 	id integer primary key,
 	idval text unique check (typeof(idval)='text') NOT NULL,

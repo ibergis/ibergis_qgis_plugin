@@ -16,6 +16,7 @@ CREATE TRIGGER "trigger_delete_feature_count_config_param_user" AFTER DELETE ON 
 CREATE TRIGGER "trigger_delete_feature_count_config_csv" AFTER DELETE ON "config_csv" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_csv'); END;
 CREATE TRIGGER "trigger_delete_feature_count_config_typevalue" AFTER DELETE ON "config_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_typevalue'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_bscenario" AFTER DELETE ON "cat_bscenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_bscenario'); END;
+CREATE TRIGGER "trigger_delete_feature_count_cat_file" AFTER DELETE ON "cat_file" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_file'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_arc" AFTER DELETE ON "cat_arc" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_arc'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_transects" AFTER DELETE ON "cat_transects" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_transects'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_curve" AFTER DELETE ON "cat_curve" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_curve'); END;
@@ -129,6 +130,7 @@ CREATE TRIGGER "trigger_insert_feature_count_config_param_user" AFTER INSERT ON 
 CREATE TRIGGER "trigger_insert_feature_count_config_csv" AFTER INSERT ON "config_csv" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('config_csv'); END;
 CREATE TRIGGER "trigger_insert_feature_count_config_typevalue" AFTER INSERT ON "config_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('config_typevalue'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_bscenario" AFTER INSERT ON "cat_bscenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_bscenario'); END;
+CREATE TRIGGER "trigger_insert_feature_count_cat_file" AFTER INSERT ON "cat_file" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_file'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_arc" AFTER INSERT ON "cat_arc" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_arc'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_transects" AFTER INSERT ON "cat_transects" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_transects'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_curve" AFTER INSERT ON "cat_curve" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_curve'); END;

@@ -55,6 +55,7 @@ insert into tables_nogeom (table_name) values
 ('config_csv'),
 ('config_typevalue'),
 ('cat_bscenario'),
+('cat_file'),
 ('cat_arc'),
 ('cat_transects'),
 ('cat_curve'),
