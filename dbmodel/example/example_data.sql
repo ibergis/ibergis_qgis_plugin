@@ -9,11 +9,7 @@ This version of Giswater is provided by Giswater Association
 -- ---------
 -- SELECTORS
 -- ---------
-INSERT INTO selector_sector (sector_id) VALUES(1);
-INSERT INTO selector_sector (sector_id) VALUES(2);
 
-INSERT INTO selector_scenario (scenario_id) VALUES(1);
-INSERT INTO selector_scenario (scenario_id) VALUES(3);
 
 -- ----------
 -- CONFIG_CSV

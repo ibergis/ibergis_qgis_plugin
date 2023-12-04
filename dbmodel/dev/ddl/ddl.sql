@@ -38,10 +38,6 @@ create table config_typevalue (
 -- SELECTORS
 -- ---------
 
-CREATE TABLE selector_sector (
-    sector_id integer primary key
-);
-
 CREATE TABLE selector_scenario (
     scenario_id integer primary key
 );
