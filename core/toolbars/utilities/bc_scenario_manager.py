@@ -2,7 +2,7 @@ from functools import partial
 from itertools import chain, tee
 from pathlib import Path
 
-from qgis.core import QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsField, QgsFields, QgsProject
+from qgis.core import QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsField, QgsFields, QgsProject, QgsProcessingContext, QgsProcessingFeedback
 from qgis.PyQt.QtCore import QVariant
 from qgis.PyQt.QtWidgets import QAbstractItemView, QFileDialog, QTableView, QLineEdit, QComboBox
 from qgis.PyQt.QtSql import QSqlTableModel
@@ -11,6 +11,7 @@ from ..dialog import GwAction
 from ...ui.ui_manager import GwBCScenarioManagerUi, GwBCScenarioUi
 from ....lib import tools_qgis, tools_qt, tools_db
 from ...utils import tools_gw, mesh_parser
+from ...utils.join_boundaries import SetBoundaryConditonsToMeshBoundaries
 from .... import global_vars
 
 
@@ -233,7 +234,22 @@ class GwBCScenarioManagerButton(GwAction):
         provider.addFeatures(features)
         layer.updateExtents()
 
-        QgsProject.instance().addMapLayer(layer)
+        # Get geometry of the boundary
+        get_boundary_conditions = SetBoundaryConditonsToMeshBoundaries()
+        get_boundary_conditions.initAlgorithm()
+        params = {
+            "boundary_conditions": bc_layer,
+            "bc_scenario": idval,
+            "mesh_boundaries": layer,
+            "Mesh_boundary_conditions": "TEMPORARY_OUTPUT",
+        }
+        context = QgsProcessingContext()
+        feedback = QgsProcessingFeedback()
+        results = get_boundary_conditions.processAlgorithm(params, context, feedback)
+        result_layer = context.getMapLayer(results["Mesh_boundary_conditions"])
+        QgsProject.instance().addMapLayer(result_layer)
+        
+        # TODO: Handle empty results
             
 
     def _set_current_scenario(self):
