@@ -18,7 +18,8 @@ except ImportError:
     scipy_imported = False
 
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTableWidget, QTableWidgetItem, QSizePolicy, QLineEdit, \
-    QGridLayout, QComboBox
+    QGridLayout, QComboBox, QApplication, QShortcut
+from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
 from ..ui.ui_manager import GwNonVisualManagerUi, GwNonVisualControlsUi, GwNonVisualCurveUi, GwNonVisualPatternUDUi, \
@@ -1637,6 +1638,9 @@ class GwNonVisual:
         cmb_times_type = self.dialog.cmb_times_type
         tbl_timeseries_value = self.dialog.tbl_timeseries_value
 
+        paste_shortcut = QShortcut(QKeySequence.Paste, tbl_timeseries_value)
+        paste_shortcut.activated.connect(partial(self._paste_timeseries_values, tbl_timeseries_value))
+
         # Populate combobox
         self._populate_timeser_combos(cmb_times_type, cmb_timeser_type)
 
@@ -1662,6 +1666,26 @@ class GwNonVisual:
 
         # Open dialog
         tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_timeseries')
+
+
+    def _paste_timeseries_values(self, tbl_timeseries_value):
+        selected = tbl_timeseries_value.selectedRanges()
+        if not selected:
+            return
+
+        text = QApplication.clipboard().text()
+        rows = text.split("\n")
+
+        times_type = tools_qt.get_combo_value(self.dialog, self.dialog.cmb_times_type)
+        for r, row in enumerate(rows):
+            columns = row.split("\t")
+            for c, value in enumerate(columns):
+                item = QTableWidgetItem(value)
+                row_pos = selected[0].topRow() + r
+                col_pos = selected[0].leftColumn() + c
+                if times_type == 'RELATIVE':
+                    col_pos += 1
+                tbl_timeseries_value.setItem(row_pos, col_pos, item)
 
 
     def _populate_timeser_combos(self, cmb_times_type, cmb_timeser_type):

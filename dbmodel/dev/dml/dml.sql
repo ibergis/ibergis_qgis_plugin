@@ -18,7 +18,6 @@ INSERT INTO gpkg_spatial_ref_sys (srs_name, srs_id, organization, organization_c
 -- ---------------------------
 
 INSERT INTO tables_geom (table_name, isgeom) values
-('sector', 'MULTIPOLYGON'),
 ('ground', 'MULTIPOLYGON'),
 ('ground_roughness', 'MULTIPOLYGON'),
 ('ground_losses', 'MULTIPOLYGON'),
@@ -27,7 +26,7 @@ INSERT INTO tables_geom (table_name, isgeom) values
 ('mesh_roof', 'MULTIPOLYGON'),
 ('mesh_anchor_points', 'POINT'),
 ('mesh_anchor_lines', 'LINESTRING'),
-('boundary_conditions', 'LINESTRING'),
+('boundary_conditions', 'MULTILINESTRING'),
 ('link', 'LINESTRING'),
 ('gully', 'POINT'),
 ('inp_conduit', 'LINESTRING'),
@@ -49,12 +48,11 @@ INSERT INTO tables_geom (table_name, isgeom) values
 
 
 insert into tables_nogeom (table_name) values
-('selector_sector'),
-('selector_scenario'),
 ('config_param_user'),
 ('config_csv'),
 ('config_typevalue'),
 ('cat_bscenario'),
+('cat_file'),
 ('cat_arc'),
 ('cat_transects'),
 ('cat_curve'),

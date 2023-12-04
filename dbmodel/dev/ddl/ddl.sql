@@ -59,6 +59,13 @@ CREATE TABLE cat_bscenario (
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
 
+CREATE TABLE cat_file (
+    id integer primary key,
+    name text check (typeof(name)='text' OR name=NULL),
+    file_name text null,
+    conent text null
+);
+
 CREATE TABLE cat_landuses (
 	id integer primary key,
 	idval text unique check (typeof(idval)='text') NOT NULL,
@@ -636,7 +643,7 @@ create table inp_inflow (
 
 create table boundary_conditions (
     fid integer primary key,
-    code text UNIQUE check (typeof(code) = 'text' or code = null),
+    code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     tin_id text check (typeof(tin_id) = 'text' or tin_id=null),
     edge_id text check (typeof(edge_id) = 'text' or edge_id=null),

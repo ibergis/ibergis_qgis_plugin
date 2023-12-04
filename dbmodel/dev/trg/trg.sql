@@ -16,6 +16,7 @@ CREATE TRIGGER "trigger_delete_feature_count_config_param_user" AFTER DELETE ON 
 CREATE TRIGGER "trigger_delete_feature_count_config_csv" AFTER DELETE ON "config_csv" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_csv'); END;
 CREATE TRIGGER "trigger_delete_feature_count_config_typevalue" AFTER DELETE ON "config_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_typevalue'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_bscenario" AFTER DELETE ON "cat_bscenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_bscenario'); END;
+CREATE TRIGGER "trigger_delete_feature_count_cat_file" AFTER DELETE ON "cat_file" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_file'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_arc" AFTER DELETE ON "cat_arc" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_arc'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_transects" AFTER DELETE ON "cat_transects" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_transects'); END;
 CREATE TRIGGER "trigger_delete_feature_count_cat_curve" AFTER DELETE ON "cat_curve" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('cat_curve'); END;
@@ -129,6 +130,7 @@ CREATE TRIGGER "trigger_insert_feature_count_config_param_user" AFTER INSERT ON 
 CREATE TRIGGER "trigger_insert_feature_count_config_csv" AFTER INSERT ON "config_csv" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('config_csv'); END;
 CREATE TRIGGER "trigger_insert_feature_count_config_typevalue" AFTER INSERT ON "config_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('config_typevalue'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_bscenario" AFTER INSERT ON "cat_bscenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_bscenario'); END;
+CREATE TRIGGER "trigger_insert_feature_count_cat_file" AFTER INSERT ON "cat_file" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_file'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_arc" AFTER INSERT ON "cat_arc" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_arc'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_transects" AFTER INSERT ON "cat_transects" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_transects'); END;
 CREATE TRIGGER "trigger_insert_feature_count_cat_curve" AFTER INSERT ON "cat_curve" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('cat_curve'); END;
@@ -393,18 +395,18 @@ CREATE TRIGGER "rtree_inp_inflow_geom_update4" AFTER UPDATE ON "inp_inflow" WHEN
 -- TRIGGERS TO CREATE AN AUTOINDEX FOR EACH ELEMENT
 -- ------------------------------------------------
 create trigger "trigger_update_subc_id_inp_subcatchment" after insert on "inp_subcatchment" BEGIN update inp_subcatchment set subc_id = 'H'||fid; END;
-create trigger "trigger_update_rg_id_id_inp_raingage" after insert on "inp_raingage" BEGIN update inp_raingage set rg_id = 'RG'||fid; END;
+create trigger "trigger_update_rg_id_inp_raingage" after insert on "inp_raingage" BEGIN update inp_raingage set rg_id = 'RG'||fid; END;
 
 create trigger "trigger_update_arc_id_inp_outlet" after insert on "inp_outlet" BEGIN update inp_outlet set arc_id = 'T'||fid; END;
 create trigger "trigger_update_arc_id_inp_weir" after insert on "inp_weir" BEGIN update inp_weir set arc_id = 'W'||fid; END;
 create trigger "trigger_update_arc_id_inp_orifice" after insert on "inp_orifice" BEGIN update inp_orifice set arc_id = 'R'||fid; END;
 create trigger "trigger_update_arc_id_inp_pump" after insert on "inp_pump" BEGIN update inp_pump set arc_id = 'P'||fid; END;
 create trigger "trigger_update_arc_id_inp_conduit" after insert on "inp_conduit" BEGIN update inp_conduit set arc_id = 'C'||fid; END;
-
 create trigger "trigger_update_node_id_inp_storage" after insert on "inp_storage" BEGIN update inp_storage set node_id = 'S'||fid; END;
 create trigger "trigger_update_node_id_inp_junction" after insert on "inp_junction" BEGIN update inp_junction set node_id = 'J'||fid; END;
 create trigger "trigger_update_node_id_inp_outfall" after insert on "inp_outfall" BEGIN update inp_outfall set node_id = 'O'||fid; END;
 create trigger "trigger_update_node_id_inp_divider" after insert on "inp_divider" BEGIN update inp_divider set node_id = 'D'||fid; END;
+
 
 
 

@@ -349,28 +349,55 @@ _tables = (
 
 def get_dataframe(data, scenario_id, table_info, columns, epsg):
     mapper = table_info["mapper"]
-    df = data.rename(columns=mapper).applymap(null2none)
-    gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
-    gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
-    gdf["scenario_id"] = scenario_id
-    missing_columns = columns - set(gdf.columns)
-    for column in missing_columns:
-        gdf[column] = None
-    return gdf
+    gdf = None
 
+    ##TODO: Check this
+    if type(data) not in (dict, list):
+        print(f"DATA IF  -------------------- {data}")
+        df = data.rename(columns=mapper).applymap(null2none)
+        if 'geometry' not in df:
+            return None
+        gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
+        gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
+        gdf["scenario_id"] = scenario_id
+        missing_columns = columns - set(gdf.columns)
+        for column in missing_columns:
+            gdf[column] = None
+
+    else:
+        print(f"DATA ELSE -------------------- {data}")
+        return
+        for key in data:
+            # print(f"KEY -> {key}")
+            # print(f"data_frame -> {data[key]}")
+
+            df = data[key].rename(columns=mapper).applymap(null2none)
+            if 'geometry' not in df:
+                return None
+            gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
+            gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
+            gdf["scenario_id"] = scenario_id
+            missing_columns = columns - set(gdf.columns)
+            for column in missing_columns:
+                gdf[column] = None
+
+    return gdf
 
 def get_dataframes(dicts, scenario_id, columns, epsg):
     dict_all, dict_text_tables = dicts
     dataframes = []
+
     for table in _tables:
         table_name = table["table_name"]
         section = table["section"]
+
         if section in dict_text_tables:
             the_dict = dict_text_tables
         elif section in dict_all:
             the_dict = dict_all
         else:
             continue
+
         df = get_dataframe(
             the_dict[section]["data"],
             scenario_id,
