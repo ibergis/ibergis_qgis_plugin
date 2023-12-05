@@ -157,4 +157,7 @@ def load(mesh_fp, roof_fp=None):
 def loads(mesh_string, roof_string=None):
     mesh_file = io.StringIO(mesh_string)
     roof_file = io.StringIO(roof_string) if roof_string else None
-    return load(mesh_file, roof_file)
+    mesh = load(mesh_file, roof_file)
+    mesh_file.close()
+    roof_file.close()
+    return mesh
