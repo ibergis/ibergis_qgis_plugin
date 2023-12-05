@@ -45,7 +45,7 @@ def dumps(mesh):
 
 
 def load(mesh_fp, roof_fp=None):
-    mesh = {"polygons": {}, "vertices": {}, "boundary_conditions": {}}
+    mesh = {"polygons": {}, "vertices": {}, "roofs": {}, "boundary_conditions": {}}
 
     section = ""
     for line in mesh_fp:
@@ -135,7 +135,37 @@ def load(mesh_fp, roof_fp=None):
             if not section:
                 continue
 
-            # TODO: process 'Roofs properties' section
+            # 'Roof properties' section
+            if section == "Roof properties":
+                tokens = line.split()
+
+                # skip lines that don't have 4 itens
+                if len(tokens) != 10:
+                    continue
+
+                (
+                    roof_name,
+                    fid,
+                    slope,
+                    width,
+                    roughness,
+                    isconnected,
+                    outlet_id,
+                    outlet_vol,
+                    street_vol,
+                    infiltr_vol,
+                ) = tokens
+                mesh["roofs"][fid] = {
+                    "name": roof_name,
+                    "slope": slope,
+                    "width": width,
+                    "roughness": roughness,
+                    "isconnected": isconnected,
+                    "outlet_id": outlet_id,
+                    "outlet_vol": outlet_vol,
+                    "street_vol": street_vol,
+                    "infiltr_vol": infiltr_vol,
+                }
 
             # 'Roof elements' section
             if section == "Roof elements":
