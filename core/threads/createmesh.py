@@ -34,6 +34,7 @@ class GwCreateMeshTask(GwTask):
         transition_extent,
         dem_layer,
         fill_roughness,
+        mesh_name,
         feedback=None,
     ):
         super().__init__(description)
@@ -44,6 +45,7 @@ class GwCreateMeshTask(GwTask):
         self.transition_extent = transition_extent
         self.dem_layer = dem_layer
         self.fill_roughness = fill_roughness
+        self.mesh_name = mesh_name
         self.feedback = feedback
 
     def cancel(self):
