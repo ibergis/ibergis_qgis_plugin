@@ -1,12 +1,47 @@
 import io
 
 
-def dump():
-    pass
+def dump(mesh, mesh_fp, roof_fp):
+    mesh_fp.write("MATRIU\n")
+    mesh_fp.write(f"  {len(mesh['triangles'])}\n")
+    for i, tri in mesh["triangles"].items():
+        v1, v2, v3, v4 = tri["vertice_ids"]
+        manning_number = 0.0180
+        mesh_fp.write(f"    {v1} {v2} {v3} {v4} {manning_number} {i}\n")
+    mesh_fp.write("VERTEXS\n")
+    mesh_fp.write(f"  {len(mesh['vertices'])}\n")
+    for i, v in mesh["vertices"].items():
+        x, y = v["coordinates"]
+        z = v["elevation"]
+        mesh_fp.write(f"    {x} {y} {z} {i}\n")
+
+    if not len(mesh["roofs"]):
+        return
+
+    roof_fp.write("Number of roofs\n")
+    roof_fp.write(str(len(mesh["roofs"])) + "\n")
+    roof_fp.write("Roofs properties\n")
+    for roof_id, roof in mesh["roofs"].items():
+        roof_fp.write(
+            f"{roof['name']} {roof_id} {roof['slope']} {roof['width']} "
+            f"{roof['roughness']} {roof['isconnected']} {roof['outlet_id']} "
+            f"{roof['outlet_vol']} {roof['street_vol']} {roof['infiltr_vol']}\n"
+        )
+    roof_fp.write("\nRoof elements\n")
+    for i, tri in mesh["triangles"].items():
+        if tri["category"] == "roof":
+            roof_fp.write(f"{i} {tri['roof_id']}\n")
 
 
-def dumps():
-    pass
+def dumps(mesh):
+    mesh_buffer = io.StringIO()
+    roof_buffer = io.StringIO()
+    dump(mesh, mesh_buffer, roof_buffer)
+    mesh_str = mesh_buffer.getvalue()
+    mesh_buffer.close()
+    roof_str = roof_buffer.getvalue()
+    roof_buffer.close()
+    return mesh_str, roof_str
 
 
 def load(mesh_fp, roof_fp=None):

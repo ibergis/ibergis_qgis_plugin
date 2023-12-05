@@ -10,7 +10,7 @@ from qgis.PyQt.QtWidgets import QFileDialog
 from ..dialog import GwAction
 from ...threads.createmesh import GwCreateMeshTask
 from ...ui.ui_manager import GwCreateMeshUi
-from ...utils import Feedback, tools_gw
+from ...utils import Feedback, tools_gw, mesh_parser
 from .... import global_vars
 from ....lib import tools_qt
 
@@ -187,66 +187,11 @@ class GwCreateMeshButton(GwAction):
 
         self.feedback.setProgressText("Saving mesh...")
 
-        with open(mesh_path, "w") as file:
-            file.write("MATRIU\n")
-            file.write(f"\t{len(self.thread_triangulation.mesh['triangles'])}\n")
-            for i, tri in self.thread_triangulation.mesh["triangles"].items():
-                v1, v2, v3, v4 = tri["vertice_ids"]
-                manning_number = 0.0180
-                file.write(
-                    f"\t\t{v1}\t\t{v2}\t\t{v3}\t\t{v4}\t\t{manning_number}\t\t{i}\n"
-                )
-            file.write("VERTEXS\n")
-            file.write(f"\t{len(self.thread_triangulation.mesh['vertices'])}\n")
-            for i, v in self.thread_triangulation.mesh["vertices"].items():
-                x, y = v["coordinates"]
-                z = v["elevation"]
-                file.write(f"\t\t{x}\t\t{y}\t\t{z}\t\t{i}\n")
-
         ROOF_FILE = "Iber_SWMM_roof.dat"
         roof_path = Path(folder_path) / ROOF_FILE
 
-        sql = """
-            SELECT
-                code,
-                fid,
-                slope,
-                width,
-                roughness,
-                isconnected,
-                outlet_id,
-                outlet_vol,
-                street_vol,
-                infiltr_vol
-            FROM roof
-        """
-        rows = self.dao.get_rows(sql)
-        if rows is not None:
-            with open(roof_path, "w") as file:
-                file.write("Number of roofs\n")
-                file.write(str(len(rows)) + "\n")
-                file.write("Roofs properties\n")
-                for row in rows:
-                    (
-                        code,
-                        fid,
-                        slope,
-                        width,
-                        roughness,
-                        isconnected,
-                        outlet_id,
-                        outlet_vol,
-                        street_vol,
-                        infiltr_vol,
-                    ) = row
-                    first_col = code or fid
-                    file.write(
-                        f"{first_col} {fid} {slope} {width} {roughness} {isconnected} {outlet_id} {outlet_vol} {street_vol} {infiltr_vol}\n"
-                    )
-                file.write("\nRoof elements\n")
-                for i, tri in self.thread_triangulation.mesh["triangles"].items():
-                    if tri["category"] == "roof":
-                        file.write(f"{i} {tri['roof_id']}\n")
+        with open(mesh_path, "w") as mesh_file, open(roof_path, "w") as roof_file:
+            mesh_parser.dump(self.thread_triangulation.mesh, mesh_file, roof_file)
 
         # Remove temp layer
         project = QgsProject.instance()

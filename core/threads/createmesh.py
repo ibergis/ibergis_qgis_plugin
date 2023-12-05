@@ -174,8 +174,46 @@ class GwCreateMeshTask(GwTask):
 
             self.mesh = core.create_mesh_dict(triangulations)
 
+            # Get roofs
+            self.feedback.setProgressText("Getting roof data...")
+            sql = """
+                SELECT 
+                    code, fid, slope, width, roughness, isconnected, outlet_id,
+                    outlet_vol, street_vol, infiltr_vol
+                FROM roof
+            """
+            rows = self.dao.get_rows(sql)
+            self.mesh["roofs"] = {}
+            if rows is not None:
+                for row in rows:
+                    (
+                        code,
+                        fid,
+                        slope,
+                        width,
+                        roughness,
+                        isconnected,
+                        outlet_id,
+                        outlet_vol,
+                        street_vol,
+                        infiltr_vol,
+                    ) = row
+                    roof_name = code or fid
+                    self.mesh["roofs"][fid] = {
+                        "name": roof_name,
+                        "slope": slope,
+                        "width": width,
+                        "roughness": roughness,
+                        "isconnected": isconnected,
+                        "outlet_id": outlet_id,
+                        "outlet_vol": outlet_vol,
+                        "street_vol": street_vol,
+                        "infiltr_vol": infiltr_vol,
+                    }
+
             # Get ground elevation
             self.feedback.setProgressText("Getting vertice elevations...")
+            # TODO: Fill roof elevations
             self.feedback.setProgress(40)
             if self.dem_layer is None:
                 for vertice in self.mesh["vertices"].values():
