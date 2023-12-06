@@ -77,16 +77,20 @@ class GwCreateMeshButton(GwAction):
         if mesh_name == "":
             tools_qt.show_info_box("Please, fill the name of the mesh.")
             return
-        
-        if not mesh_name.isalnum() and '-' not in mesh_name:
-            tools_qt.show_info_box("Only alphanumeric characters and hyphens are valid for the mesh name.")
+
+        if not mesh_name.isalnum() and "-" not in mesh_name:
+            tools_qt.show_info_box(
+                "Only alphanumeric characters and hyphens are valid for the mesh name."
+            )
             return
-        
+
         # Check for existent meshes in file
         sql = 'SELECT group_concat(name) as names FROM cat_file WHERE file_name = "Iber2D.dat"'
-        retrieved_meshes = self.dao.get_row(sql)
-        if retrieved_meshes is not None and mesh_name in retrieved_meshes["names"]:
-            message = "A mesh with the same name already exists. Do you want to overwrite it?"
+        retrieved_meshes = self.dao.get_row(sql)["names"]
+        if retrieved_meshes is not None and mesh_name in retrieved_meshes:
+            message = (
+                "A mesh with the same name already exists. Do you want to overwrite it?"
+            )
             if not tools_qt.show_question(message):
                 return
 
