@@ -18,6 +18,7 @@ from qgis.utils import iface
 from . import createmesh_core as core
 from .validatemesh import validate_input_layers, validate_gullies_in_triangles
 from .task import GwTask
+from ..utils import mesh_parser
 from ..utils.meshing_process import triangulate_custom
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt
@@ -251,6 +252,26 @@ class GwCreateMeshTask(GwTask):
                 for triangle_id, roughness in roughness_dict.items():
                     triangle = self.mesh["triangles"][triangle_id]
                     triangle["roughness"] = roughness
+
+            # Delete old mesh
+            self.feedback.setProgressText("Saving mesh to GPKG file...")
+            sql = f"""
+                DELETE FROM cat_file
+                WHERE name = '{self.mesh_name}'
+                    AND file_name IN ('Iber2D.dat', 'Iber_SWMM_roof.dat')
+            """
+            self.dao.execute_sql(sql)
+
+            # Save mesh
+            mesh_str, roof_str = mesh_parser.dumps(self.mesh)
+            # FIXME: content typo
+            sql = f"""
+                INSERT INTO cat_file (name, file_name, conent)
+                VALUES
+                    ('{self.mesh_name}', 'Iber2D.dat', '{mesh_str}'),
+                    ('{self.mesh_name}', 'Iber_SWMM_roof.dat', '{roof_str}')
+            """
+            self.dao.execute_sql(sql)
 
             # Create temp layer
             self.feedback.setProgressText("Creating temp layer for visualization...")
