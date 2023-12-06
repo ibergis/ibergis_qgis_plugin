@@ -35,7 +35,6 @@ class GwCreateMeshButton(GwAction):
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
-        dlg.btn_save.setVisible(False)
 
         # Fill raster layers combo
         project = QgsProject.instance()
@@ -111,7 +110,6 @@ class GwCreateMeshButton(GwAction):
 
         # Set signals
         dlg.btn_ok.setEnabled(False)
-        dlg.btn_save.setEnabled(False)
         dlg.btn_cancel.clicked.disconnect()
         dlg.btn_cancel.clicked.connect(thread.cancel)
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
@@ -136,9 +134,6 @@ class GwCreateMeshButton(GwAction):
     def _on_task_completed(self):
         self._on_task_end()
         dlg = self.dlg_mesh
-        dlg.btn_save.clicked.connect(self._save_mesh)
-        dlg.btn_save.setEnabled(True)
-        dlg.btn_save.setVisible(True)
         dlg.meshes_saved = False
 
     def _on_task_end(self):
@@ -166,44 +161,6 @@ class GwCreateMeshButton(GwAction):
         elapsed_time = time() - self.t0
         text = str(datetime.timedelta(seconds=round(elapsed_time)))
         self.dlg_mesh.lbl_timer.setText(text)
-
-    def _save_mesh(self):
-        self.dlg_mesh.btn_save.setEnabled(False)
-
-        project_folder = str(Path(self.dao.db_filepath).parent)
-        folder_path = QFileDialog.getExistingDirectory(
-            caption="Select folder",
-            directory=project_folder,
-        )
-
-        if not folder_path:
-            self.dlg_mesh.btn_save.setEnabled(True)
-            return
-
-        MESH_FILE = "Iber2D.dat"
-        mesh_path = Path(folder_path) / MESH_FILE
-
-        if mesh_path.exists() and not tools_qt.show_question(
-            "Do you want to overwrite the existing mesh files?"
-        ):
-            self.dlg_mesh.btn_save.setEnabled(True)
-            return
-
-        self.feedback.setProgressText("Saving mesh...")
-
-        ROOF_FILE = "Iber_SWMM_roof.dat"
-        roof_path = Path(folder_path) / ROOF_FILE
-
-        with open(mesh_path, "w") as mesh_file, open(roof_path, "w") as roof_file:
-            mesh_parser.dump(self.thread_triangulation.mesh, mesh_file, roof_file)
-
-        # Remove temp layer
-        project = QgsProject.instance()
-        for layer in project.mapLayersByName("Mesh Temp Layer"):
-            project.removeMapLayer(layer)
-
-        self.dlg_mesh.meshes_saved = True
-        self.feedback.setProgressText("Task finished!")
 
     def _set_progress_text(self, txt):
         tools_gw.fill_tab_log(
