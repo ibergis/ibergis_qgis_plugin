@@ -8,12 +8,11 @@ from ... import global_vars
 
 class GwImportInpTask(GwTask):
     def __init__(
-        self, description, input_file, gpkg_path, scenario_id, feedback
+        self, description, input_file, gpkg_path, feedback
     ):
         super().__init__(description)
         self.input_file = input_file
         self.gpkg_path = gpkg_path
-        self.scenario_id = scenario_id
         self.feedback = feedback
 
     def cancel(self):
@@ -41,7 +40,7 @@ class GwImportInpTask(GwTask):
             return False
         columns = {table: self._get_colums(table) for table in core.tables()}
         data = core.get_dataframes(
-            dicts, self.scenario_id, columns, global_vars.data_epsg
+            dicts, columns, global_vars.data_epsg
         )
         if self.isCanceled():
             return False

@@ -26,7 +26,6 @@ class GwImportINPButton(GwAction):
         dlg = self.dlg_import
 
         tools_gw.load_settings(dlg)
-        self._fill_combos()
         self._load_user_values()
         self._set_initial_signals()
         tools_gw.disable_tab_log(dlg)
@@ -42,7 +41,6 @@ class GwImportINPButton(GwAction):
             "Import INP file",
             self.input_file,
             global_vars.gpkg_dao_data.db_filepath,
-            self.scenario,
             self.feedback,
         )
 
@@ -64,17 +62,6 @@ class GwImportINPButton(GwAction):
         dlg.rejected.connect(self.timer.stop)
 
         QgsApplication.taskManager().addTask(self.thread)
-
-    def _fill_combos(self):
-
-        # Scenario
-        query = "SELECT DISTINCT id || ' - ' || idval, id FROM cat_scenario WHERE active = true"
-        rows = global_vars.gpkg_dao_data.get_rows(query)
-        if not rows:
-            message = "You need to have at least one active scenario before importing a INP file."
-            tools_qt.show_info_box(message)
-            return
-        tools_qt.fill_combo_values(self.dlg_import.cmb_scenario, rows, add_empty=True)
 
     def _get_file_dialog(self, widget):
         # Check if selected file exists. Set default value if necessary
@@ -173,11 +160,5 @@ class GwImportINPButton(GwAction):
             tools_qt.show_info_box("You should select an input INP file!")
             return False
 
-        scenario = tools_qt.get_combo_value(dlg, dlg.cmb_scenario, index=1)
-        if not scenario or scenario == -1:
-            tools_qt.show_info_box("You should select a scenario!")
-            return False
-
         self.input_file = input_file
-        self.scenario = scenario
         return True

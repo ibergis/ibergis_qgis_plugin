@@ -347,7 +347,7 @@ _tables = (
 )
 
 
-def get_dataframe(data, scenario_id, table_info, columns, epsg):
+def get_dataframe(data, table_info, columns, epsg):
     mapper = table_info["mapper"]
     gdf = None
 
@@ -359,7 +359,7 @@ def get_dataframe(data, scenario_id, table_info, columns, epsg):
             return None
         gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
         gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
-        gdf["scenario_id"] = scenario_id
+        # gdf["scenario_id"] = scenario_id
         missing_columns = columns - set(gdf.columns)
         for column in missing_columns:
             gdf[column] = None
@@ -376,14 +376,14 @@ def get_dataframe(data, scenario_id, table_info, columns, epsg):
                 return None
             gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
             gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
-            gdf["scenario_id"] = scenario_id
+            # gdf["scenario_id"] = scenario_id
             missing_columns = columns - set(gdf.columns)
             for column in missing_columns:
                 gdf[column] = None
 
     return gdf
 
-def get_dataframes(dicts, scenario_id, columns, epsg):
+def get_dataframes(dicts, columns, epsg):
     dict_all, dict_text_tables = dicts
     dataframes = []
 
@@ -400,7 +400,6 @@ def get_dataframes(dicts, scenario_id, columns, epsg):
 
         df = get_dataframe(
             the_dict[section]["data"],
-            scenario_id,
             table,
             columns[table_name],
             epsg,

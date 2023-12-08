@@ -11,7 +11,6 @@ This version of Giswater is provided by Giswater Association
 -- ---------------------------------
 
 CREATE TRIGGER "trigger_delete_feature_count_selector_scenario" AFTER DELETE ON "selector_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_scenario'); END;
-CREATE TRIGGER "trigger_delete_feature_count_selector_sector" AFTER DELETE ON "selector_sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('selector_sector'); END;
 CREATE TRIGGER "trigger_delete_feature_count_config_param_user" AFTER DELETE ON "config_param_user" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_param_user'); END;
 CREATE TRIGGER "trigger_delete_feature_count_config_csv" AFTER DELETE ON "config_csv" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_csv'); END;
 CREATE TRIGGER "trigger_delete_feature_count_config_typevalue" AFTER DELETE ON "config_typevalue" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('config_typevalue'); END;
@@ -124,7 +123,6 @@ CREATE TRIGGER "trigger_delete_feature_count_inp_dwf" AFTER DELETE ON "inp_dwf" 
 CREATE TRIGGER "trigger_delete_feature_count_inp_inflow" AFTER DELETE ON "inp_inflow" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('inp_inflow'); END;
 
 
-CREATE TRIGGER "trigger_insert_feature_count_selector_sector" AFTER INSERT ON "selector_sector" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_sector'); END;
 CREATE TRIGGER "trigger_insert_feature_count_selector_scenario" AFTER INSERT ON "selector_scenario" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('selector_scenario'); END;
 CREATE TRIGGER "trigger_insert_feature_count_config_param_user" AFTER INSERT ON "config_param_user" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('config_param_user'); END;
 CREATE TRIGGER "trigger_insert_feature_count_config_csv" AFTER INSERT ON "config_csv" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('config_csv'); END;
