@@ -4,11 +4,11 @@ from pathlib import Path
 
 from qgis.core import QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsField, QgsFields, QgsProject, QgsProcessingContext, QgsProcessingFeedback
 from qgis.PyQt.QtCore import QVariant
-from qgis.PyQt.QtWidgets import QAbstractItemView, QFileDialog, QTableView, QLineEdit, QComboBox
+from qgis.PyQt.QtWidgets import QAbstractItemView, QFileDialog, QTableView, QLineEdit, QComboBox, QDialogButtonBox
 from qgis.PyQt.QtSql import QSqlTableModel
 
 from ..dialog import GwAction
-from ...ui.ui_manager import GwBCScenarioManagerUi, GwBCScenarioUi
+from ...ui.ui_manager import GwBCScenarioManagerUi, GwBCScenarioUi, GwMeshSelectorUi
 from ....lib import tools_qgis, tools_qt, tools_db
 from ...utils import tools_gw, mesh_parser
 from ...utils.join_boundaries import SetBoundaryConditonsToMeshBoundaries
@@ -49,6 +49,7 @@ class GwBCScenarioManagerButton(GwAction):
         self.tablename_value = 'boundary_conditions'
         self.dlg_manager = None
         self.dlg_bc = None
+        self.dlg_ms = None
 
     def clicked_event(self):
         self.manage_bc_scenario()
@@ -157,100 +158,32 @@ class GwBCScenarioManagerButton(GwAction):
         if not col_idx:
             col_idx = 0
         idval = selected_list[0].sibling(selected_list[0].row(), col_idx).data()
-        bc_path = f"{dao.db_filepath}|layername=boundary_conditions|subset=code = '{idval}'"
-        bc_layer = QgsVectorLayer(bc_path, "boundary_conditions", "ogr")
-        # TODO: Handle empty scenarios
+        
+        # TODO: Check for empty scenarios
 
-        # Open mesh folder
-        project_folder = str(Path(dao.db_filepath).parent)
-        folder_path = QFileDialog.getExistingDirectory(
-            caption="Select folder",
-            directory=project_folder,
-        )
-
-        if not folder_path:
+        sql = "SELECT name FROM cat_file WHERE file_name = 'Iber2D.dat'"
+        rows = dao.get_rows(sql)
+        if not rows:
+            message = (
+                "No meshes found in GPKG file. Create a mesh with "
+                "Create Mesh button before saving the boundary conditions to it."
+            )
+            tools_qgis.show_warning(message, dialog=self.dlg_manager)
             return
 
-        MESH_FILE = "Iber2D.dat"
-        mesh_path = Path(folder_path) / MESH_FILE
+        self.dlg_ms = GwMeshSelectorUi()
+        dlg = self.dlg_ms
+        tools_gw.load_settings(dlg)
+        tools_gw.disable_tab_log(dlg)
+        dlg.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, dlg))
+        dlg.btn_ok.clicked.connect(partial(self._accept_save_to_mesh, idval))
+        set_ok_enabled = lambda x: dlg.btn_ok.setEnabled(bool(x))
+        dlg.cmb_mesh.currentTextChanged.connect(set_ok_enabled)
 
-        if not mesh_path.exists():
-            tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
-            return
+        mesh_names = [row[0] for row in rows]
+        tools_qt.fill_combo_box_list(None, dlg.cmb_mesh, mesh_names)
         
-        ROOF_FILE = "Iber_SWMM_roof.dat"
-        roof_path = Path(folder_path) / ROOF_FILE
-
-        # Parse mesh and check for preexistent boundary conditions
-        with open(mesh_path) as mesh_file:
-            mesh_str = mesh_file.read()
-
-        roof_str = None
-        if roof_path.exists():
-            with open(roof_path) as roof_file:
-                roof_str = roof_file.read()
-
-        mesh = mesh_parser.loads(mesh_str, roof_str)
-
-        if mesh["boundary_conditions"]:
-            message = "This process will override the boundary conditions of this mesh. Are you sure?"
-            answer = tools_qt.show_question(message, "Override boundary conditions")
-            if not answer:
-                return
-            
-        # Create a layer with mesh edges exclusive to only one polygon
-        boundary_edges = {}
-        for pol_id, pol in mesh["polygons"].items():
-            if pol["category"] != "ground":
-                continue
-            vert = pol["vertice_ids"]
-            # Add last and first vertices as a edge if they are distinct
-            last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
-            edges = chain(pairwise(vert), last_edge)
-            for side, verts in enumerate(edges, start=1):
-                edge = frozenset(verts)
-                if edge in boundary_edges:
-                    del boundary_edges[edge]
-                else:
-                    boundary_edges[edge] = (pol_id, side)
-        
-        layer = QgsVectorLayer("LineString", "boundary_edges", "memory")
-        layer.setCrs(bc_layer.crs())
-        provider = layer.dataProvider()
-
-        fields = QgsFields()
-        fields.append(QgsField("pol_id", QVariant.String))
-        fields.append(QgsField("side", QVariant.Int))
-        provider.addAttributes(fields)
-        layer.updateFields()
-
-        features = []
-        for edge, (pol_id, side) in boundary_edges.items():
-            coords = [mesh["vertices"][vert]["coordinates"] for vert in edge]
-            feature = QgsFeature()
-            feature.setGeometry(QgsGeometry.fromPolyline([QgsPoint(*coord) for coord in coords]))
-            feature.setAttributes([pol_id, side])
-            features.append(feature)
-        provider.addFeatures(features)
-        layer.updateExtents()
-
-        # Get geometry of the boundary
-        get_boundary_conditions = SetBoundaryConditonsToMeshBoundaries()
-        get_boundary_conditions.initAlgorithm()
-        params = {
-            "boundary_conditions": bc_layer,
-            "bc_scenario": idval,
-            "mesh_boundaries": layer,
-            "Mesh_boundary_conditions": "TEMPORARY_OUTPUT",
-        }
-        context = QgsProcessingContext()
-        feedback = QgsProcessingFeedback()
-        results = get_boundary_conditions.processAlgorithm(params, context, feedback)
-        result_layer = context.getMapLayer(results["Mesh_boundary_conditions"])
-        QgsProject.instance().addMapLayer(result_layer)
-        
-        # TODO: Handle empty results
-            
+        tools_gw.open_dialog(dlg)
 
     def _set_current_scenario(self):
         # Variables
@@ -550,5 +483,81 @@ class GwBCScenarioManagerButton(GwAction):
         global_vars.gpkg_dao_data.commit()
         tools_gw.close_dialog(self.dlg_bc)
         self._reload_manager_table()
+
+    def _accept_save_to_mesh(self, bcscenario):
+        mesh_name = self.dlg_ms.cmb_mesh.currentText()
+        dao = global_vars.gpkg_dao_data
+        db_file_path = dao.db_filepath
+        bc_path = f"{db_file_path}|layername=boundary_conditions|subset=code = '{bcscenario}'"
+        bc_layer = QgsVectorLayer(bc_path, "boundary_conditions", "ogr")
+
+        sql = f"SELECT conent FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber2D.dat'"
+        mesh_str = dao.get_row(sql)["conent"]
+
+        sql = f"SELECT conent FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber_SWMM_roof.dat'"
+        row = dao.get_row(sql)
+        roof_str = NotImplemented if row is None else row["conent"]
+        
+        # Parse mesh and check for preexistent boundary conditions
+        mesh = mesh_parser.loads(mesh_str, roof_str)
+
+        if mesh["boundary_conditions"]:
+            message = "This process will override the boundary conditions of this mesh. Are you sure?"
+            answer = tools_qt.show_question(message, "Override boundary conditions")
+            if not answer:
+                return
+            
+        # Create a layer with mesh edges exclusive to only one polygon
+        boundary_edges = {}
+        for pol_id, pol in mesh["polygons"].items():
+            if pol["category"] != "ground":
+                continue
+            vert = pol["vertice_ids"]
+            # Add last and first vertices as a edge if they are distinct
+            last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
+            edges = chain(pairwise(vert), last_edge)
+            for side, verts in enumerate(edges, start=1):
+                edge = frozenset(verts)
+                if edge in boundary_edges:
+                    del boundary_edges[edge]
+                else:
+                    boundary_edges[edge] = (pol_id, side)
+        
+        layer = QgsVectorLayer("LineString", "boundary_edges", "memory")
+        layer.setCrs(bc_layer.crs())
+        provider = layer.dataProvider()
+
+        fields = QgsFields()
+        fields.append(QgsField("pol_id", QVariant.String))
+        fields.append(QgsField("side", QVariant.Int))
+        provider.addAttributes(fields)
+        layer.updateFields()
+
+        features = []
+        for edge, (pol_id, side) in boundary_edges.items():
+            coords = [mesh["vertices"][vert]["coordinates"] for vert in edge]
+            feature = QgsFeature()
+            feature.setGeometry(QgsGeometry.fromPolyline([QgsPoint(*coord) for coord in coords]))
+            feature.setAttributes([pol_id, side])
+            features.append(feature)
+        provider.addFeatures(features)
+        layer.updateExtents()
+
+        # Get geometry of the boundary
+        get_boundary_conditions = SetBoundaryConditonsToMeshBoundaries()
+        get_boundary_conditions.initAlgorithm()
+        params = {
+            "boundary_conditions": bc_layer,
+            "bc_scenario": bcscenario,
+            "mesh_boundaries": layer,
+            "Mesh_boundary_conditions": "TEMPORARY_OUTPUT",
+        }
+        context = QgsProcessingContext()
+        feedback = QgsProcessingFeedback()
+        results = get_boundary_conditions.processAlgorithm(params, context, feedback)
+        result_layer = context.getMapLayer(results["Mesh_boundary_conditions"])
+        QgsProject.instance().addMapLayer(result_layer)
+        
+        # TODO: Handle empty results
 
     # endregion

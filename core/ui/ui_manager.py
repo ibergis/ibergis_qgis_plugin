@@ -74,6 +74,9 @@ class GwToolboxReportsUi(GwDialog, FORM_CLASS):
 FORM_CLASS = _get_ui_class('import_inp.ui', 'utilities')
 class GwImportInpUi(GwDialog, FORM_CLASS):
     pass
+FORM_CLASS = _get_ui_class('mesh_selector.ui', 'utilities')
+class GwMeshSelectorUi(GwDialog, FORM_CLASS):
+    pass
 FORM_CLASS = _get_ui_class('create_mesh.ui', 'utilities')
 class GwCreateMeshUi(GwDialog, FORM_CLASS):
     def __init__(self):
