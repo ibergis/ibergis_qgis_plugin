@@ -249,9 +249,9 @@ class GwCreateMeshTask(GwTask):
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
                     return False
-                for triangle_id, roughness in roughness_dict.items():
-                    triangle = self.mesh["triangles"][triangle_id]
-                    triangle["roughness"] = roughness
+                for polygon_id, roughness in roughness_dict.items():
+                    polygon = self.mesh["polygons"][polygon_id]
+                    polygon["roughness"] = roughness
 
             # Delete old mesh
             self.feedback.setProgressText("Saving mesh to GPKG file...")
@@ -290,7 +290,7 @@ class GwCreateMeshTask(GwTask):
             ]
             provider.addAttributes(fields)
             temp_layer.updateFields()
-            for i, tri in self.mesh["triangles"].items():
+            for i, tri in self.mesh["polygons"].items():
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
                     return False

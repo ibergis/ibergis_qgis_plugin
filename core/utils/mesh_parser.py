@@ -3,8 +3,8 @@ import io
 
 def dump(mesh, mesh_fp, roof_fp):
     mesh_fp.write("MATRIU\n")
-    mesh_fp.write(f"  {len(mesh['triangles'])}\n")
-    for i, tri in mesh["triangles"].items():
+    mesh_fp.write(f"  {len(mesh['polygons'])}\n")
+    for i, tri in mesh["polygons"].items():
         v1, v2, v3, v4 = tri["vertice_ids"]
         manning_number = 0.0180
         mesh_fp.write(f"    {v1} {v2} {v3} {v4} {manning_number} {i}\n")
@@ -14,6 +14,13 @@ def dump(mesh, mesh_fp, roof_fp):
         x, y = v["coordinates"]
         z = v["elevation"]
         mesh_fp.write(f"    {x} {y} {z} {i}\n")
+    mesh_fp.write("CONDICIONS INICIALS\n")
+    mesh_fp.write("CC: CONDICIONS CONTORN\n")
+    for (pol_id, side), value in mesh["boundary_conditions"].items():
+        # TODO: Handle BC cases
+        mesh_fp.write(
+            f"{pol_id} {side} 0      0 0 0 -40 1 1 0 1  -Salida en Critico/Rapido -\n"
+        )
 
     if not len(mesh["roofs"]):
         return
@@ -28,9 +35,9 @@ def dump(mesh, mesh_fp, roof_fp):
             f"{roof['outlet_vol']} {roof['street_vol']} {roof['infiltr_vol']}\n"
         )
     roof_fp.write("\nRoof elements\n")
-    for i, tri in mesh["triangles"].items():
-        if tri["category"] == "roof":
-            roof_fp.write(f"{i} {tri['roof_id']}\n")
+    for i, pol in mesh["polygons"].items():
+        if pol["category"] == "roof":
+            roof_fp.write(f"{i} {pol['roof_id']}\n")
 
 
 def dumps(mesh):
@@ -186,7 +193,7 @@ def load(mesh_fp, roof_fp=None):
 
 def loads(mesh_string, roof_string=None):
     mesh_file = io.StringIO(mesh_string)
-    roof_file = io.StringIO(roof_string) if roof_string else None
+    roof_file = io.StringIO(roof_string) if roof_string else io.StringIO("")
     mesh = load(mesh_file, roof_file)
     mesh_file.close()
     roof_file.close()

@@ -496,7 +496,7 @@ class GwBCScenarioManagerButton(GwAction):
 
         sql = f"SELECT conent FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber_SWMM_roof.dat'"
         row = dao.get_row(sql)
-        roof_str = NotImplemented if row is None else row["conent"]
+        roof_str = None if row is None else row["conent"]
         
         # Parse mesh and check for preexistent boundary conditions
         mesh = mesh_parser.loads(mesh_str, roof_str)
@@ -556,8 +556,33 @@ class GwBCScenarioManagerButton(GwAction):
         feedback = QgsProcessingFeedback()
         results = get_boundary_conditions.processAlgorithm(params, context, feedback)
         result_layer = context.getMapLayer(results["Mesh_boundary_conditions"])
-        QgsProject.instance().addMapLayer(result_layer)
         
         # TODO: Handle empty results
 
+        mesh["boundary_conditions"] = {}
+        for feature in result_layer.getFeatures():
+            # TODO handle bc cases
+            mesh["boundary_conditions"][(feature["pol_id"], feature["side"])] = ""
+        
+        new_mesh_str, new_roof_str = mesh_parser.dumps(mesh)
+
+        # Delete old mesh
+        sql = f"""
+            DELETE FROM cat_file
+            WHERE name = '{mesh_name}'
+                AND file_name IN ('Iber2D.dat', 'Iber_SWMM_roof.dat')
+        """
+        dao.execute_sql(sql)
+
+        # Save mesh
+        # FIXME: content typo
+        sql = f"""
+            INSERT INTO cat_file (name, file_name, conent)
+            VALUES
+                ('{mesh_name}', 'Iber2D.dat', '{new_mesh_str}')
+        """
+        if new_roof_str:
+            sql += f",('{mesh_name}', 'Iber_SWMM_roof.dat', '{new_roof_str}')"
+        dao.execute_sql(sql)
+        
     # endregion

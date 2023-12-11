@@ -4,16 +4,16 @@ from qgis.PyQt.QtCore import QVariant
 
 
 def create_mesh_dict(triangulations_list):
-    mesh = {"triangles": {}, "vertices": {}}
-    next_triangle_id = 1
+    mesh = {"polygons": {}, "vertices": {}, "boundary_conditions": {}}
+    next_polygon_id = 1
     next_vertice_id = 1
 
-    for triangles, vertices, metadata in triangulations_list:
-        for i, triangle in enumerate(triangles, start=next_triangle_id):
-            vertice_ids = [int(triangle[v] + next_vertice_id) for v in (0, 1, 2, 0)]
-            mesh["triangles"][i] = {"vertice_ids": vertice_ids}
-            mesh["triangles"][i].update(metadata)
-            next_triangle_id = i + 1
+    for polygons, vertices, metadata in triangulations_list:
+        for i, polygon in enumerate(polygons, start=next_polygon_id):
+            vertice_ids = [int(polygon[v] + next_vertice_id) for v in (0, 1, 2, 0)]
+            mesh["polygons"][i] = {"vertice_ids": vertice_ids}
+            mesh["polygons"][i].update(metadata)
+            next_polygon_id = i + 1
 
         for i, vertice in enumerate(vertices, start=next_vertice_id):
             mesh["vertices"][i] = {"coordinates": (vertice)}
@@ -84,26 +84,26 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
         return
     raster_layer = res["OUTPUT"]
 
-    # Get roughness for each ground triangle
+    # Get roughness for each ground polygon
     url = "Polygon?field=fid:integer&index=yes"
-    ground_triangles = QgsVectorLayer(url, "gt", "memory")
-    ground_triangles.setCrs(roughness_layer.crs())
-    for i, tri in mesh_dict["triangles"].items():
+    ground_polygons = QgsVectorLayer(url, "gt", "memory")
+    ground_polygons.setCrs(roughness_layer.crs())
+    for i, pol in mesh_dict["polygons"].items():
         if feedback.isCanceled():
             return
-        if tri["category"] == "ground":
+        if pol["category"] == "ground":
             feature = QgsFeature()
             polygon_points = [
                 QgsPointXY(*mesh_dict["vertices"][vert]["coordinates"])
-                for vert in tri["vertice_ids"]
+                for vert in pol["vertice_ids"]
             ]
             feature.setGeometry(QgsGeometry.fromPolygonXY([polygon_points]))
             feature.setAttributes([i])
-            ground_triangles.dataProvider().addFeature(feature)
-    ground_triangles.updateExtents()
+            ground_polygons.dataProvider().addFeature(feature)
+    ground_polygons.updateExtents()
     params = {
         "COLUMN_PREFIX": "_",
-        "INPUT": ground_triangles,
+        "INPUT": ground_polygons,
         "INPUT_RASTER": raster_layer,
         "OUTPUT": "TEMPORARY_OUTPUT",
         "RASTER_BAND": 1,
@@ -113,10 +113,10 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
     if feedback.isCanceled():
         return
     res_layer = res["OUTPUT"]
-    roughness_by_triangle = {
+    roughness_by_polygon = {
         ft["fid"]: round(ft["_majority"], 8) for ft in res_layer.getFeatures()
     }
-    return roughness_by_triangle
+    return roughness_by_polygon
 
 
 def triangulate_roof(roof_layer, feedback):
@@ -129,9 +129,9 @@ def triangulate_roof(roof_layer, feedback):
     for feature in res["OUTPUT"].getFeatures():
         geom = feature.geometry()
         vertices = [(v.x(), v.y()) for v in geom.vertices()]
-        triangles = [
-            [vertices.index((v.x(), v.y())) for v in triangle.vertices()]
-            for triangle in geom.asGeometryCollection()
+        polygons = [
+            [vertices.index((v.x(), v.y())) for v in polygon.vertices()]
+            for polygon in geom.asGeometryCollection()
         ]
         roof_metadata = {
             "category": "roof",
@@ -139,6 +139,6 @@ def triangulate_roof(roof_layer, feedback):
             "elevation": feature["elev"],
             "roughness": feature["roughness"],
         }
-        roof_meshes.append((triangles, vertices, roof_metadata))
+        roof_meshes.append((polygons, vertices, roof_metadata))
 
     return roof_meshes
