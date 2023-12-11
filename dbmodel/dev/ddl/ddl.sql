@@ -59,7 +59,7 @@ CREATE TABLE cat_file (
     id integer primary key,
     name text check (typeof(name)='text' OR name=NULL),
     file_name text null,
-    conent text null
+    content text null
 );
 
 CREATE TABLE cat_landuses (

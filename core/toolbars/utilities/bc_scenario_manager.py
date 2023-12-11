@@ -491,12 +491,12 @@ class GwBCScenarioManagerButton(GwAction):
         bc_path = f"{db_file_path}|layername=boundary_conditions|subset=code = '{bcscenario}'"
         bc_layer = QgsVectorLayer(bc_path, "boundary_conditions", "ogr")
 
-        sql = f"SELECT conent FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber2D.dat'"
-        mesh_str = dao.get_row(sql)["conent"]
+        sql = f"SELECT content FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber2D.dat'"
+        mesh_str = dao.get_row(sql)["content"]
 
-        sql = f"SELECT conent FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber_SWMM_roof.dat'"
+        sql = f"SELECT content FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber_SWMM_roof.dat'"
         row = dao.get_row(sql)
-        roof_str = None if row is None else row["conent"]
+        roof_str = None if row is None else row["content"]
         
         # Parse mesh and check for preexistent boundary conditions
         mesh = mesh_parser.loads(mesh_str, roof_str)
@@ -577,7 +577,7 @@ class GwBCScenarioManagerButton(GwAction):
         # Save mesh
         # FIXME: content typo
         sql = f"""
-            INSERT INTO cat_file (name, file_name, conent)
+            INSERT INTO cat_file (name, file_name, content)
             VALUES
                 ('{mesh_name}', 'Iber2D.dat', '{new_mesh_str}')
         """
