@@ -71,6 +71,10 @@ class GwProjectCheckButton(GwAction):
         # Create dialog
         self.dlg_audit_project = GwProjectCheckUi()
         tools_gw.load_settings(self.dlg_audit_project)
+
+        tools_qt.set_widget_enabled(self.dlg_audit_project, 'btn_accept', False)
+
+        self.dlg_audit_project.btn_accept.clicked.connect(self.dlg_audit_project.reject)
         self.dlg_audit_project.rejected.connect(partial(tools_gw.save_settings, self.dlg_audit_project))
 
         # Open dialog

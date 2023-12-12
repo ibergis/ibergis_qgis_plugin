@@ -62,6 +62,7 @@ class GwProjectCheckTask(GwTask):
 
         super().finished(result)
 
+        self.dlg_audit_project.btn_accept.setEnabled(True)
         self.dlg_audit_project.progressBar.setVisible(False)
         if self.timer:
             self.timer.stop()
@@ -87,6 +88,8 @@ class GwProjectCheckTask(GwTask):
     def check_project_execution(self, layers, init_project):
         """ Execute python functions to check the project """
 
+        update_text = "CHECK PROJECT\n--------------------\n\n"
+        self.progressUpdate.emit(update_text)
         # Check the network topology
         status, message = self._check_topology(layers)
         if not status:
@@ -198,7 +201,7 @@ class GwProjectCheckTask(GwTask):
         """ Show dialog with audit check project results """
 
         # Populate info_log
-        txt_log = "CHECK PROJECT RESULT\n--------------------\n\n"
+        txt_log = "\nRESULTS\n--------------------\n\n"
 
         if self.result != "Success":
             txt_log = f"{txt_log}Execution failed.\n{self.result}"
