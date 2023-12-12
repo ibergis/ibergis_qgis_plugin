@@ -264,11 +264,12 @@ class GwLoadProject(QObject):
 
                 while not successful and attempt < 10:
                     button_def = tools_gw.get_config_parser('buttons_def', str(index_action), "project", "drain")
+                    button_tooltip = tools_gw.get_config_parser('buttons_tooltip', str(index_action), "project", "drain")
                     
                     if button_def not in (None, 'None'):
                         # Check if the class associated to the button definition exists
                         if hasattr(buttons, button_def):
-                            text = tools_qt.tr(f'{button_def}')
+                            text = tools_qt.tr(f'{button_tooltip}')
                             icon_path = f"{icon_folder}{plugin_toolbar.toolbar_id}{os.sep}{index_action}.png"
                             button_class = getattr(buttons, button_def)
                             button = button_class(icon_path, button_def, text, plugin_toolbar.toolbar, ag)
