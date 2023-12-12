@@ -646,6 +646,7 @@ create table boundary_conditions (
     bscenario_id integer check (typeof(bscenario_id)='integer' or bscenario_id=null),
     boundary_type text check (typeof(boundary_type) = 'text' or boundary_type=null),
     mesh_id text check (typeof(mesh_id) = 'text' or mesh_id=null),
+    tin_id integer null,
     edge_id text check (typeof(edge_id) = 'text' or edge_id=null),
     geom geometry,
     FOREIGN KEY (bscenario_id) REFERENCES cat_bscenario(id) on update cascade
