@@ -125,7 +125,7 @@ class GwProjectCheckTask(GwTask):
             node_layers_to_check = ['inp_storage', 'inp_outfall', 'inp_junction', 'inp_divider']
             node_layers = [tools_qgis.get_layer_by_tablename(lyr) for lyr in node_layers_to_check]
             node_layers = [lyr for lyr in node_layers if lyr is not None]
-            node_buffer = 2
+            node_buffer = 0.05
 
             arc_layers_to_check = ['inp_outlet', 'inp_weir', 'inp_orifice', 'inp_pump', 'inp_conduit']
             arc_layers = [tools_qgis.get_layer_by_tablename(lyr) for lyr in arc_layers_to_check]
