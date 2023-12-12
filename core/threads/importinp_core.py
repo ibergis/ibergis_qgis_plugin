@@ -398,6 +398,10 @@ def get_dataframes(dicts, columns, epsg):
         else:
             continue
 
+        # TODO Handle CURVES section
+        if section == "CURVES":
+            continue
+
         df = get_dataframe(
             the_dict[section]["data"],
             table,
