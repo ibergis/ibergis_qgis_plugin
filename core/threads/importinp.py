@@ -44,24 +44,37 @@ class GwImportInpTask(GwTask):
         )
         if self.isCanceled():
             return False
-
+        
         for i, item in enumerate(data):
-
             self.feedback.setProgress(i / len(data) * 100)
-
-            ##TODO: Check this
-            if item["df"] is None:
-                continue
-
             if len(item["df"]) == 0:
                 self.feedback.setProgressText(f"Skipping empty table {item['table']}")
                 continue
             if self.isCanceled():
                 return False
+            if item['table'] in ('inp_conduit', 'inp_orifice', 'inp_outlet'):
+                continue
             self.feedback.setProgressText(f"Saving table {item['table']}")
-
-            ##TODO:: Verify conflicts with "mode"=a to append values
             item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
-            # item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"])
+
+
+        # for i, item in enumerate(data.values()):
+
+        #     self.feedback.setProgress(i / len(data) * 100)
+
+        #     ##TODO: Check this
+        #     if item["df"] is None:
+        #         continue
+
+        #     if len(item["df"]) == 0:
+        #         self.feedback.setProgressText(f"Skipping empty table {item['table']}")
+        #         continue
+        #     if self.isCanceled():
+        #         return False
+        #     self.feedback.setProgressText(f"Saving table {item['table']}")
+
+        #     ##TODO:: Verify conflicts with "mode"=a to append values
+        #     item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
+        #     # item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"])
 
         return True

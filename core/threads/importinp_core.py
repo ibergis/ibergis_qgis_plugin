@@ -42,7 +42,6 @@ _tables = (
             "Kavg": "kavg",
             "FlapGate": "flap",
             "Seepage": "seepage",
-            "Annotation": "annotation",
         },
     },
     {
@@ -130,8 +129,8 @@ _tables = (
         "section": "WEIRS",
         "mapper": {
             "Name": "code",
-            "FromNode": "node1",
-            "ToNode": "node2",
+            "FromNode": "node_1",
+            "ToNode": "node_2",
             "Type": "weir_type",
             # "CrestHeigh": "",
             "Qcoeff": "cd2",
@@ -349,59 +348,64 @@ _tables = (
 
 def get_dataframe(data, table_info, columns, epsg):
     mapper = table_info["mapper"]
-    gdf = None
-
-    ##TODO: Check this
-    if type(data) not in (dict, list):
-        print(f"DATA IF  -------------------- {data}")
-        df = data.rename(columns=mapper).applymap(null2none)
-        if 'geometry' not in df:
-            return None
-        gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
-        gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
-        # gdf["scenario_id"] = scenario_id
-        missing_columns = columns - set(gdf.columns)
-        for column in missing_columns:
-            gdf[column] = None
-
-    else:
-        print(f"DATA ELSE -------------------- {data}")
-        return
-        for key in data:
-            # print(f"KEY -> {key}")
-            # print(f"data_frame -> {data[key]}")
-
-            df = data[key].rename(columns=mapper).applymap(null2none)
-            if 'geometry' not in df:
-                return None
-            gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
-            gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
-            # gdf["scenario_id"] = scenario_id
-            missing_columns = columns - set(gdf.columns)
-            for column in missing_columns:
-                gdf[column] = None
-
+    df = data.rename(columns=mapper).applymap(null2none)
+    gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
+    gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
+    missing_columns = columns - set(gdf.columns)
+    for column in missing_columns:
+        gdf[column] = None
     return gdf
+
+    # mapper = table_info["mapper"]
+    # gdf = None
+
+    # ##TODO: Check this
+    # if type(data) not in (dict, list):
+    #     print(f"DATA IF  -------------------- {data}")
+    #     df = data.rename(columns=mapper).applymap(null2none)
+    #     if 'geometry' in df:
+    #         gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
+    #         gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
+    #     else:
+    #         gdf = df[mapper.values()]
+    #     missing_columns = columns - set(gdf.columns)
+    #     for column in missing_columns:
+    #         gdf[column] = None
+
+    # else:
+    #     print(f"DATA ELSE -------------------- {data}")
+    #     return
+    #     for key in data:
+    #         # print(f"KEY -> {key}")
+    #         # print(f"data_frame -> {data[key]}")
+
+    #         df = data[key].rename(columns=mapper).applymap(null2none)
+    #         if 'geometry' not in df:
+    #             return None
+    #         gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
+    #         gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
+    #         # gdf["scenario_id"] = scenario_id
+    #         missing_columns = columns - set(gdf.columns)
+    #         for column in missing_columns:
+    #             gdf[column] = None
+
+    # return gdf
 
 def get_dataframes(dicts, columns, epsg):
     dict_all, dict_text_tables = dicts
     dataframes = []
-
     for table in _tables:
         table_name = table["table_name"]
         section = table["section"]
-
         if section in dict_text_tables:
             the_dict = dict_text_tables
         elif section in dict_all:
             the_dict = dict_all
         else:
             continue
-
-        # TODO Handle CURVES section
-        if section == "CURVES":
+        data = the_dict[section]["data"]
+        if type(data) in (dict, list) or "geometry" not in data.columns:
             continue
-
         df = get_dataframe(
             the_dict[section]["data"],
             table,
@@ -410,6 +414,45 @@ def get_dataframes(dicts, columns, epsg):
         )
         dataframes.append({"table": table["table_name"], "df": df})
     return dataframes
+
+    # dict_all, dict_text_tables = dicts
+    # dataframes = {}
+
+    # for table in _tables:
+    #     table_name = table["table_name"]
+    #     section = table["section"]
+
+    #     if section in dict_text_tables:
+    #         the_dict = dict_text_tables
+    #     elif section in dict_all:
+    #         the_dict = dict_all
+    #     else:
+    #         continue
+
+    #     # TODO Handle CURVES section
+    #     if section == "CURVES":
+    #         continue
+
+    #     df = get_dataframe(
+    #         the_dict[section]["data"],
+    #         table,
+    #         columns[table_name],
+    #         epsg,
+    #     )
+
+    #     if table_name in dataframes:
+    #         print(f"Merging in {section}")
+    #         df = df.dropna(how='all', axis='columns')
+    #         old_df = dataframes[table_name]["df"].dropna(how='all', axis='columns')
+    #         new_df = old_df.merge(df, left_on="code", right_index=True)
+    #         missing_columns = columns[table_name] - set(new_df.columns)
+    #         for column in missing_columns:
+    #             new_df[column] = None
+    #         dataframes[table_name]["df"] = new_df
+    #     else:
+    #         dataframes[table_name] = {"table": table_name, "df": df}
+            
+    # return dataframes
 
 
 def null2none(value):
@@ -428,4 +471,4 @@ def qgsgeo2wkt(value):
 
 
 def tables():
-    return (table["table_name"] for table in _tables)
+    return {table["table_name"] for table in _tables}
