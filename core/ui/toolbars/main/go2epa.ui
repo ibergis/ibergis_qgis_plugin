@@ -94,8 +94,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>563</width>
-            <height>472</height>
+            <width>571</width>
+            <height>485</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
@@ -119,19 +119,6 @@
                 <string>Preprocessing options</string>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout">
-                <item>
-                 <widget class="QPushButton" name="btn_hs_ds">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string>Selector</string>
-                  </property>
-                 </widget>
-                </item>
                 <item>
                  <widget class="QPushButton" name="btn_options">
                   <property name="sizePolicy">
@@ -418,8 +405,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>109</width>
-            <height>109</height>
+            <width>98</width>
+            <height>89</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
