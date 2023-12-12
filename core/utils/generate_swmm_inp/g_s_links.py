@@ -371,11 +371,13 @@ def adjust_outlets_list(outl_list_i, feedback):
     """
     if outl_list_i[4].startswith('TABULAR'):
         curve_name = outl_list_i[5]
-        flap_gate = outl_list_i[6]
+        print(outl_list_i)
+        flap_gate = outl_list_i[6] if len(outl_list_i) > 6 else 'NO'
         outl_list_i[:5]
         return outl_list_i[:5]+[np.nan, np.nan]+[flap_gate, curve_name]
     else:
-        return outl_list_i+[np.nan]
+        flap_gate = outl_list_i[7] if len(outl_list_i) > 7 else 'NO'
+        return outl_list_i[:7]+[flap_gate, np.nan]
 
 # geometry
 def get_line_from_points(
