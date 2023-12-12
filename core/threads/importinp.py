@@ -60,8 +60,8 @@ class GwImportInpTask(GwTask):
                 return False
             self.feedback.setProgressText(f"Saving table {item['table']}")
 
-            ##TODO:: Use "mode"=a to append values
-            # item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
-            item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"])
+            ##TODO:: Verify conflicts with "mode"=a to append values
+            item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
+            # item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"])
 
         return True
