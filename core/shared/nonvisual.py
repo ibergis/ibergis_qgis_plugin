@@ -1476,7 +1476,7 @@ class GwNonVisual:
         if is_new:
             # Insert cat_controls
             sql = f"INSERT INTO cat_controls (text,active)" \
-                  f"VALUES({text}, {active})"
+                  f"VALUES({text}, {int(active)})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting control."
@@ -1493,7 +1493,7 @@ class GwNonVisual:
 
             text = text.strip("'")
             text = text.replace("\n", "\\n")
-            fields = f"""{{"active": "{active}", "text": "{text}"}}"""
+            fields = f"""{{"active": "{int(active)}", "text": "{text}"}}"""
 
             result = self._setfields(control_id, table_name, fields)
             if not result:
