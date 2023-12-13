@@ -143,7 +143,7 @@ def load(mesh_fp, roof_fp=None):
                 continue
 
             # 'Roof properties' section
-            if section == "Roof properties":
+            if section == "Roofs properties":
                 tokens = line.split()
 
                 # skip lines that don't have 4 itens
