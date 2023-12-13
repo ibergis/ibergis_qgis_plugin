@@ -264,7 +264,6 @@ class GwCreateMeshTask(GwTask):
 
             # Save mesh
             mesh_str, roof_str = mesh_parser.dumps(self.mesh)
-            # FIXME: content typo
             sql = f"""
                 INSERT INTO cat_file (name, file_name, content)
                 VALUES
