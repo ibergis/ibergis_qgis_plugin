@@ -82,18 +82,7 @@ class GwMeshSelectorUi(GwDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('create_mesh.ui', 'utilities')
 class GwCreateMeshUi(GwDialog, FORM_CLASS):
-    def __init__(self):
-        super().__init__()
-        self.meshes_saved = True
-
-    def reject(self):
-        if self.meshes_saved:
-            super().reject()
-        elif tools_qt.show_question("Do you want to close this dialog before saving? You will lose the generated mesh."):
-            project = QgsProject.instance()
-            for layer in project.mapLayersByName("Mesh Temp Layer"):
-                project.removeMapLayer(layer)
-            super().reject()
+    pass
 # endregion
 
 

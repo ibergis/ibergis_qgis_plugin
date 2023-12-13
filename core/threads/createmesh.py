@@ -273,7 +273,7 @@ class GwCreateMeshTask(GwTask):
             self.dao.execute_sql(sql)
 
             # Create temp layer
-            self.feedback.setProgressText("Creating temp layer for visualization...")
+            self.feedback.setProgressText("Mesh saved to GPKG file!!!\nCreating temp layer for visualization...")
             self.feedback.setProgress(80)
             temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
             temp_layer.setCrs(layers["ground"].crs())
@@ -330,7 +330,7 @@ class GwCreateMeshTask(GwTask):
             # Refresh TOC
             iface.layerTreeView().model().sourceModel().modelReset.emit()
 
-            self.message = "Triangulation finished! Check the temporary layer and click the button bellow to proceed to the next step."
+            self.message = "Process finished!!!"
             self.feedback.setProgress(100)
             return True
         except Exception:
