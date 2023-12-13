@@ -1,25 +1,18 @@
+import datetime
 from functools import partial
-from itertools import chain, tee
-from pathlib import Path
+from time import time
 
-from qgis.core import QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsField, QgsFields, QgsProject, QgsProcessingContext, QgsProcessingFeedback
-from qgis.PyQt.QtCore import QVariant
-from qgis.PyQt.QtWidgets import QAbstractItemView, QFileDialog, QTableView, QLineEdit, QComboBox, QDialogButtonBox
+from qgis.core import QgsApplication
+from qgis.PyQt.QtCore import QTimer
+from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView
 from qgis.PyQt.QtSql import QSqlTableModel
 
 from ..dialog import GwAction
 from ...ui.ui_manager import GwBCScenarioManagerUi, GwBCScenarioUi, GwMeshSelectorUi
 from ....lib import tools_qgis, tools_qt, tools_db
-from ...utils import tools_gw, mesh_parser
-from ...utils.join_boundaries import SetBoundaryConditonsToMeshBoundaries
+from ...threads.savetomesh import GwSaveToMeshTask
+from ...utils import Feedback, tools_gw, mesh_parser
 from .... import global_vars
-
-
-def pairwise(iterable):
-    # pairwise('ABCDEFG') --> AB BC CD DE EF FG
-    a, b = tee(iterable)
-    next(b, None)
-    return zip(a, b)
 
 
 def set_bc_filter():
@@ -487,9 +480,6 @@ class GwBCScenarioManagerButton(GwAction):
     def _accept_save_to_mesh(self, bcscenario):
         mesh_name = self.dlg_ms.cmb_mesh.currentText()
         dao = global_vars.gpkg_dao_data
-        db_file_path = dao.db_filepath
-        bc_path = f"{db_file_path}|layername=boundary_conditions|subset=code = '{bcscenario}'"
-        bc_layer = QgsVectorLayer(bc_path, "boundary_conditions", "ogr")
 
         sql = f"SELECT content FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber2D.dat'"
         mesh_str = dao.get_row(sql)["content"]
@@ -497,7 +487,7 @@ class GwBCScenarioManagerButton(GwAction):
         sql = f"SELECT content FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber_SWMM_roof.dat'"
         row = dao.get_row(sql)
         roof_str = None if row is None else row["content"]
-        
+
         # Parse mesh and check for preexistent boundary conditions
         mesh = mesh_parser.loads(mesh_str, roof_str)
 
@@ -506,83 +496,75 @@ class GwBCScenarioManagerButton(GwAction):
             answer = tools_qt.show_question(message, "Override boundary conditions")
             if not answer:
                 return
-            
-        # Create a layer with mesh edges exclusive to only one polygon
-        boundary_edges = {}
-        for pol_id, pol in mesh["polygons"].items():
-            if pol["category"] != "ground":
-                continue
-            vert = pol["vertice_ids"]
-            # Add last and first vertices as a edge if they are distinct
-            last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
-            edges = chain(pairwise(vert), last_edge)
-            for side, verts in enumerate(edges, start=1):
-                edge = frozenset(verts)
-                if edge in boundary_edges:
-                    del boundary_edges[edge]
-                else:
-                    boundary_edges[edge] = (pol_id, side)
-        
-        layer = QgsVectorLayer("LineString", "boundary_edges", "memory")
-        layer.setCrs(bc_layer.crs())
-        provider = layer.dataProvider()
 
-        fields = QgsFields()
-        fields.append(QgsField("pol_id", QVariant.String))
-        fields.append(QgsField("side", QVariant.Int))
-        provider.addAttributes(fields)
-        layer.updateFields()
+        self.feedback = Feedback()
+        self.thread_savetomesh = GwSaveToMeshTask(
+            "Save to mesh",
+            bcscenario,
+            mesh_name,
+            mesh,
+            feedback=self.feedback,
+        )
+        thread = self.thread_savetomesh
 
-        features = []
-        for edge, (pol_id, side) in boundary_edges.items():
-            coords = [mesh["vertices"][vert]["coordinates"] for vert in edge]
-            feature = QgsFeature()
-            feature.setGeometry(QgsGeometry.fromPolyline([QgsPoint(*coord) for coord in coords]))
-            feature.setAttributes([pol_id, side])
-            features.append(feature)
-        provider.addFeatures(features)
-        layer.updateExtents()
+        # Set signals
+        self.dlg_ms.btn_ok.setEnabled(False)
+        self.dlg_ms.btn_cancel.clicked.disconnect()
+        self.dlg_ms.btn_cancel.clicked.connect(thread.cancel)
+        self.dlg_ms.btn_cancel.clicked.connect(partial(self.dlg_ms.btn_cancel.setText, "Canceling..."))
+        thread.taskCompleted.connect(self._on_s2m_completed)
+        thread.taskTerminated.connect(self._on_s2m_terminated)
+        thread.feedback.progressText.connect(self._set_progress_text)
+        thread.feedback.progressChanged.connect(self.dlg_ms.progress_bar.setValue)
 
-        # Get geometry of the boundary
-        get_boundary_conditions = SetBoundaryConditonsToMeshBoundaries()
-        get_boundary_conditions.initAlgorithm()
-        params = {
-            "boundary_conditions": bc_layer,
-            "bc_scenario": bcscenario,
-            "mesh_boundaries": layer,
-            "Mesh_boundary_conditions": "TEMPORARY_OUTPUT",
-        }
-        context = QgsProcessingContext()
-        feedback = QgsProcessingFeedback()
-        results = get_boundary_conditions.processAlgorithm(params, context, feedback)
-        result_layer = context.getMapLayer(results["Mesh_boundary_conditions"])
-        
-        # TODO: Handle empty results
+        # Timer
+        self.t0 = time()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self._on_timer_timeout)
+        self.timer.start(500)
+        self.dlg_ms.rejected.connect(self.timer.stop)
 
-        mesh["boundary_conditions"] = {}
-        for feature in result_layer.getFeatures():
-            # TODO handle bc cases
-            mesh["boundary_conditions"][(feature["pol_id"], feature["side"])] = ""
-        
-        new_mesh_str, new_roof_str = mesh_parser.dumps(mesh)
+        QgsApplication.taskManager().addTask(thread)
 
-        # Delete old mesh
-        sql = f"""
-            DELETE FROM cat_file
-            WHERE name = '{mesh_name}'
-                AND file_name IN ('Iber2D.dat', 'Iber_SWMM_roof.dat')
-        """
-        dao.execute_sql(sql)
+    def _on_s2m_completed(self):
+        self._on_s2m_end()
+        dlg = self.dlg_ms
+        dlg.meshes_saved = False
 
-        # Save mesh
-        # FIXME: content typo
-        sql = f"""
-            INSERT INTO cat_file (name, file_name, content)
-            VALUES
-                ('{mesh_name}', 'Iber2D.dat', '{new_mesh_str}')
-        """
-        if new_roof_str:
-            sql += f",('{mesh_name}', 'Iber_SWMM_roof.dat', '{new_roof_str}')"
-        dao.execute_sql(sql)
+    def _on_s2m_end(self):
+        thread = self.thread_savetomesh
+        message = "Task canceled." if thread.isCanceled() else thread.message
+        tools_gw.fill_tab_log(
+            self.dlg_ms,
+            {"info": {"values": [{"message": message}]}},
+            reset_text=False,
+        )
+        sb = self.dlg_ms.txt_infolog.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+        self.timer.stop()
+
+        dlg = self.dlg_ms
+        dlg.btn_cancel.clicked.disconnect()
+        dlg.btn_cancel.clicked.connect(dlg.reject)
+
+    def _on_s2m_terminated(self):
+        self._on_s2m_end()
+
+    def _on_timer_timeout(self):
+        # Update timer
+        elapsed_time = time() - self.t0
+        text = str(datetime.timedelta(seconds=round(elapsed_time)))
+        self.dlg_ms.lbl_timer.setText(text)
+
+    def _set_progress_text(self, txt):
+        tools_gw.fill_tab_log(
+            self.dlg_ms,
+            {"info": {"values": [{"message": txt}]}},
+            reset_text=False,
+            close=False,
+        )
+        sb = self.dlg_ms.txt_infolog.verticalScrollBar()
+        sb.setValue(sb.maximum())
         
     # endregion

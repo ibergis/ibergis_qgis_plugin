@@ -378,6 +378,7 @@ def validate_input_layers(layers_dict: dict, feedback: Feedback) -> Optional[Tup
             return error_layers, warning_layers
     return error_layers, warning_layers
 
+# FIXME: Empty gully layer crashes this function
 def validate_gullies_in_triangles(
     mesh_layer: QgsVectorLayer, gully_layer: QgsVectorLayer
 ) -> QgsVectorLayer:
