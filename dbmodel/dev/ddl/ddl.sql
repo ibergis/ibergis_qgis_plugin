@@ -191,7 +191,6 @@ CREATE TABLE ground_roughness (
     landuse integer CHECK (typeof(landuse)='integer' OR landuse=NULL),
     custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (roughness_id) references ground(fid) on update cascade
 );
@@ -209,7 +208,6 @@ CREATE TABLE ground_losses (
     ga_suction real CHECK (typeof(ga_suction)='real' OR ga_suction=NULL),
     ga_porosity real CHECK (typeof(ga_porosity)='real' OR ga_porosity=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
@@ -232,7 +230,6 @@ CREATE TABLE roof (
     inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
     lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (outlet_id) REFERENCES inp_outlet(fid) on update cascade
 );
@@ -254,7 +251,6 @@ CREATE TABLE mesh_tin (
     ini_type real CHECK (typeof(ini_type)='real' OR ini_type=NULL),
     ini_value real CHECK (typeof(ini_value)='real' OR ini_value=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (roughness_id) references ground_losses(fid) on update cascade
 );
@@ -276,7 +272,6 @@ CREATE TABLE mesh_roof (
     ini_type real CHECK (typeof(ini_type)='real' OR ini_type=NULL),
     ini_value real CHECK (typeof(ini_value)='real' OR ini_value=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (roughness_id) references ground_losses(fid) on update cascade,
     FOREIGN KEY (roof_id) REFERENCES roof(fid) on update cascade
@@ -301,7 +296,6 @@ CREATE TABLE link (
     exit_type text check (typeof(exit_type) = 'text' or exit_type = null),
     exit_id text check (typeof(exit_id) = 'text' or exit_id = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
@@ -323,7 +317,6 @@ CREATE TABLE gully (
     custom_b_param real check (typeof(custom_b_param) = 'real' or custom_b_param = null),
     efficiency real check (typeof(efficiency) = 'real' or efficiency = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (gratecat_id) references cat_grate (id) on update cascade
 );
@@ -348,7 +341,6 @@ CREATE TABLE inp_raingage (
     sta text check (typeof(sta) = 'text' or sta = null),
     units text check (typeof(units) = 'text' or units = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (timeseries_id) references cat_timeseries (id) on update cascade
 );
@@ -383,7 +375,6 @@ CREATE TABLE inp_conduit (
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     seepage real check (typeof(seepage) = 'real' or seepage = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (arccat_id) references cat_arc(id) on update cascade
 );
@@ -402,7 +393,6 @@ CREATE TABLE inp_outlet (
     cd2 real check (typeof(cd2)='real' or cd2= null),
     curve_id integer check (typeof(curve_id)='integer' or curve_id= null),
     annotation real check (typeof(annotation)='real' or annotation= null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (curve_id) references cat_curve (id) on update cascade
 );
@@ -438,7 +428,6 @@ CREATE TABLE inp_subcatchment (
     initdef real check (typeof(initdef) = 'real' or initdef = null),
     curveno real check (typeof(curveno) = 'real' or curveno = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (rg_id) references inp_raingage (fid) on update cascade,
     FOREIGN KEY (outlet_id) references inp_outlet (fid) on update cascade
@@ -460,7 +449,6 @@ CREATE TABLE inp_orifice (
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     close_time real check (typeof(close_time) = 'real' or close_time = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
@@ -488,7 +476,6 @@ CREATE TABLE inp_weir (
     road_surf text check (typeof(road_surf) in ('text', null) and road_surf in ('PAVED', 'GRAVEL')),
     curve_id integer check (typeof(curve_id) = 'integer' or curve_id = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (curve_id) references cat_curve(id) on update cascade
 );
@@ -505,7 +492,6 @@ CREATE TABLE inp_pump (
     startup real check (typeof(startup) = 'real' or startup = null),
     shutoff real check (typeof(shutoff) = 'real' or shutoff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (curve_id) references cat_curve(id) on update cascade
 );
@@ -523,7 +509,6 @@ CREATE TABLE inp_outfall (
     curve_id integer check (typeof(curve_id) = 'integer' or curve_id = null),
     timeser_id integer check (typeof(timeser_id) = 'integer' or timeser_id = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (curve_id) references cat_curve(id) on update cascade,
     FOREIGN KEY (timeser_id) references cat_timeseries(id)
@@ -547,7 +532,6 @@ CREATE TABLE inp_divider (
     q0 real check (typeof(q0) = 'real' or q0 = null),
     qmax real check (typeof(qmax) = 'real' or qmax = null),
     annotation real check (typeof(annotation) = 'real' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (curve_id) references cat_curve(id) on update cascade
 );
@@ -573,7 +557,6 @@ CREATE TABLE inp_storage (
     ksat real check (typeof(ksat) = 'real' or ksat = null),
     imd real check (typeof(imd) = 'real' or imd = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (curve_id) references cat_curve(id) on update cascade
 );
@@ -591,7 +574,6 @@ CREATE TABLE inp_junction (
     ysur real check (typeof(ysur) = 'real' or ysur = null),
     apond real check (typeof(apond) = 'real' or apond = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry
 );
 
@@ -616,7 +598,6 @@ create table inp_dwf (
     pat3 integer check (typeof(pat1) = 'integer' or pat3 = null),
     pat4 integer check (typeof(pat1) = 'integer' or pat4 = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
     geom geometry,
     FOREIGN KEY (pat1) REFERENCES cat_pattern(id) on update cascade,
     FOREIGN KEY (pat2) REFERENCES cat_pattern(id) on update cascade,
