@@ -187,12 +187,10 @@ CREATE TABLE ground_roughness (
     fid integer PRIMARY KEY,
     code text check (typeof(code) = 'text' or code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    roughness_id integer CHECK (typeof(roughness_id)='integer' OR roughness_id=NULL),
     landuse integer CHECK (typeof(landuse)='integer' OR landuse=NULL),
     custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (roughness_id) references ground(fid) on update cascade
+    geom geometry
 );
 
 CREATE TABLE ground_losses (
