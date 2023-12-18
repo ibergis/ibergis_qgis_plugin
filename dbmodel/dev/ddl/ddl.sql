@@ -299,7 +299,7 @@ CREATE TABLE link (
 
 CREATE TABLE gully (
     fid integer primary key,
-	gully_id text unique,
+	arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     outlet_type text check (typeof(outlet_type) in ('text', null) and outlet_type in ('SINK', 'TO NETWORK')),
