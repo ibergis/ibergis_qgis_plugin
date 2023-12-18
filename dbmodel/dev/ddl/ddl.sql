@@ -467,6 +467,8 @@ CREATE TABLE inp_weir (
     road_width real check (typeof(road_width) = 'real' or road_width = null),
     road_surf text check (typeof(road_surf) in ('text', null) and road_surf in ('PAVED', 'GRAVEL')),
     curve_id integer check (typeof(curve_id) = 'integer' or curve_id = null),
+    crest_heigh real check (typeof(crest_heigh)='real' or crest_heigh = null),
+    end_coeff real check (typeof(end_coeff)='real' or end_coeff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
     FOREIGN KEY (curve_id) references cat_curve(id) on update cascade
