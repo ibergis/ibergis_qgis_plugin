@@ -345,11 +345,10 @@ CREATE TABLE inp_raingage (
 
 CREATE TABLE inp_conduit (
     fid integer primary key,
-    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    node_1 text check (typeof(node_1) = 'text' or node_1 = null),
-    node_2 text check (typeof(node_2) = 'text' or node_2 = null),
+    code_1 text check (typeof(code_1) = 'text' or code_1 = null),
+    code_2 text check (typeof(code_2) = 'text' or code_2 = null),
     shape text check (typeof(shape) = 'text' and shape in ('ARCH', 'BASKETHANDLE', 'CIRCULAR', 'CUSTOM', 'DUMMY', 'EGG', 'FILLED_CIRCULAR', 'FORCE_MAIN', 'HORIZ_ELLIPSE', 'HORSESHOE', 'IRREGULAR', 'MODBASKETHANDLE', 'PARABOLIC', 'POWER', 'RECT_CLOSED', 'RECT_OPEN', 'RECT_ROUND', 'RECT_TRIANGULAR', 'SEMICIRCULAR', 'SEMIELLIPTICAL', 'TRAPEZOIDAL', 'TRIANGULAR', 'VERT_ELLIPSE', 'VIRTUAL')) NOT NULL,
     shape_trnsct text check (typeof(shape_trnsct) = 'text' or shape_trnsct = null),
     custom_length real check (typeof(custom_length) = 'real' or custom_length = null),
@@ -379,7 +378,6 @@ CREATE TABLE inp_conduit (
 
 CREATE TABLE inp_outlet (
     fid integer primary key,
-    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript)='text' or descript= null),
     node_1 text check (typeof(node_1)='text' or node_1= null),
@@ -433,7 +431,6 @@ CREATE TABLE inp_subcatchment (
 
 CREATE TABLE inp_orifice (
     fid integer primary key,
-    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
@@ -452,7 +449,6 @@ CREATE TABLE inp_orifice (
 
 CREATE TABLE inp_weir (
     fid integer primary key,
-    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
@@ -480,7 +476,6 @@ CREATE TABLE inp_weir (
 
 CREATE TABLE inp_pump (
     fid integer primary key,
-    arc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
@@ -496,7 +491,6 @@ CREATE TABLE inp_pump (
 
 CREATE TABLE inp_outfall (
     fid integer primary key,
-    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     custom_elev real check (typeof(custom_elev) = 'real' or custom_elev = null),
@@ -514,7 +508,6 @@ CREATE TABLE inp_outfall (
 
 CREATE TABLE inp_divider (
     fid integer primary key,
-    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
@@ -524,6 +517,7 @@ CREATE TABLE inp_divider (
     y0 real check (typeof(y0) = 'real' or y0 = null),
     ysur real check (typeof(ysur) = 'real' or ysur = null),
     apond real check (typeof(apond) = 'real' or apond = null),
+    divert_link text check(typeof(divert_link='text' or divert_link=null)),
     divider_type text check (typeof(divider_type) IN ('text', null) and divider_type in ('CUTOFF', 'OVERFLOW', 'TABULAR', 'WEIR')),
     qmin real check (typeof(qmin) = 'real' or qmin = null),
     curve_id integer check (typeof(curve_id) = 'integer' or curve_id = null),
@@ -536,7 +530,6 @@ CREATE TABLE inp_divider (
 
 CREATE TABLE inp_storage (
     fid integer primary key,
-    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
@@ -561,7 +554,6 @@ CREATE TABLE inp_storage (
 
 CREATE TABLE inp_junction (
     fid integer primary key,
-    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
@@ -587,7 +579,6 @@ create table inp_files (
 
 create table inp_dwf (
     fid integer primary key,
-    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     avg_value real check (typeof(avg_value)='real' or avg_value = null),
@@ -605,7 +596,6 @@ create table inp_dwf (
 
 create table inp_inflow (
     fid integer primary key,
-    node_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     timeser_id text check (typeof(timeser_id) = 'text' or timeser_id = null),
@@ -639,7 +629,6 @@ create table boundary_conditions (
 CREATE TABLE rpt_arc (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id =null),
-    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
     resultdate text check (typeof(resultdate) = 'text' or resultdate = null),
     resulttime text check (typeof(resulttime) = 'text' or resulttime = null),
     flow real check (typeof(flow) = 'real' or flow = null),
@@ -650,7 +639,6 @@ CREATE TABLE rpt_arc (
 CREATE TABLE rpt_arcflow_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
     arc_type text check (typeof(arc_type) = 'text' or arc_type = null),
     max_flow real check (typeof(max_flow) = 'real' or max_flow = null),
     time_days text check (typeof(time_days) = 'text' or time_days = null),
@@ -671,7 +659,6 @@ CREATE TABLE rpt_arcflow_sum (
 CREATE TABLE rpt_arcpolload_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
     poll_id text check (typeof(poll_id) = 'text' or poll_id = null)
 );
 
@@ -679,7 +666,6 @@ CREATE TABLE rpt_arcpollutant_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
     poll_id text check (typeof(poll_id) = 'text' or poll_id = null),
-    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
     value real check (typeof(value) = 'real' or value = null)
 );
 
@@ -717,7 +703,6 @@ CREATE TABLE rpt_cat_result (
 CREATE TABLE rpt_condsurcharge_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
     both_ends real check (typeof(both_ends) = 'real' or both_ends = null),
     upstream real check (typeof(upstream) = 'real' or upstream = null),
     dnstream real check (typeof(dnstream) = 'real' or dnstream = null),
@@ -746,7 +731,6 @@ CREATE TABLE rpt_critical_elements (
 CREATE TABLE rpt_flowclass_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
     length real check (typeof(length) = 'real' or length = null),
     dry real check (typeof(dry) = 'real' or dry = null),
     up_dry real check (typeof(up_dry) = 'real' or up_dry = null),
@@ -826,7 +810,6 @@ CREATE TABLE rpt_lidperformance_sum (
 CREATE TABLE rpt_node (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     resultdate text check (typeof(resultdate) = 'text' or resultdate = null),
     resulttime text check (typeof(resulttime) = 'text' or resulttime = null),
     flooding real check (typeof(flooding) = 'real' or flooding = null),
@@ -838,7 +821,6 @@ CREATE TABLE rpt_node (
 CREATE TABLE rpt_nodedepth_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
     aver_depth real check (typeof(aver_depth) = 'real' or aver_depth = null),
     max_depth real check (typeof(max_depth) = 'real' or max_depth = null),
@@ -850,7 +832,6 @@ CREATE TABLE rpt_nodedepth_sum (
 CREATE TABLE rpt_nodeflooding_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     hour_flood real check (typeof(hour_flood) = 'real' or hour_flood = null),
     max_rate real check (typeof(max_rate) = 'real' or max_rate = null),
     time_days text check (typeof(time_days) = 'text' or time_days = null),
@@ -862,7 +843,6 @@ CREATE TABLE rpt_nodeflooding_sum (
 CREATE TABLE rpt_nodeinflow_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
     max_latinf real check (typeof(max_latinf) = 'real' or max_latinf = null),
     max_totinf real check (typeof(max_totinf) = 'real' or max_totinf = null),
@@ -877,7 +857,6 @@ CREATE TABLE rpt_nodeinflow_sum (
 CREATE TABLE rpt_nodesurcharge_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
     hour_surch real check (typeof(hour_surch) = 'real' or hour_surch = null),
     max_height real check (typeof(max_height) = 'real' or max_height = null),
@@ -887,7 +866,6 @@ CREATE TABLE rpt_nodesurcharge_sum (
 CREATE TABLE rpt_outfallflow_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     flow_freq real check (typeof(flow_freq) = 'real' or flow_freq = null),
     avg_flow real check (typeof(avg_flow) = 'real' or avg_flow = null),
     max_flow real check (typeof(max_flow) = 'real' or max_flow = null),
@@ -898,14 +876,12 @@ CREATE TABLE rpt_outfallload_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
     poll_id text check (typeof(poll_id) = 'text' or poll_id = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     value real check (typeof(value) = 'real' or value = null)
 );
 
 CREATE TABLE rpt_pumping_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
     percent real check (typeof("percent") = 'real' or "percent" = null),
     num_startup integer check (typeof(num_startup) = 'integer' or num_startup = null),
     min_flow real check (typeof(min_flow) = 'real' or min_flow = null),
@@ -981,7 +957,6 @@ CREATE TABLE rpt_runoff_quant (
 CREATE TABLE rpt_storagevol_sum (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     aver_vol real check (typeof(aver_vol) = 'real' or aver_vol = null),
     avg_full real check (typeof(avg_full) = 'real' or avg_full = null),
     ei_loss real check (typeof(ei_loss) = 'real' or ei_loss = null),
@@ -1033,9 +1008,8 @@ CREATE TABLE rpt_subcatchwashoff_sum (
 CREATE TABLE rpt_summary_arc (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
-    node_1 text check (typeof(node_1) = 'text' or node_1 = null),
-    node_2 text check (typeof(node_2) = 'text' or node_2 = null),
+    code_1 text check (typeof(code_1) = 'text' or code_1 = null),
+    code_2 text check (typeof(code_2) = 'text' or code_2 = null),
     epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
     length real check (typeof(length) = 'real' or length = null),
     slope real check (typeof(slope) = 'real' or slope = null),
@@ -1045,7 +1019,6 @@ CREATE TABLE rpt_summary_arc (
 CREATE TABLE rpt_summary_crossection (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    arc_id text check (typeof(arc_id) = 'text' or arc_id = null),
     shape text check (typeof(shape) = 'text' or shape = null),
     fulldepth real check (typeof(fulldepth) = 'real' or fulldepth = null),
     fullarea real check (typeof(fullarea) = 'real' or fullarea = null),
@@ -1058,7 +1031,6 @@ CREATE TABLE rpt_summary_crossection (
 CREATE TABLE rpt_summary_node (
     id integer primary key,
     result_id text check (typeof(result_id) = 'text' or result_id = null),
-    node_id text check (typeof(node_id) = 'text' or node_id = null),
     epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
     elevation real check (typeof(elevation) = 'real' or elevation = null),
     maxdepth real check (typeof(maxdepth) = 'real' or maxdepth = null),
@@ -1130,16 +1102,16 @@ create view if not exists vi_title as select parameter, value from config_param_
 create view if not exists vi_files as select fname as Name from inp_files;
 create view if not exists vi_options as select parameter as Option, value as Value from config_param_user where parameter like 'inp_options%';
 
-create view if not exists vi_conduits as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, custom_length as Length, custom_roughness as Roughness, z1 as InOffset, z2 as OutOffset, q0 as InitFlow, qmax as MaxFlow, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, culvert as Culvert, shape_trnsct as Shp_Trnsct, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation from inp_conduit;
+create view if not exists vi_conduits as select code as Name, code_1 as FromNode, code_2 as ToNode, custom_length as Length, custom_roughness as Roughness, z1 as InOffset, z2 as OutOffset, q0 as InitFlow, qmax as MaxFlow, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, culvert as Culvert, shape_trnsct as Shp_Trnsct, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation from inp_conduit;
 create view if not exists vi_subcatchments as select subc_id as Name, rg_id as RainGage, outlet_id as Outlet, area as Area, imperv as Imperv, width as Width, slope as Slope, clength as CurbLen, annotation as Annotation, nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted, curveno as CurveNum, conduct as Conductiv, drytime as DryTime, method as InfMethod, suction as SuctHead, initdef as InitDef, maxrate as MaxRatefrom, minrate as MinRate, decay as Decay, maxinfl as MaxInf from inp_subcatchment;
-create view if not exists vi_outlets as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, offsetval as InOffset, outlet_type as RateCurve, cd1 as Qcoeff, cd2 as Qexpon, flap as FlapGate, curve_id as CurveName, annotation as Annotation from inp_outlet;
-create view if not exists vi_orifices as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, ori_type as Type, offsetval as InOffset, cd1 as Qcoeff, flap as FlapGate, close_time as CloseTime, annotation as Annotation, shape as Shape, geom1 as Height, geom2 as Width from inp_orifice;
-create view if not exists vi_weirs as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, weir_type as Type, offsetval as CrestHight, cd2 as Qcoeff, flap as FlapGate, ec as EndContrac, cd2 as Qcoeff, surcharge as Surcharge, road_width as RoadWidth, road_surf as RoadSurf, curve_id as CoeffCurve, annotation as Annotation, geom1 as Hight, geom3 as Length, geom4 as SideSlope from inp_weir;
-create view if not exists vi_pumps as select arc_id as Name, node_1 as FromNode, node_2 as ToNode, curve_id as PumpCurve, state as Status, startup as Startup, shutoff as Shutoff, annotation as Annotation from inp_pump;
-create view if not exists vi_outfalls as select node_id as Name, elev as Elevation, outfall_type as Type, stage as FixedStage, curve_id as Curve_TS, gate as FlapGate, routeto as RouteTo, annotation as Annotation from inp_outfall;
-create view if not exists vi_dividers as select code as Name, elev as Elevation, node_id as DivertLink, divider_type as Type, curve_id as Curve, qmin as WeirMinFlo, qmax as WeirMaxDep, q0 as WeirCoeff, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation from inp_divider;
-create view if not exists vi_storage as select node_id as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, storage_type as Type, curve_id as Curve, a1 as Coeff, a2 as Exponent, a0 as Constant, ysur as SurDepth, fevap as Fevap, psi as Psi, ksat as Ksat, imd as IMD, annotation as Annotation from inp_storage;
-create view if not exists vi_junctions as SELECT node_id as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation from inp_junction;
+create view if not exists vi_outlets as select code as Name, code_1 as FromNode, code_2 as ToNode, offsetval as InOffset, outlet_type as RateCurve, cd1 as Qcoeff, cd2 as Qexpon, flap as FlapGate, curve_id as CurveName, annotation as Annotation from inp_outlet;
+create view if not exists vi_orifices as select code as Name, code_1 as FromNode, code_2 as ToNode, ori_type as Type, offsetval as InOffset, cd1 as Qcoeff, flap as FlapGate, close_time as CloseTime, annotation as Annotation, shape as Shape, geom1 as Height, geom2 as Width from inp_orifice;
+create view if not exists vi_weirs as select code as Name, code_1 as FromNode, code_2 as ToNode, weir_type as Type, offsetval as CrestHight, cd2 as Qcoeff, flap as FlapGate, ec as EndContrac, cd2 as Qcoeff, surcharge as Surcharge, road_width as RoadWidth, road_surf as RoadSurf, curve_id as CoeffCurve, annotation as Annotation, geom1 as Hight, geom3 as Length, geom4 as SideSlope from inp_weir;
+create view if not exists vi_pumps as select code as Name, code_1 as FromNode, code_2 as ToNode, curve_id as PumpCurve, state as Status, startup as Startup, shutoff as Shutoff, annotation as Annotation from inp_pump;
+create view if not exists vi_outfalls as select code as Name, elev as Elevation, outfall_type as Type, stage as FixedStage, curve_id as Curve_TS, gate as FlapGate, routeto as RouteTo, annotation as Annotation from inp_outfall;
+create view if not exists vi_dividers as select code as Name, elev as Elevation, divert_link as DivertLink, divider_type as Type, curve_id as Curve, qmin as WeirMinFlo, qmax as WeirMaxDep, q0 as WeirCoeff, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation from inp_divider;
+create view if not exists vi_storage as select code as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, storage_type as Type, curve_id as Curve, a1 as Coeff, a2 as Exponent, a0 as Constant, ysur as SurDepth, fevap as Fevap, psi as Psi, ksat as Ksat, imd as IMD, annotation as Annotation from inp_storage;
+create view if not exists vi_junctions as SELECT code as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation from inp_junction;
 create view if not exists vi_raingages as select code as Name, form_type as Format, intvl as Interval, scf as SCF, data_source as DataSource, timeseries_id as SeriesName, fname as FileName, sta as StationID, units as RainUnits, annotation as Annotation from inp_raingage;
 
 create view if not exists vi_curves as select c.idval as Name, c.curve_type, cv.xcoord as Depth, cv.ycoord as Flow from cat_curve c, cat_curve_value cv;
@@ -1147,30 +1119,30 @@ create view if not exists vi_timeseries as select idval as Name, "date" as "Date
 create view if not exists vi_patterns as select idval as Name, "time" as "Time", value as Factor from cat_pattern_value where active = 1;
 create view if not exists vi_landuses as select idval as Name, sweepint as SweepingInterval, availab as SweepingFractionAvailable, lastsweep as LastSwept from cat_landuses;
 create view if not exists vi_subareas as select nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted from inp_subcatchment;
-create view if not exists vi_losses as select arc_id as Name, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage from inp_conduit;
-create view if not exists vi_dwf as select node_id as Name, 'FLOW' as Constituent, avg_value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf;
+create view if not exists vi_losses as select code as Name, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage from inp_conduit;
+create view if not exists vi_dwf as select code as Name, 'FLOW' as Constituent, avg_value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf;
 create view if not exists vi_infiltration as select method as InfMethod, maxrate as MaxRate, minrate as MinRate, decay as Decay, maxinfl as MaxInf, suction as SuctHead, conduct as Conductiv, initdef as InitDef, curveno as CurveNum, annotation as Annotation from inp_subcatchment;
 create view if not exists vi_controls as select "text" from cat_controls join selector_sector using (sector_id) where active != 0;
 create view if not exists vi_transects as select "text" from cat_transects join selector_sector using (sector_id) where active != 0;
-create view if not exists vi_inflows as select node_id, format, timeser_id, mfactor, sfactor, pattern_id from inp_inflow;
+create view if not exists vi_inflows as select code, format, timeser_id, mfactor, sfactor, pattern_id from inp_inflow;
 create view if not exists vi_xsections as
-    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, 0 as other3, 0 as other4, barrels as other5, null as other6 from inp_conduit where shape ='CUSTOM' union
-    select arc_id as Link, shape as Shape, shape_trnsct as other1, 0 as other2, 0 as other3, 0 as other4, barrels as other5, NULL AS other6 from inp_conduit where shape='IRREGULAR'union
-    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, geom3 as other3, geom4 as other4, barrels as other5, culvert as other6 from inp_conduit where shape not in ('CUSTOM', 'IRREGULAR') union
-    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, null as other3, null as other4, null as other5, null as other6 from inp_orifice union
-    select arc_id as Link, shape as Shape, geom1 as other1, geom2 as other2, null as other3, null as other4, null as other5, null as other6 from inp_weir;
+    select code as Link, shape as Shape, geom1 as other1, geom2 as other2, 0 as other3, 0 as other4, barrels as other5, null as other6 from inp_conduit where shape ='CUSTOM' union
+    select code as Link, shape as Shape, shape_trnsct as other1, 0 as other2, 0 as other3, 0 as other4, barrels as other5, NULL AS other6 from inp_conduit where shape='IRREGULAR'union
+    select code as Link, shape as Shape, geom1 as other1, geom2 as other2, geom3 as other3, geom4 as other4, barrels as other5, culvert as other6 from inp_conduit where shape not in ('CUSTOM', 'IRREGULAR') union
+    select code as Link, shape as Shape, geom1 as other1, geom2 as other2, null as other3, null as other4, null as other5, null as other6 from inp_orifice union
+    select code as Link, shape as Shape, geom1 as other1, geom2 as other2, null as other3, null as other4, null as other5, null as other6 from inp_weir;
 
 CREATE VIEW if not exists v_node as
-    select node_id, geom from inp_storage union
-    select node_id, geom from inp_outfall union
-    select node_id, geom from inp_junction union
-    select node_id, geom from inp_divider;
+    select code, geom from inp_storage union
+    select code, geom from inp_outfall union
+    select code, geom from inp_junction union
+    select code, geom from inp_divider;
 CREATE VIEW if not exists v_arc as
-    select arc_id, geom from inp_outlet union
-    select arc_id, geom from inp_weir union
-    select arc_id, geom from inp_orifice union
-    select arc_id, geom from inp_pump union
-    select arc_id, geom from inp_conduit;
+    select code, geom from inp_outlet union
+    select code, geom from inp_weir union
+    select code, geom from inp_orifice union
+    select code, geom from inp_pump union
+    select code, geom from inp_conduit;
 
 
 create table tables_nogeom (table_name text primary key);
