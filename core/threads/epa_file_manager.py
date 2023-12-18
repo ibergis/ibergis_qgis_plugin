@@ -9,13 +9,39 @@ import json
 import os
 import re
 import subprocess
+import sqlite3
+import pandas as pd
 
-from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
+from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, QgsProject
 
+from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils import tools_gw
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
 from .task import GwTask
+from .importinp_core import _tables
+
+_tables_dict = {}
+_tables_dict_swapped = {}
+for table_info in _tables:
+    table_name = table_info["table_name"]
+
+    if table_name not in _tables_dict:
+        _tables_dict[table_name] = table_info
+    else:
+        _tables_dict[table_name]['mapper'].update(table_info['mapper'])
+
+for table_name, table_info in _tables_dict.items():
+    # Swap keys and values in the "mapper" dictionary
+    swapped_mapper = {v: k for k, v in table_info["mapper"].items()}
+
+    # Update the entry in _tables_dict
+    _tables_dict_swapped[table_name] = {
+        "table_name": table_info["table_name"],
+        "section": table_info["section"],
+        "mapper": swapped_mapper,
+    }
 
 
 class GwEpaFileManager(GwTask):
@@ -45,6 +71,8 @@ class GwEpaFileManager(GwTask):
         self.function_failed = False
         self.complet_result = None
         self.replaced_velocities = False
+        self.output = None
+        self.folder_path = None
 
 
     def set_variables_from_go2epa(self):
@@ -52,12 +80,6 @@ class GwEpaFileManager(GwTask):
 
         self.dlg_go2epa = self.go2epa.dlg_go2epa
         self.result_name = self.go2epa.result_name
-        self.file_inp = self.go2epa.file_inp
-        self.file_rpt = self.go2epa.file_rpt
-        self.go2epa_export_inp = self.go2epa.export_inp
-        self.go2epa_execute_epa = self.go2epa.exec_epa
-        self.go2epa_import_result = self.go2epa.import_result
-        self.export_subcatch = self.go2epa.export_subcatch
 
 
     def run(self):
@@ -66,27 +88,28 @@ class GwEpaFileManager(GwTask):
 
         self.initialize_variables()
         tools_log.log_info(f"Task 'Go2Epa' execute function 'def _get_steps'")
-        steps = self._get_steps()
+        # steps = self._get_steps()
         status = True
-        if self.go2epa_export_inp or self.go2epa_execute_epa:
-            tools_log.log_info(f"Task 'Go2Epa' execute function 'def _exec_function_pg2epa'")
-            status = self._exec_function_pg2epa(steps)
-            if not status:
-                self.function_name = 'gw_fct_pg2epa_main'
-                return False
+        tools_log.log_info(f"Task 'Go2Epa' execute function 'def _exec_function_pg2epa'")
+        status = self._new_export_inp()
 
-        if self.go2epa_export_inp:
-            tools_log.log_info(f"Task 'Go2Epa' execute function 'def _export_inp'")
-            status = self._export_inp()
+            # status = self._exec_function_pg2epa(steps)
+            # if not status:
+            #     self.function_name = 'gw_fct_pg2epa_main'
+            #     return False
 
-        if status and self.go2epa_execute_epa:
-            tools_log.log_info(f"Task 'Go2Epa' execute function 'def _execute_epa'")
-            status = self._execute_epa()
-
-        if status and self.go2epa_import_result:
-            tools_log.log_info(f"Task 'Go2Epa' execute function 'def _import_rpt'")
-            self.function_name = 'gw_fct_rpt2pg_main'
-            status = self._import_rpt()
+        # if self.go2epa_export_inp:
+        #     tools_log.log_info(f"Task 'Go2Epa' execute function 'def _export_inp'")
+        #     status = self._export_inp()
+        #
+        # if status and self.go2epa_execute_epa:
+        #     tools_log.log_info(f"Task 'Go2Epa' execute function 'def _execute_epa'")
+        #     status = self._execute_epa()
+        #
+        # if status and self.go2epa_import_result:
+        #     tools_log.log_info(f"Task 'Go2Epa' execute function 'def _import_rpt'")
+        #     self.function_name = 'gw_fct_rpt2pg_main'
+        #     status = self._import_rpt()
 
         return status
 
@@ -98,82 +121,14 @@ class GwEpaFileManager(GwTask):
         self.dlg_go2epa.btn_cancel.setEnabled(False)
         self.dlg_go2epa.btn_accept.setEnabled(True)
 
-        self._close_file()
+        # self._close_file()
         if self.timer:
             self.timer.stop()
         if self.isCanceled():
             return
 
-        # If PostgreSQL function returned null
-        if (self.go2epa_export_inp or self.go2epa_export_inp) and self.complet_result is None:
-            msg = f"Database returned null. Check postgres function '{self.function_name}'"
-            tools_log.log_warning(msg)
-
-        elif result:
-
-            if self.go2epa_export_inp and self.complet_result:
-                if self.complet_result.get('status') == "Accepted":
-                    if 'body' in self.complet_result:
-                        if 'data' in self.complet_result['body']:
-                            tools_log.log_info(f"Task 'Go2Epa' execute function 'def add_layer_temp' from 'tools_gw.py' "
-                                               f"with parameters: '{self.dlg_go2epa}', '{self.complet_result['body']['data']}', "
-                                               f"'None', 'True', 'True', '1', close=False, call_set_tabs_enabled=False")
-                            tools_gw.add_layer_temp(self.dlg_go2epa, self.complet_result['body']['data'],
-                                                    None, True, True, 1, True, close=False,
-                                                    call_set_tabs_enabled=False)
-
-            if self.go2epa_import_result and self.rpt_result:
-                if self.rpt_result.get('status') == "Accepted":
-                    if 'body' in self.rpt_result:
-                        if 'data' in self.rpt_result['body']:
-                            tools_log.log_info(f"Task 'Go2Epa' execute function 'def add_layer_temp' from 'tools_gw.py' "
-                                f"with parameters: '{self.dlg_go2epa}', '{self.rpt_result['body']['data']}', "
-                                               f"'None', 'True', 'True', '1', close=False, call_set_tabs_enabled=False")
-
-                            tools_gw.add_layer_temp(self.dlg_go2epa, self.rpt_result['body']['data'],
-                                                    None, True, True, 1, True, close=False,
-                                                    call_set_tabs_enabled=False)
-                    self.message = self.rpt_result['message']['text']
-            sql = f"SELECT {self.function_name}("
-            if self.body:
-                sql += f"{self.body}"
-            sql += f");"
-            tools_log.log_info(f"Task 'Go2Epa' manage json response with parameters: '{self.complet_result}', '{sql}', 'None'")
-            tools_gw.manage_json_response(self.complet_result, sql, None)
-
-            replace = tools_gw.get_config_parser('btn_go2epa', 'force_import_velocity_higher_50ms', "user", "init",
-                                                 prefix=False)
-            if tools_os.set_boolean(replace, default=False) and self.replaced_velocities:
-                msg = "There were velocities >50 in the rpt file. You have activated the option to force the import " \
-                      "so they have been set to 50."
-                tools_qt.show_info_box(msg)
-
-            if self.common_msg != "":
-                tools_qgis.show_info(self.common_msg)
-            if self.message is not None:
-                tools_log.log_info(self.message)
-            self.go2epa.check_result_id()
-            return
-
-        if self.function_failed:
-            if self.json_result is None or not self.json_result:
-                tools_log.log_warning("Function failed finished")
-            if self.complet_result:
-                if self.complet_result.get('status') == "Failed":
-                    tools_gw.manage_json_exception(self.complet_result)
-            if self.rpt_result:
-                if "Failed" in self.rpt_result.get('status'):
-                    tools_gw.manage_json_exception(self.rpt_result)
-
-        if self.error_msg:
-            title = f"Task aborted - {self.description()}"
-            tools_qt.show_info_box(self.error_msg, title=title)
-            return
-
-        if self.exception:
-            title = f"Task aborted - {self.description()}"
-            tools_qt.show_info_box(self.exception, title=title)
-            raise self.exception
+        print("OUTPUT:")
+        print(self.output)
 
         # If Database exception, show dialog after task has finished
         if global_vars.session_vars['last_error']:
@@ -183,7 +138,7 @@ class GwEpaFileManager(GwTask):
     def cancel(self):
 
         tools_qgis.show_info(f"Task canceled - {self.description()}")
-        self._close_file()
+        # self._close_file()
         super().cancel()
 
 
@@ -202,412 +157,210 @@ class GwEpaFileManager(GwTask):
 
     # region private functions
 
-    def _exec_function_pg2epa(self, steps):
-
-        self.json_result = None
-        status = False
-        self.setProgress(0)
-
-        extras = f'"resultId":"{self.result_name}"'
-        if global_vars.project_type == 'ud':
-            extras += f', "dumpSubcatch":"{self.export_subcatch}"'
-
-        if steps == 3:
-            self.body = tools_gw.create_body(extras=(extras + f', "step": 1'))
-            tools_log.log_info(f"Task 'Go2Epa' execute procedure 'gw_fct_pg2epa_main' step 1 with parameters: "
-                               f"'gw_fct_pg2epa_main', '{self.body}', 'aux_conn={self.aux_conn}', 'is_thread=True'")
-
-            json_result = tools_gw.execute_procedure('gw_fct_pg2epa_main', self.body,
-                                                     aux_conn=self.aux_conn, is_thread=True)
-            if self.isCanceled():
-                return False
-            if json_result is not None:
-                self.body = tools_gw.create_body(extras=(extras + f', "step": 2'))
-                tools_log.log_info(f"Task 'Go2Epa' execute procedure 'gw_fct_pg2epa_main' step 2 with parameters: "
-                                   f"'gw_fct_pg2epa_main', '{self.body}', 'aux_conn={self.aux_conn}', 'is_thread=True'")
-                json_result = tools_gw.execute_procedure('gw_fct_pg2epa_main', self.body,
-                                                         aux_conn=self.aux_conn, is_thread=True)
-                if self.isCanceled():
-                    return False
-                if json_result is not None:
-                    self.body = tools_gw.create_body(extras=(extras + f', "step": 3'))
-                    tools_log.log_info(f"Task 'Go2Epa' execute procedure 'gw_fct_pg2epa_main' step 3 with parameters: "
-                                       f"'gw_fct_pg2epa_main', '{self.body}', 'aux_conn={self.aux_conn}', 'is_thread=True'")
-                    json_result = tools_gw.execute_procedure('gw_fct_pg2epa_main', self.body,
-                                                             aux_conn=self.aux_conn, is_thread=True)
-                    if self.isCanceled():
-                        return False
-        elif steps == 2:
-            self.body = tools_gw.create_body(extras=(extras + f', "step": 1'))
-            tools_log.log_info(f"Task 'Go2Epa' execute procedure 'gw_fct_pg2epa_main' step 1 with parameters: "
-                               f"'gw_fct_pg2epa_main', '{self.body}', 'aux_conn={self.aux_conn}', 'is_thread=True'")
-            json_result = tools_gw.execute_procedure('gw_fct_pg2epa_main', self.body,
-                                                     aux_conn=self.aux_conn, is_thread=True)
-            if self.isCanceled():
-                return False
-            if json_result is not None:
-                self.body = tools_gw.create_body(extras=(extras + f', "step": 3'))
-                tools_log.log_info(f"Task 'Go2Epa' execute procedure 'gw_fct_pg2epa_main' step 3 with parameters: "
-                                   f"'gw_fct_pg2epa_main', '{self.body}', 'aux_conn={self.aux_conn}', 'is_thread=True'")
-                json_result = tools_gw.execute_procedure('gw_fct_pg2epa_main', self.body,
-                                                         aux_conn=self.aux_conn, is_thread=True)
-                if self.isCanceled():
-                    return False
-
-        elif steps == 1:
-            self.body = tools_gw.create_body(extras=(extras + f', "step": 3'))
-            tools_log.log_info(f"Task 'Go2Epa' execute procedure 'gw_fct_pg2epa_main' step 3 with parameters: "
-                               f"'gw_fct_pg2epa_main', '{self.body}', 'aux_conn={self.aux_conn}', 'is_thread=True'")
-            json_result = tools_gw.execute_procedure('gw_fct_pg2epa_main', self.body,
-                                                     aux_conn=self.aux_conn, is_thread=True)
-            if self.isCanceled():
-                return False
-        else:  # steps == 0
-            extras += f', "step": 0'
-            self.body = tools_gw.create_body(extras=extras)
-            tools_log.log_info(f"Task 'Go2Epa' execute procedure 'gw_fct_pg2epa_main' step 0 with parameters: "
-                               f"'gw_fct_pg2epa_main', '{self.body}', 'aux_conn={self.aux_conn}', 'is_thread=True'")
-            json_result = tools_gw.execute_procedure('gw_fct_pg2epa_main', self.body,
-                                                     aux_conn=self.aux_conn, is_thread=True)
-            if self.isCanceled():
-                return False
-
-        # Manage json result
-        self.json_result = json_result
-        self.complet_result = json_result
-        if json_result is None or not json_result:
-            self.function_failed = True
-        elif 'status' in json_result:
-            if json_result['status'] == 'Failed':
-                tools_log.log_warning(json_result)
-                self.function_failed = True
-            else:
-                status = True
-        if self.isCanceled():
-            return False
-
-        return status
-
-
-    def _export_inp(self):
+    def _new_export_inp(self):
 
         if self.isCanceled():
             return False
 
-        tools_log.log_info(f"Export INP file into PostgreSQL")
+        tools_log.log_info(f"Export INP file")
 
-        # Get values from complet_result['body']['file'] and insert into INP file
-        if 'file' not in self.complet_result['body']:
-            return False
-
-        if self.file_inp == "null":
-            message = "You have to set this parameter"
-            self.error_msg = f"{message}: INP file"
-            return False
-
-        tools_log.log_info(f"Task 'Go2Epa' execute function 'def _fill_inp_file' with parameters: '{self.file_inp}', '{self.complet_result['body']['file']}'")
-        self._fill_inp_file(self.file_inp, self.complet_result['body']['file'])
-        self.message = self.complet_result['message']['text']
-        self.common_msg += "Export INP finished. "
-
+        self.process = GenerateSwmmInpFile()
+        self.process.initAlgorithm(None)
+        params = self._manage_params()
+        context = QgsProcessingContext()
+        feedback = QgsProcessingFeedback()
+        self.output = self.process.processAlgorithm(params, context, feedback)
+        print("process finished")
+        print(feedback.textLog())
         return True
 
 
-    def _fill_inp_file(self, folder_path=None, all_rows=None):
+    def _manage_params(self):
 
-        tools_log.log_info(f"Write inp file........: {folder_path}")
+        self.folder_path = 'C:/Users/usuario/Desktop/QGIS Projects/drain/export_inp/'
+        FILE_RAINGAGES = self._copy_layer_renamed_fields('inp_raingage')
+        FILE_CONDUITS = self._copy_layer_renamed_fields('inp_conduit')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_conduit'
+        FILE_JUNCTIONS = self._copy_layer_renamed_fields('inp_junction')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_junction'
+        FILE_DIVIDERS = self._copy_layer_renamed_fields('inp_divider')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_divider'
+        FILE_ORIFICES = self._copy_layer_renamed_fields('inp_orifice')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_orifice'
+        FILE_OUTFALLS = self._copy_layer_renamed_fields('inp_outfall')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_outfall'
+        FILE_OUTLETS = self._copy_layer_renamed_fields('inp_outlet')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_outlet'
+        FILE_STORAGES = self._copy_layer_renamed_fields('inp_storage')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_storage'
+        FILE_PUMPS = self._copy_layer_renamed_fields('inp_pump')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_pump'
+        FILE_SUBCATCHMENTS = self._copy_layer_renamed_fields('inp_subcatchment')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_subcatchment'
+        FILE_WEIRS = self._copy_layer_renamed_fields('inp_weir')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_weir'
+        FILE_CURVES = self._create_curves_file()
+        FILE_PATTERNS = self._create_patterns_file()
+        FILE_OPTIONS = None  # TODO: ARCHIVO EXCEL 'inp_options'
+        FILE_TIMESERIES = None  # TODO: ARCHIVO EXCEL 'cat_timeseries'
+        FILE_INFLOWS = None  # TODO: ARCHIVO EXCEL 'inp_inflow'
+        FILE_QUALITY = None  # TODO: ARCHIVO EXCEL 'inp_quality'
+        FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'cat_transects'
+        FILE_STREETS = None  # TODO: ARCHIVO EXCEL 'inp_streets'
+        params = {
+            'QGIS_OUT_INP_FILE': f'{self.folder_path}test.inp',
+            'FILE_RAINGAGES': FILE_RAINGAGES,
+            'FILE_CONDUITS': FILE_CONDUITS,
+            'FILE_JUNCTIONS': FILE_JUNCTIONS,
+            'FILE_DIVIDERS': FILE_DIVIDERS,
+            'FILE_ORIFICES': FILE_ORIFICES,
+            'FILE_OUTFALLS': FILE_OUTFALLS,
+            'FILE_OUTLETS': FILE_OUTLETS,
+            'FILE_STORAGES': FILE_STORAGES,
+            'FILE_PUMPS': FILE_PUMPS,
+            'FILE_SUBCATCHMENTS': FILE_SUBCATCHMENTS,
+            'FILE_WEIRS': FILE_WEIRS,
+            'FILE_CURVES': FILE_CURVES,
+            'FILE_PATTERNS': FILE_PATTERNS,
+            'FILE_OPTIONS': FILE_OPTIONS,
+            'FILE_TIMESERIES': FILE_TIMESERIES,
+            'FILE_INFLOWS': FILE_INFLOWS,
+            'FILE_QUALITY': FILE_QUALITY,
+            'FILE_TRANSECTS': FILE_TRANSECTS,
+            'FILE_STREETS': FILE_STREETS
+        }
 
-        # Generate generic INP file
-        file_inp = open(folder_path, "w")
-        read = True
-        for row in all_rows:
-            # Use regexp to check which targets to read (everyone except GULLY)
-            if bool(re.match('\[(.*?)\]', row['text'])) and \
-                    ('GULLY' in row['text'] or 'LINK' in row['text'] or
-                     'GRATE' in row['text'] or 'LXSECTIONS' in row['text']):
-                read = False
-            elif bool(re.match('\[(.*?)\]', row['text'])):
-                read = True
-            if row.get('text') is not None and read:
-                line = row['text'].rstrip() + "\n"
-                file_inp.write(line)
+        return params
 
-        self._close_file(file_inp)
+    def _copy_layer_renamed_fields(self, input_layer: str):
+        # Input layer
+        output_layer_name = f'{input_layer}_output'
+        input_layer_name = input_layer
+        input_path = 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg'
+        input_layer_uri = f"{input_path}|layername={input_layer_name}"
+        input_layer = QgsVectorLayer(input_layer_uri, input_layer_name, 'ogr')
 
-        networkmode = tools_gw.get_config_value('inp_options_networkmode')
-        if global_vars.project_type == 'ud' and networkmode and networkmode[0] == "2":
+        # Output layer
+        geometry_type = input_layer.geometryType()
+        geometry_type_map = {0: "Point", 1: "LineString", 2: "Polygon", 4: "NoGeometry"}
+        print(f"{geometry_type=}")
+        geometry_type = geometry_type_map.get(geometry_type, "Unknown")
+        print(f"mapped {geometry_type=}")
+        srid = input_layer.crs().authid()
+        if geometry_type in ("NoGeometry", "Unknown"):
+            srid = global_vars.project_epsg
+        output_layer = QgsVectorLayer(f'{geometry_type}?crs={srid}', f'{output_layer_name}', 'memory')
 
-            # Replace extension .inp
-            aditional_path = folder_path.replace('.inp', f'.dat')
-            aditional_file = open(aditional_path, "w")
-            read = True
-            save_file = False
-            for row in all_rows:
-                # Use regexp to check which targets to read (only TITLE and aditional target)
-                if bool(re.match('\[(.*?)\]', row['text'])) and \
-                        ('GULLY' in row['text'] or 'LINK' in row['text'] or
-                         'GRATE' in row['text'] or 'LXSECTIONS' in row['text']):
-
-                    read = True
-                    if 'GULLY' in row['text'] or 'LINK' in row['text'] or \
-                       'GRATE' in row['text'] or 'LXSECTIONS' in row['text']:
-                        save_file = True
-                elif bool(re.match('\[(.*?)\]', row['text'])):
-                    read = False
-
-                if row.get('text') is not None and read:
-
-                    line = row['text'].rstrip() + "\n"
-
-                    if not bool(re.match(';;-(.*?)', row['text'])) and not bool(re.match('\[(.*?)', row['text'])):
-                        line = re.sub(';;', '', line)
-                        line = re.sub(' +', ' ', line)
-                        aditional_file.write(line)
-
-            self._close_file(aditional_file)
-
-            if save_file is False:
-                os.remove(aditional_path)
-
-
-    def _execute_epa(self):
-
-        if self.isCanceled():
-            return False
-
-        tools_log.log_info(f"Execute EPA software")
-
-        if self.file_rpt == "null":
-            message = "You have to set this parameter"
-            self.error_msg = f"{message}: RPT file"
-            return False
-
-        msg = "INP file not found"
-        if self.file_inp is not None:
-            if not os.path.exists(self.file_inp):
-                self.error_msg = f"{msg}: {self.file_inp}"
-                return False
-        else:
-            self.error_msg = f"{msg}: {self.file_inp}"
-            return False
-
-        # Set file to execute
-        opener = None
-        if global_vars.project_type in 'ws':
-            opener = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}epa{os.sep}epanet{os.sep}epanet.exe"
-        elif global_vars.project_type in 'ud':
-            opener = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}epa{os.sep}swmm{os.sep}swmm5.exe"
-
-        if opener is None:
-            return False
-
-        if not os.path.exists(opener):
-            self.error_msg = f"File not found: {opener}"
-            return False
-
-        subprocess.call([opener, self.file_inp, self.file_rpt], shell=False)
-        self.common_msg += "EPA model finished. "
-
-        return True
-
-
-    def _import_rpt(self):
-        """ Import result file """
-
-        tools_log.log_info(f"Import rpt file........: {self.file_rpt}")
-
-        self.rpt_result = None
-        self.json_rpt = None
-        status = False
-        try:
-            # Call import function
-            tools_log.log_info(f"Task 'Go2Epa' execute function 'def _read_rpt_file' with parameters: '{self.file_rpt}'")
-            status = self._read_rpt_file(self.file_rpt)
-            if not status:
-                return False
-            tools_log.log_info(f"Task 'Go2Epa' execute function 'def _exec_import_function'")
-            status = self._exec_import_function()
-        except Exception as e:
-            self.error_msg = str(e)
-        finally:
-            return status
-
-
-    def _read_rpt_file(self, file_path=None):
-
-        replace = tools_gw.get_config_parser('btn_go2epa', 'force_import_velocity_higher_50ms', "user", "init", prefix=False)
-        if tools_os.set_boolean(replace, default=False) and global_vars.project_type == 'ud':
-            # Replace the velocities
-            try:
-                # Read the contents of the file
-                with open(file_path, "r+") as file:
-                    contents = file.read()
-                # Save a backup of the file
-                with open(f"{file_path}.old", 'w', encoding='utf-8') as file:
-                    file.write(contents)
-                # Replace the words
-                old_contents = contents
-                contents = tools_os.ireplace('>50', '50', contents)
-                if contents != old_contents:
-                    self.replaced_velocities = True
-                # Write the file with new contents
-                with open(file_path, "r+") as file:
-                    file.write(contents)
-                with open(f"{file_path}", 'w', encoding='utf-8') as file:
-                    file.write(contents)
-            except Exception as e:
-                tools_log.log_error(f"Exception when replacing rpt velocities: {e}")
-
-        self.file_rpt = open(file_path, "r+")
-        full_file = self.file_rpt.readlines()
-        progress = 0
-
-        # Create dict with sources
-        sql = f"SELECT tablename, target FROM config_fprocess WHERE fid = {self.fid};"
-        rows = tools_db.get_rows(sql)
-        sources = {}
-        for row in rows:
-            json_elem = row[1].replace('{', '').replace('}', '')
-            item = json_elem.split(',')
-            for i in item:
-                sources[i.strip()] = row[0].strip()
-
-        # While we don't find a match with the target, target and col40 must be null
-        target = "null"
-        col40 = "null"
-        json_rpt = ""
-        # noinspection PyUnusedLocal
-        row_count = sum(1 for rows in full_file)
-
-        for line_number, row in enumerate(full_file):
-
-            if self.isCanceled():
-                return False
-
-            progress += 1
-            if '**' in row or '--' in row:
+        # Copy fields with modified names
+        fields = QgsFields()
+        for field in input_layer.fields():
+            new_field_name = _tables_dict_swapped[input_layer_name]['mapper'].get(field.name())
+            if new_field_name in (None, ''):
+                # TODO: review if some column is missing from mapper
                 continue
+            new_field = QgsField(new_field_name, field.type())
+            fields.append(new_field)
 
-            row = row.rstrip()
-            dirty_list = row.split(' ')
+        output_layer.dataProvider().addAttributes(fields)
+        output_layer.updateFields()
 
-            # Clean unused items
-            for x in range(len(dirty_list) - 1, -1, -1):
-                if dirty_list[x] == '':
-                    dirty_list.pop(x)
+        # Copy features
+        features = []
+        for feature in input_layer.getFeatures():
+            new_feature = QgsFeature()
+            new_feature.setGeometry(feature.geometry())
+            new_feature.setFields(output_layer.fields())
+            for field in output_layer.fields():
+                new_attribute = field.name()
+                old_attribute = _tables_dict[input_layer_name]['mapper'].get(new_attribute)
+                new_feature.setAttribute(new_attribute, feature.attribute(old_attribute))
 
-            sp_n = []
-            if len(dirty_list) > 0:
-                for x in range(0, len(dirty_list)):
-                    if bool(re.search('[0-9][-]\d{1,2}[.]]*', str(dirty_list[x]))):
-                        last_index = 0
-                        for i, c in enumerate(dirty_list[x]):
-                            if "-" == c:
-                                json_elem = dirty_list[x][last_index:i]
-                                last_index = i
-                                sp_n.append(json_elem)
+            features.append(new_feature)
 
-                        # noinspection PyUnboundLocalVariable
-                        json_elem = dirty_list[x][last_index:i]
-                        sp_n.append(json_elem)
+        output_layer.dataProvider().addFeatures(features)
 
-                    elif bool(re.search('(\d\..*\.\d)', str(dirty_list[x]))):
-                        if 'Version' not in dirty_list and 'VERSION' not in dirty_list:
-                            error_near = f"Error near line {line_number+1} -> {dirty_list}"
-                            tools_log.log_info(error_near)
-                            message = (f"The rpt file is not valid to import. "
-                                       f"Because columns on rpt file are overlaped, it seems you need to improve your simulation. "
-                                       f"Please ckeck and fix it before continue. \n"
-                                       f"{error_near}")
-                            self.error_msg = message
-                            return False
-                    elif bool(re.search('>50', str(dirty_list[x]))):
-                        error_near = f"Error near line {line_number+1} -> {dirty_list}"
-                        tools_log.log_info(error_near)
-                        message = (f"The rpt file is not valid to import. "
-                                   f"Because velocity has not numeric value (>50), it seems you need to improve your simulation. "
-                                   f"Please ckeck and fix it before continue. \n"
-                                   f"{error_near}")
-                        self.error_msg = message
-                        return False
-                    else:
-                        sp_n.append(dirty_list[x])
+        # Add the output layer to the project
+        QgsProject.instance().addMapLayer(output_layer)
 
-            # Find strings into dict and set target column
-            for k, v in sources.items():
-                try:
-                    if k in (f'{sp_n[0]} {sp_n[1]}', f'{sp_n[0]}'):
-                        target = "'" + v + "'"
-                        _time = re.compile('^([012]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$')
-                        if _time.search(sp_n[3]):
-                            col40 = "'" + sp_n[3] + "'"
-                except IndexError:
-                    pass
-                except Exception as e:
-                    tools_log.log_info(type(e).__name__)
-
-            if len(sp_n) > 0:
-                json_elem = f'"target": "{target}", "col40": "{col40}", '
-                for x in range(0, len(sp_n)):
-                    json_elem += f'"col{x + 1}":'
-                    if "''" not in sp_n[x]:
-                        value = '"' + sp_n[x].strip().replace("\n", "") + '", '
-                        value = value.replace("''", "null")
-                    else:
-                        value = 'null, '
-                    json_elem += value
-
-                json_elem = '{' + str(json_elem[:-2]) + '}, '
-                json_rpt += json_elem
-
-            # Update progress bar
-            if progress % 1000 == 0:
-                self.setProgress((line_number * 100) / row_count)
-
-        # Manage JSON
-        json_rpt = '[' + str(json_rpt[:-2]) + ']'
-        self.json_rpt = json_rpt
-
-        self._close_file()
-
-        return True
+        return output_layer
 
 
-    def _exec_import_function(self):
-        """ Call function gw_fct_rpt2pg_main """
+    def _create_curves_file(self):
+        # Use pandas to read the SQL table into a DataFrame
+        query = """SELECT
+                    cc.curve_type,
+                    cc.idval AS curve_name,
+                    ccv.xcoord,
+                    ccv.ycoord
+                FROM
+                    cat_curve cc
+                JOIN
+                    cat_curve_value ccv ON cc.id = ccv.idval;"""
+        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        df = pd.read_sql_query(query, conn)
+        conn.close()
 
-        extras = f'"resultId":"{self.result_name}"'
-        if self.json_rpt:
-            extras += f', "file": {self.json_rpt}'
-        self.body = tools_gw.create_body(extras=extras)
-        self.json_result = tools_gw.execute_procedure('gw_fct_rpt2pg_main', self.body,
-                                                      aux_conn=self.aux_conn, is_thread=True)
-        self.rpt_result = self.json_result
-        if self.json_result is None or not self.json_result:
-            self.function_failed = True
-            return False
+        # Group the data by the 'curve_type' column
+        grouped_data = df.groupby(['curve_type'])
 
-        if self.json_result.get('status') == 'Failed':
-            tools_log.log_warning(self.json_result)
-            self.function_failed = True
-            return False
+        file_path = f'{self.folder_path}{os.sep}curves_file.xlsx'
+        # Create a new Excel writer
+        with pd.ExcelWriter(file_path) as writer:
+            # Iterate over each group and save it to a separate sheet
+            for curve_type, data in grouped_data:
+                # Concatenate all curves of the same curve_type, with curve_name separated by semicolon
+                grouped_by_curve_name = data.groupby('curve_name')
+                # Track the current row position
+                current_row = 0
 
-        # final message
-        self.common_msg += "Import RPT file finished."
+                for curve_name, curve_data in grouped_by_curve_name:
+                    # Remove the 'curve_type' columns from the individual sheets
+                    curve_data.drop(['curve_type'], axis=1, inplace=True)
+                    # Save the curve data to a sheet named with the curve_type
+                    curve_data.to_excel(writer, sheet_name=f"{curve_type[0].capitalize()}", startrow=current_row,
+                                        index=False, header=False)
 
-        return True
+                    # Insert a semicolon between different curve_names
+                    writer.sheets[f"{curve_type[0].capitalize()}"].write(current_row + curve_data.shape[0], 0, ';')
+
+                    # Update the current row position
+                    current_row += curve_data.shape[0] + 1
+
+        return file_path
 
 
-    def _get_steps(self):
+    def _create_patterns_file(self):
+        # Use pandas to read the SQL table into a DataFrame
+        query = """SELECT
+                    cc.curve_type,
+                    cc.idval AS curve_name,
+                    ccv.xcoord,
+                    ccv.ycoord
+                FROM
+                    cat_curve cc
+                JOIN
+                    cat_curve_value ccv ON cc.id = ccv.idval;"""
+        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        df = pd.read_sql_query(query, conn)
+        conn.close()
 
-        value = tools_gw.get_config_value('inp_options_debug')
-        if value:
-            value = json.loads(value[0])
-            try:
-                steps = int(value['steps'])
-            except (KeyError, ValueError):
-                steps = 0
+        # Group the data by the 'curve_type' column
+        grouped_data = df.groupby(['curve_type'])
 
-            return steps
+        file_path = f'{self.folder_path}{os.sep}curves_file.xlsx'
+        # Create a new Excel writer
+        with pd.ExcelWriter(file_path) as writer:
+            # Iterate over each group and save it to a separate sheet
+            for curve_type, data in grouped_data:
+                # Concatenate all curves of the same curve_type, with curve_name separated by semicolon
+                grouped_by_curve_name = data.groupby('curve_name')
+                # Track the current row position
+                current_row = 0
+
+                for curve_name, curve_data in grouped_by_curve_name:
+                    # Remove the 'curve_type' columns from the individual sheets
+                    curve_data.drop(['curve_type'], axis=1, inplace=True)
+                    # Save the curve data to a sheet named with the curve_type
+                    curve_data.to_excel(writer, sheet_name=f"{curve_type[0].capitalize()}", startrow=current_row,
+                                        index=False, header=False)
+
+                    # Insert a semicolon between different curve_names
+                    writer.sheets[f"{curve_type[0].capitalize()}"].write(current_row + curve_data.shape[0], 0, ';')
+
+                    # Update the current row position
+                    current_row += curve_data.shape[0] + 1
+
+        return file_path
+
 
     # endregion
