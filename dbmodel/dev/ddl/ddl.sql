@@ -326,7 +326,6 @@ CREATE TABLE gully (
 
 CREATE TABLE inp_raingage (
     fid integer PRIMARY KEY,
-    rg_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     rain_type boolean CHECK (typeof(rain_type) IN (0,1,NULL)),
@@ -395,7 +394,6 @@ CREATE TABLE inp_outlet (
 
 CREATE TABLE inp_subcatchment ( 
     fid integer primary key,
-    subc_id text unique,
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     rg_id integer check (typeof(rg_id) = 'integer' or rg_id = null),
