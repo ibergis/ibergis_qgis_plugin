@@ -192,7 +192,7 @@ class GwEpaFileManager(GwTask):
         FILE_CURVES = self._create_curves_file()
         FILE_PATTERNS = self._create_patterns_file()
         FILE_OPTIONS = None  # TODO: ARCHIVO EXCEL 'inp_options'
-        FILE_TIMESERIES = None  # TODO: ARCHIVO EXCEL 'cat_timeseries'
+        FILE_TIMESERIES = self._create_timeseries_file()
         FILE_INFLOWS = None  # TODO: ARCHIVO EXCEL 'inp_inflow'
         FILE_QUALITY = None  # TODO: ARCHIVO EXCEL 'inp_quality'
         FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'cat_transects'
@@ -361,6 +361,44 @@ class GwEpaFileManager(GwTask):
                     current_row += pattern_data.shape[0] + 1
 
         return file_path
+
+
+    def _create_timeseries_file(self):
+        # Use pandas to read the SQL table into a DataFrame
+        query = """SELECT
+                    ct.idval AS timeseries_name,
+                    ctv.date,
+                    ctv.time,
+                    ctv.value,
+                    ct.fname
+                FROM
+                    cat_timeseries ct
+                LEFT JOIN
+                    cat_timeseries_value ctv ON ct.id = ctv.idval;"""
+        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+
+        # Group the data by the 'timeseries_name' column
+        grouped_data = df.groupby(['timeseries_name'])
+
+        file_path = f'{self.folder_path}{os.sep}timeseries_file.xlsx'
+        # Create a new Excel writer
+        with pd.ExcelWriter(file_path) as writer:
+            sheet_name = "Timeseries"
+            # Track the current row position
+            current_row = 0
+            # Iterate over each timeseries and put a ';' in-between them
+            for timeseries_name, data in grouped_data:
+
+                # Save the pattern data to a sheet named with the pattern_type
+                data.to_excel(writer, sheet_name=sheet_name, startrow=current_row, index=False, header=False)
+
+                # Insert a semicolon between different pattern_names
+                writer.sheets[sheet_name].write(current_row + data.shape[0], 0, ';')
+
+                # Update the current row position
+                current_row += data.shape[0] + 1
 
         return file_path
 
