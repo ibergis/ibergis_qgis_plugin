@@ -322,43 +322,45 @@ class GwEpaFileManager(GwTask):
     def _create_patterns_file(self):
         # Use pandas to read the SQL table into a DataFrame
         query = """SELECT
-                    cc.curve_type,
-                    cc.idval AS curve_name,
-                    ccv.xcoord,
-                    ccv.ycoord
+                    cp.pattern_type,
+                    cp.idval AS pattern_name,
+                    cpv.timestep,
+                    cpv.value
                 FROM
-                    cat_curve cc
+                    cat_pattern cp
                 JOIN
-                    cat_curve_value ccv ON cc.id = ccv.idval;"""
+                    cat_pattern_value cpv ON cp.id = cpv.idval;"""
         conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
         df = pd.read_sql_query(query, conn)
         conn.close()
 
-        # Group the data by the 'curve_type' column
-        grouped_data = df.groupby(['curve_type'])
+        # Group the data by the 'pattern_type' column
+        grouped_data = df.groupby(['pattern_type'])
 
-        file_path = f'{self.folder_path}{os.sep}curves_file.xlsx'
+        file_path = f'{self.folder_path}{os.sep}patterns_file.xlsx'
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
             # Iterate over each group and save it to a separate sheet
-            for curve_type, data in grouped_data:
-                # Concatenate all curves of the same curve_type, with curve_name separated by semicolon
-                grouped_by_curve_name = data.groupby('curve_name')
+            for pattern_type, data in grouped_data:
+                # Concatenate all patterns of the same pattern_type, with pattern_name separated by semicolon
+                grouped_by_pattern_name = data.groupby('pattern_name')
                 # Track the current row position
                 current_row = 0
 
-                for curve_name, curve_data in grouped_by_curve_name:
-                    # Remove the 'curve_type' columns from the individual sheets
-                    curve_data.drop(['curve_type'], axis=1, inplace=True)
-                    # Save the curve data to a sheet named with the curve_type
-                    curve_data.to_excel(writer, sheet_name=f"{curve_type[0].capitalize()}", startrow=current_row,
+                for pattern_name, pattern_data in grouped_by_pattern_name:
+                    # Remove the 'pattern_type' columns from the individual sheets
+                    pattern_data.drop(['pattern_type'], axis=1, inplace=True)
+                    # Save the pattern data to a sheet named with the pattern_type
+                    pattern_data.to_excel(writer, sheet_name=f"{pattern_type[0].capitalize()}", startrow=current_row,
                                         index=False, header=False)
 
-                    # Insert a semicolon between different curve_names
-                    writer.sheets[f"{curve_type[0].capitalize()}"].write(current_row + curve_data.shape[0], 0, ';')
+                    # Insert a semicolon between different pattern_names
+                    writer.sheets[f"{pattern_type[0].capitalize()}"].write(current_row + pattern_data.shape[0], 0, ';')
 
                     # Update the current row position
-                    current_row += curve_data.shape[0] + 1
+                    current_row += pattern_data.shape[0] + 1
+
+        return file_path
 
         return file_path
 
