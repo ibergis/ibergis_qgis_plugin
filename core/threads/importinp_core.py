@@ -57,12 +57,15 @@ _tables = (
             "Slope": "slope",
             "CurbLen": "clength",
             "SnowPack": "snow_id",
-        },
-    },
-    {
-        "table_name": "inp_subcatchment",
-        "section": "INFILTRATION",
-        "mapper": {
+            # SUBAREAS columns
+            "N_Imperv": "nimp",
+            "N_Perv": "nperv",
+            "S_Imperv": "simp",
+            "S_Perv": "sperv",
+            "PctZero": "zero",
+            "RouteTo": "routeto",
+            "PctRouted": "rted",
+            # INFILTRATION columns
             "InfMethod": "method",
             "MaxRate": "maxrate",
             "MinRate": "minrate",
@@ -74,20 +77,6 @@ _tables = (
             "InitDef": "initdef",
             "CurveNum": "curveno",
             "Annotation": "annotation",
-        },
-    },
-    {
-        "table_name": "inp_subcatchment",
-        "section": "SUBAREAS",
-        "mapper": {
-            "Subcatchment": "subc_id",
-            "N_Imperv": "nimp",
-            "N_Perv": "nperv",
-            "S_Imperv": "simp",
-            "S_Perv": "sperv",
-            "PctZero": "zero",
-            "RouteTo": "routeto",
-            "PctRouted": "rted",
         },
     },
     {
@@ -400,7 +389,6 @@ def get_dataframes(inp_dict, epsg):
         "inp_conduit": ("CONDUITS", "XSECTIONS", "LOSSES"),
         "inp_weir": ("WEIRS", "XSECTIONS"),
         "inp_orifice": ("ORIFICES", "XSECTIONS"),
-        "inp_subcatchment": ("SUBCATCHMENTS", "INFILTRATION", "SUBAREAS"),
     }
 
     for table, sections in tables_to_merge.items():
@@ -420,10 +408,13 @@ def get_dataframes(inp_dict, epsg):
         if section not in inp_dict:
             continue
 
+        if section == "CURVES":
+            print(f"{inp_dict[section]=}")
+
         data = inp_dict[section]["data"]
         if type(data) in (dict, list):
-            print(section, ":")
-            print(f"{data}")
+            # print(section, ":")
+            # print(f"{data}")
             continue
         df = get_dataframe(data, table, epsg)
         dataframes.append({"table": table["table_name"], "df": df})
