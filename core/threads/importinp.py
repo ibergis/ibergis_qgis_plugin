@@ -7,9 +7,7 @@ from ... import global_vars
 
 
 class GwImportInpTask(GwTask):
-    def __init__(
-        self, description, input_file, gpkg_path, feedback
-    ):
+    def __init__(self, description, input_file, gpkg_path, feedback):
         super().__init__(description)
         self.input_file = input_file
         self.gpkg_path = gpkg_path
@@ -35,16 +33,15 @@ class GwImportInpTask(GwTask):
 
     def _import_file(self):
         gpkg_file = self.dao.db_filepath
-        dicts = inp2dict(self.input_file, self.feedback)
+        inp_dict = inp2dict(self.input_file, self.feedback)
         if self.isCanceled():
             return False
         columns = {table: self._get_colums(table) for table in core.tables()}
-        data = core.get_dataframes(
-            dicts, columns, global_vars.data_epsg
-        )
+        data = core.get_dataframes(inp_dict, global_vars.data_epsg)
+
         if self.isCanceled():
             return False
-        
+
         for i, item in enumerate(data):
             self.feedback.setProgress(i / len(data) * 100)
             if len(item["df"]) == 0:
@@ -52,11 +49,17 @@ class GwImportInpTask(GwTask):
                 continue
             if self.isCanceled():
                 return False
-            if item['table'] in ('inp_conduit', 'inp_orifice', 'inp_outlet'):
-                continue
             self.feedback.setProgressText(f"Saving table {item['table']}")
+            invalid_columns = set(item["df"].columns).difference(
+                columns[item["table"]], {"geometry"}
+            )
+            if invalid_columns:
+                # FIXME: Import of cat_curve
+                raise ValueError(f"Invalid columns: {invalid_columns}")
+            missing_columns = columns[item["table"]].difference(item["df"].columns)
+            for column in missing_columns:
+                item["df"][column] = None
             item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
-
 
         # for i, item in enumerate(data.values()):
 

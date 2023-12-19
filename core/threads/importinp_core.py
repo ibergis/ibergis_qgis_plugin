@@ -20,7 +20,7 @@ _tables = (
         },
     },
     {
-        "table_name": "inp_conduit",
+        "table_name": None,
         "section": "XSECTIONS",
         "mapper": {
             "Shape": "shape",
@@ -34,7 +34,7 @@ _tables = (
         },
     },
     {
-        "table_name": "inp_conduit",
+        "table_name": None,
         "section": "LOSSES",
         "mapper": {
             "Kentry": "kentry",
@@ -254,10 +254,10 @@ _tables = (
         "section": "CURVES",
         "mapper": {
             "Name": "idval",
-            #"Type": 
+            # "Type":
             "Depth": "xcoord",
             "Area": "ycoord",
-            # "Annotation": 
+            # "Annotation":
         },
     },
     {
@@ -306,7 +306,7 @@ _tables = (
         "section": "DWF",
         "mapper": {
             "Node": "node_id",
-            #"Constituent":
+            # "Constituent":
             "Average_Value": "avg_value",
             "Time_Pattern1": "pat1",
             "Time_Pattern2": "pat2",
@@ -346,14 +346,15 @@ _tables = (
 )
 
 
-def get_dataframe(data, table_info, columns, epsg):
+def get_dataframe(data, table_info, epsg):
     mapper = table_info["mapper"]
     df = data.rename(columns=mapper).applymap(null2none)
+
+    if "geometry" not in df.columns:
+        return df
+
     gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
     gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
-    missing_columns = columns - set(gdf.columns)
-    for column in missing_columns:
-        gdf[column] = None
     return gdf
 
     # mapper = table_info["mapper"]
@@ -391,27 +392,40 @@ def get_dataframe(data, table_info, columns, epsg):
 
     # return gdf
 
-def get_dataframes(dicts, columns, epsg):
-    dict_all, dict_text_tables = dicts
+
+def get_dataframes(inp_dict, epsg):
     dataframes = []
+
+    tables_to_merge = {
+        "inp_conduit": ("CONDUITS", "XSECTIONS", "LOSSES"),
+        "inp_weir": ("WEIRS", "XSECTIONS"),
+        "inp_orifice": ("ORIFICES", "XSECTIONS"),
+        "inp_subcatchment": ("SUBCATCHMENTS", "INFILTRATION", "SUBAREAS"),
+    }
+
+    for table, sections in tables_to_merge.items():
+        df = get_merged_df(inp_dict, sections, epsg)
+        if not df.empty:
+            dataframes.append({"table": table, "df": df})
+
     for table in _tables:
-        table_name = table["table_name"]
+        if table["table_name"] in tables_to_merge:
+            continue
+
+        if table["table_name"] is None:
+            continue
+
         section = table["section"]
-        if section in dict_text_tables:
-            the_dict = dict_text_tables
-        elif section in dict_all:
-            the_dict = dict_all
-        else:
+
+        if section not in inp_dict:
             continue
-        data = the_dict[section]["data"]
-        if type(data) in (dict, list) or "geometry" not in data.columns:
+
+        data = inp_dict[section]["data"]
+        if type(data) in (dict, list):
+            print(section, ":")
+            print(f"{data}")
             continue
-        df = get_dataframe(
-            the_dict[section]["data"],
-            table,
-            columns[table_name],
-            epsg,
-        )
+        df = get_dataframe(data, table, epsg)
         dataframes.append({"table": table["table_name"], "df": df})
     return dataframes
 
@@ -451,8 +465,41 @@ def get_dataframes(dicts, columns, epsg):
     #         dataframes[table_name]["df"] = new_df
     #     else:
     #         dataframes[table_name] = {"table": table_name, "df": df}
-            
+
     # return dataframes
+
+
+def get_merged_df(inp_dict, sections, epsg):
+    tables_to_merge = [tb for tb in _tables if tb["section"] in sections]
+
+    merged_df = None
+
+    for table in tables_to_merge:
+        section = table["section"]
+
+        if section not in inp_dict:
+            continue
+
+        df = get_dataframe(inp_dict[section]["data"], table, epsg)
+
+        if merged_df is None:
+            merged_df = df
+            continue
+
+        if "code" in merged_df.columns:
+            merged_df = merged_df.merge(
+                df, how="left", left_on="code", right_index=True
+            )
+        elif "code" in df.columns:
+            merged_df = df.merge(
+                merged_df, how="left", left_on="code", right_index=True
+            )
+        else:
+            merged_df = merged_df.merge(
+                df, how="outer", left_index=True, right_index=True
+            )
+
+    return merged_df
 
 
 def null2none(value):

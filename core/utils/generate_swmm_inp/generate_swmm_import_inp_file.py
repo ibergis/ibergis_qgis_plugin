@@ -187,7 +187,7 @@ def inp2dict(readfile, feedback):
             )
             all_patterns = all_patterns.join(occuring_patterns_types, on="Name")
             all_patterns = {
-                'data': v.iloc[:, :-1] for k, v in all_patterns.groupby("PatternType")
+                "data": v.iloc[:, :-1] for k, v in all_patterns.groupby("PatternType")
             }
     else:
         all_patterns = dict()
@@ -252,7 +252,8 @@ def inp2dict(readfile, feedback):
         all_curves["XVal"] = [float(x) for x in all_curves["XVal"]]
         all_curves["YVal"] = [float(x) for x in all_curves["YVal"]]
         all_curves = {
-            'data': v[["Name", "XVal", "YVal"]] for k, v in all_curves.groupby("CurveType")
+            "data": v[["Name", "XVal", "YVal"]]
+            for k, v in all_curves.groupby("CurveType")
             # k: v[["Name", "XVal", "YVal"]] for k, v in all_curves.groupby("CurveType")
         }
     else:
@@ -317,7 +318,7 @@ def inp2dict(readfile, feedback):
     del all_quality["WASHOFF"]
     all_quality = {
         # k: adjust_column_types(v, def_tables_dict["QUALITY"]["tables"][k])
-        'data': adjust_column_types(v, def_tables_dict["QUALITY"]["tables"][k])
+        "data": adjust_column_types(v, def_tables_dict["QUALITY"]["tables"][k])
         for k, v in all_quality.items()
     }
     dict_res_table["QUALITY"] = all_quality
@@ -469,4 +470,11 @@ def inp2dict(readfile, feedback):
         if feedback.isCanceled():
             return
 
-    return dict_all_vals, dict_res_table
+    inp_dict = {}
+
+    for key in dict_all_vals:
+        inp_dict[key] = (
+            dict_res_table[key] if key in dict_res_table else dict_all_vals[key]
+        )
+
+    return inp_dict
