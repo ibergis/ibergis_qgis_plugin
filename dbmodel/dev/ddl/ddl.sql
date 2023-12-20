@@ -1125,6 +1125,7 @@ create view if not exists vi_dwf as select code as Name, 'FLOW' as Constituent, 
 create view if not exists vi_infiltration as select method as InfMethod, maxrate as MaxRate, minrate as MinRate, decay as Decay, maxinfl as MaxInf, suction as SuctHead, conduct as Conductiv, initdef as InitDef, curveno as CurveNum, annotation as Annotation from inp_subcatchment;
 create view if not exists vi_controls as select "text" from cat_controls;
 create view if not exists vi_transects as select "text" from cat_transects;
+create view if not exists vi_report as select parameter, value from config_param_user where parameter like '%inp_report_%';
 create view if not exists vi_inflows as select code as Name, format as Constituent, base as Baseline, cat_pattern.idval as Baseline_Pattern, timeser_id as Time_Series, mfactor as Units_Factor, sfactor as Scale_Factor, type as Type from inp_inflow join cat_pattern on inp_inflow.pattern_id=cat_pattern.id;
 create view if not exists vi_xsections as
     select code as Link, shape as Shape, geom1 as other1, geom2 as other2, 0 as other3, 0 as other4, barrels as other5, null as other6 from inp_conduit where shape ='CUSTOM' union

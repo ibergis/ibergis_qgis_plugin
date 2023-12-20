@@ -96,6 +96,7 @@ CREATE TRIGGER "trigger_delete_feature_count_vi_options" INSTEAD OF DELETE ON "v
 CREATE TRIGGER "trigger_delete_feature_count_vi_controls" INSTEAD OF DELETE ON "vi_controls" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_controls'); END;
 CREATE TRIGGER "trigger_delete_feature_count_vi_transects" INSTEAD OF DELETE ON "vi_transects" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_transects'); END;
 CREATE TRIGGER "trigger_delete_feature_count_vi_inflows" INSTEAD OF DELETE ON "vi_inflows" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_inflows'); END;
+CREATE TRIGGER "trigger_delete_feature_count_vi_report" INSTEAD OF DELETE ON "vi_report" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('vi_report'); END;
 
 CREATE TRIGGER "trigger_delete_feature_count_ground" AFTER DELETE ON "ground"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('ground'); END;
 CREATE TRIGGER "trigger_delete_feature_count_ground_roughness" AFTER DELETE ON "ground_roughness"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower('ground_roughness'); END;
@@ -209,6 +210,7 @@ CREATE TRIGGER "trigger_insert_feature_count_vi_files" INSTEAD OF INSERT ON "vi_
 CREATE TRIGGER "trigger_insert_feature_count_vi_controls" INSTEAD OF INSERT ON "vi_controls" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_controls'); END;
 CREATE TRIGGER "trigger_insert_feature_count_vi_transects" INSTEAD OF INSERT ON "vi_transects" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_transects'); END;
 CREATE TRIGGER "trigger_insert_feature_count_vi_inflows" INSTEAD OF INSERT ON "vi_inflows" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_inflows'); END;
+CREATE TRIGGER "trigger_insert_feature_count_vi_report" INSTEAD OF INSERT ON "vi_report" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('vi_report'); END;
 
 CREATE TRIGGER "trigger_insert_feature_count_ground" AFTER INSERT ON "ground"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('ground'); END;
 CREATE TRIGGER "trigger_insert_feature_count_ground_roughness" AFTER INSERT ON "ground_roughness"	BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower('ground_roughness'); END;
