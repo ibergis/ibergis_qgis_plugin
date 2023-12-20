@@ -281,7 +281,8 @@ class GwEpaFileManager(GwTask):
                     cc.curve_type,
                     cc.idval AS curve_name,
                     ccv.xcoord,
-                    ccv.ycoord
+                    ccv.ycoord,
+                    cc.descript
                 FROM
                     cat_curve cc
                 JOIN
@@ -296,25 +297,30 @@ class GwEpaFileManager(GwTask):
         file_path = f'{self.folder_path}{os.sep}curves_file.xlsx'
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
+            headers = ["Name", "Depth", "Area", "Annotation"]  # TODO: maybe use respective x-value/y-value columns depending on curve_type
             # Iterate over each group and save it to a separate sheet
             for curve_type, data in grouped_data:
                 # Concatenate all curves of the same curve_type, with curve_name separated by semicolon
                 grouped_by_curve_name = data.groupby('curve_name')
                 # Track the current row position
-                current_row = 0
+                current_row = 1
+                sheet_name = f"{curve_type[0].capitalize()}"
 
                 for curve_name, curve_data in grouped_by_curve_name:
                     # Remove the 'curve_type' columns from the individual sheets
                     curve_data.drop(['curve_type'], axis=1, inplace=True)
                     # Save the curve data to a sheet named with the curve_type
-                    curve_data.to_excel(writer, sheet_name=f"{curve_type[0].capitalize()}", startrow=current_row,
-                                        index=False, header=False)
+                    curve_data.to_excel(writer, sheet_name=sheet_name, startrow=current_row, index=False, header=False)
 
                     # Insert a semicolon between different curve_names
-                    writer.sheets[f"{curve_type[0].capitalize()}"].write(current_row + curve_data.shape[0], 0, ';')
+                    writer.sheets[sheet_name].write(current_row + curve_data.shape[0], 0, ';')
 
                     # Update the current row position
                     current_row += curve_data.shape[0] + 1
+
+                # Write headers
+                for i, header in enumerate(headers):
+                    writer.sheets[sheet_name].write(0, i, header)
 
         return file_path
 
@@ -340,25 +346,33 @@ class GwEpaFileManager(GwTask):
         file_path = f'{self.folder_path}{os.sep}patterns_file.xlsx'
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
+            tstamp_cols = {"HOURLY": "Hour", "DAILY": "Day", "MONTHLY": "Month", "WEEKEND": "Hour"}
             # Iterate over each group and save it to a separate sheet
             for pattern_type, data in grouped_data:
                 # Concatenate all patterns of the same pattern_type, with pattern_name separated by semicolon
                 grouped_by_pattern_name = data.groupby('pattern_name')
                 # Track the current row position
-                current_row = 0
+                current_row = 1
+
+                sheet_name = f"{pattern_type[0].capitalize()}"
+
+                headers = ["Name", tstamp_cols.get(pattern_type[0], "DAILY"), "Factor"]
 
                 for pattern_name, pattern_data in grouped_by_pattern_name:
                     # Remove the 'pattern_type' columns from the individual sheets
                     pattern_data.drop(['pattern_type'], axis=1, inplace=True)
                     # Save the pattern data to a sheet named with the pattern_type
-                    pattern_data.to_excel(writer, sheet_name=f"{pattern_type[0].capitalize()}", startrow=current_row,
-                                        index=False, header=False)
+                    pattern_data.to_excel(writer, sheet_name=sheet_name, startrow=current_row, index=False, header=False)
 
                     # Insert a semicolon between different pattern_names
-                    writer.sheets[f"{pattern_type[0].capitalize()}"].write(current_row + pattern_data.shape[0], 0, ';')
+                    writer.sheets[sheet_name].write(current_row + pattern_data.shape[0], 0, ';')
 
                     # Update the current row position
                     current_row += pattern_data.shape[0] + 1
+
+                # Write headers
+                for i, header in enumerate(headers):
+                    writer.sheets[sheet_name].write(0, i, header)
 
         return file_path
 
@@ -370,7 +384,8 @@ class GwEpaFileManager(GwTask):
                     ctv.date,
                     ctv.time,
                     ctv.value,
-                    ct.fname
+                    ct.fname,
+                    ct.descript
                 FROM
                     cat_timeseries ct
                 LEFT JOIN
@@ -387,7 +402,9 @@ class GwEpaFileManager(GwTask):
         with pd.ExcelWriter(file_path) as writer:
             sheet_name = "Timeseries"
             # Track the current row position
-            current_row = 0
+            current_row = 1
+            headers = ["Name", "Date", "Time", "Value", "File_Name", "Annotation"]
+
             # Iterate over each timeseries and put a ';' in-between them
             for timeseries_name, data in grouped_data:
 
@@ -399,6 +416,10 @@ class GwEpaFileManager(GwTask):
 
                 # Update the current row position
                 current_row += data.shape[0] + 1
+
+            # Write headers
+            for i, header in enumerate(headers):
+                writer.sheets[sheet_name].write(0, i, header)
 
         return file_path
 
