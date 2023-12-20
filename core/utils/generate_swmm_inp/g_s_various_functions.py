@@ -150,6 +150,8 @@ def get_patterns_from_table(patterns_raw, name_col):
     for pattern_type in pattern_types:
         pattern_cols = def_tables_dict['PATTERNS']['tables'][pattern_type].keys()
         pattern_df = patterns_raw[pattern_type]
+        if pattern_df.empty:
+            continue
         check_columns('Patterns Table', pattern_cols, pattern_df.columns)
         pattern_df = pattern_df[pattern_df[name_col] != ";"]
         pattern_df = pattern_df[pd.notna(pattern_df[name_col])]
