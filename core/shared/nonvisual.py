@@ -428,8 +428,8 @@ class GwNonVisual:
 
         curve_type_list = []
         curve_type_headers = {}
-        sql = f"SELECT id, idval, json(addparam) FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = f"SELECT id, idval, json(addparam) FROM config_typevalue WHERE typevalue = 'inp_curve_type'"
+        rows = tools_db.get_rows(sql)
 
         if rows:
             curve_type_list = [[row[0], row[1]] for row in rows]
@@ -1100,8 +1100,8 @@ class GwNonVisual:
         # Create plot widget
         plot_widget = self._create_plot_widget(self.dialog)
 
-        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = "SELECT id, idval FROM config_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
+        rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_pattern_type, rows)
 
@@ -1691,12 +1691,12 @@ class GwNonVisual:
     def _populate_timeser_combos(self, cmb_times_type, cmb_timeser_type):
         """ Populates timeseries dialog combos """
 
-        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_timeserid'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = "SELECT id, idval FROM config_typevalue WHERE typevalue = 'inp_typevalue_timeserid'"
+        rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_timeser_type, rows, index_to_show=1)
-        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_timeseries'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = "SELECT id, idval FROM config_typevalue WHERE typevalue = 'inp_typevalue_timeseries'"
+        rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_times_type, rows, index_to_show=1)
 
