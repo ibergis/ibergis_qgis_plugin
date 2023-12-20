@@ -189,7 +189,7 @@ class GwEpaFileManager(GwTask):
                 self.dao.execute_sql(sql)
 
             # Insert INP file to cat_file
-            file_path = f'{self.folder_path}{self.result_name}.inp'
+            file_path = self.QGIS_OUT_INP_FILE
             with open(file_path) as f:
                 inp_str = f.read()
 
@@ -205,7 +205,8 @@ class GwEpaFileManager(GwTask):
 
     def _manage_params(self):
 
-        self.folder_path = 'C:/Users/usuario/Desktop/QGIS Projects/drain/export_inp/'
+        temp_file = tempfile.NamedTemporaryFile(suffix='.inp', delete=False)
+        self.QGIS_OUT_INP_FILE = temp_file.name
         FILE_RAINGAGES = self._copy_layer_renamed_fields('inp_raingage')
         FILE_CONDUITS = self._copy_layer_renamed_fields('inp_conduit')
         FILE_JUNCTIONS = self._copy_layer_renamed_fields('inp_junction')
@@ -228,7 +229,7 @@ class GwEpaFileManager(GwTask):
         FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'vi_transects'
         FILE_STREETS = None
         params = {
-            'QGIS_OUT_INP_FILE': f'{self.folder_path}{self.result_name}.inp',
+            'QGIS_OUT_INP_FILE': self.QGIS_OUT_INP_FILE,
             'FILE_RAINGAGES': FILE_RAINGAGES,
             'FILE_CONDUITS': FILE_CONDUITS,
             'FILE_JUNCTIONS': FILE_JUNCTIONS,
@@ -322,7 +323,8 @@ class GwEpaFileManager(GwTask):
         # Group the data by the 'curve_type' column
         grouped_data = df.groupby(['curve_type'])
 
-        file_path = f'{self.folder_path}{os.sep}curves_file.xlsx'
+        temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+        file_path = temp_file.name
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
             headers = ["Name", "Depth", "Area", "Annotation"]  # TODO: maybe use respective x-value/y-value columns depending on curve_type
@@ -371,7 +373,8 @@ class GwEpaFileManager(GwTask):
         # Group the data by the 'pattern_type' column
         grouped_data = df.groupby(['pattern_type'])
 
-        file_path = f'{self.folder_path}{os.sep}patterns_file.xlsx'
+        temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+        file_path = temp_file.name
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
             tstamp_cols = {"HOURLY": "Hour", "DAILY": "Day", "MONTHLY": "Month", "WEEKEND": "Hour"}
@@ -418,7 +421,8 @@ class GwEpaFileManager(GwTask):
         # Apply the desired transformation to the 'Option' column
         df['Option'] = df['Option'].str.replace('inp_options_', '').str.upper()
 
-        file_path = f'{self.folder_path}{os.sep}options_file.xlsx'
+        temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+        file_path = temp_file.name
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
             sheet_name = "OPTIONS"
@@ -447,7 +451,8 @@ class GwEpaFileManager(GwTask):
         # Group the data by the 'timeseries_name' column
         grouped_data = df.groupby(['timeseries_name'])
 
-        file_path = f'{self.folder_path}{os.sep}timeseries_file.xlsx'
+        temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+        file_path = temp_file.name
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
             sheet_name = "Timeseries"
@@ -494,7 +499,8 @@ class GwEpaFileManager(GwTask):
         df_dwf = pd.read_sql_query(query, conn)
         conn.close()
 
-        file_path = f'{self.folder_path}{os.sep}inflows_file.xlsx'
+        temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+        file_path = temp_file.name
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
             # Write Direct inflows to its sheet
