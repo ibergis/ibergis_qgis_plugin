@@ -38,10 +38,19 @@ INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(4, 'B4', 'Scenari
 
 INSERT INTO boundary_conditions (fid, bscenario_id, geom) VALUES(1, 1, ST_GeomFromText('LINESTRING (418611.5221 4578144.500309, 418649.052514 4578149.067503)', <SRID_VALUE>));
 INSERT INTO boundary_conditions (fid, bscenario_id, geom) VALUES(2, 1, ST_GeomFromText('LINESTRING (418683.102935 4578122.986887, 418686.811488 4578102.347982)', <SRID_VALUE>));
+
 -- --------------
 -- CAT_TIMESERIES
 -- --------------
-INSERT INTO cat_timeseries (id, idval) VALUES(1, 'T10');
+INSERT INTO cat_timeseries (id, idval, timser_type, times_type, descript, fname, log, active) VALUES(1, '1', 'RAINFALL', 'RELATIVE', NULL, NULL, NULL, 1);
+
+INSERT INTO cat_timeseries_value (id, idval, date, time, value) VALUES(1, 1, NULL, '1:00', 10.0);
+INSERT INTO cat_timeseries_value (id, idval, date, time, value) VALUES(2, 1, NULL, '2:00', 20.0);
+INSERT INTO cat_timeseries_value (id, idval, date, time, value) VALUES(3, 1, NULL, '3:00', 30.0);
+INSERT INTO cat_timeseries_value (id, idval, date, time, value) VALUES(4, 1, NULL, '4:00', 40.0);
+INSERT INTO cat_timeseries_value (id, idval, date, time, value) VALUES(5, 1, NULL, '5:00', 50.0);
+
+
 
 
 -- -------
