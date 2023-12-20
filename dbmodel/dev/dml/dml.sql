@@ -210,10 +210,11 @@ INSERT INTO config_typevalue (typevalue, id, idval, descript, addparam) VALUES
 (64, 'inp_curve_type', 'TIDAL', 'TIDAL', '{"header": ["Hour", "Stage"]}'),
 (65, 'inp_typevalue_pattern', 'DAILY', 'DAILY', NULL),
 (66, 'inp_typevalue_pattern', 'HOURLY', 'HOURLY', NULL),
-(67, 'inp_typevalue_pattern', 'WEEKLY', 'WEEKLY', NULL),
-(68, 'inp_typevalue_timeserid', 'EVAPORATION', 'Evaporation', NULL),
-(69, 'inp_typevalue_timeserid', 'INFLOW_HYDROGRAPH', 'Inflow Hydrograph', NULL),
-(70, 'inp_typevalue_timeserid', 'INFLOW_POLLUTOGRAPH', 'Inflow Pollutograph', NULL),
-(71, 'inp_typevalue_timeserid', 'RAINFALL', 'Rainfall', NULL),
-(72, 'inp_typevalue_timeseries', 'ABSOLUTE', 'ABSOLUTE', NULL),
-(73, 'inp_typevalue_timeseries', 'RELATIVE', 'RELATIVE', NULL);
+(67, 'inp_typevalue_pattern', 'WEEKEND', 'WEEKEND', NULL),
+(68, 'inp_typevalue_pattern', 'MONTHLY', 'MONTHLY', NULL),
+(69, 'inp_typevalue_timeserid', 'EVAPORATION', 'Evaporation', NULL),
+(70, 'inp_typevalue_timeserid', 'INFLOW_HYDROGRAPH', 'Inflow Hydrograph', NULL),
+(71, 'inp_typevalue_timeserid', 'INFLOW_POLLUTOGRAPH', 'Inflow Pollutograph', NULL),
+(72, 'inp_typevalue_timeserid', 'RAINFALL', 'Rainfall', NULL),
+(73, 'inp_typevalue_timeseries', 'ABSOLUTE', 'ABSOLUTE', NULL),
+(74, 'inp_typevalue_timeseries', 'RELATIVE', 'RELATIVE', NULL);
