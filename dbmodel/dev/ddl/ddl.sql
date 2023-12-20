@@ -140,7 +140,6 @@ CREATE TABLE cat_timeseries (
 CREATE TABLE cat_timeseries_value (
     id integer primary key,
     idval integer NOT NULL,
-    hour text check (typeof(hour)='text' or hour=null),
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
