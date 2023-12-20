@@ -8,7 +8,9 @@ or (at your option) any later version.
 import json
 import os
 import re
+import shutil
 import subprocess
+import tempfile
 import sqlite3
 import pandas as pd
 
@@ -61,6 +63,10 @@ class GwEpaFileManager(GwTask):
         self.initialize_variables()
         self.set_variables_from_go2epa()
 
+        # If enabled it will: add the output layers to your project, save the .xlsx files and the generated .inp file
+        self.debug_mode = True
+        self.debug_folder_path = 'C:/Users/usuario/Desktop/QGIS Projects/drain/export_inp/'
+
 
     def initialize_variables(self):
 
@@ -72,7 +78,6 @@ class GwEpaFileManager(GwTask):
         self.complet_result = None
         self.replaced_velocities = False
         self.output = None
-        self.folder_path = None
         self.dao = global_vars.gpkg_dao_data.clone()
 
 
@@ -88,31 +93,10 @@ class GwEpaFileManager(GwTask):
         super().run()
 
         self.initialize_variables()
-        tools_log.log_info(f"Task 'Go2Epa' execute function 'def _get_steps'")
-        # steps = self._get_steps()
-        status = True
-        tools_log.log_info(f"Task 'Go2Epa' execute function 'def _exec_function_pg2epa'")
-        status = self._new_export_inp()
+        tools_log.log_info(f"Task 'Generate INP file' execute function 'def _export_inp(self)'")
+        status = self._export_inp()
 
         self._close_dao()
-
-            # status = self._exec_function_pg2epa(steps)
-            # if not status:
-            #     self.function_name = 'gw_fct_pg2epa_main'
-            #     return False
-
-        # if self.go2epa_export_inp:
-        #     tools_log.log_info(f"Task 'Go2Epa' execute function 'def _export_inp'")
-        #     status = self._export_inp()
-        #
-        # if status and self.go2epa_execute_epa:
-        #     tools_log.log_info(f"Task 'Go2Epa' execute function 'def _execute_epa'")
-        #     status = self._execute_epa()
-        #
-        # if status and self.go2epa_import_result:
-        #     tools_log.log_info(f"Task 'Go2Epa' execute function 'def _import_rpt'")
-        #     self.function_name = 'gw_fct_rpt2pg_main'
-        #     status = self._import_rpt()
 
         return status
 
@@ -160,7 +144,7 @@ class GwEpaFileManager(GwTask):
 
     # region private functions
 
-    def _new_export_inp(self):
+    def _export_inp(self):
 
         if self.isCanceled():
             return False
@@ -173,9 +157,14 @@ class GwEpaFileManager(GwTask):
         context = QgsProcessingContext()
         feedback = QgsProcessingFeedback()
         self.output = self.process.processAlgorithm(params, context, feedback)
-        print("process finished")
-        print(feedback.textLog())
-        if self.output == {}:
+
+        if self.output is not None:
+            if self.debug_mode:
+                try:
+                    shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.debug_folder_path}{os.sep}{self.result_name}.inp")
+                except Exception as e:
+                    print(e)
+
             # Delete INP file if exists
             sql = f"""
                 SELECT name FROM cat_file WHERE name = '{self.result_name}'
@@ -251,6 +240,16 @@ class GwEpaFileManager(GwTask):
             'FILE_STREETS': FILE_STREETS
         }
 
+        if self.debug_mode:
+            try:
+                shutil.copy(FILE_CURVES, f"{self.debug_folder_path}{os.sep}{self.result_name}_curves.xlsx")
+                shutil.copy(FILE_PATTERNS, f"{self.debug_folder_path}{os.sep}{self.result_name}_patterns.xlsx")
+                shutil.copy(FILE_OPTIONS, f"{self.debug_folder_path}{os.sep}{self.result_name}_options.xlsx")
+                shutil.copy(FILE_TIMESERIES, f"{self.debug_folder_path}{os.sep}{self.result_name}_timeseries.xlsx")
+                shutil.copy(FILE_INFLOWS, f"{self.debug_folder_path}{os.sep}{self.result_name}_inflows.xlsx")
+            except Exception as e:
+                print(e)
+
         return params
 
     def _copy_layer_renamed_fields(self, input_layer: str):
@@ -298,8 +297,9 @@ class GwEpaFileManager(GwTask):
 
         output_layer.dataProvider().addFeatures(features)
 
-        # Add the output layer to the project
-        QgsProject.instance().addMapLayer(output_layer)
+        if self.debug_mode:
+            # Add the output layer to the project
+            QgsProject.instance().addMapLayer(output_layer)
 
         return output_layer
 
