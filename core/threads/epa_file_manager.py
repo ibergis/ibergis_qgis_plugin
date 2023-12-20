@@ -377,7 +377,7 @@ class GwEpaFileManager(GwTask):
         file_path = temp_file.name
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
-            tstamp_cols = {"HOURLY": "Hour", "DAILY": "Day", "MONTHLY": "Month", "WEEKEND": "Hour"}
+            tstamp_cols = {"HOURLY": "Time", "DAILY": "Day", "MONTHLY": "Month", "WEEKEND": "Time"}
             # Iterate over each group and save it to a separate sheet
             for pattern_type, data in grouped_data:
                 # Concatenate all patterns of the same pattern_type, with pattern_name separated by semicolon
