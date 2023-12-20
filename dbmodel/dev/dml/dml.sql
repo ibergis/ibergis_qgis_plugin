@@ -41,7 +41,6 @@ INSERT INTO tables_geom (table_name, isgeom) values
 ('inp_junction', 'POINT'),
 ('inp_raingage', 'POINT'),
 ('inp_dwf', 'POINT'),
-('inp_inflow', 'POINT'),
 ('v_node', 'POINT'),
 ('v_arc', 'LINESTRING');
 
@@ -65,6 +64,7 @@ insert into tables_nogeom (table_name) values
 ('cat_pattern_value'),
 ('cat_controls'),
 ('inp_files'),
+('inp_inflow'),
 ('rpt_arc'),
 ('rpt_arcflow_sum'),
 ('rpt_arcpolload_sum'),

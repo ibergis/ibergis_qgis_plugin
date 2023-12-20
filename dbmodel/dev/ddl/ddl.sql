@@ -599,11 +599,13 @@ create table inp_inflow (
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     timeser_id text check (typeof(timeser_id) = 'text' or timeser_id = null),
-    format text check (typeof(format) = 'text' or format in ('POLLUTANT', 'FLOW', null)),
+    format text check (typeof(format) = 'text' or format =null) default 'FLOW',
     mfactor real check (typeof(mfactor) = 'real' or mfactor=null) default 1,
     sfactor real check (typeof(sfactor)='real' or sfactor=null) default 1,
+    ufactor real check (typeof(ufactor)='real' or ufactor=null) default 1,
     base real check (typeof(base)='real' or base=null) default 0,
     pattern_id integer check (typeof(pattern_id) = 'integer' or pattern_id=null),
+    type text check(typeof(type)='text' or type=null),
     geom geometry,
     FOREIGN KEY (pattern_id) REFERENCES cat_pattern(id) on update cascade
 );
@@ -1122,9 +1124,9 @@ create view if not exists vi_subareas as select nimp as N_Imperv, nperv as N_Per
 create view if not exists vi_losses as select code as Name, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage from inp_conduit;
 create view if not exists vi_dwf as select code as Name, 'FLOW' as Constituent, avg_value as Average_Value, pat1 as Time_Pattern1, pat2 as Time_Pattern2, pat3 as Time_Pattern3, pat4 as Time_Pattern4 from inp_dwf;
 create view if not exists vi_infiltration as select method as InfMethod, maxrate as MaxRate, minrate as MinRate, decay as Decay, maxinfl as MaxInf, suction as SuctHead, conduct as Conductiv, initdef as InitDef, curveno as CurveNum, annotation as Annotation from inp_subcatchment;
-create view if not exists vi_controls as select "text" from cat_controls join selector_sector using (sector_id) where active != 0;
-create view if not exists vi_transects as select "text" from cat_transects join selector_sector using (sector_id) where active != 0;
-create view if not exists vi_inflows as select code, format, timeser_id, mfactor, sfactor, pattern_id from inp_inflow;
+create view if not exists vi_controls as select "text" from cat_controls;
+create view if not exists vi_transects as select "text" from cat_transects;
+create view if not exists vi_inflows as select code as Name, format as Constituent, base as Baseline, cat_pattern.idval as Baseline_Pattern, timeser_id as Time_Series, mfactor as Units_Factor, sfactor as Scale_Factor, type as Type from inp_inflow join cat_pattern on inp_inflow.pattern_id=cat_pattern.id;
 create view if not exists vi_xsections as
     select code as Link, shape as Shape, geom1 as other1, geom2 as other2, 0 as other3, 0 as other4, barrels as other5, null as other6 from inp_conduit where shape ='CUSTOM' union
     select code as Link, shape as Shape, shape_trnsct as other1, 0 as other2, 0 as other3, 0 as other4, barrels as other5, NULL AS other6 from inp_conduit where shape='IRREGULAR'union

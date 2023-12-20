@@ -328,7 +328,7 @@ _tables = (
             "Baseline_Pattern": "pattern_id",
             "Time_Series": "timeser_id",
             "Scale_Factor": "sfactor",
-            # "Type":
+            "Type": "type",
             "Units_Factor": "mfactor",
         },
     },
