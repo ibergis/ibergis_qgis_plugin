@@ -191,12 +191,13 @@ class GwEpaFileManager(GwTask):
         FILE_WEIRS = self._copy_layer_renamed_fields('inp_weir')
         FILE_CURVES = self._create_curves_file()
         FILE_PATTERNS = self._create_patterns_file()
-        FILE_OPTIONS = None  # TODO: ARCHIVO EXCEL 'inp_options'
+        FILE_OPTIONS = self._create_options_file()
+        # TODO: FILE_REPORT
         FILE_TIMESERIES = self._create_timeseries_file()
-        FILE_INFLOWS = None  # TODO: ARCHIVO EXCEL 'inp_inflow'
-        FILE_QUALITY = None  # TODO: ARCHIVO EXCEL 'inp_quality'
-        FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'cat_transects'
-        FILE_STREETS = None  # TODO: ARCHIVO EXCEL 'inp_streets'
+        FILE_INFLOWS = self._create_inflows_file()
+        FILE_QUALITY = None
+        FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'vi_transects'
+        FILE_STREETS = None
         params = {
             'QGIS_OUT_INP_FILE': f'{self.folder_path}{self.result_name}.inp',
             'FILE_RAINGAGES': FILE_RAINGAGES,
@@ -377,6 +378,28 @@ class GwEpaFileManager(GwTask):
         return file_path
 
 
+    def _create_options_file(self):
+        query = """SELECT
+                    Option,
+                    Value
+                FROM
+                    vi_options;"""
+        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+
+        # Apply the desired transformation to the 'Option' column
+        df['Option'] = df['Option'].str.replace('inp_options_', '').str.upper()
+
+        file_path = f'{self.folder_path}{os.sep}options_file.xlsx'
+        # Create a new Excel writer
+        with pd.ExcelWriter(file_path) as writer:
+            sheet_name = "OPTIONS"
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+        return file_path
+
+
     def _create_timeseries_file(self):
         # Use pandas to read the SQL table into a DataFrame
         query = """SELECT
@@ -423,5 +446,35 @@ class GwEpaFileManager(GwTask):
 
         return file_path
 
+
+    def _create_inflows_file(self):
+
+        # Direct inflows
+        query = """SELECT
+                    Name, Constituent, Baseline, Baseline_Pattern, Time_Series, Scale_Factor, Type, Units_Factor
+                FROM
+                    vi_inflows;"""
+        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        df_direct = pd.read_sql_query(query, conn)
+        conn.close()
+
+        # Dry Weather inflows (dwf)
+        query = """SELECT
+                        Name, Constituent, Average_Value, Time_Pattern1, Time_Pattern2, Time_Pattern3, Time_Pattern4
+                    FROM
+                        vi_dwf;"""
+        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        df_dwf = pd.read_sql_query(query, conn)
+        conn.close()
+
+        file_path = f'{self.folder_path}{os.sep}inflows_file.xlsx'
+        # Create a new Excel writer
+        with pd.ExcelWriter(file_path) as writer:
+            # Write Direct inflows to its sheet
+            df_direct.to_excel(writer, sheet_name="Direct", index=False)
+            # Write Dry Weather inflows to its sheet
+            df_dwf.to_excel(writer, sheet_name="Dry_Weather", index=False)
+
+        return file_path
 
     # endregion
