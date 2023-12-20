@@ -179,16 +179,16 @@ class GwEpaFileManager(GwTask):
 
         self.folder_path = 'C:/Users/usuario/Desktop/QGIS Projects/drain/export_inp/'
         FILE_RAINGAGES = self._copy_layer_renamed_fields('inp_raingage')
-        FILE_CONDUITS = self._copy_layer_renamed_fields('inp_conduit')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_conduit'
-        FILE_JUNCTIONS = self._copy_layer_renamed_fields('inp_junction')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_junction'
-        FILE_DIVIDERS = self._copy_layer_renamed_fields('inp_divider')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_divider'
-        FILE_ORIFICES = self._copy_layer_renamed_fields('inp_orifice')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_orifice'
-        FILE_OUTFALLS = self._copy_layer_renamed_fields('inp_outfall')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_outfall'
-        FILE_OUTLETS = self._copy_layer_renamed_fields('inp_outlet')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_outlet'
-        FILE_STORAGES = self._copy_layer_renamed_fields('inp_storage')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_storage'
-        FILE_PUMPS = self._copy_layer_renamed_fields('inp_pump')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_pump'
-        FILE_SUBCATCHMENTS = self._copy_layer_renamed_fields('inp_subcatchment')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_subcatchment'
-        FILE_WEIRS = self._copy_layer_renamed_fields('inp_weir')  # 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg|layername=inp_weir'
+        FILE_CONDUITS = self._copy_layer_renamed_fields('inp_conduit')
+        FILE_JUNCTIONS = self._copy_layer_renamed_fields('inp_junction')
+        FILE_DIVIDERS = self._copy_layer_renamed_fields('inp_divider')
+        FILE_ORIFICES = self._copy_layer_renamed_fields('inp_orifice')
+        FILE_OUTFALLS = self._copy_layer_renamed_fields('inp_outfall')
+        FILE_OUTLETS = self._copy_layer_renamed_fields('inp_outlet')
+        FILE_STORAGES = self._copy_layer_renamed_fields('inp_storage')
+        FILE_PUMPS = self._copy_layer_renamed_fields('inp_pump')
+        FILE_SUBCATCHMENTS = self._copy_layer_renamed_fields('inp_subcatchment')
+        FILE_WEIRS = self._copy_layer_renamed_fields('inp_weir')
         FILE_CURVES = self._create_curves_file()
         FILE_PATTERNS = self._create_patterns_file()
         FILE_OPTIONS = None  # TODO: ARCHIVO EXCEL 'inp_options'
@@ -198,7 +198,7 @@ class GwEpaFileManager(GwTask):
         FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'cat_transects'
         FILE_STREETS = None  # TODO: ARCHIVO EXCEL 'inp_streets'
         params = {
-            'QGIS_OUT_INP_FILE': f'{self.folder_path}test.inp',
+            'QGIS_OUT_INP_FILE': f'{self.folder_path}{self.result_name}.inp',
             'FILE_RAINGAGES': FILE_RAINGAGES,
             'FILE_CONDUITS': FILE_CONDUITS,
             'FILE_JUNCTIONS': FILE_JUNCTIONS,
@@ -226,7 +226,7 @@ class GwEpaFileManager(GwTask):
         # Input layer
         output_layer_name = f'{input_layer}_output'
         input_layer_name = input_layer
-        input_path = 'C:/Users/usuario/Desktop/QGIS Projects/drain/drain_sample.gpkg'
+        input_path = global_vars.project_vars['project_gpkg']
         input_layer_uri = f"{input_path}|layername={input_layer_name}"
         input_layer = QgsVectorLayer(input_layer_uri, input_layer_name, 'ogr')
 
