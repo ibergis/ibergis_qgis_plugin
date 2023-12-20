@@ -157,7 +157,6 @@ CREATE TABLE cat_pattern (
 CREATE TABLE cat_pattern_value (
     id integer primary key,
     idval integer NOT NULL,
-    pattern_type text check (typeof(pattern_type) in ('text', null) and pattern_type in ('DAILY', 'HOURLY', 'MONTHLY', 'WEEKEND')),
     timestep datetime CHECK (typeof(timestep)='datetime' OR timestep=NULL),
     value real CHECK (typeof(value)='real' OR value=NULL),
     FOREIGN KEY (idval) references cat_pattern(id) on update cascade
