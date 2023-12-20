@@ -62,8 +62,8 @@ INSERT INTO cat_controls (id) VALUES (1);
 -- -------------------
 -- CURVE/PATTERN_VALUE
 -- -------------------
-INSERT INTO cat_curve (id, idval) VALUES(1, 'EBAR_02');
-INSERT INTO cat_curve (id, idval) VALUES(2, 'PUMP_01');
+INSERT INTO cat_curve (id, idval, curve_type) VALUES(1, 'EBAR', 'PUMP1');
+INSERT INTO cat_curve (id, idval, curve_type) VALUES(2, 'PUMP_17', 'PUMP1');
 
 INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(1, 1, 10.0000, 50.0000);
 INSERT INTO cat_curve_value (id, idval, xcoord, ycoord) VALUES(2, 2, 10.0000, 0.0160);
