@@ -73,6 +73,7 @@ class GwEpaFileManager(GwTask):
         self.replaced_velocities = False
         self.output = None
         self.folder_path = None
+        self.dao = global_vars.gpkg_dao_data.clone()
 
 
     def set_variables_from_go2epa(self):
@@ -92,6 +93,8 @@ class GwEpaFileManager(GwTask):
         status = True
         tools_log.log_info(f"Task 'Go2Epa' execute function 'def _exec_function_pg2epa'")
         status = self._new_export_inp()
+
+        self._close_dao()
 
             # status = self._exec_function_pg2epa(steps)
             # if not status:
@@ -142,15 +145,15 @@ class GwEpaFileManager(GwTask):
         super().cancel()
 
 
-    def _close_file(self, file=None):
+    def _close_dao(self, dao=None):
 
-        if file is None:
-            file = self.file_rpt
+        if dao is None:
+            dao = self.dao
 
         try:
-            if file:
-                file.close()
-                del file
+            if dao:
+                dao.close_db()
+                del dao
         except Exception:
             pass
 
@@ -172,6 +175,31 @@ class GwEpaFileManager(GwTask):
         self.output = self.process.processAlgorithm(params, context, feedback)
         print("process finished")
         print(feedback.textLog())
+        if self.output == {}:
+            # Delete INP file if exists
+            sql = f"""
+                SELECT name FROM cat_file WHERE name = '{self.result_name}'
+            """
+            rows = self.dao.get_rows(sql)
+            if len(rows) > 0:
+                sql = f"""
+                    DELETE FROM cat_file
+                    WHERE name = '{self.result_name}'
+                """
+                self.dao.execute_sql(sql)
+
+            # Insert INP file to cat_file
+            file_path = f'{self.folder_path}{self.result_name}.inp'
+            with open(file_path) as f:
+                inp_str = f.read()
+
+            sql = f"""
+                INSERT INTO cat_file (name, file_name, content)
+                VALUES
+                    ('{self.result_name}', '{self.result_name}.inp', '{inp_str}')
+            """
+            self.dao.execute_sql(sql)
+
         return True
 
 
@@ -193,6 +221,7 @@ class GwEpaFileManager(GwTask):
         FILE_PATTERNS = self._create_patterns_file()
         FILE_OPTIONS = self._create_options_file()
         # TODO: FILE_REPORT
+        # TODO: FILE_CONTROLS
         FILE_TIMESERIES = self._create_timeseries_file()
         FILE_INFLOWS = self._create_inflows_file()
         FILE_QUALITY = None
@@ -234,9 +263,7 @@ class GwEpaFileManager(GwTask):
         # Output layer
         geometry_type = input_layer.geometryType()
         geometry_type_map = {0: "Point", 1: "LineString", 2: "Polygon", 4: "NoGeometry"}
-        print(f"{geometry_type=}")
         geometry_type = geometry_type_map.get(geometry_type, "Unknown")
-        print(f"mapped {geometry_type=}")
         srid = input_layer.crs().authid()
         if geometry_type in ("NoGeometry", "Unknown"):
             srid = global_vars.project_epsg
