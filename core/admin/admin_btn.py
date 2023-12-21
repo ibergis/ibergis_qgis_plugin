@@ -203,7 +203,6 @@ class GwAdminButton:
         """"""
 
         for folder in dict_folders.keys():
-            print(f"{folder=}")
             if str(folder).endswith("trg"):
                 self._execute_trg_creation()
             status = self._execute_files(folder)
