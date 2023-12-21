@@ -429,7 +429,7 @@ def set_combo_value(combo, value, item1, add_new=True):
     return False
 
 
-def fill_combo_values(combo, rows, index_to_show=0, combo_clear=True, sort_combo=True, sort_by=1, add_empty=False):
+def fill_combo_values(combo, rows, index_to_show=1, combo_clear=True, sort_combo=True, sort_by=1, add_empty=False):
     """
     Populate @combo with list @rows and show field @index_to_show
         :param combo: QComboBox widget to fill (QComboBox)
@@ -469,7 +469,7 @@ def fill_combo_values(combo, rows, index_to_show=0, combo_clear=True, sort_combo
             records_sorted.insert(0, ['', ''])
 
         for record in records_sorted:
-            combo.addItem(record[index_to_show], record)
+            combo.addItem(str(record[index_to_show]), record)
             combo.blockSignals(False)
 
 
