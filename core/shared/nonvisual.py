@@ -1691,11 +1691,11 @@ class GwNonVisual:
     def _populate_timeser_combos(self, cmb_times_type, cmb_timeser_type):
         """ Populates timeseries dialog combos """
 
-        sql = "SELECT id, idval FROM config_typevalue WHERE typevalue = 'inp_typevalue_timeserid'"
+        sql = "SELECT id, idval FROM config_typevalue WHERE typevalue = 'inp_timeseries_type'"
         rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_timeser_type, rows, index_to_show=1)
-        sql = "SELECT id, idval FROM config_typevalue WHERE typevalue = 'inp_typevalue_timeseries'"
+        sql = "SELECT id, idval FROM config_typevalue WHERE typevalue = 'inp_timeseries_timestype'"
         rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_times_type, rows, index_to_show=1)
