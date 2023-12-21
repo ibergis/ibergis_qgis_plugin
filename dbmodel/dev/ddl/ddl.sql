@@ -1112,7 +1112,7 @@ create view if not exists vi_junctions as SELECT code as Name, elev as Elevation
 create view if not exists vi_raingages as select code as Name, form_type as Format, intvl as Interval, scf as SCF, data_source as DataSource, timeseries_id as SeriesName, fname as FileName, sta as StationID, units as RainUnits, annotation as Annotation from inp_raingage;
 
 create view if not exists vi_curves as select c.idval as Name, c.curve_type, cv.xcoord as Depth, cv.ycoord as Flow from cat_curve c, cat_curve_value cv;
-create view if not exists vi_timeseries as select idval as Name, "date" as "Date", "time" as "Time", value as Value, file as File_Name from cat_timeseries_value;
+create view if not exists vi_timeseries as select idval as Name, "date" as "Date", "time" as "Time", value as Value, fname as File_Name from cat_timeseries_value;
 create view if not exists vi_patterns as select idval as Name, "time" as "Time", value as Factor from cat_pattern_value where active = 1;
 create view if not exists vi_landuses as select idval as Name, sweepint as SweepingInterval, availab as SweepingFractionAvailable, lastsweep as LastSwept from cat_landuses;
 create view if not exists vi_subareas as select nimp as N_Imperv, nperv as N_Perv, simp as S_Imperv, sperv as S_Perv, zero as PctZero, routeto as RouteTo, rted as PctRouted from inp_subcatchment;
