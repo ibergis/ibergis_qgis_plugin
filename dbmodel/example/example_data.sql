@@ -66,7 +66,10 @@ INSERT INTO cat_arc (id, idval, shape, geom1, geom2, geom3, geom4, descript, z1,
 
 INSERT INTO cat_transects (id, idval) VALUES (1,'IRR_1');
 
-INSERT INTO cat_controls (id) VALUES (1);
+INSERT INTO cat_controls (id, "text", active) VALUES(1, 'RULE EXAMPLE
+IF NODE P1 DEPTH > 0.02
+THEN PUMP 226706 STATUS = ON', 1);
+
 
 -- -------------------
 -- CURVE/PATTERN_VALUE
