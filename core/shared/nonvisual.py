@@ -428,7 +428,7 @@ class GwNonVisual:
 
         curve_type_list = []
         curve_type_headers = {}
-        sql = f"SELECT id, idval, json(addparam) FROM config_typevalue WHERE typevalue = 'inp_curve_type'"
+        sql = f"SELECT id, idval, addparam FROM config_typevalue WHERE typevalue = 'inp_curve_type'"
         rows = tools_db.get_rows(sql)
 
         if rows:
