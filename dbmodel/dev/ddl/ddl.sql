@@ -129,7 +129,7 @@ CREATE TABLE cat_curve_value (
 CREATE TABLE cat_timeseries (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
-    timser_type text check (typeof(timser_type) in ('text', null) and timser_type in ('EVAPORATION', 'INFLOW_HYDROGRAPH', 'INFLOW_POLLUTOGRAPH', 'ORIFICE', 'OTHER', 'RAINFALL', 'TEMPERATURE')),
+    timser_type text check (typeof(timser_type) in ('text', null) and timser_type in ('EVAPORATION', 'INFLOW HYDROGRAPH', 'ORIFICE', 'OTHER', 'RAINFALL', 'TEMPERATURE')),
     times_type text CHECK (typeof(times_type) in ('text', null) and times_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     fname text check (typeof(fname)='text' or fname = null),
