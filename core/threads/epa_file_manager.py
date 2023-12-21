@@ -316,9 +316,8 @@ class GwEpaFileManager(GwTask):
                     cat_curve cc
                 JOIN
                     cat_curve_value ccv ON cc.id = ccv.idval;"""
-        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
-        conn.close()
 
         # Group the data by the 'curve_type' column
         grouped_data = df.groupby(['curve_type'])
@@ -366,9 +365,8 @@ class GwEpaFileManager(GwTask):
                     cat_pattern cp
                 JOIN
                     cat_pattern_value cpv ON cp.id = cpv.idval;"""
-        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
-        conn.close()
 
         # Group the data by the 'pattern_type' column
         grouped_data = df.groupby(['pattern_type'])
@@ -414,9 +412,8 @@ class GwEpaFileManager(GwTask):
                     Value
                 FROM
                     vi_options;"""
-        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
-        conn.close()
 
         # Apply the desired transformation to the 'Option' column
         df['Option'] = df['Option'].str.replace('inp_options_', '').str.upper()
@@ -444,9 +441,8 @@ class GwEpaFileManager(GwTask):
                     cat_timeseries ct
                 LEFT JOIN
                     cat_timeseries_value ctv ON ct.id = ctv.idval;"""
-        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
-        conn.close()
 
         # Group the data by the 'timeseries_name' column
         grouped_data = df.groupby(['timeseries_name'])
@@ -486,18 +482,16 @@ class GwEpaFileManager(GwTask):
                     Name, Constituent, Baseline, Baseline_Pattern, Time_Series, Scale_Factor, Type, Units_Factor
                 FROM
                     vi_inflows;"""
-        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        conn = self.dao.conn
         df_direct = pd.read_sql_query(query, conn)
-        conn.close()
 
         # Dry Weather inflows (dwf)
         query = """SELECT
                         Name, Constituent, Average_Value, Time_Pattern1, Time_Pattern2, Time_Pattern3, Time_Pattern4
                     FROM
                         vi_dwf;"""
-        conn = sqlite3.connect(f"{global_vars.project_vars['project_gpkg']}")
+        conn = self.dao.conn
         df_dwf = pd.read_sql_query(query, conn)
-        conn.close()
 
         temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
         file_path = temp_file.name
