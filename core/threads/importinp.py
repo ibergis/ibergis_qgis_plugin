@@ -55,7 +55,7 @@ class GwImportInpTask(GwTask):
             )
             if invalid_columns:
                 # FIXME: Import of cat_curve
-                raise ValueError(f"Invalid columns: {invalid_columns}")
+                raise ValueError(f"Invalid columns for {item['table']}: {invalid_columns}")
             missing_columns = columns[item["table"]].difference(item["df"].columns)
             for column in missing_columns:
                 item["df"][column] = None
