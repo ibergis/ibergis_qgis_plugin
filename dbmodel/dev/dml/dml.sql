@@ -143,7 +143,7 @@ insert into tables_nogeom (table_name) values
 -- --------------
 -- CONFIG_TYPEVALUE
 -- --------------
-INSERT INTO config_typevalue (typevalue, id, idval, descript, addparam) VALUES
+INSERT INTO config_typevalue (rowid, typevalue, id, idval, addparam) VALUES
 (1, 'nullvalue', '0', 'UNDEFINED', NULL),
 (2, 'options_order', '0', 'Order 0', NULL),
 (3, 'options_order', '1', 'Order 1', NULL),

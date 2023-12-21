@@ -27,10 +27,10 @@ create table config_csv (
 );
 
 create table config_typevalue (
-    typevalue text check (typeof(typevalue) = 'text' or typevalue = null),
+    rowid integer primary key,
+    typevalue text check (typeof(typevalue) = 'text') not null,
     id text check (typeof(id) = 'text' or id = null),
     idval text check (typeof(idval) = 'text' or idval = null),
-    descript text check (typeof(descript) = 'text' or descript = null),
     addparam text check (typeof(addparam) = 'text' or addparam = null)
 );
 
