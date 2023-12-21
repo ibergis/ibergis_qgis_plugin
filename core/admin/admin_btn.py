@@ -21,7 +21,7 @@ from .gis_file_create import DrGisFileCreate
 from ..ui.ui_manager import GwAdminUi
 from ..utils import tools_gw
 from ... import global_vars
-from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao
+from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
 
 
 class GwAdminButton:
@@ -203,6 +203,9 @@ class GwAdminButton:
         """"""
 
         for folder in dict_folders.keys():
+            print(f"{folder=}")
+            if str(folder).endswith("trg"):
+                self._execute_trg_creation()
             status = self._execute_files(folder)
             if not status:
                 return False
@@ -233,7 +236,6 @@ class GwAdminButton:
         # Declare all file variables
         self.file_pattern_ddl = "ddl"
         self.file_pattern_dml = "dml"
-        self.file_pattern_rtree = "rtree"
         self.file_pattern_sys_gpkg = "sys_gpkg"
         self.file_pattern_trg = "trg"
 
@@ -652,7 +654,6 @@ class GwAdminButton:
             dict_folders[os.path.join(self.folder_software, self.file_pattern_sys_gpkg)] = 0
             dict_folders[os.path.join(self.folder_software, self.file_pattern_ddl)] = 0
             dict_folders[os.path.join(self.folder_software, self.file_pattern_dml)] = 0
-            dict_folders[os.path.join(self.folder_software, self.file_pattern_rtree)] = 0
             dict_folders[os.path.join(self.folder_software, self.file_pattern_trg)] = 0
 
         return dict_folders
@@ -677,3 +678,50 @@ class GwAdminButton:
         rows = self.gpkg_dao_config.get_rows(sql)
         return rows
 
+
+    def _execute_trg_creation(self):
+
+        # Geom tables
+        sql = "SELECT table_name FROM tables_geom;"
+        rows = tools_db.get_rows(sql)
+        list_tbl_geom = [row[0] for row in rows]
+
+        for tablename in list_tbl_geom:
+            aux_str = "AFTER"
+            if 'v_' in tablename or 'vi_' in tablename:
+                aux_str = "INSTEAD OF"
+            sql = f"""CREATE VIRTUAL TABLE rtree_{tablename}_geom USING rtree(id, minx, maxx, miny, maxy);"""
+            tools_db.execute_sql(sql, commit=False)
+            sql = f"""CREATE TRIGGER trigger_delete_feature_count_{tablename} {aux_str} DELETE ON {tablename} BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
+            tools_db.execute_sql(sql, commit=False)
+            sql = f"""CREATE TRIGGER trigger_insert_feature_count_{tablename} {aux_str} INSERT ON {tablename} BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
+            tools_db.execute_sql(sql, commit=False)
+            sql = f"""CREATE TRIGGER rtree_{tablename}_geom_delete {aux_str} DELETE ON {tablename} WHEN (old.geom NOT NULL) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; END;"""
+            tools_db.execute_sql(sql, commit=False)
+            sql = f"""CREATE TRIGGER rtree_{tablename}_geom_insert {aux_str} INSERT ON {tablename} WHEN (new.geom NOT NULL AND NOT ST_IsEmpty(NEW.geom)) BEGIN INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW."geom") ); END;"""
+            tools_db.execute_sql(sql, commit=False)
+            sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update1 {aux_str} UPDATE OF geom ON {tablename} WHEN OLD.fid = NEW.fid AND (NEW.geom NOTNULL AND NOT ST_IsEmpty(NEW.geom) ) BEGIN INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW.geom)); END;"""
+            tools_db.execute_sql(sql, commit=False)
+            sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update2 {aux_str} UPDATE OF geom ON {tablename} WHEN OLD.fid = NEW.fid AND (NEW.geom ISNULL OR ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; END;"""
+            tools_db.execute_sql(sql, commit=False)
+            sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update3 {aux_str} UPDATE ON {tablename} WHEN OLD.fid != NEW.fid AND (NEW.geom NOTNULL AND NOT ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW.geom)); END;"""
+            tools_db.execute_sql(sql, commit=False)
+            sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update4 {aux_str} UPDATE ON {tablename} WHEN OLD.fid != NEW.fid AND (NEW.geom ISNULL OR ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id IN (OLD.fid, NEW.fid); END;"""
+            tools_db.execute_sql(sql, commit=False)
+
+            global_vars.gpkg_dao_data.commit()
+
+        # No-geom tables
+        sql = "SELECT table_name FROM tables_nogeom;"
+        rows = tools_db.get_rows(sql)
+        list_tbl_nogeom = [row[0] for row in rows]
+
+        for tablename in list_tbl_nogeom:
+            aux_str = "AFTER"
+            if 'v_' in tablename or 'vi_' in tablename:
+                aux_str = "INSTEAD OF"
+            sql = f"""CREATE TRIGGER "trigger_delete_feature_count_{tablename}" {aux_str} DELETE ON "{tablename}" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
+            tools_db.execute_sql(sql, commit=False)
+            sql = f"""CREATE TRIGGER "trigger_insert_feature_count_{tablename}" {aux_str} INSERT ON "{tablename}" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
+            tools_db.execute_sql(sql, commit=False)
+            global_vars.gpkg_dao_data.commit()
