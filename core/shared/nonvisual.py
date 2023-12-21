@@ -1164,7 +1164,7 @@ class GwNonVisual:
             return
         values = {}
         for row in rows:
-            values[row[3]] = row[4]
+            values[row[2]] = row[3]
         table = self.dialog.findChild(QTableWidget, f"tbl_{pattern_type.lower()}")
         for i in range(0, table.columnCount()):
             value = f"{values.get(i+1)}"
