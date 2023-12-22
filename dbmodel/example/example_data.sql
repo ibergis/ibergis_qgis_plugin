@@ -36,8 +36,8 @@ INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(3, 'B3', 'Scenari
 INSERT INTO cat_bscenario (id, idval, descript, active) VALUES(4, 'B4', 'Scenario 4', 0);
 
 
-INSERT INTO boundary_conditions (fid, bscenario_id, geom) VALUES(1, 1, ST_GeomFromText('LINESTRING (418611.5221 4578144.500309, 418649.052514 4578149.067503)', <SRID_VALUE>));
-INSERT INTO boundary_conditions (fid, bscenario_id, geom) VALUES(2, 1, ST_GeomFromText('LINESTRING (418683.102935 4578122.986887, 418686.811488 4578102.347982)', <SRID_VALUE>));
+INSERT INTO boundary_conditions (fid, bscenario_id, boundary_type, geom) VALUES(1, 1, "OUTLET (SUPER)CRITICAL", ST_GeomFromText('LINESTRING (418611.5221 4578144.500309, 418649.052514 4578149.067503)', <SRID_VALUE>));
+INSERT INTO boundary_conditions (fid, bscenario_id, boundary_type, geom) VALUES(2, 1, "OUTLET (SUPER)CRITICAL", ST_GeomFromText('LINESTRING (418683.102935 4578122.986887, 418686.811488 4578102.347982)', <SRID_VALUE>));
 
 -- --------------
 -- CAT_TIMESERIES

@@ -610,12 +610,15 @@ create table boundary_conditions (
     code text check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     bscenario_id integer check (typeof(bscenario_id)='integer' or bscenario_id=null),
-    boundary_type text check (typeof(boundary_type) = 'text' or boundary_type=null),
-    mesh_id text check (typeof(mesh_id) = 'text' or mesh_id=null),
-    tin_id integer null,
-    edge_id text check (typeof(edge_id) = 'text' or edge_id=null),
+    boundary_type text check (typeof(boundary_type) in ('text', null) and boundary_type in (
+        "INLET TOTAL DISCHARGE (SUB)CRITICAL", "INLET WATER ELEVATION", "OUTLET (SUPER)CRITICAL", "OUTLET SUBCRITICAL WEIR HEIGHT", "OUTLET SUBCRITICAL WEIR ELEVATION", "OUTLET SUBCRITICAL GIVEN LEVEL"
+    )),
+    timeseries_id integer check (typeof(timeseries_id)='integer' or timeseries_id=null),
+    other1 real,
+    other2 real,
     geom geometry,
     FOREIGN KEY (bscenario_id) REFERENCES cat_bscenario(id) on update cascade
+    FOREIGN KEY (timeseries_id) REFERENCES cat_timeseries(id) on update cascade
 );
 
 
