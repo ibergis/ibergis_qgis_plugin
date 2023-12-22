@@ -184,7 +184,8 @@ class GwLoadProject(QObject):
 
 
         # Define filepath of data GPKG
-        db_filepath =f"{global_vars.project_vars['project_gpkg']}"
+        db_filepath = f"{global_vars.project_vars['project_gpkg']}"
+        db_filepath = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
 
         if db_filepath is None:
             filename = "sample.gpkg"

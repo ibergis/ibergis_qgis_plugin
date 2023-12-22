@@ -65,7 +65,7 @@ class DrGisFileCreate:
         if srid is None:
             srid = "25831"
         self.layer_source['srid'] = srid
-        self.layer_source['gpkg_filepath'] = gpkg_file
+        self.layer_source['gpkg_filepath'] = os.path.relpath(gpkg_file, folder_path)
 
         # Read file content
         with open(qgs_path) as f:
