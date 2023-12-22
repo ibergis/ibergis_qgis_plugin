@@ -109,6 +109,7 @@ class GwProjectCheckTask(GwTask):
 
         # Iterate through each layer
         for layer in layers:
+            layer.dataProvider().reloadData()
             if layers_to_check and tools_qgis.get_tablename_from_layer(layer) not in layers_to_check:
                 continue
             # Check if the layer is valid and has features
@@ -141,8 +142,6 @@ class GwProjectCheckTask(GwTask):
 
             layers_to_check = node_layers_to_check + arc_layers_to_check + polygon_layers_to_check
             # Get total number of features to provide accurate progress feedback
-            # TODO: this might take a while (3-10 seconds) depending on the size & speed of the data source.
-            #  Maybe this could be turned on/off
             self._get_project_feature_count(layers_to_check)
 
             progress_step = self.total_feature_count // 20  # 5% increments (20 steps)
@@ -169,7 +168,7 @@ class GwProjectCheckTask(GwTask):
                     # Lines
                     if feature_geom.type() == QgsWkbTypes.LineGeometry:
                         if any(feature[attr] in (None, 'NULL', 'null') for attr in ('node_1', 'node_2')):
-                            msg = f"WARNING! Arc {feature['arc_id']} doesn't have node_1 or node_2."
+                            msg = f"WARNING! Arc {feature['code']} doesn't have node_1 or node_2."
                             self.log_messages.append(msg)
                             self.log_features_arc.append(feature)
                         continue
@@ -180,7 +179,7 @@ class GwProjectCheckTask(GwTask):
                             spatial_index = QgsSpatialIndex(node_layer.getFeatures())
                             node = spatial_index.nearestNeighbor(feature_geom.asPoint(), 2, node_buffer)
                             if len(node) > 1:
-                                msg = f"WARNING! Node {feature['node_id']} has another node too close."
+                                msg = f"WARNING! Node {feature['code']} has another node too close."
                                 self.log_messages.append(msg)
                                 self.log_features_node.append(feature)
                                 continue
@@ -234,10 +233,10 @@ class GwProjectCheckTask(GwTask):
 
         if self.log_features_node:
             # Create in-memory layers
-            node_fields = [QgsField("node_id", QVariant.String), QgsField("descript", QVariant.String)]
+            node_fields = [QgsField("code", QVariant.String), QgsField("descript", QVariant.String)]
             node_layer = self.create_in_memory_layer("Point", "node", node_fields)
             # Add features to the layers
-            self.add_features_to_layer(node_layer, self.log_features_node, 'node_id')
+            self.add_features_to_layer(node_layer, self.log_features_node, 'code')
             # Add layer to ToC
             QgsProject.instance().addMapLayer(node_layer, False)
             my_group.insertLayer(0, node_layer)
@@ -249,10 +248,10 @@ class GwProjectCheckTask(GwTask):
 
         if self.log_features_arc:
             # Create in-memory layers
-            arc_fields = [QgsField("arc_id", QVariant.String), QgsField("descript", QVariant.String)]
+            arc_fields = [QgsField("code", QVariant.String), QgsField("descript", QVariant.String)]
             arc_layer = self.create_in_memory_layer("LineString", "arc", arc_fields)
             # Add features to the layers
-            self.add_features_to_layer(arc_layer, self.log_features_arc, 'arc_id')
+            self.add_features_to_layer(arc_layer, self.log_features_arc, 'code')
             # Add layer to ToC
             QgsProject.instance().addMapLayer(arc_layer, False)
             my_group.insertLayer(1, arc_layer)
