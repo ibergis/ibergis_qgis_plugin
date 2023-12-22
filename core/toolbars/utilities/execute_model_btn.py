@@ -46,4 +46,30 @@ class GwExecuteModelButton(GwAction):
         self.execute_dlg = GwExecuteModelUi()
         tools_gw.load_settings(self.execute_dlg)
 
+        # Populate combobox
+        self._populate_mesh_cmb()
+        self._populate_inp_cmb()
+
+        # Signals
+        self.execute_dlg.btn_ok.clicked.connect(partial(self._execute_model))
+
         tools_gw.open_dialog(self.execute_dlg, 'dlg_execute_model')
+
+
+    def _populate_mesh_cmb(self):
+        sql = "SELECT id, name as idval FROM cat_file WHERE file_name like 'Iber2D.dat'"
+        rows = tools_db.get_rows(sql)
+        if rows:
+            tools_qt.fill_combo_values(self.execute_dlg.cmb_mesh, rows, add_empty=True)
+
+
+    def _populate_inp_cmb(self):
+        sql = "SELECT id, name as idval FROM cat_file WHERE file_name like '%.inp'"
+        rows = tools_db.get_rows(sql)
+        if rows:
+            tools_qt.fill_combo_values(self.execute_dlg.cmb_inp, rows, add_empty=True)
+
+
+    def _execute_model(self):
+        msg = "This tool hasn't been implemented yet."
+        tools_qt.show_info_box(msg)
