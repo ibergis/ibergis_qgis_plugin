@@ -64,8 +64,8 @@ class GwEpaFileManager(GwTask):
         self.set_variables_from_go2epa()
 
         # If enabled it will: add the output layers to your project, save the .xlsx files and the generated .inp file
-        self.debug_mode = True
-        self.debug_folder_path = 'C:/Users/usuario/Desktop/QGIS Projects/drain/export_inp/'
+        self.debug_mode = False
+        self.debug_folder_path = ''  # This is the folder where the .xlsx and .inp files will be saved
 
 
     def initialize_variables(self):
@@ -196,17 +196,17 @@ class GwEpaFileManager(GwTask):
 
         temp_file = tempfile.NamedTemporaryFile(suffix='.inp', delete=False)
         self.QGIS_OUT_INP_FILE = temp_file.name
-        FILE_RAINGAGES = self._copy_layer_renamed_fields('inp_raingage')
-        FILE_CONDUITS = self._copy_layer_renamed_fields('inp_conduit')
-        FILE_JUNCTIONS = self._copy_layer_renamed_fields('inp_junction')
-        FILE_DIVIDERS = self._copy_layer_renamed_fields('inp_divider')
-        FILE_ORIFICES = self._copy_layer_renamed_fields('inp_orifice')
-        FILE_OUTFALLS = self._copy_layer_renamed_fields('inp_outfall')
-        FILE_OUTLETS = self._copy_layer_renamed_fields('inp_outlet')
-        FILE_STORAGES = self._copy_layer_renamed_fields('inp_storage')
-        FILE_PUMPS = self._copy_layer_renamed_fields('inp_pump')
-        FILE_SUBCATCHMENTS = self._copy_layer_renamed_fields('inp_subcatchment')
-        FILE_WEIRS = self._copy_layer_renamed_fields('inp_weir')
+        FILE_RAINGAGES = self._copy_layer_renamed_fields('vi_raingages', rename=False)
+        FILE_CONDUITS = self._copy_layer_renamed_fields('vi_conduits', rename=False)
+        FILE_JUNCTIONS = self._copy_layer_renamed_fields('vi_junctions', rename=False)
+        FILE_DIVIDERS = self._copy_layer_renamed_fields('vi_dividers', rename=False)
+        FILE_ORIFICES = self._copy_layer_renamed_fields('vi_orifices', rename=False)
+        FILE_OUTFALLS = self._copy_layer_renamed_fields('vi_outfalls', rename=False)
+        FILE_OUTLETS = self._copy_layer_renamed_fields('vi_outlets', rename=False)
+        FILE_STORAGES = self._copy_layer_renamed_fields('vi_storage', rename=False)
+        FILE_PUMPS = self._copy_layer_renamed_fields('vi_pumps', rename=False)
+        FILE_SUBCATCHMENTS = self._copy_layer_renamed_fields('vi_subcatchments', rename=False)
+        FILE_WEIRS = self._copy_layer_renamed_fields('vi_weirs', rename=False)
         FILE_CURVES = self._create_curves_file()
         FILE_PATTERNS = self._create_patterns_file()
         FILE_OPTIONS = self._create_options_file()
@@ -252,13 +252,18 @@ class GwEpaFileManager(GwTask):
 
         return params
 
-    def _copy_layer_renamed_fields(self, input_layer: str):
+    def _copy_layer_renamed_fields(self, input_layer: str, rename=True):
         # Input layer
         output_layer_name = f'{input_layer}_output'
         input_layer_name = input_layer
         input_path = global_vars.project_vars['project_gpkg']
         input_layer_uri = f"{input_path}|layername={input_layer_name}"
         input_layer = QgsVectorLayer(input_layer_uri, input_layer_name, 'ogr')
+
+        if not rename:
+            if self.debug_mode:
+                QgsProject.instance().addMapLayer(input_layer)
+            return input_layer
 
         # Output layer
         geometry_type = input_layer.geometryType()
