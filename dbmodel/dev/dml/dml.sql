@@ -42,7 +42,18 @@ INSERT INTO tables_geom (table_name, isgeom) values
 ('inp_raingage', 'POINT'),
 ('inp_dwf', 'POINT'),
 ('v_node', 'POINT'),
-('v_arc', 'LINESTRING');
+('v_arc', 'LINESTRING'),
+('vi_conduits', 'LINESTRING'),
+('vi_subcatchments', 'MULTIPOLYGON'),
+('vi_outlets', 'LINESTRING'),
+('vi_orifices', 'LINESTRING'),
+('vi_weirs', 'LINESTRING'),
+('vi_pumps', 'LINESTRING'),
+('vi_outfalls', 'POINT'),
+('vi_dividers', 'POINT'),
+('vi_storage', 'POINT'),
+('vi_junctions', 'POINT'),
+('vi_raingages', 'POINT');
 
 
 
@@ -118,17 +129,6 @@ insert into tables_nogeom (table_name) values
 ('vi_xsections'),
 ('vi_dwf'),
 ('vi_infiltration'),
-('vi_raingages'),
-('vi_conduits'),
-('vi_subcatchments'),
-('vi_outlets'),
-('vi_orifices'),
-('vi_weirs'),
-('vi_pumps'),
-('vi_outfalls'),
-('vi_dividers'),
-('vi_storage'),
-('vi_junctions'),
 ('vi_title'),
 ('vi_files'),
 ('vi_options'),
@@ -136,8 +136,6 @@ insert into tables_nogeom (table_name) values
 ('vi_inflows'),
 ('vi_transects'),
 ('vi_report');
-
-
 
 
 -- --------------
