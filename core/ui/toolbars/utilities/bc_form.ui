@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BoundaryContidions</class>
+ <widget class="QDialog" name="BoundaryContidions">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>353</width>
+    <height>345</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lbl_fid">
+        <property name="text">
+         <string>ID</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="txt_code"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lbl_code">
+        <property name="text">
+         <string>Code</string>
+        </property>
+        <property name="buddy">
+         <cstring>txt_code</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lbl_descript">
+        <property name="text">
+         <string>Descript</string>
+        </property>
+        <property name="buddy">
+         <cstring>txt_descript</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="txt_descript"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lbl_bscenario_id">
+        <property name="text">
+         <string>BC Scenario</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lbl_boundary_type">
+        <property name="text">
+         <string>Boundary Type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="lbl_timeseries_id">
+        <property name="text">
+         <string>Time Series</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QLineEdit" name="txt_other1"/>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="lbl_other1">
+        <property name="text">
+         <string>Other1</string>
+        </property>
+        <property name="buddy">
+         <cstring>txt_other1</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QLineEdit" name="txt_other2"/>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="lbl_other2">
+        <property name="text">
+         <string>Other2</string>
+        </property>
+        <property name="buddy">
+         <cstring>txt_other2</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="cmb_bt1"/>
+      </item>
+      <item row="5" column="1">
+       <widget class="QComboBox" name="cmb_bt2"/>
+      </item>
+      <item row="6" column="1">
+       <widget class="QComboBox" name="cmb_bt3"/>
+      </item>
+      <item row="7" column="1">
+       <widget class="QComboBox" name="cmb_bt4"/>
+      </item>
+      <item row="8" column="1">
+       <widget class="QComboBox" name="cmb_timeseries_id"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="txt_fid">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="txt_bscenario_id">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>BoundaryContidions</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>307</x>
+     <y>335</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
