@@ -23,7 +23,7 @@ from ...threads.epa_file_manager import GwEpaFileManager
 from ...utils import tools_gw
 from ...ui.ui_manager import GwGo2EpaUI, GwGo2EpaOptionsUi
 from .... import global_vars
-from ....lib import tools_qgis, tools_qt, tools_db
+from ....lib import tools_qgis, tools_qt, tools_db, tools_os
 from ..dialog import GwAction
 
 
@@ -60,11 +60,14 @@ class GwGo2IberButton(GwAction):
         self.dlg_go2epa = GwGo2EpaUI()
         tools_gw.load_settings(self.dlg_go2epa)
         self._load_user_values()
-        self.dlg_go2epa.chk_export_subcatch.setVisible(False)
+        # self.dlg_go2epa.chk_export_subcatch.setVisible(False)
 
         # Set signals
         self._set_signals()
         self.dlg_go2epa.btn_cancel.setEnabled(False)
+
+        # Enable/disable 'Export INP file' widgets
+        self._manage_chk_export_file(tools_qt.is_checked(self.dlg_go2epa, 'chk_export_file'))
 
         # Disable tab log
         tools_gw.disable_tab_log(self.dlg_go2epa)
@@ -86,11 +89,26 @@ class GwGo2IberButton(GwAction):
 
         self.dlg_go2epa.btn_cancel.clicked.connect(self._cancel_task)
         self.dlg_go2epa.txt_result_name.textChanged.connect(partial(self.check_result_id))
+        self.dlg_go2epa.chk_export_file.stateChanged.connect(partial(self._manage_chk_export_file))
+        self.dlg_go2epa.btn_file_path.clicked.connect(partial(self._manage_btn_file_path))
         self.dlg_go2epa.btn_accept.clicked.connect(self._go2epa_accept)
         self.dlg_go2epa.btn_close.clicked.connect(partial(tools_gw.close_dialog, self.dlg_go2epa))
         self.dlg_go2epa.rejected.connect(partial(tools_gw.close_dialog, self.dlg_go2epa))
         self.dlg_go2epa.btn_options.clicked.connect(self._go2epa_options)
         self.dlg_go2epa.mainTab.currentChanged.connect(partial(self._manage_btn_accept))
+
+
+    def _manage_chk_export_file(self, checked):
+
+        tools_qt.set_widget_enabled(self.dlg_go2epa, 'txt_file_path', bool(checked))
+        tools_qt.set_widget_enabled(self.dlg_go2epa, 'btn_file_path', bool(checked))
+
+
+    def _manage_btn_file_path(self):
+
+        path = tools_os.open_save_file_path(extension="*.inp")
+        if path:
+            tools_qt.set_widget_text(self.dlg_go2epa, 'txt_file_path', str(path))
 
 
     def _manage_btn_accept(self, index):
@@ -142,9 +160,16 @@ class GwGo2IberButton(GwAction):
     def _load_user_values(self):
         """ Load QGIS settings related with file_manager """
 
+        # Result name
         self.dlg_go2epa.txt_result_name.setMaxLength(16)
         self.result_name = tools_gw.get_config_parser('btn_go2epa', 'go2epa_RESULT_NAME', "user", "session")
         self.dlg_go2epa.txt_result_name.setText(self.result_name)
+        # Check export file
+        value = tools_gw.get_config_parser('btn_go2epa', 'go2epa_chk_export_file', "user", "session")
+        tools_qt.set_checked(self.dlg_go2epa, 'chk_export_file', value)
+        # Export file path
+        value = tools_gw.get_config_parser('btn_go2epa', 'go2epa_file_path', "user", "session")
+        self.dlg_go2epa.txt_file_path.setText(value)
 
         # value = tools_gw.get_config_parser('btn_go2epa', 'go2epa_chk_UD', "user", "session")
         # tools_qt.set_checked(self.dlg_go2epa, self.dlg_go2epa.chk_export_subcatch, value)
@@ -153,8 +178,15 @@ class GwGo2IberButton(GwAction):
     def _save_user_values(self):
         """ Save QGIS settings related with file_manager """
 
+        # Result name
         txt_result_name = f"{tools_qt.get_text(self.dlg_go2epa, 'txt_result_name', return_string_null=False)}"
         tools_gw.set_config_parser('btn_go2epa', 'go2epa_RESULT_NAME', f"{txt_result_name}")
+        # Check export file
+        chk_export_file = tools_qt.is_checked(self.dlg_go2epa, 'chk_export_file')
+        tools_gw.set_config_parser('btn_go2epa', 'go2epa_chk_export_file', f"{chk_export_file}")
+        # Export file path
+        txt_file_path = f"{tools_qt.get_text(self.dlg_go2epa, 'txt_file_path', return_string_null=False)}"
+        tools_gw.set_config_parser('btn_go2epa', 'go2epa_file_path', f"{txt_file_path}")
         # chk_export_subcatch = f"{tools_qt.is_checked(self.dlg_go2epa, self.dlg_go2epa.chk_export_subcatch)}"
         # tools_gw.set_config_parser('btn_go2epa', 'go2epa_chk_UD', f"{chk_export_subcatch}")
 
@@ -195,6 +227,8 @@ class GwGo2IberButton(GwAction):
         # Get widgets values
         self.result_name = tools_qt.get_text(self.dlg_go2epa, self.dlg_go2epa.txt_result_name, False, False)
         # self.export_subcatch = tools_qt.is_checked(self.dlg_go2epa, self.dlg_go2epa.chk_export_subcatch)
+        self.export_file = tools_qt.is_checked(self.dlg_go2epa, 'chk_export_file')
+        self.export_file_path = tools_qt.get_text(self.dlg_go2epa, 'txt_file_path')
 
         self.dlg_go2epa.btn_accept.setEnabled(False)
         self.dlg_go2epa.btn_cancel.setEnabled(True)

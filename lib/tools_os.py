@@ -110,6 +110,18 @@ def open_file_path(msg="Select file", filter_="All (*.*)"):
     return path, filter_
 
 
+def open_folder_path(msg="Select folder"):
+    """ Open QFileDialog """
+
+    path = QFileDialog.getExistingDirectory(None, msg)
+    return path
+
+
+def open_save_file_path(msg="Save file", extension="*.txt"):
+    path, filter_ = QFileDialog.getSaveFileName(None, msg, "", extension)
+    return path
+
+
 def check_python_function(module, function_name):
     """ Check if function exist in @module """
 

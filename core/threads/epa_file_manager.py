@@ -86,6 +86,8 @@ class GwEpaFileManager(GwTask):
 
         self.dlg_go2epa = self.go2epa.dlg_go2epa
         self.result_name = self.go2epa.result_name
+        self.export_file = self.go2epa.export_file
+        self.export_file_path = self.go2epa.export_file_path
 
 
     def run(self):
@@ -159,6 +161,11 @@ class GwEpaFileManager(GwTask):
         self.output = self.process.processAlgorithm(params, context, feedback)
 
         if self.output is not None:
+            if self.export_file and self.export_file_path:
+                try:
+                    shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.export_file_path}")
+                except Exception as e:
+                    print(e)
             if self.debug_mode:
                 try:
                     shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.debug_folder_path}{os.sep}{self.result_name}.inp")
@@ -256,7 +263,7 @@ class GwEpaFileManager(GwTask):
         # Input layer
         output_layer_name = f'{input_layer}_output'
         input_layer_name = input_layer
-        input_path = global_vars.project_vars['project_gpkg']
+        input_path = f"{QgsProject.instance().absolutePath()}{os.sep}{global_vars.project_vars['project_gpkg']}"
         input_layer_uri = f"{input_path}|layername={input_layer_name}"
         input_layer = QgsVectorLayer(input_layer_uri, input_layer_name, 'ogr')
 
