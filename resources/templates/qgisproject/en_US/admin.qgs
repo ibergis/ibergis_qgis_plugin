@@ -60,6 +60,11 @@
       <customproperties>
         <Option/>
       </customproperties>
+      <layer-tree-layer providerKey="ogr" expanded="1" id="boundary_conditions_5bf45338_125e_42c8_9895_bc8926982a2f" legend_exp="" source="__DATASOURCE__|layername=boundary_conditions" name="Boundary conditions" checked="Qt::Checked" legend_split_behavior="0" patch_size="-1,-1">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-layer>
       <layer-tree-layer providerKey="ogr" expanded="1" id="roof_feb4bb33_f6a5_479a_80af_678d323da507" legend_exp="" source="__DATASOURCE__|layername=roof" name="Roof" checked="Qt::Checked" legend_split_behavior="0" patch_size="-1,-1">
         <customproperties>
           <Option/>
@@ -71,11 +76,6 @@
         </customproperties>
       </layer-tree-layer>
       <layer-tree-layer providerKey="ogr" expanded="1" id="ground_roughness_8cee9108_d316_48e6_b819_a9d95a2c43f7" legend_exp="" source="__DATASOURCE__|layername=ground_roughness" name="Ground Roughness" checked="Qt::Checked" legend_split_behavior="0" patch_size="-1,-1">
-        <customproperties>
-          <Option/>
-        </customproperties>
-      </layer-tree-layer>
-      <layer-tree-layer providerKey="ogr" expanded="1" id="boundary_conditions_5bf45338_125e_42c8_9895_bc8926982a2f" legend_exp="" source="__DATASOURCE__|layername=boundary_conditions" name="Boundary conditions" checked="Qt::Checked" legend_split_behavior="0" patch_size="-1,-1">
         <customproperties>
           <Option/>
         </customproperties>
@@ -831,14 +831,47 @@
         <field configurationFlags="None" name="bscenario_id">
           <editWidget type="RelationReference">
             <config>
-              <Option/>
+              <Option type="Map">
+                <Option value="false" type="bool" name="AllowAddFeatures"/>
+                <Option value="false" type="bool" name="AllowNULL"/>
+                <Option value="false" type="bool" name="MapIdentification"/>
+                <Option value="false" type="bool" name="OrderByValue"/>
+                <Option value="true" type="bool" name="ReadOnly"/>
+                <Option value="__DATASOURCE__|layername=cat_bscenario" type="QString" name="ReferencedLayerDataSource"/>
+                <Option value="Boundary Conditions" type="QString" name="ReferencedLayerName"/>
+                <Option value="ogr" type="QString" name="ReferencedLayerProviderKey"/>
+                <Option value="cat_bscenario_boundary_conditions" type="QString" name="Relation"/>
+                <Option value="false" type="bool" name="ShowForm"/>
+                <Option value="false" type="bool" name="ShowOpenFormButton"/>
+              </Option>
             </config>
           </editWidget>
         </field>
         <field configurationFlags="None" name="boundary_type">
-          <editWidget type="TextEdit">
+          <editWidget type="ValueMap">
             <config>
-              <Option/>
+              <Option type="Map">
+                <Option type="List" name="map">
+                  <Option type="Map">
+                    <Option value="INLET TOTAL DISCHARGE (SUB)CRITICAL" type="QString" name="INLET TOTAL DISCHARGE (SUB)CRITICAL"/>
+                  </Option>
+                  <Option type="Map">
+                    <Option value="INLET WATER ELEVATION" type="QString" name="INLET WATER ELEVATION"/>
+                  </Option>
+                  <Option type="Map">
+                    <Option value="OUTLET (SUPER)CRITICAL" type="QString" name="OUTLET (SUPER)CRITICAL"/>
+                  </Option>
+                  <Option type="Map">
+                    <Option value="OUTLET SUBCRITICAL WEIR HEIGHT" type="QString" name="OUTLET SUBCRITICAL WEIR HEIGHT"/>
+                  </Option>
+                  <Option type="Map">
+                    <Option value="OUTLET SUBCRITICAL WEIR ELEVATION" type="QString" name="OUTLET SUBCRITICAL WEIR ELEVATION"/>
+                  </Option>
+                  <Option type="Map">
+                    <Option value="OUTLET SUBCRITICAL GIVEN LEVEL" type="QString" name="OUTLET SUBCRITICAL GIVEN LEVEL"/>
+                  </Option>
+                </Option>
+              </Option>
             </config>
           </editWidget>
         </field>
@@ -878,7 +911,7 @@
         <default applyOnUpdate="0" field="fid" expression=""/>
         <default applyOnUpdate="0" field="code" expression=""/>
         <default applyOnUpdate="0" field="descript" expression=""/>
-        <default applyOnUpdate="0" field="bscenario_id" expression=""/>
+        <default applyOnUpdate="0" field="bscenario_id" expression="aggregate(layer:='cat_bscenario', aggregate:='array_agg', expression:=&quot;idval&quot;, filter:=&quot;active&quot; = true)[0]"/>
         <default applyOnUpdate="0" field="boundary_type" expression=""/>
         <default applyOnUpdate="0" field="mesh_id" expression=""/>
         <default applyOnUpdate="0" field="tin_id" expression=""/>
@@ -1749,7 +1782,7 @@ def my_form_open(dialog, layer, feature):
       <reuseLastValue/>
       <dataDefinedFieldProperties/>
       <widgets/>
-      <previewExpression>"name"</previewExpression>
+      <previewExpression>"idval"</previewExpression>
       <mapTip></mapTip>
     </maplayer>
     <maplayer maxScale="0" styleCategories="AllStyleCategories" readOnly="0" geometry="No geometry" wkbType="NoGeometry" hasScaleBasedVisibilityFlag="0" autoRefreshEnabled="0" legendPlaceholderImage="" autoRefreshTime="0" type="vector" refreshOnNotifyEnabled="0" minScale="1e+08" refreshOnNotifyMessage="">
