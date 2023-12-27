@@ -6,6 +6,8 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
+import subprocess
+from distutils.version import LooseVersion
 
 from functools import partial
 from qgis.core import QgsProject
@@ -18,9 +20,36 @@ from .core.admin.admin_btn import GwAdminButton
 from .core.load_project import GwLoadProject
 from .core.utils import tools_gw
 from .core.utils.signal_manager import GwSignalManager
-from .lib import tools_qgis, tools_os, tools_log
+from .lib import tools_qgis, tools_os, tools_log, tools_qt
 from .core.ui.dialog import GwDialog
 from .core.ui.main_window import GwMainWindow
+
+try:
+    import geopandas
+    if LooseVersion("0.14.1") > LooseVersion(geopandas.__version__):
+       raise ImportError()
+    import gmsh
+    import pandamesh
+    import openpyxl
+except ImportError:
+    if tools_qt.show_question(
+        "It appears that certain dependencies required for the DRAIN plugin are not installed. " 
+        "Would you like to proceed with their installation now?"
+    ):
+        subprocess.run(["python", "-m", "ensurepip"])
+        install_dependencies = subprocess.run(
+            ['python', '-m', 'pip', 'install', 'gmsh==4.11.1', 'pandamesh==0.1.2', 'geopandas==0.14.1', 'openpyxl==3.1.2']
+        )
+        if install_dependencies.returncode:
+            tools_qt.show_info_box(
+                "Automatic installation of dependencies was unsuccessful. "
+                "Consult the DRAIN plugin documentation for guidance on manual installation."
+            )
+        else:
+            tools_qt.show_info_box(
+                "The dependencies have been installed successfully. "
+                "Restart QGIS to apply the changes."
+            )
 
 
 class Drain(QObject):
