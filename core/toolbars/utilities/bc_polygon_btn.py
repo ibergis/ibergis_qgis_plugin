@@ -45,6 +45,7 @@ class GwCreateBCFromPolygon(GwAction):
         self.bt_config = {
             "INLET TOTAL DISCHARGE (SUB)CRITICAL": {
                 "timeseries_id": True,
+                "timser_type": "BC FLOW",
                 "other1": False,
                 "lbl_other1": "other1",
                 "other2": False,
@@ -52,6 +53,7 @@ class GwCreateBCFromPolygon(GwAction):
             },
             "INLET WATER ELEVATION": {
                 "timeseries_id": True,
+                "timser_type": "BC ELEVATION",
                 "other1": False,
                 "lbl_other1": "other1",
                 "other2": False,
@@ -80,6 +82,7 @@ class GwCreateBCFromPolygon(GwAction):
             },
             "OUTLET SUBCRITICAL GIVEN LEVEL": {
                 "timeseries_id": True,
+                "timser_type": "BC ELEVATION",
                 "other1": False,
                 "lbl_other1": "other1",
                 "other2": False,
@@ -142,7 +145,7 @@ class GwCreateBCFromPolygon(GwAction):
         feat["fid"] = "Autogenerate"
         self.rubber_band = QgsRubberBand(iface.mapCanvas())
         self.rubber_band.setWidth(3)
-        self.rubber_band.setColor(QColor(255,0,0,255))
+        self.rubber_band.setColor(QColor(255, 0, 0, 255))
         self.rubber_band.setToGeometry(geometry)
 
         # Configure and open form
@@ -209,6 +212,14 @@ class GwCreateBCFromPolygon(GwAction):
                 config = self.bt_config[next_level]
                 self.dlg.lbl_timeseries_id.setVisible(config["timeseries_id"])
                 self.dlg.cmb_timeseries_id.setVisible(config["timeseries_id"])
+                if config["timeseries_id"]:
+                    rows = tools_db.get_rows(
+                        f"""
+                        SELECT id, idval FROM cat_timeseries 
+                        WHERE timser_type = '{config['timser_type']}'
+                        """
+                    )
+                    tools_qt.fill_combo_values(self.dlg.cmb_timeseries_id, rows)
                 self.dlg.lbl_other1.setText(config["lbl_other1"])
                 self.dlg.lbl_other1.setVisible(config["other1"])
                 self.dlg.txt_other1.setVisible(config["other1"])
@@ -235,8 +246,13 @@ class GwCreateBCFromPolygon(GwAction):
         feature.setAttribute("descript", self.dlg.txt_descript.text())
         feature.setAttribute("bscenario_id", self.cur_scenario)
         feature.setAttribute("boundary_type", self.boundary_type)
-        # TODO: Handle timeseries_id
+
         config = self.bt_config[self.boundary_type]
+        if config["timeseries_id"]:
+            timeseries_id = tools_qt.get_combo_value(
+                self.dlg, self.dlg.cmb_timeseries_id
+            )
+            feature.setAttribute("timeseries_id", timeseries_id)
         if config["other1"]:
             other1_str = self.dlg.txt_other1.text()
             if not other1_str:
@@ -253,6 +269,7 @@ class GwCreateBCFromPolygon(GwAction):
                 )
                 return
             feature.setAttribute("other2", float(other2_str))
+
         self.dlg.accept()
         layer.startEditing()
         layer.addFeature(feature)
