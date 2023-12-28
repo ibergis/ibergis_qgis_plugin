@@ -167,6 +167,25 @@ CREATE TABLE cat_controls (
     "text" text check (typeof("text" = 'text') or "text" = null),
     active boolean CHECK (typeof(active) IN (0,1,NULL))
 );
+
+
+CREATE TABLE cat_raster (
+    id integer primary key,
+    idval text unique check (typeof(idval)='text') NOT NULL,
+    raster_type text check (typeof(raster_type) in ('text', null) and raster_type in ('INTENSITY', 'DEPTH')),
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
+);
+
+CREATE TABLE cat_raster_value (
+    id integer primary key,
+    idval integer NOT NULL,
+    time datetime CHECK (typeof(time)='datetime' OR time=NULL),
+	fname text check (typeof(fname)='text' or fname = null),
+    FOREIGN KEY (idval) references cat_raster(id) on update cascade
+);
+
+
+
 -- -----------
 -- GEOM TABLES
 -- -----------
@@ -315,6 +334,17 @@ CREATE TABLE gully (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
     FOREIGN KEY (gratecat_id) references cat_grate (id) on update cascade
+);
+
+
+CREATE TABLE hyetograf (
+    id integer primary key,
+    idval text unique check (typeof(idval)='text') NOT NULL,
+    timeseries_type text check (typeof(timeseries_type) in ('text', null) and timeseries_type in ('INTENSITY', 'DEPTH')),
+    timeseries_id integer CHECK (typeof(timeseries_id)='integer' OR timeseries_id=NULL),
+    active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1,
+	geom geometry,
+    FOREIGN KEY (timeseries_id) references cat_timeseries (id) on update cascade
 );
 
 
