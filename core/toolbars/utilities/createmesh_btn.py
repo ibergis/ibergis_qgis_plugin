@@ -4,8 +4,8 @@ from pathlib import Path
 from time import time
 
 from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
-from qgis.PyQt.QtCore import QTimer
-from qgis.PyQt.QtWidgets import QFileDialog
+from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.PyQt.QtWidgets import QListWidgetItem
 
 from ..dialog import GwAction
 from ...threads.createmesh import GwCreateMeshTask
@@ -25,6 +25,12 @@ class GwCreateMeshButton(GwAction):
         self.dao = global_vars.gpkg_dao_data.clone()
         self.dlg_mesh = GwCreateMeshUi()
         dlg = self.dlg_mesh
+        self.validations = {
+            "check_null_geometries_ground": {"name": "Ground Null Geometry"},
+            "check_null_geometries_roof": {"name": "Roof Null Geometry"},
+            "check_geometry_validity_ground": {"name": "Ground Geometry Validity"},
+            "check_geometry_validity_roof": {"name": "Roof Geometry Validity"},
+        }
 
         self.ground_layer = self._get_layer(self.dao, "ground")
         self.roof_layer = self._get_layer(self.dao, "roof")
@@ -51,6 +57,9 @@ class GwCreateMeshButton(GwAction):
         dlg.chk_validation.clicked.connect(dlg.btn_config.setEnabled)
         dlg.btn_config.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 1))
         dlg.btn_back.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 0))
+        dlg.btn_select_all.clicked.connect(self._listval_select_all)
+        dlg.btn_clear_selection.clicked.connect(self._listval_clear_selection)
+        dlg.btn_toggle_selection.clicked.connect(self._listval_toggle_selection)
         dlg.btn_valid_ok.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 0))
         dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_start.setEnabled)
@@ -58,6 +67,14 @@ class GwCreateMeshButton(GwAction):
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
+
+        # Create List Items and add to list
+        flags = Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
+        for validation in self.validations.values():
+            validation["list_item"] = QListWidgetItem(validation["name"])
+            validation["list_item"].setFlags(flags)
+            validation["list_item"].setCheckState(Qt.Checked)
+            dlg.list_validations.addItem(validation["list_item"])
 
         tools_gw.open_dialog(dlg, dlg_name="create_mesh")
 
@@ -175,3 +192,18 @@ class GwCreateMeshButton(GwAction):
         )
         sb = self.dlg_mesh.txt_infolog.verticalScrollBar()
         sb.setValue(sb.maximum())
+
+    def _listval_clear_selection(self):
+        for validation in self.validations.values():
+            validation["list_item"].setCheckState(Qt.Unchecked)
+
+    def _listval_select_all(self):
+        for validation in self.validations.values():
+            validation["list_item"].setCheckState(Qt.Checked)
+
+    def _listval_toggle_selection(self):
+        for validation in self.validations.values():
+            if validation["list_item"].checkState() == Qt.Unchecked:
+                validation["list_item"].setCheckState(Qt.Checked)
+            else:
+                validation["list_item"].setCheckState(Qt.Unchecked)
