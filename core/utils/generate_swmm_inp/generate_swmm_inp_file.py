@@ -50,6 +50,8 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
     FILE_QUALITY = 'FILE_QUALITY'
     FILE_TRANSECTS = 'FILE_TRANSECTS'
     FILE_STREETS = 'FILE_STREETS'
+    FILE_CONTROLS = 'FILE_CONTROLS'
+    FILE_REPORT = 'FILE_REPORT'
 
     def initAlgorithm(self, config):
         """
@@ -222,6 +224,24 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
                 fileFilter='Tables (*.xlsx *.xls *.odf)'
             )
         )
+        self.addParameter(
+            QgsProcessingParameterFile(
+                self.FILE_CONTROLS,
+                self.tr('Controls table file'),
+                QgsProcessingParameterFile.File,
+                optional=True,
+                fileFilter='Tables (*.xlsx *.xls *.odf)'
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterFile(
+                self.FILE_REPORT,
+                self.tr('Report table file'),
+                QgsProcessingParameterFile.File,
+                optional=True,
+                fileFilter='Tables (*.xlsx *.xls *.odf)'
+            )
+        )
 
     def processAlgorithm(self, parameters, context, feedback):
         """
@@ -301,12 +321,20 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
         file_quality = self.parameterAsString(parameters, self.FILE_QUALITY, context)
         file_transects = self.parameterAsString(parameters, self.FILE_TRANSECTS, context)
         file_streets = self.parameterAsString(parameters, self.FILE_STREETS, context)
+        file_controls = self.parameterAsString(parameters, self.FILE_CONTROLS, context)
+        file_report = self.parameterAsString(parameters, self.FILE_REPORT, context)
 
         # options table
         if file_options != '':
             raw_data_dict['options_df'] = read_data_from_table_direct(
                 file_options,
                 sheet='OPTIONS'
+            )
+        # report table
+        if file_report != '':
+            raw_data_dict['report_df'] = read_data_from_table_direct(
+                file_report,
+                sheet='REPORT'
             )
         # curves table
         if file_curves != '':
@@ -355,6 +383,12 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
                     file_transects,
                     sheet=transects_param
                 )
+        # controls table
+        if file_report != '':
+            raw_data_dict['controls_df'] = read_data_from_table_direct(
+                file_report,
+                sheet='CONTROLS'
+            )
         # streets table
         if file_streets != '':
             raw_data_dict['streets'] = {}
@@ -389,6 +423,18 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
             )
             options_df, main_infiltration_method = get_options_from_table(raw_data_dict['options_df'].copy())
             inp_dict['OPTIONS'] = {'data': options_df}
+
+        # report
+        # if 'report_df' in raw_data_dict.keys():
+        #     feedback.setProgressText(self.tr('[REPORT] section'))
+        #     from .g_s_options import get_options_from_table
+        #     check_columns(
+        #         'REPORT file',
+        #         list(def_tables_dict['OPTIONS']['tables']['OPTIONS'].keys()),
+        #         raw_data_dict['options_df'].keys()
+        #     )
+        #     options_df, main_infiltration_method = get_options_from_table(raw_data_dict['options_df'].copy())
+        #     inp_dict['OPTIONS'] = {'data': options_df}
 
         # subcatchments
         if 'subcatchments_raw' in raw_data_dict.keys():

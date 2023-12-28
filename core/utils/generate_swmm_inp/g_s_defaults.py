@@ -423,6 +423,10 @@ def_tables_dict = {
             'OPTIONS': {
                 'Option': 'String',
                 'Value': 'String'
+            },
+            'REPORT': {
+                'Option': 'String',
+                'Value': 'String'
             }
         }
      },
