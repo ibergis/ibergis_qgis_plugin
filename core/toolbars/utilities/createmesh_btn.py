@@ -48,6 +48,10 @@ class GwCreateMeshButton(GwAction):
         tools_qt.fill_combo_values(dlg.cmb_dem_layer, rows, add_empty=True)
 
         # Set initial signals
+        dlg.chk_validation.clicked.connect(dlg.btn_config.setEnabled)
+        dlg.btn_config.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 1))
+        dlg.btn_back.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 0))
+        dlg.btn_valid_ok.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 0))
         dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_start.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
