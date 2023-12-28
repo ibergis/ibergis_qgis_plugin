@@ -16,18 +16,16 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QApplication
 
 from . import global_vars
-from .core.admin.admin_btn import GwAdminButton
-from .core.load_project import GwLoadProject
-from .core.utils import tools_gw
-from .core.utils.signal_manager import GwSignalManager
 from .lib import tools_qgis, tools_os, tools_log, tools_qt
-from .core.ui.dialog import GwDialog
-from .core.ui.main_window import GwMainWindow
-
+install_args = ['python', '-m', 'pip', 'install', 'gmsh==4.11.1', 'pandamesh==0.1.2', 'openpyxl==3.1.2']
 try:
     import geopandas
-    if LooseVersion("0.14.1") > LooseVersion(geopandas.__version__):
-       raise ImportError()
+    try:
+        if LooseVersion("0.14.1") > LooseVersion(geopandas.__version__):
+            install_args.append('geopandas==0.14.1')
+            raise ImportError()
+    except TypeError:
+        pass
     import gmsh
     import pandamesh
     import openpyxl
@@ -38,7 +36,7 @@ except ImportError:
     ):
         subprocess.run(["python", "-m", "ensurepip"])
         install_dependencies = subprocess.run(
-            ['python', '-m', 'pip', 'install', 'gmsh==4.11.1', 'pandamesh==0.1.2', 'geopandas==0.14.1', 'openpyxl==3.1.2']
+            install_args
         )
         if install_dependencies.returncode:
             tools_qt.show_info_box(
@@ -50,6 +48,13 @@ except ImportError:
                 "The dependencies have been installed successfully. "
                 "Restart QGIS to apply the changes."
             )
+
+from .core.admin.admin_btn import GwAdminButton
+from .core.load_project import GwLoadProject
+from .core.utils import tools_gw
+from .core.utils.signal_manager import GwSignalManager
+from .core.ui.dialog import GwDialog
+from .core.ui.main_window import GwMainWindow
 
 
 class Drain(QObject):
