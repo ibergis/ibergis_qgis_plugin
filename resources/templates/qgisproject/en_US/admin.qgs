@@ -216,6 +216,9 @@
     <relation id="cat_curve_inp_weir" name="cat_curve_inp_weir" referencingLayer="inp_weir_fac85607_30b3_42ca_adf1_365ece55f772" referencedLayer="cat_curve_b860e9be_f0bc_45e2_a6c4_29f5c599cc9b" strength="Association">
       <fieldRef referencingField="curve_id" referencedField="id"/>
     </relation>
+    <relation name="cat_timeseries_boundary_conditions" referencedLayer="cat_timeseries_e1919d56_68c3_46f8_97db_9614558ff68f" strength="Association" referencingLayer="boundary_conditions_5bf45338_125e_42c8_9895_bc8926982a2f" id="boundary_c_timeseries_id_cat_timese_id">
+      <fieldRef referencedField="id" referencingField="timeseries_id"/>
+    </relation>
     <relation id="cat_timeseries_inp_outfall" name="cat_timeseries_inp_outfall" referencingLayer="inp_outfall_317dffc1_dbb6_4df1_9849_02883ba98196" referencedLayer="cat_timeseries_e1919d56_68c3_46f8_97db_9614558ff68f" strength="Association">
       <fieldRef referencingField="timeser_id" referencedField="id"/>
     </relation>
@@ -805,6 +808,9 @@
         <relation providerKey="ogr" dataSource="__DATASOURCE__|layername=cat_bscenario" id="cat_bscenario_boundary_conditions" name="cat_bscenario_boundary_conditions" layerId="cat_bscenario_ed2a0139_5dce_4a6d_b036_02fd74e7ab54" layerName="Boundary Conditions" referencingLayer="boundary_conditions_5bf45338_125e_42c8_9895_bc8926982a2f" referencedLayer="cat_bscenario_ed2a0139_5dce_4a6d_b036_02fd74e7ab54" strength="Association">
           <fieldRef referencingField="bscenario_id" referencedField="id"/>
         </relation>
+        <relation providerKey="ogr" dataSource="__DATASOURCE__|layername=cat_timeseries" id="boundary_c_timeseries_id_cat_timese_id" name="cat_timeseries_boundary_conditions" layerId="cat_timeseries_e1919d56_68c3_46f8_97db_9614558ff68f" layerName="Timeseries" referencingLayer="boundary_conditions_5bf45338_125e_42c8_9895_bc8926982a2f" referencedLayer="cat_timeseries_e1919d56_68c3_46f8_97db_9614558ff68f" strength="Association">
+          <fieldRef referencingField="timeseries_id" referencedField="id"/>
+        </relation>
       </referencedLayers>
       <fieldConfiguration>
         <field configurationFlags="None" name="fid">
@@ -875,24 +881,26 @@
             </config>
           </editWidget>
         </field>
-        <field configurationFlags="None" name="mesh_id">
-          <editWidget type="TextEdit">
+        <field name="timeseries_id" configurationFlags="None">
+          <editWidget type="RelationReference">
             <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field configurationFlags="None" name="tin_id">
-          <editWidget type="TextEdit">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field configurationFlags="None" name="edge_id">
-          <editWidget type="TextEdit">
-            <config>
-              <Option/>
+              <Option type="Map">
+                <Option name="AllowAddFeatures" value="false" type="bool"/>
+                <Option name="AllowNULL" value="true" type="bool"/>
+                <Option name="ChainFilters" value="false" type="bool"/>
+                <Option name="FilterExpression" value="&quot;timser_type&quot; IN ('BC ELEVATION', 'BC FLOW')" type="QString"/>
+                <Option name="FilterFields"/>
+                <Option name="MapIdentification" value="false" type="bool"/>
+                <Option name="OrderByValue" value="true" type="bool"/>
+                <Option name="ReadOnly" value="false" type="bool"/>
+                <Option name="ReferencedLayerDataSource" value="__DATASOURCE__|layername=cat_timeseries" type="QString"/>
+                <Option name="ReferencedLayerId" value="cat_timeseries_e1919d56_68c3_46f8_97db_9614558ff68f" type="QString"/>
+                <Option name="ReferencedLayerName" value="Timeseries" type="QString"/>
+                <Option name="ReferencedLayerProviderKey" value="ogr" type="QString"/>
+                <Option name="Relation" value="boundary_c_timeseries_id_cat_timese_id" type="QString"/>
+                <Option name="ShowForm" value="false" type="bool"/>
+                <Option name="ShowOpenFormButton" value="false" type="bool"/>
+              </Option>
             </config>
           </editWidget>
         </field>
@@ -3058,7 +3066,7 @@ def my_form_open(dialog, layer, feature):
       <reuseLastValue/>
       <dataDefinedFieldProperties/>
       <widgets/>
-      <previewExpression>"fname"</previewExpression>
+      <previewExpression>idval</previewExpression>
       <mapTip></mapTip>
     </maplayer>
     <maplayer symbologyReferenceScale="-1" autoRefreshTime="0" simplifyAlgorithm="0" hasScaleBasedVisibilityFlag="0" styleCategories="AllStyleCategories" simplifyDrawingTol="1" refreshOnNotifyEnabled="0" autoRefreshEnabled="0" wkbType="MultiPolygon" refreshOnNotifyMessage="" readOnly="0" legendPlaceholderImage="" simplifyDrawingHints="1" type="vector" minScale="100000000" geometry="Polygon" labelsEnabled="0" simplifyLocal="1" maxScale="0" simplifyMaxScale="1">
