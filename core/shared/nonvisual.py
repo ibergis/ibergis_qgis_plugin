@@ -1642,7 +1642,7 @@ class GwNonVisual:
         paste_shortcut.activated.connect(partial(self._paste_timeseries_values, tbl_timeseries_value))
 
         # Populate combobox
-        self._populate_timeser_combos(cmb_times_type, cmb_timeser_type)
+        timeser_type_headers = self._populate_timeser_combos(cmb_times_type, cmb_timeser_type)
 
         tools_qt.set_widget_text(self.dialog, self.dialog.txt_id, timser_id)
         tools_qt.set_widget_enabled(self.dialog, self.dialog.txt_id, False)
@@ -1657,6 +1657,7 @@ class GwNonVisual:
         is_new = (timser_id is None) or duplicate
 
         # Connect dialog signals
+        cmb_timeser_type.currentTextChanged.connect(partial(self._manage_timeser_type, self.dialog, tbl_timeseries_value, cmb_times_type, timeser_type_headers))
         cmb_times_type.currentTextChanged.connect(partial(self._manage_times_type, tbl_timeseries_value))
         tbl_timeseries_value.cellChanged.connect(partial(self._onCellChanged, tbl_timeseries_value))
         self.dialog.btn_accept.clicked.connect(partial(self._accept_timeseries, self.dialog, is_new))
@@ -1691,14 +1692,20 @@ class GwNonVisual:
     def _populate_timeser_combos(self, cmb_times_type, cmb_timeser_type):
         """ Populates timeseries dialog combos """
 
-        sql = "SELECT id, idval FROM config_typevalue WHERE typevalue = 'inp_timeseries_type'"
+        timeser_type_headers = {}
+        sql = "SELECT id, idval, addparam FROM config_typevalue WHERE typevalue = 'inp_timeseries_type'"
         rows = tools_db.get_rows(sql)
         if rows:
-            tools_qt.fill_combo_values(cmb_timeser_type, rows, index_to_show=1)
+            timeser_type_list = [[row[0], row[1]] for row in rows]
+            timeser_type_headers = {row[0]: json.loads(row[2]).get('header') for row in rows if row[2]}
+            tools_qt.fill_combo_values(cmb_timeser_type, timeser_type_list, index_to_show=1)
+
         sql = "SELECT id, idval FROM config_typevalue WHERE typevalue = 'inp_timeseries_timestype'"
         rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_times_type, rows, index_to_show=1)
+
+        return timeser_type_headers
 
 
     def _populate_timeser_widgets(self, timser_id, duplicate=False):
@@ -1764,6 +1771,24 @@ class GwNonVisual:
                 value = ''
             tbl_timeseries_value.setItem(n, 2, QTableWidgetItem(f"{value}"))
             tbl_timeseries_value.insertRow(tbl_timeseries_value.rowCount())
+
+
+    def _manage_timeser_type(self, dialog, tbl_timeseries_value, cmb_times_type, timeser_type_headers, text):
+        """ Manage timeseries times_type depending on timeseries_type """
+
+        timeser_type = tools_qt.get_text(dialog, 'cmb_timeser_type', return_string_null=False)
+        if timeser_type and timeser_type_headers:
+            if timeser_type in timeser_type_headers:
+                headers = timeser_type_headers.get(timeser_type)
+            else:
+                headers = ['Date\n(M/D/Y)', 'Time\n(H:M)', 'Value']
+            tbl_timeseries_value.setHorizontalHeaderLabels(headers)
+
+        if text in ('BC ELEVATION', 'BC FLOW'):
+            tools_qt.set_combo_value(cmb_times_type, 'RELATIVE', 0, False)
+            tools_qt.set_widget_enabled(dialog, cmb_times_type, False)
+            return
+        tools_qt.set_widget_enabled(dialog, cmb_times_type, True)
 
 
     def _manage_times_type(self, tbl_timeseries_value, text):
