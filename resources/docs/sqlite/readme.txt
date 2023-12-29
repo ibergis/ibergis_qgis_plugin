@@ -1,0 +1,1 @@
+source for the template of gpkg: http://www.geopackage.org/guidance/getting-started.html
