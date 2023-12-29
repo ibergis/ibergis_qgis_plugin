@@ -26,14 +26,6 @@ create table config_csv (
     addparam text check (typeof(addparam) = 'text' or addparam=null)
 );
 
-create table config_typevalue (
-    rowid integer primary key,
-    typevalue text check (typeof(typevalue) = 'text') not null,
-    id text check (typeof(id) = 'text' or id = null),
-    idval text check (typeof(idval) = 'text' or idval = null),
-    addparam text check (typeof(addparam) = 'text' or addparam = null)
-);
-
 -- ---------
 -- SELECTORS
 -- ---------
@@ -172,7 +164,7 @@ CREATE TABLE cat_controls (
 CREATE TABLE cat_raster (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
-    raster_type text check (typeof(raster_type) in ('text', null) and raster_type in ('INTENSITY', 'DEPTH')),
+    raster_type text check (typeof(raster_type) in ('text', null) and raster_type in ('Intensity', 'Volume')),
     active boolean CHECK (typeof(active) IN (0,1,NULL)) DEFAULT  1
 );
 

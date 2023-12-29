@@ -2430,7 +2430,7 @@ class GwNonVisual:
         """ Populates raster dialog combos """
 
         raster_type_headers = {}
-        sql = "SELECT id, idval, addparam FROM config_typevalue WHERE typevalue = 'inp_raster_type'"
+        sql = "SELECT id, idval, addparam FROM config_typevalue WHERE typevalue = 'inp_rain_format'"
         rows = tools_db.get_rows(sql)
         if rows:
             raster_type_list = [[row[0], row[1]] for row in rows]
