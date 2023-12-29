@@ -500,38 +500,22 @@ def validations_dict():
 
 
 def validate_input_layers(
-    layers_dict: dict, feedback: Feedback
+    layers_dict: dict, validation_list: list, feedback: Feedback
 ) -> Optional[Tuple[list, list]]:
     error_layers = []
     warning_layers = []
 
-    validation_steps = [
-        [
-            (error_layers, validate_null_geometry, layers_dict["ground"]),
-            (error_layers, validate_null_geometry, layers_dict["roof"]),
-            (error_layers, validate_validity, layers_dict["ground"]),
-            (error_layers, validate_validity, layers_dict["roof"]),
-            (error_layers, validate_cellsize, layers_dict["ground"]),
-            (error_layers, validate_cellsize, layers_dict["roof"]),
-            (
-                error_layers,
-                validate_ground_roughness_layer,
-                layers_dict["ground_roughness"],
-            ),
-            (error_layers, validate_roof_layer, layers_dict["roof"]),
-        ],
-        [
-            (warning_layers, validate_distance, layers_dict["ground"]),
-            (error_layers, validate_dem_coverage, layers_dict),
-            (error_layers, validate_ground_roughness_coverage, layers_dict),
-            (error_layers, validate_vert_edge, layers_dict),
-            (error_layers, validate_intersect, layers_dict),
-        ],
-    ]
+    for validations in _validation_steps:
+        for val_id, validation in validations.items():
+            if val_id not in validation_list:
+                continue
 
-    for validations in validation_steps:
-        for result_list, validation_function, parameters in validations:
-            result_layers = validation_function(parameters, feedback)
+            parameter = (
+                layers_dict
+                if validation["layer"] is None
+                else layers_dict[validation["layer"]]
+            )
+            result_layers = validation["function"](parameter, feedback)
             if type(result_layers) not in (tuple, list):
                 result_layers = [result_layers]
 
@@ -540,7 +524,10 @@ def validate_input_layers(
 
             for layer in result_layers:
                 if layer.hasFeatures():
-                    result_list.append(layer)
+                    if validation["type"] == "error":
+                        error_layers.append(layer)
+                    else:
+                        warning_layers.append(layer)
             feedback.setProgress(feedback.progress() + 1)
 
         if error_layers:

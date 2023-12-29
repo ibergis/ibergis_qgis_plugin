@@ -120,7 +120,9 @@ class GwCreateMeshTask(GwTask):
             # Validate inputs
             if self.execute_validations:
                 self.feedback.setProgressText("Validating inputs...")
-                validation_layers = validate_input_layers(layers, self.feedback)
+                validation_layers = validate_input_layers(
+                    layers, self.execute_validations, self.feedback
+                )
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
                     return False
@@ -273,7 +275,9 @@ class GwCreateMeshTask(GwTask):
             self.dao.execute_sql(sql)
 
             # Create temp layer
-            self.feedback.setProgressText("Mesh saved to GPKG file!!!\nCreating temp layer for visualization...")
+            self.feedback.setProgressText(
+                "Mesh saved to GPKG file!!!\nCreating temp layer for visualization..."
+            )
             self.feedback.setProgress(80)
             temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
             temp_layer.setCrs(layers["ground"].crs())
