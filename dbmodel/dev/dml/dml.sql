@@ -190,7 +190,7 @@ INSERT INTO config_typevalue (rowid, typevalue, id, idval, addparam) VALUES
 (46, 'inp_options_networkmode', '1D2D', '1D/2D SWMM_IBER', NULL),
 (47, 'inp_timeseries_type', 'EVAPORATION', 'EVAPORATION', NULL),
 (48, 'inp_timeseries_type', 'INFLOW HYDROGRAPH', 'INFLOW HYDROGRAPH', NULL),
-(49, 'inp_timeseries_type', 'RAINFALL ', 'RAINFALL', NULL),
+(49, 'inp_timeseries_type', 'RAINFALL', 'RAINFALL', NULL),
 (50, 'inp_timeseries_type', 'TEMPERATURE', 'TEMPERATURE', NULL),
 (51, 'inp_timeseries_type', 'ORIFICE', 'ORIFICE', NULL),
 (52, 'inp_timeseries_type', 'BC ELEVATION', 'BC ELEVATION', '{"header": ["", "Time\n(H:M)", "Elevation (m)"]}'),

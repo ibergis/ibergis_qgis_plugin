@@ -1720,6 +1720,7 @@ class GwNonVisual:
         cmb_times_type = self.dialog.cmb_times_type
         txt_descript = self.dialog.txt_descript
         txt_fname = self.dialog.txt_fname
+        chk_active = self.dialog.chk_active
         tbl_timeseries_value = self.dialog.tbl_timeseries_value
 
         sql = f"SELECT id, idval, timser_type, times_type, descript, fname, log, active FROM cat_timeseries WHERE id = '{timser_id}'"
@@ -1732,6 +1733,7 @@ class GwNonVisual:
         times_type = row[3]
         descript = row[4]
         fname = row[5]
+        active = row[7]
 
         # Populate text & combobox widgets
         if not duplicate:
@@ -1741,6 +1743,7 @@ class GwNonVisual:
         tools_qt.set_widget_text(self.dialog, cmb_times_type, times_type)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
         tools_qt.set_widget_text(self.dialog, txt_fname, fname)
+        tools_qt.set_checked(self.dialog, chk_active, bool(active))
 
         # Populate table timeseries_values
         sql = f"SELECT id, date, time, value FROM cat_timeseries_value WHERE idval = '{timser_id}'"
@@ -1844,6 +1847,7 @@ class GwNonVisual:
         cmb_times_type = dialog.cmb_times_type
         txt_descript = dialog.txt_descript
         txt_fname = dialog.txt_fname
+        chk_active = dialog.chk_active
         tbl_timeseries_value = dialog.tbl_timeseries_value
 
         # Get widget values
@@ -1853,6 +1857,7 @@ class GwNonVisual:
         times_type = tools_qt.get_combo_value(dialog, cmb_times_type)
         descript = tools_qt.get_text(dialog, txt_descript, add_quote=True)
         fname = tools_qt.get_text(dialog, txt_fname, add_quote=True)
+        active = int(tools_qt.is_checked(dialog, chk_active))
 
         # Check that there are no empty fields
         if not idval or idval == 'null':
@@ -1896,8 +1901,7 @@ class GwNonVisual:
             times_type = times_type.strip("'")
             descript = descript.strip("'")
             fname = fname.strip("'")
-            fields = f"""{{"idval": "{timeseries_id}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}"}}"""
-
+            fields = f"""{{"idval": "{timeseries_id}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}", "active": {active}}}"""
             result = self._setfields(timeseries_id, table_name, fields)
             if not result:
                 return
