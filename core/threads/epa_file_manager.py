@@ -203,7 +203,6 @@ class GwEpaFileManager(GwTask):
 
         temp_file = tempfile.NamedTemporaryFile(suffix='.inp', delete=False)
         self.QGIS_OUT_INP_FILE = temp_file.name
-        FILE_RAINGAGES = self._copy_layer_renamed_fields('vi_raingages', rename=False)
         FILE_CONDUITS = self._copy_layer_renamed_fields('vi_conduits', rename=False)
         FILE_JUNCTIONS = self._copy_layer_renamed_fields('vi_junctions', rename=False)
         FILE_DIVIDERS = self._copy_layer_renamed_fields('vi_dividers', rename=False)
@@ -212,7 +211,6 @@ class GwEpaFileManager(GwTask):
         FILE_OUTLETS = self._copy_layer_renamed_fields('vi_outlets', rename=False)
         FILE_STORAGES = self._copy_layer_renamed_fields('vi_storage', rename=False)
         FILE_PUMPS = self._copy_layer_renamed_fields('vi_pumps', rename=False)
-        FILE_SUBCATCHMENTS = self._copy_layer_renamed_fields('vi_subcatchments', rename=False)
         FILE_WEIRS = self._copy_layer_renamed_fields('vi_weirs', rename=False)
         FILE_CURVES = self._create_curves_file()
         FILE_PATTERNS = self._create_patterns_file()
@@ -221,12 +219,10 @@ class GwEpaFileManager(GwTask):
         # TODO: FILE_CONTROLS
         FILE_TIMESERIES = self._create_timeseries_file()
         FILE_INFLOWS = self._create_inflows_file()
-        FILE_QUALITY = None
         FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'vi_transects'
         FILE_STREETS = None
         params = {
             'QGIS_OUT_INP_FILE': self.QGIS_OUT_INP_FILE,
-            'FILE_RAINGAGES': FILE_RAINGAGES,
             'FILE_CONDUITS': FILE_CONDUITS,
             'FILE_JUNCTIONS': FILE_JUNCTIONS,
             'FILE_DIVIDERS': FILE_DIVIDERS,
@@ -235,16 +231,13 @@ class GwEpaFileManager(GwTask):
             'FILE_OUTLETS': FILE_OUTLETS,
             'FILE_STORAGES': FILE_STORAGES,
             'FILE_PUMPS': FILE_PUMPS,
-            'FILE_SUBCATCHMENTS': FILE_SUBCATCHMENTS,
             'FILE_WEIRS': FILE_WEIRS,
             'FILE_CURVES': FILE_CURVES,
             'FILE_PATTERNS': FILE_PATTERNS,
             'FILE_OPTIONS': FILE_OPTIONS,
             'FILE_TIMESERIES': FILE_TIMESERIES,
             'FILE_INFLOWS': FILE_INFLOWS,
-            'FILE_QUALITY': FILE_QUALITY,
-            'FILE_TRANSECTS': FILE_TRANSECTS,
-            'FILE_STREETS': FILE_STREETS
+            'FILE_TRANSECTS': FILE_TRANSECTS
         }
 
         if self.debug_mode:

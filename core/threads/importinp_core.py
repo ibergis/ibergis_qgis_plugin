@@ -11,8 +11,8 @@ _tables = (
             "Name": "code",
             "FromNode": "node_1",
             "ToNode": "node_2",
-            "Length": "custom_length",
-            "Roughness": "custom_roughness",
+            "Length": "length",
+            "Roughness": "roughness",
             "InOffset": "z1",
             "OutOffset": "z2",
             "InitFlow": "q0",
@@ -30,7 +30,7 @@ _tables = (
             "Geom4": "geom4",
             "Barrels": "barrels",
             "Culvert": "culvert",
-            "Shp_Trnsct": "shape_trnsct",
+            "Shp_Trnsct": "descript",
         },
     },
     {
@@ -44,41 +44,7 @@ _tables = (
             "Seepage": "seepage",
         },
     },
-    {
-        "table_name": "inp_subcatchment",
-        "section": "SUBCATCHMENTS",
-        "mapper": {
-            "Name": "code",
-            "RainGage": "rg_id",
-            "Outlet": "outlet_id",
-            "Area": "area",
-            "Imperv": "imperv",
-            "Width": "width",
-            "Slope": "slope",
-            "CurbLen": "clength",
-            "SnowPack": "snow_id",
-            # SUBAREAS columns
-            "N_Imperv": "nimp",
-            "N_Perv": "nperv",
-            "S_Imperv": "simp",
-            "S_Perv": "sperv",
-            "PctZero": "zero",
-            "RouteTo": "routeto",
-            "PctRouted": "rted",
-            # INFILTRATION columns
-            "InfMethod": "method",
-            "MaxRate": "maxrate",
-            "MinRate": "minrate",
-            "Decay": "decay",
-            "DryTime": "drytime",
-            "MaxInf": "maxinfl",
-            "SuctHead": "suction",
-            "Conductiv": "conduct",
-            "InitDef": "initdef",
-            "CurveNum": "curveno",
-            "Annotation": "annotation",
-        },
-    },
+    
     {
         "table_name": "inp_outlet",
         "section": "OUTLETS",
@@ -91,7 +57,7 @@ _tables = (
             "Qcoeff": "cd1",
             "Qexpon": "cd2",
             "FlapGate": "flap",
-            "CurveName": "curve_id",
+            "CurveName": "curve",
             "Annotation": "annotation",
         },
     },
@@ -121,7 +87,7 @@ _tables = (
             "FromNode": "node_1",
             "ToNode": "node_2",
             "Type": "weir_type",
-            "CrestHeigh": "crest_heigh",
+            "CrestHeigh": "crest_height",
             "Qcoeff": "cd2",
             "FlapGate": "flap",
             "EndContrac": "ec",
@@ -129,11 +95,11 @@ _tables = (
             "Surcharge": "surcharge",
             "RoadWidth": "road_width",
             "RoadSurf": "road_surf",
-            "CoeffCurve": "curve_id",
+            "CoeffCurve": "curve",
             "Annotation": "annotation",
             "Height": "elev",
             "Length": "geom1",
-            "SideSlope": "geom3",
+            "SideSlope": "geom2",
         },
     },
     {
@@ -143,7 +109,7 @@ _tables = (
             "Name": "code",
             "FromNode": "node_1",
             "ToNode": "node_2",
-            "PumpCurve": "curve_id",
+            "PumpCurve": "curve",
             "Status": "state",
             "Startup": "startup",
             "Shutoff": "shutoff",
@@ -158,7 +124,7 @@ _tables = (
             "Elevation": "elev",
             "Type": "outfall_type",
             "FixedStage": "stage",
-            "Curve_TS": "curve_id",
+            "Curve_TS": "curve",
             "FlapGate": "gate",
             "RouteTo": "routeto",
             "Annotation": "annotation",
@@ -170,10 +136,10 @@ _tables = (
         "mapper": {
             "Name": "code",
             "Elevation": "elev",
-            "DivertLink": "node_id",
+            "DivertLink": "divert_arc",
             "Type": "divider_type",
             # "CutoffFlow": "",
-            "Curve": "curve_id",
+            "Curve": "curve",
             "WeirMinFlo": "qmin",
             "WeirMaxDep": "qmax",
             "WeirCoeff": "q0",
@@ -193,7 +159,7 @@ _tables = (
             "MaxDepth": "ymax",
             "InitDepth": "y0",
             "Type": "storage_type",
-            "Curve": "curve_id",
+            "Curve": "curve",
             "Coeff": "a1",
             "Exponent": "a2",
             "Constant": "a0",
@@ -222,24 +188,8 @@ _tables = (
             "Annotation": "annotation",
         },
     },
-    {
-        "table_name": "inp_raingage",
-        "section": "RAINGAGE",
-        "mapper": {
-            "Name": "code",
-            "Format": "form_type",
-            "Interval": "intvl",
-            "SCF": "scf",
-            "DataSource": "data_source",
-            "SeriesName": "timeseries_id",
-            "FileName": "fname",
-            "StationID": "sta",
-            "RainUnits": "units",
-            "Annotation": "annotation",
-        },
-    },
-    {
-        "table_name": "cat_curve",
+       {
+        "table_name": "cat_curve_value",
         "section": "CURVES",
         "mapper": {
             "Name": "idval",
@@ -268,28 +218,7 @@ _tables = (
             "Time_Stamp": "pattern_type",
             "Factor": "value",
         },
-    },
-    {
-        "table_name": "cat_landuses",
-        "section": "LANDUSES",
-        "mapper": {
-            "Name": "idval",
-            "SweepingInterval": "sweepint",
-            "SweepingFractionAvailable": "availab",
-            # "LastSwept":
-            # "Pollutant":
-            # "BuildupFunction":
-            # "BuildupMax":
-            # "BuildupRateConstant":
-            # "BuildupExponent_SatConst":
-            # "BuilupPerUnit":
-            # "WashoffFunction":
-            # "WashoffCoefficient":
-            # "WashoffExponent":
-            # "WashoffCleaninfEfficiency":
-            # "WashoffBmpEfficiency":
-        },
-    },
+    },   
     {
         "table_name": "inp_dwf",
         "section": "DWF",
@@ -297,10 +226,10 @@ _tables = (
             "Node": "node_id",
             # "Constituent":
             "Average_Value": "avg_value",
-            "Time_Pattern1": "pat1",
-            "Time_Pattern2": "pat2",
-            "Time_Pattern3": "pat3",
-            "Time_Pattern4": "pat4",
+            "Time_Pattern1": "pattern1",
+            "Time_Pattern2": "pattern2",
+            "Time_Pattern3": "pattern3",
+            "Time_Pattern4": "pattern4",
         },
     },
     {
@@ -308,14 +237,14 @@ _tables = (
         "section": "TRANSECTS",
         "mapper": {
             "TransectName": "idval",
-            "RoughnessLeftBlank": "text",
-            "RoughnessRightBlank": "text",
-            "RoughnessChannel": "text",
-            "BankStationLeft": "text",
-            "BankStationRight": "text",
-            "ModifierStations": "text",
-            "ModifierElevations": "text",
-            "ModifierMeander": "text",
+            "RoughnessLeftBlank": "descript",
+            "RoughnessRightBlank": "descript",
+            "RoughnessChannel": "descript",
+            "BankStationLeft": "descript",
+            "BankStationRight": "descript",
+            "ModifierStations": "descript",
+            "ModifierElevations": "descript",
+            "ModifierMeander": "descript",
         },
     },
     {
@@ -325,8 +254,8 @@ _tables = (
             "Name": "node_id",
             "Constituent": "format",
             "Baseline": "base",
-            "Baseline_Pattern": "pattern_id",
-            "Time_Series": "timeser_id",
+            "Baseline_Pattern": "pattern",
+            "Time_Series": "timeseries",
             "Scale_Factor": "sfactor",
             "Type": "type",
             "Units_Factor": "mfactor",
