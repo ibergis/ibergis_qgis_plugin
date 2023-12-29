@@ -65,6 +65,9 @@ class GwNonVisualTimeseriesUi(GwDialog, FROM_CLASS):
 FROM_CLASS = _get_ui_class('nonvisual_lids.ui', 'main')
 class GwNonVisualLidsUi(GwDialog, FROM_CLASS):
     pass
+FROM_CLASS = _get_ui_class('nonvisual_raster.ui', 'main')
+class GwNonVisualRasterUi(GwDialog, FROM_CLASS):
+    pass
 FORM_CLASS = _get_ui_class('csv.ui', 'utilities')
 class GwCsvUi(GwDialog, FORM_CLASS):
     pass

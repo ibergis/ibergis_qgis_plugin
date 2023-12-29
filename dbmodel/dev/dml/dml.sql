@@ -211,4 +211,6 @@ INSERT INTO config_typevalue (rowid, typevalue, id, idval, addparam) VALUES
 (67, 'inp_typevalue_pattern', 'DAILY', 'DAILY', NULL),
 (68, 'inp_typevalue_pattern', 'HOURLY', 'HOURLY', NULL),
 (69, 'inp_typevalue_pattern', 'WEEKEND', 'WEEKEND', NULL),
-(70, 'inp_typevalue_pattern', 'MONTHLY', 'MONTHLY', NULL);
+(70, 'inp_typevalue_pattern', 'MONTHLY', 'MONTHLY', NULL),
+(71, 'inp_raster_type', 'INTENSITY', 'INTENSITY', NULL),
+(72, 'inp_raster_type', 'DEPTH', 'DEPTH', NULL);

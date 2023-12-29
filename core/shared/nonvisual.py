@@ -23,7 +23,7 @@ from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
 from ..ui.ui_manager import GwNonVisualManagerUi, GwNonVisualControlsUi, GwNonVisualCurveUi, GwNonVisualPatternUDUi, \
-    GwNonVisualPatternWSUi, GwNonVisualRulesUi, GwNonVisualTimeseriesUi, GwNonVisualLidsUi, GwNonVisualPrint
+    GwNonVisualPatternWSUi, GwNonVisualRulesUi, GwNonVisualTimeseriesUi, GwNonVisualLidsUi, GwNonVisualPrint, GwNonVisualRasterUi
 from ..utils.matplotlib_widget import MplCanvas
 from ..utils import tools_gw
 from ...lib import tools_qgis, tools_qt, tools_db, tools_log
@@ -44,11 +44,13 @@ class GwNonVisual:
                            'cat_pattern': 'patterns',
                            'cat_timeseries': 'timeseries',
                            'cat_controls': 'controls',
+                           'cat_raster': 'rasters',
                            }
         self.dict_ids = {'cat_curve': 'idval', 'cat_curve_value': 'idval',
                          'cat_pattern': 'idval', 'cat_pattern_value': 'idval',
                          'cat_controls': 'id',
                          'cat_timeseries': 'idval', 'cat_timeseries_value': 'idval',
+                         'cat_raster': 'id', 'cat_raster_value': 'idval',
                          }
         self.valid = (True, "")
 
@@ -2380,6 +2382,227 @@ class GwNonVisual:
                     tools_qgis.show_warning(msg, dialog=dialog)
                     global_vars.gpkg_dao_data.rollback()
                     return False
+        return True
+
+    # endregion
+
+    # region rasters
+    def get_rasters(self, raster_id=None, duplicate=False):
+        """ Opens dialog for raster """
+
+        # Get dialog
+        self.dialog = GwNonVisualRasterUi()
+        tools_gw.load_settings(self.dialog)
+
+        # Define variables
+        tbl_raster_value = self.dialog.tbl_raster_value
+        cmb_raster_type = self.dialog.cmb_raster_type
+
+        # Populate combobox
+        raster_type_headers = self._populate_raster_combo(cmb_raster_type)
+
+        # Populate data if editing raster
+        tools_qt.set_widget_text(self.dialog, self.dialog.txt_raster_id, raster_id)
+        tools_qt.set_widget_enabled(self.dialog, self.dialog.txt_raster_id, False)
+        if raster_id is not None:
+            self._populate_raster_widgets(raster_id, duplicate=duplicate)
+        else:
+            self._load_raster_widgets(self.dialog)
+
+        # Set scale-to-fit
+        tools_qt.set_tableview_config(tbl_raster_value, sectionResizeMode=1, edit_triggers=QTableView.DoubleClicked)
+
+        is_new = (raster_id is None) or duplicate
+
+        # Connect dialog signals
+        tbl_raster_value.cellChanged.connect(partial(self._onCellChanged, tbl_raster_value))
+        self.dialog.btn_accept.clicked.connect(partial(self._accept_raster, self.dialog, is_new))
+        self._connect_dialog_signals()
+
+        # Open dialog
+        tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_raster')
+
+    def _populate_raster_combo(self, cmb_raster_type):
+        """ Populates raster dialog combos """
+
+        raster_type_headers = {}
+        sql = "SELECT id, idval, addparam FROM config_typevalue WHERE typevalue = 'inp_raster_type'"
+        rows = tools_db.get_rows(sql)
+        if rows:
+            raster_type_list = [[row[0], row[1]] for row in rows]
+            raster_type_headers = {row[0]: json.loads(row[2]).get('header') for row in rows if row[2]}
+            tools_qt.fill_combo_values(cmb_raster_type, raster_type_list)
+
+        return raster_type_headers
+
+    def _populate_raster_widgets(self, raster_id, duplicate=False):
+        """ Fills in all the values for raster dialog """
+
+        # Variables
+        txt_name = self.dialog.txt_raster_name
+        cmb_raster_type = self.dialog.cmb_raster_type
+        chk_active = self.dialog.chk_active
+        tbl_raster_value = self.dialog.tbl_raster_value
+
+        sql = f"SELECT * FROM cat_raster WHERE id = '{raster_id}'"
+        row = global_vars.gpkg_dao_data.get_row(sql)
+        if not row:
+            return
+        raster_name = row[1]
+        raster_type = row[2]
+        active = row[3]
+
+        # Populate text & combobox widgets
+        if not duplicate:
+            tools_qt.set_widget_text(self.dialog, txt_name, raster_name)
+            tools_qt.set_widget_enabled(self.dialog, txt_name, False)
+
+        tools_qt.set_combo_value(cmb_raster_type, raster_type, 0)
+        tools_qt.set_checked(self.dialog, chk_active, bool(active))
+
+        # Populate table raster_values
+        sql = f"SELECT time, fname FROM cat_raster_value WHERE idval = '{raster_id}'"
+        rows = tools_db.get_rows(sql)
+        if not rows:
+            return
+        print(f"ROWS -> {rows}")
+        for n, row in enumerate(rows):
+            tbl_raster_value.setItem(n, 0, QTableWidgetItem(f"{row[0]}"))
+            tbl_raster_value.setItem(n, 1, QTableWidgetItem(f"{row[1]}"))
+            tbl_raster_value.insertRow(tbl_raster_value.rowCount())
+
+    def _load_raster_widgets(self, dialog):
+        """ Load values from session.config """
+
+        # Variables
+        cmb_raster_type = dialog.cmb_raster_type
+
+        # Get values
+        raster_type = tools_gw.get_config_parser('nonvisual_rasters', 'cmb_raster_type', "user", "session")
+
+        # Populate widgets
+        tools_qt.set_widget_text(dialog, cmb_raster_type, raster_type)
+
+    def _save_raster_widgets(self, dialog):
+        """ Save values from session.config """
+
+        # Variables
+        cmb_raster_type = dialog.cmb_raster_type
+
+        # Get values
+        raster_type = tools_qt.get_combo_value(dialog, cmb_raster_type)
+
+        # Populate widgets
+        tools_gw.set_config_parser('nonvisual_rasters', 'cmb_raster_type', raster_type)
+
+    def _accept_raster(self, dialog, is_new):
+        """ Manage accept button (insert & update) """
+
+        # Variables
+        txt_id = dialog.txt_raster_id
+        txt_idval = dialog.txt_raster_name
+        cmb_raster_type = dialog.cmb_raster_type
+        chk_active = dialog.chk_active
+        tbl_raster_value = dialog.tbl_raster_value
+
+        # Get widget values
+        raster_id = tools_qt.get_text(dialog, txt_id, add_quote=True)
+        idval = tools_qt.get_text(dialog, txt_idval, add_quote=True)
+        raster_type = tools_qt.get_combo_value(dialog, cmb_raster_type)
+        active = int(tools_qt.is_checked(dialog, chk_active))
+
+
+        # Check that there are no empty fields
+        if not idval or idval == 'null':
+            tools_qt.set_stylesheet(txt_idval)
+            return
+        tools_qt.set_stylesheet(txt_idval, style="")
+        idval = idval.strip("'")
+
+        if is_new:
+            # Insert inp_raster
+            sql = f"INSERT INTO cat_raster (idval, raster_type)" \
+                  f"VALUES('{idval}', '{raster_type}')"
+            result = tools_db.execute_sql(sql, commit=False)
+            if not result:
+                msg = "There was an error inserting timeseries."
+                tools_qgis.show_warning(msg, dialog=dialog)
+                global_vars.gpkg_dao_data.rollback()
+                return
+            # Get inserted raster id
+            sql = "SELECT last_insert_rowid();"
+            raster_id = tools_db.get_row(sql, commit=False)[0]
+
+            # Insert inp_raster_value
+            result = self._insert_raster_values(dialog, tbl_raster_value, raster_id)
+            if not result:
+                return
+
+            # Commit
+            global_vars.gpkg_dao_data.commit()
+            # Reload manager table
+            self._reload_manager_table()
+        elif raster_id is not None:
+            # Update inp_timeseries
+            table_name = 'cat_raster'
+
+            raster_id = raster_id.strip("'")
+            raster_type = raster_type.strip("'")
+            fields = f"""{{"idval": "{raster_id}", "raster_type": "{raster_type}", "active": {active}}}"""
+
+            result = self._setfields(raster_id, table_name, fields)
+            if not result:
+                return
+
+            # Update inp_raster_value
+            sql = f"DELETE FROM cat_raster_value WHERE idval = '{raster_id}'"
+            result = tools_db.execute_sql(sql, commit=False)
+            if not result:
+                msg = "There was an error deleting old timeseries values."
+                tools_qgis.show_warning(msg, dialog=dialog)
+                global_vars.gpkg_dao_data.rollback()
+                return
+            result = self._insert_raster_values(dialog, tbl_raster_value, raster_id)
+            if not result:
+                return
+
+            # Commit
+            global_vars.gpkg_dao_data.commit()
+            # Reload manager table
+            self._reload_manager_table()
+
+        self._save_raster_widgets(dialog)
+        tools_gw.close_dialog(dialog)
+
+    def _insert_raster_values(self, dialog, tbl_raster_value, raster_id):
+        """ Insert table values into cat_raster_values """
+
+        values = self._read_tbl_values(tbl_raster_value)
+
+        is_empty = True
+        for row in values:
+            if row == (['null'] * tbl_raster_value.columnCount()):
+                continue
+            is_empty = False
+
+        if is_empty:
+            msg = "You need at least one row of values."
+            tools_qgis.show_warning(msg, dialog=dialog)
+            global_vars.gpkg_dao_data.rollback()
+            return False
+
+        for row in values:
+            if row == (['null'] * tbl_raster_value.columnCount()):
+                continue
+
+            sql = f"INSERT INTO cat_raster_value (idval, time, fname) "
+            sql += f"VALUES ('{raster_id}', '{row[0]}', '{row[1]}')"
+            result = tools_db.execute_sql(sql, commit=False)
+            if not result:
+                msg = "There was an error inserting raster value."
+                tools_qgis.show_warning(msg, dialog=dialog)
+                global_vars.gpkg_dao_data.rollback()
+                return False
         return True
 
     # endregion
