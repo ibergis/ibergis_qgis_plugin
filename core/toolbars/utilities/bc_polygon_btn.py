@@ -44,7 +44,7 @@ class GwCreateBCFromPolygon(GwAction):
         }
         self.bt_config = {
             "INLET TOTAL DISCHARGE (SUB)CRITICAL": {
-                "timeseries_id": True,
+                "timeseries": True,
                 "timser_type": "BC FLOW",
                 "other1": False,
                 "lbl_other1": "other1",
@@ -52,7 +52,7 @@ class GwCreateBCFromPolygon(GwAction):
                 "lbl_other2": "other2",
             },
             "INLET WATER ELEVATION": {
-                "timeseries_id": True,
+                "timeseries": True,
                 "timser_type": "BC ELEVATION",
                 "other1": False,
                 "lbl_other1": "other1",
@@ -60,28 +60,28 @@ class GwCreateBCFromPolygon(GwAction):
                 "lbl_other2": "other2",
             },
             "OUTLET (SUPER)CRITICAL": {
-                "timeseries_id": False,
+                "timeseries": False,
                 "other1": False,
                 "lbl_other1": "other1",
                 "other2": False,
                 "lbl_other2": "other2",
             },
             "OUTLET SUBCRITICAL WEIR HEIGHT": {
-                "timeseries_id": False,
+                "timeseries": False,
                 "other1": True,
                 "lbl_other1": "Weir Coefficient",
                 "other2": True,
                 "lbl_other2": "Height",
             },
             "OUTLET SUBCRITICAL WEIR ELEVATION": {
-                "timeseries_id": False,
+                "timeseries": False,
                 "other1": True,
                 "lbl_other1": "Weir Coefficient",
                 "other2": True,
                 "lbl_other2": "Elevation",
             },
             "OUTLET SUBCRITICAL GIVEN LEVEL": {
-                "timeseries_id": True,
+                "timeseries": True,
                 "timser_type": "BC ELEVATION",
                 "other1": False,
                 "lbl_other1": "other1",
@@ -210,16 +210,16 @@ class GwCreateBCFromPolygon(GwAction):
             else:
                 self.boundary_type = next_level
                 config = self.bt_config[next_level]
-                self.dlg.lbl_timeseries_id.setVisible(config["timeseries_id"])
-                self.dlg.cmb_timeseries_id.setVisible(config["timeseries_id"])
-                if config["timeseries_id"]:
+                self.dlg.lbl_timeseries.setVisible(config["timeseries"])
+                self.dlg.cmb_timeseries.setVisible(config["timeseries"])
+                if config["timeseries"]:
                     rows = tools_db.get_rows(
                         f"""
                         SELECT id, idval FROM cat_timeseries 
                         WHERE timser_type = '{config['timser_type']}'
                         """
                     )
-                    tools_qt.fill_combo_values(self.dlg.cmb_timeseries_id, rows)
+                    tools_qt.fill_combo_values(self.dlg.cmb_timeseries, rows)
                 self.dlg.lbl_other1.setText(config["lbl_other1"])
                 self.dlg.lbl_other1.setVisible(config["other1"])
                 self.dlg.txt_other1.setVisible(config["other1"])
@@ -248,11 +248,11 @@ class GwCreateBCFromPolygon(GwAction):
         feature.setAttribute("boundary_type", self.boundary_type)
 
         config = self.bt_config[self.boundary_type]
-        if config["timeseries_id"]:
-            timeseries_id = tools_qt.get_combo_value(
-                self.dlg, self.dlg.cmb_timeseries_id
+        if config["timeseries"]:
+            timeseries = tools_qt.get_combo_value(
+                self.dlg, self.dlg.cmb_timeseries
             )
-            feature.setAttribute("timeseries_id", timeseries_id)
+            feature.setAttribute("timeseries", timeseries)
         if config["other1"]:
             other1_str = self.dlg.txt_other1.text()
             if not other1_str:
