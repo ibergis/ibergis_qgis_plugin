@@ -382,6 +382,123 @@ def validate_dem_coverage(layers_dict: dict, feedback: Feedback) -> QgsVectorLay
     return diff
 
 
+# The correct execution of each group of validation operations depends on
+# the successful completion of certain operations in the previous group.
+_validation_steps = [
+    # First group
+    {
+        "check_null_geometries_ground": {
+            "name": "Ground Null Geometry",
+            "type": "error",
+            "function": validate_null_geometry,
+            "layer": "ground",
+        },
+        "check_null_geometries_roof": {
+            "name": "Roof Null Geometry",
+            "type": "error",
+            "function": validate_null_geometry,
+            "layer": "roof",
+        },
+        "check_geometry_validity_ground": {
+            "name": "Ground Geometry Validity",
+            "type": "error",
+            "function": validate_validity,
+            "layer": "ground",
+        },
+        "check_geometry_validity_roof": {
+            "name": "Roof Geometry Validity",
+            "type": "error",
+            "function": validate_validity,
+            "layer": "roof",
+        },
+        "check_cellsizes_ground": {
+            "name": "Ground Invalid Cellsizes",
+            "type": "error",
+            "function": validate_cellsize,
+            "layer": "ground",
+        },
+        "check_cellsizes_roof": {
+            "name": "Roof Invalid Cellsizes",
+            "type": "error",
+            "function": validate_cellsize,
+            "layer": "roof",
+        },
+        "check_groundroughness_params": {
+            "name": "Ground Roughness Invalid Parameters",
+            "type": "error",
+            "function": validate_ground_roughness_layer,
+            "layer": "ground_roughness",
+        },
+        "check_roof_params": {
+            "name": "Roof Invalid Parameters",
+            "type": "error",
+            "function": validate_roof_layer,
+            "layer": "roof",
+        },
+    },
+    # Second group
+    {
+        "check_short_edges": {
+            "name": "Short Edges",
+            "type": "warning",
+            "function": validate_distance,
+            "layer": "ground",
+        },
+        "check_dem_coverage": {
+            "name": "DEM Coverage",
+            "type": "error",
+            "function": validate_dem_coverage,
+            "layer": None,
+        },
+        "check_dem_coverage": {
+            "name": "DEM Coverage",
+            "type": "error",
+            "function": validate_dem_coverage,
+            "layer": None,
+        },
+        "check_groundroughness_coverage": {
+            "name": "Ground Roughness Coverage",
+            "type": "error",
+            "function": validate_ground_roughness_coverage,
+            "layer": None,
+        },
+        "check_groundroughness_coverage": {
+            "name": "Ground Roughness Coverage",
+            "type": "error",
+            "function": validate_ground_roughness_coverage,
+            "layer": None,
+        },
+        "check_missing_vertices": {
+            "name": "Missing Vertices",
+            "type": "error",
+            "function": validate_vert_edge,
+            "layer": None,
+        },
+        "check_missing_vertices": {
+            "name": "Missing Vertices",
+            "type": "error",
+            "function": validate_vert_edge,
+            "layer": None,
+        },
+        "check_intersections": {
+            "name": "Intersections",
+            "type": "error",
+            "function": validate_intersect,
+            "layer": None,
+        },
+    },
+]
+
+
+def validations_dict():
+    val_list = {
+        val_id: {"name": validation["name"]}
+        for group in _validation_steps
+        for val_id, validation in group.items()
+    }
+    return val_list
+
+
 def validate_input_layers(
     layers_dict: dict, feedback: Feedback
 ) -> Optional[Tuple[list, list]]:

@@ -9,6 +9,7 @@ from qgis.PyQt.QtWidgets import QListWidgetItem
 
 from ..dialog import GwAction
 from ...threads.createmesh import GwCreateMeshTask
+from ...threads.validatemesh import validations_dict
 from ...ui.ui_manager import GwCreateMeshUi
 from ...utils import Feedback, tools_gw, mesh_parser
 from .... import global_vars
@@ -25,12 +26,7 @@ class GwCreateMeshButton(GwAction):
         self.dao = global_vars.gpkg_dao_data.clone()
         self.dlg_mesh = GwCreateMeshUi()
         dlg = self.dlg_mesh
-        self.validations = {
-            "check_null_geometries_ground": {"name": "Ground Null Geometry"},
-            "check_null_geometries_roof": {"name": "Roof Null Geometry"},
-            "check_geometry_validity_ground": {"name": "Ground Geometry Validity"},
-            "check_geometry_validity_roof": {"name": "Roof Geometry Validity"},
-        }
+        self.validations = validations_dict()
 
         self.ground_layer = self._get_layer(self.dao, "ground")
         self.roof_layer = self._get_layer(self.dao, "roof")
