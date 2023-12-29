@@ -200,6 +200,7 @@ CREATE TABLE ground (
     custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness=NULL),
     scs_cn real CHECK (typeof(scs_cn)='real' OR scs_cn=NULL),
 	geom geometry,
+
 	/*
 	lin_ia real CHECK (typeof(lin_ia)='real' OR lin_ia=NULL),
     lin_fi real CHECK (typeof(lin_fi)='real' OR lin_fi=NULL),
@@ -212,7 +213,7 @@ CREATE TABLE ground (
 	scsc_depl real CHECK (typeof(scsc_depl)='real' OR scsc_depl=NULL),
 	scsc_inic real CHECK (typeof(scsc_inic)='real' OR scsc_inic=NULL),	
 	*/
-    FOREIGN KEY (outlet_id) REFERENCES inp_outlet(fid) on update cascade
+    FOREIGN KEY (landuse_id) REFERENCES cat_landuses(id) on update cascade
 );
 
 
