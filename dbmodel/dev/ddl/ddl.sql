@@ -1176,6 +1176,9 @@ CREATE VIEW if not exists v_arc as
     select code, geom from inp_conduit;
 
 
+CREATE VIEW if not exists v_ui_file AS SELECT name, ROUND(LENGTH(content) / 1024.0, 3) AS kilobytes FROM cat_file ORDER BY name ASC;
+
+
 create table tables_nogeom (table_name text primary key);
 create table tables_geom (table_name text primary key, isgeom text NOT NULL);
 

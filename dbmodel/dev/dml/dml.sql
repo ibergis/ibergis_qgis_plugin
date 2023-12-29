@@ -135,7 +135,8 @@ insert into tables_nogeom (table_name) values
 ('vi_controls'),
 ('vi_inflows'),
 ('vi_transects'),
-('vi_report');
+('vi_report'),
+('v_ui_file');
 
 
 -- --------------

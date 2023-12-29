@@ -20,6 +20,7 @@ from .utilities.toolbox_btn import GwToolBoxButton
 from .utilities.project_check_btn import GwProjectCheckButton
 from .utilities.bc_polygon_btn import GwCreateBCFromPolygon
 from .utilities.execute_model_btn import GwExecuteModelButton
+from .utilities.mesh_manager_btn import GwMeshManagerButton
 
 # ToC
 from .toc.add_child_layer_button import GwAddChildLayerButton
