@@ -82,7 +82,13 @@ class GwCreateMeshButton(GwAction):
         dlg = self.dlg_mesh
 
         # Get and validate inputs
-        execute_validation = dlg.chk_validation.isChecked()
+        execute_validations = []
+        if dlg.chk_validation.isChecked():
+            execute_validations = [
+                validation_id
+                for validation_id, validation in self.validations.items()
+                if validation["list_item"].checkState() == Qt.Checked
+            ]
         enable_transition = dlg.chk_transition.isChecked()
         transition_slope = float(dlg.txt_slope.text())
         transition_start = float(dlg.txt_start.text())
@@ -117,7 +123,7 @@ class GwCreateMeshButton(GwAction):
         self.feedback = Feedback()
         self.thread_triangulation = GwCreateMeshTask(
             "Triangulation",
-            execute_validation,
+            execute_validations,
             enable_transition,
             transition_slope,
             transition_start,

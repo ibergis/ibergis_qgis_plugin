@@ -28,7 +28,7 @@ class GwCreateMeshTask(GwTask):
     def __init__(
         self,
         description,
-        execute_validation,
+        execute_validations,
         enable_transition,
         transition_slope,
         transition_start,
@@ -39,7 +39,7 @@ class GwCreateMeshTask(GwTask):
         feedback=None,
     ):
         super().__init__(description)
-        self.execute_validation = execute_validation
+        self.execute_validations = execute_validations
         self.enable_transition = enable_transition
         self.transition_slope = transition_slope
         self.transition_start = transition_start
@@ -118,7 +118,7 @@ class GwCreateMeshTask(GwTask):
             self.feedback.setProgress(5)
 
             # Validate inputs
-            if self.execute_validation:
+            if self.execute_validations:
                 self.feedback.setProgressText("Validating inputs...")
                 validation_layers = validate_input_layers(layers, self.feedback)
                 if self.feedback.isCanceled():
