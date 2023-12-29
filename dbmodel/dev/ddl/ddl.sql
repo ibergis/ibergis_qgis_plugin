@@ -196,9 +196,25 @@ CREATE TABLE ground (
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    source_fid integer check (typeof(source_fid) = 'integer' or source_fid = null),
-    geom geometry
+	landuse_id integer CHECK (typeof(landuse)='integer' OR landuse=NULL),
+    custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness=NULL),
+    scs_cn real CHECK (typeof(scs_cn)='real' OR scs_cn=NULL),
+	geom geometry,
+	/*
+	lin_ia real CHECK (typeof(lin_ia)='real' OR lin_ia=NULL),
+    lin_fi real CHECK (typeof(lin_fi)='real' OR lin_fi=NULL),
+    hor_f0 real CHECK (typeof(hort_f0)='real' OR hort_f0=NULL),
+    hor_fc real CHECK (typeof(hort_fc)='real' OR hort_fc=NULL),
+    ga_suction real CHECK (typeof(ga_suction)='real' OR ga_suction=NULL),
+    ga_porosity real CHECK (typeof(ga_porosity)='real' OR ga_porosity=NULL),
+	scsc_cn real CHECK (typeof(scsc_cn)='real' OR scsc_cn=NULL),
+	scsc_ia real CHECK (typeof(scsc_ia)='real' OR scsc_ia=NULL),
+	scsc_depl real CHECK (typeof(scsc_depl)='real' OR scsc_depl=NULL),
+	scsc_inic real CHECK (typeof(scsc_inic)='real' OR scsc_inic=NULL),	
+	*/
+    FOREIGN KEY (outlet_id) REFERENCES inp_outlet(fid) on update cascade
 );
+
 
 CREATE TABLE ground_roughness (
     fid integer PRIMARY KEY,
