@@ -42,11 +42,11 @@ class GwCreateMeshButton(GwAction):
         project = QgsProject.instance()
         all_layers = project.mapLayers().values()
         raster_layers = (
-            [layer.name(), layer]
+            [layer, layer.name()]
             for layer in all_layers
             if layer.type() == QgsMapLayer.RasterLayer and layer.bandCount() == 1
         )
-        rows = [["Fill elevation with zeroes", None], *raster_layers]
+        rows = [[None, "Fill elevation with zeroes"], *raster_layers]
         tools_qt.fill_combo_values(dlg.cmb_dem_layer, rows, add_empty=True)
 
         # Set initial signals
@@ -89,7 +89,7 @@ class GwCreateMeshButton(GwAction):
         transition_slope = float(dlg.txt_slope.text())
         transition_start = float(dlg.txt_start.text())
         transition_extent = float(dlg.txt_extent.text())
-        dem_layer = tools_qt.get_combo_value(dlg, dlg.cmb_dem_layer, index=1)
+        dem_layer = tools_qt.get_combo_value(dlg, dlg.cmb_dem_layer)
         if dem_layer == "":
             tools_qt.show_info_box("Please, select a DEM layer!")
             return
