@@ -37,7 +37,7 @@ INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(5, '
 
 INSERT INTO cat_transects (id, idval, descript) VALUES (1,'IRR_1', 'text to test');
 
-INSERT INTO cat_controls (id, idval, descript) VALUES(1,'RULE EXAMPLE', 'RULE EXAMPLE
+INSERT INTO cat_controls (id, descript) VALUES(1, 'RULE EXAMPLE
 IF NODE P1 DEPTH > 0.02
 THEN PUMP 226706 STATUS = ON');
 

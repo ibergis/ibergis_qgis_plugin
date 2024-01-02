@@ -1159,16 +1159,14 @@ class GwNonVisual:
         """ Fills in all the values for control dialog """
 
         # Variables
-        chk_active = self.dialog.chk_active
         txt_text = self.dialog.txt_text
 
-        sql = f"SELECT * FROM cat_controls WHERE id = '{control_id}'"
+        sql = f"SELECT id, descript FROM cat_controls WHERE id = '{control_id}'"
         row = tools_db.get_row(sql)
         if not row:
             return
 
         # Populate text & combobox widgets
-        tools_qt.set_checked(self.dialog, chk_active, row[2])
         tools_qt.set_widget_text(self.dialog, txt_text, row[1])
 
 
@@ -1206,7 +1204,6 @@ class GwNonVisual:
         txt_text = dialog.txt_text
 
         # Get widget values
-        active = tools_qt.is_checked(dialog, chk_active)
         text = tools_qt.get_text(dialog, txt_text, add_quote=True)
 
         # Check that there are no empty fields
@@ -1217,8 +1214,8 @@ class GwNonVisual:
 
         if is_new:
             # Insert cat_controls
-            sql = f"INSERT INTO cat_controls (text,active)" \
-                  f"VALUES({text}, {int(active)})"
+            sql = f"INSERT INTO cat_controls (descript)" \
+                  f"VALUES({text})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting control."
@@ -1235,7 +1232,7 @@ class GwNonVisual:
 
             text = text.strip("'")
             text = text.replace("\n", "\\n")
-            fields = f"""{{"active": "{int(active)}", "text": "{text}"}}"""
+            fields = f"""{{"descript": "{text}"}}"""
 
             result = self._setfields(control_id, table_name, fields)
             if not result:

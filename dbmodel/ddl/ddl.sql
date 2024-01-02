@@ -101,7 +101,6 @@ CREATE TABLE cat_pattern_value (
 
 CREATE TABLE cat_controls (
     id integer primary key,
-    idval text unique check (typeof(idval) = 'text') NOT NULL,
     descript text check (typeof(descript = 'text') or descript = null)
 );
 
