@@ -158,7 +158,7 @@ class GwLoadProject(QObject):
         global_vars.gpkg_dao_config = gpkg_dao_config
         # Define filepath of configuration GPKG
         filename = "config.gpkg"
-        db_filepath = os.path.join(global_vars.plugin_dir, "samples", filename)
+        db_filepath = os.path.join(global_vars.plugin_dir, "config", filename)
         tools_log.log_info(db_filepath)
         if not os.path.exists(db_filepath):
             tools_log.log_info(f"File not found: {db_filepath}")

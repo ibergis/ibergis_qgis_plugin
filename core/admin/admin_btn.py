@@ -172,7 +172,7 @@ class GwAdminButton:
 
         # Populate combo with all locales
         filename = "config.gpkg"
-        db_filepath = f"{global_vars.plugin_dir}{os.sep}samples{os.sep}{filename}"
+        db_filepath = f"{global_vars.plugin_dir}{os.sep}config{os.sep}{filename}"
         tools_log.log_info(db_filepath)
         if os.path.exists(db_filepath):
             status = self.gpkg_dao_config.init_db(db_filepath)
