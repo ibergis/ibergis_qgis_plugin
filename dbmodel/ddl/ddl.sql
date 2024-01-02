@@ -62,8 +62,8 @@ CREATE TABLE cat_curve_value (
     id integer primary key,
     curve text NOT NULL,
     xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
-    ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
-    FOREIGN KEY (curve) references cat_curve (idval) on update cascade
+    ycoord real CHECK (typeof(ycoord)='real') NOT NULL
+    --FOREIGN KEY (curve) references cat_curve (idval) on update cascade
 );
 
 CREATE TABLE cat_timeseries (
@@ -80,8 +80,8 @@ CREATE TABLE cat_timeseries_value (
     timeseries text NOT NULL,
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-    value real CHECK (typeof(value)='real' OR value=NULL),
-    FOREIGN KEY (timeseries) references cat_timeseries(idval) on update cascade on delete cascade
+    value real CHECK (typeof(value)='real' OR value=NULL)
+    --FOREIGN KEY (timeseries) references cat_timeseries(idval) on update cascade on delete cascade
 );
 
 CREATE TABLE cat_pattern (
@@ -95,8 +95,8 @@ CREATE TABLE cat_pattern_value (
     id integer primary key,
     pattern text NOT NULL,
     timestep datetime CHECK (typeof(timestep)='datetime' OR timestep=NULL),
-    value real CHECK (typeof(value)='real' OR value=NULL),
-    FOREIGN KEY (pattern) references cat_pattern(id) on update cascade on delete cascade
+    value real CHECK (typeof(value)='real' OR value=NULL)
+    --FOREIGN KEY (pattern) references cat_pattern(id) on update cascade on delete cascade
 );
 
 CREATE TABLE cat_controls (
@@ -116,8 +116,8 @@ CREATE TABLE cat_raster_value (
     id integer primary key,
     raster text NOT NULL,
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-	fname text check (typeof(fname)='text' or fname = null),
-    FOREIGN KEY (raster) references cat_raster(idval) on update cascade on delete cascade
+	fname text check (typeof(fname)='text' or fname = null)
+    --FOREIGN KEY (raster) references cat_raster(idval) on update cascade on delete cascade
 );
 
 
@@ -135,8 +135,8 @@ CREATE TABLE ground (
 	landuse text CHECK (typeof(landuse)='text' OR landuse=NULL),
     custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness=NULL),
     scs_cn real CHECK (typeof(scs_cn)='real' OR scs_cn=NULL),
-	geom geometry,
-    FOREIGN KEY (landuse) REFERENCES cat_landuses(idval) on update cascade
+	geom geometry
+    --FOREIGN KEY (landuse) REFERENCES cat_landuses(idval) on update cascade
 );
 
 CREATE TABLE roof (
@@ -158,8 +158,8 @@ CREATE TABLE roof (
     inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
     lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (outlet_code) REFERENCES inp_junction(code) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (outlet_code) REFERENCES inp_junction(code) on update cascade on delete restrict
 );
 
 
@@ -189,8 +189,8 @@ CREATE TABLE inlet (
     b_param real check (typeof(b_param) = 'real' or b_param = null),
     efficiency real check (typeof(efficiency) = 'real' or efficiency = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (outlet_node) references junction (code) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (outlet_node) references junction (code) on update cascade on delete restrict
 );
 
 
@@ -199,8 +199,8 @@ CREATE TABLE hyetograf (
     idval text unique check (typeof(idval)='text') NOT NULL,
     timeseries text CHECK (typeof(timeseries)='text' OR timeseries=NULL),
     timeseries_type text check (typeof(timeseries_type) in ('text', null) and timeseries_type in ('Intensity', 'Volume')),
-	geom geometry,
-    FOREIGN KEY (timeseries) references cat_timeseries (idval) on update cascade on delete restrict
+	geom geometry
+    --FOREIGN KEY (timeseries) references cat_timeseries (idval) on update cascade on delete restrict
 );
 
 create table boundary_conditions (
@@ -214,9 +214,9 @@ create table boundary_conditions (
     timeseries text check (typeof(timeseries)='text' or timeseries=null),
     other1 real,
     other2 real,
-    geom geometry,
-    FOREIGN KEY (bscenario) REFERENCES cat_bscenario(idval) on update cascade on delete restrict,
-    FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (bscenario) REFERENCES cat_bscenario(idval) on update cascade on delete restrict,
+    --FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
 
 
@@ -253,9 +253,9 @@ CREATE TABLE inp_conduit (
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     seepage real check (typeof(seepage) = 'real' or seepage = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
-    FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
+    geom geometry
+    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
+    --FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
 );
 
 CREATE TABLE inp_outlet (
@@ -271,8 +271,8 @@ CREATE TABLE inp_outlet (
     cd2 real check (typeof(cd2)='real' or cd2= null),
     curve text check (typeof(curve)='text' or curve= null),
     annotation real check (typeof(annotation)='real' or annotation= null),
-    geom geometry,
-    FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict
 );
 
 
@@ -318,8 +318,8 @@ CREATE TABLE inp_weir (
     crest_height real check (typeof(crest_height)='real' or crest_height = null),
     end_coeff real check (typeof(end_coeff)='real' or end_coeff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_pump (
@@ -333,8 +333,8 @@ CREATE TABLE inp_pump (
     startup real check (typeof(startup) = 'real' or startup = null),
     shutoff real check (typeof(shutoff) = 'real' or shutoff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (curve) references cat_curve(id) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (curve) references cat_curve(id) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_outfall (
@@ -347,9 +347,9 @@ CREATE TABLE inp_outfall (
     curve text check (typeof(curve) = 'text' or curve = null),
     timeseries text check (typeof(timeseries) = 'text' or timeseries = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
-    FOREIGN KEY (timeseries) references cat_timeseries(idval)
+    geom geometry
+    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
+    --FOREIGN KEY (timeseries) references cat_timeseries(idval)
 );
 
 CREATE TABLE inp_divider (
@@ -368,9 +368,9 @@ CREATE TABLE inp_divider (
     q0 real check (typeof(q0) = 'real' or q0 = null),
     qmax real check (typeof(qmax) = 'real' or qmax = null),
     annotation real check (typeof(annotation) = 'real' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
-    FOREIGN KEY (divert_arc) references inp_conduit(code) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
+    --FOREIGN KEY (divert_arc) references inp_conduit(code) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_storage (
@@ -391,8 +391,8 @@ CREATE TABLE inp_storage (
     ksat real check (typeof(ksat) = 'real' or ksat = null),
     imd real check (typeof(imd) = 'real' or imd = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_junction (
@@ -427,11 +427,11 @@ create table inp_dwf (
     pattern3 text check (typeof(pattern3) = 'text' or pattern3 = null),
     pattern4 text check (typeof(pattern4) = 'text' or pattern4 = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (pattern1) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
-    FOREIGN KEY (pattern2) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
-    FOREIGN KEY (pattern3) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
-    FOREIGN KEY (pattern4) REFERENCES cat_pattern(idval) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (pattern1) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
+    --FOREIGN KEY (pattern2) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
+    --FOREIGN KEY (pattern3) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
+    --FOREIGN KEY (pattern4) REFERENCES cat_pattern(idval) on update cascade on delete restrict
 );
 
 create table inp_inflow (
@@ -446,9 +446,9 @@ create table inp_inflow (
     base real check (typeof(base)='real' or base=null) default 0,
     pattern text check (typeof(pattern) = 'integer' or pattern=null),
     type text check(typeof(type)='text' or type=null),
-    geom geometry,
-    FOREIGN KEY (pattern) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
-    FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (pattern) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
+    --FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
 
 
