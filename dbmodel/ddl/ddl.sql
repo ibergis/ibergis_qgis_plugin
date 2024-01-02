@@ -31,7 +31,7 @@ CREATE TABLE cat_bscenario (
 
 CREATE TABLE cat_file (
     id integer primary key,
-    name text check (typeof(name)='text' OR name=NULL),
+    name text unique check (typeof(name)='text' OR name=NULL),
     iber2d text null,
 	roof text null,
     losses text null
