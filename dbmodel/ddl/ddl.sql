@@ -41,7 +41,7 @@ CREATE TABLE cat_landuses (
 	id integer primary key,
 	idval text unique check (typeof(idval)='text') NOT NULL,
     descript text check (typeof(descript)='text' or typeof(descript)=null),
-	manning real check (typeof(manning)='real' or typeof(manning)=null),
+	manning real check (typeof(manning)='real' or typeof(manning)=null)
 );
 
 
@@ -55,7 +55,7 @@ CREATE TABLE cat_curve (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
     curve_type text check (typeof(curve_type) in ('text', null) and curve_type in ('CONTROL', 'DIVERSION', 'PUMP1', 'PUMP2', 'PUMP3', 'PUMP4', 'RATING', 'SHAPE', 'STORAGE', 'TIDAL')),
-    descript text check (typeof(descript)='text' or typeof(descript)=null),
+    descript text check (typeof(descript)='text' or typeof(descript)=null)
 );
 
 CREATE TABLE cat_curve_value (
@@ -72,7 +72,7 @@ CREATE TABLE cat_timeseries (
     timser_type text check (typeof(timser_type) in ('text', null) and timser_type in ('EVAPORATION', 'INFLOW HYDROGRAPH', 'ORIFICE', 'OTHER', 'RAINFALL', 'TEMPERATURE', 'BC ELEVATION', 'BC FLOW')),
     times_type text CHECK (typeof(times_type) in ('text', null) and times_type in ('ABSOLUTE', 'FILE', 'RELATIVE')),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    fname text check (typeof(fname)='text' or fname = null),
+    fname text check (typeof(fname)='text' or fname = null)
 );
 
 CREATE TABLE cat_timeseries_value (
@@ -102,14 +102,14 @@ CREATE TABLE cat_pattern_value (
 CREATE TABLE cat_controls (
     id integer primary key,
     idval text unique check (typeof(idval) = 'text') NOT NULL,
-    descript text check (typeof(descript = 'text') or descript = null),
+    descript text check (typeof(descript = 'text') or descript = null)
 );
 
 
 CREATE TABLE cat_raster (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
-    raster_type text check (typeof(raster_type) in ('text', null) and raster_type in ('Intensity', 'Volume')),
+    raster_type text check (typeof(raster_type) in ('text', null) and raster_type in ('Intensity', 'Volume'))
 );
 
 CREATE TABLE cat_raster_value (
@@ -215,7 +215,7 @@ create table boundary_conditions (
     other1 real,
     other2 real,
     geom geometry,
-    FOREIGN KEY (bscenario) REFERENCES cat_bscenario(idval) on update cascade on delete restrict
+    FOREIGN KEY (bscenario) REFERENCES cat_bscenario(idval) on update cascade on delete restrict,
     FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
 
@@ -254,7 +254,7 @@ CREATE TABLE inp_conduit (
     seepage real check (typeof(seepage) = 'real' or seepage = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
     FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
 );
 
@@ -369,7 +369,7 @@ CREATE TABLE inp_divider (
     qmax real check (typeof(qmax) = 'real' or qmax = null),
     annotation real check (typeof(annotation) = 'real' or annotation = null),
     geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
     FOREIGN KEY (divert_arc) references inp_conduit(code) on update cascade on delete restrict
 );
 
@@ -414,7 +414,7 @@ create table inp_files (
     actio_type text check (typeof(actio_type) in ('text', null) and actio_type in ('SAVE', 'USE')),
     file_type text check (typeof(file_type) in ('text', null) and file_type in ('HOTSTART', 'INFLOWS', 'OUTFLOWS', 'RAINFALL', 'RDII', 'RUNOFF')),
     fname text check (typeof(fname) = 'text' or fname = null),
-    descript text CHECK (typeof(descript)='text' OR descript=NULL),
+    descript text CHECK (typeof(descript)='text' OR descript=NULL)
 );
 
 create table inp_dwf (
@@ -447,7 +447,7 @@ create table inp_inflow (
     pattern text check (typeof(pattern) = 'integer' or pattern=null),
     type text check(typeof(type)='text' or type=null),
     geom geometry,
-    FOREIGN KEY (pattern) REFERENCES cat_pattern(idval) on update cascade on delete restrict
+    FOREIGN KEY (pattern) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
     FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
 
@@ -497,7 +497,6 @@ CREATE TABLE rpt_arc (
     velocity real check (typeof(velocity) = 'real' or velocity = null),
     fullpercent real check (typeof(fullpercent) = 'real' or fullpercent = null),
     FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
-
 );
 
 CREATE TABLE rpt_arcflow_sum (
@@ -779,7 +778,7 @@ create view if not exists vi_options as select parameter as Option, value as Val
 
 create view if not exists vi_conduits as select code as Name, node_1 as FromNode, node_2 as ToNode, length as Length, roughness as Roughness, z1 as InOffset, 
 z2 as OutOffset, q0 as InitFlow, qmax as MaxFlow, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, culvert as Culvert, 
-kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation, geom from inp_conduit 
+kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation, geom from inp_conduit;
 
 create view if not exists vi_outlets as select code as Name, node_1 as FromNode, node_2 as ToNode, offsetval as InOffset, outlet_type as RateCurve, cd1 as Qcoeff, cd2 as Qexpon, 
 flap as FlapGate, curve as CurveName, annotation as Annotation, geom from inp_outlet;
@@ -825,7 +824,7 @@ create view if not exists vi_transects as select descript from cat_transects;
 create view if not exists vi_report as select parameter, value from config_param_user where parameter like '%inp_report_%';
 
 create view if not exists vi_inflows as select code as Name, format as Constituent, base as Baseline, pattern as Baseline_Pattern, timeseries as Time_Series, 
-mfactor as Units_Factor, sfactor as Scale_Factor, type as Type from inp_inflow
+mfactor as Units_Factor, sfactor as Scale_Factor, type as Type from inp_inflow;
 
 create view if not exists vi_xsections as
     select code as Link, shape as Shape, geom1, curve as geom2, 0 as geom3, 0 as geom4, barrels, culvert from inp_conduit where shape ='CUSTOM' union
