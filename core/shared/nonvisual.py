@@ -46,11 +46,11 @@ class GwNonVisual:
                            'cat_controls': 'controls',
                            'cat_raster': 'rasters',
                            }
-        self.dict_ids = {'cat_curve': 'idval', 'cat_curve_value': 'idval',
-                         'cat_pattern': 'idval', 'cat_pattern_value': 'idval',
+        self.dict_ids = {'cat_curve': 'idval', 'cat_curve_value': 'curve',
+                         'cat_pattern': 'idval', 'cat_pattern_value': 'pattern',
                          'cat_controls': 'id',
-                         'cat_timeseries': 'idval', 'cat_timeseries_value': 'idval',
-                         'cat_raster': 'id', 'cat_raster_value': 'idval',
+                         'cat_timeseries': 'idval', 'cat_timeseries_value': 'timeseries',
+                         'cat_raster': 'id', 'cat_raster_value': 'raster',
                          }
         self.valid = (True, "")
 
@@ -447,17 +447,15 @@ class GwNonVisual:
         txt_name = self.dialog.txt_curve_name
         txt_descript = self.dialog.txt_descript
         cmb_curve_type = self.dialog.cmb_curve_type
-        chk_active = self.dialog.chk_active
         tbl_curve_value = self.dialog.tbl_curve_value
 
-        sql = f"SELECT * FROM cat_curve WHERE id = '{curve}'"
+        sql = f"SELECT id, idval, curve_type, descript FROM cat_curve WHERE id = '{curve}'"
         row = global_vars.gpkg_dao_data.get_row(sql)
         if not row:
             return
         curve_name = row[1]
         curve_type = row[2]
         descript = row[3]
-        active = row[4]
 
         # Populate text & combobox widgets
         if not duplicate:
@@ -466,14 +464,12 @@ class GwNonVisual:
 
         tools_qt.set_combo_value(cmb_curve_type, curve_type, 0)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
-        tools_qt.set_checked(self.dialog, chk_active, bool(active))
 
         # Populate table curve_values
-        sql = f"SELECT xcoord, ycoord FROM cat_curve_value WHERE idval = '{curve}'"
+        sql = f"SELECT xcoord, ycoord FROM cat_curve_value WHERE curve = '{curve_name}'"
         rows = tools_db.get_rows(sql)
         if not rows:
             return
-        print(f"ROWS -> {rows}")
         for n, row in enumerate(rows):
             tbl_curve_value.setItem(n, 0, QTableWidgetItem(f"{row[0]}"))
             tbl_curve_value.setItem(n, 1, QTableWidgetItem(f"{row[1]}"))
@@ -706,7 +702,6 @@ class GwNonVisual:
         txt_name = dialog.txt_curve_name
         txt_descript = dialog.txt_descript
         cmb_curve_type = dialog.cmb_curve_type
-        chk_active = dialog.chk_active
         tbl_curve_value = dialog.tbl_curve_value
 
         # Get widget values
@@ -714,7 +709,6 @@ class GwNonVisual:
         curve_name = tools_qt.get_text(dialog, txt_name, add_quote=True)
         curve_type = tools_qt.get_combo_value(dialog, cmb_curve_type)
         descript = tools_qt.get_text(dialog, txt_descript, add_quote=True)
-        active = int(tools_qt.is_checked(dialog, chk_active))
 
         valid, msg = self.valid
         if not valid:
@@ -734,9 +728,7 @@ class GwNonVisual:
             # Insert cat_curve
             sql = f"""INSERT INTO cat_curve (idval, curve_type, descript) """ \
                   f"""VALUES ('{curve_name}', '{curve_type}', '{descript}')"""
-            print(f"SQL -> {sql}")
             result = tools_db.execute_sql(sql, commit=False)
-            print(f"result {result}")
             if not result:
                 msg = "There was an error inserting curve."
                 tools_qgis.show_warning(msg, dialog=dialog)
@@ -747,7 +739,7 @@ class GwNonVisual:
             curve = tools_db.get_row(sql, commit=False)[0]
 
             # Insert cat_curve_value
-            result = self._insert_curve_values(dialog, tbl_curve_value, curve)
+            result = self._insert_curve_values(dialog, tbl_curve_value, curve_name)
             if not result:
                 return
 
@@ -765,15 +757,14 @@ class GwNonVisual:
             descript = descript.strip("'")
             if curve_type == -1:
                 curve_type = 'null'
-            fields = f"""{{"idval": "{curve_name}", "curve_type": "{curve_type}", "descript": "{descript}", "active": {active}}}"""
+            fields = f"""{{"idval": "{curve_name}", "curve_type": "{curve_type}", "descript": "{descript}"}}"""
 
             result = self._setfields(curve, table_name, fields)
-            print(f"{result=}")
             if not result:
                 return
 
             # Delete existing curve values
-            sql = f"DELETE FROM cat_curve_value WHERE idval = '{curve}'"
+            sql = f"DELETE FROM cat_curve_value WHERE curve = '{curve_name}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old curve values."
@@ -782,7 +773,7 @@ class GwNonVisual:
                 return
 
             # Insert new curve values
-            result = self._insert_curve_values(dialog, tbl_curve_value, curve)
+            result = self._insert_curve_values(dialog, tbl_curve_value, curve_name)
             if not result:
                 return
 
@@ -795,7 +786,7 @@ class GwNonVisual:
         tools_gw.close_dialog(dialog)
 
 
-    def _insert_curve_values(self, dialog, tbl_curve_value, curve):
+    def _insert_curve_values(self, dialog, tbl_curve_value, curve_name):
         """ Insert table values into cat_curve_values """
 
         values = self._read_tbl_values(tbl_curve_value)
@@ -816,8 +807,8 @@ class GwNonVisual:
             if row == (['null'] * tbl_curve_value.columnCount()):
                 continue
 
-            sql = f"INSERT INTO cat_curve_value (idval, xcoord, ycoord) " \
-                  f"VALUES ('{curve}', "
+            sql = f"INSERT INTO cat_curve_value (curve, xcoord, ycoord) " \
+                  f"VALUES ('{curve_name}', "
             for x in row:
                 sql += f"{x}, "
             sql = sql.rstrip(', ') + ")"
