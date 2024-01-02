@@ -830,8 +830,7 @@ class GwNonVisual:
         tools_gw.load_settings(self.dialog)
 
         # Manage widgets depending on the project_type
-        #    calls -> def _manage_ws_patterns_dlg(self):
-        #             def _manage_ud_patterns_dlg(self):
+        #    calls -> def _manage_ud_patterns_dlg(self):
         getattr(self, f'_manage_{global_vars.project_type}_patterns_dlg')(pattern, duplicate=duplicate)
 
         # Connect dialog signals
@@ -839,242 +838,6 @@ class GwNonVisual:
 
         # Open dialog
         tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_pattern_{global_vars.project_type}')
-
-
-    def _manage_ws_patterns_dlg(self, pattern, duplicate=False):
-        # Variables
-        tbl_pattern_value = self.dialog.tbl_pattern_value
-
-        # Set scale-to-fit for tableview
-        tbl_pattern_value.horizontalHeader().setSectionResizeMode(1)
-        tbl_pattern_value.horizontalHeader().setMinimumSectionSize(50)
-
-        # Create plot widget
-        plot_widget = self._create_plot_widget(self.dialog)
-
-        if pattern:
-            self._populate_ws_patterns_widgets(pattern, duplicate=duplicate)
-            self._manage_ws_patterns_plot(tbl_pattern_value, plot_widget, None, None)
-        else:
-            self._load_ws_pattern_widgets(self.dialog)
-
-        # Signals
-        tbl_pattern_value.cellChanged.connect(partial(self._onCellChanged, tbl_pattern_value))
-        tbl_pattern_value.cellChanged.connect(partial(self._manage_ws_patterns_plot, tbl_pattern_value, plot_widget))
-
-        # Connect OK button to insert all inp_pattern and inp_pattern_value data to database
-        is_new = (pattern is None) or duplicate
-        self.dialog.btn_accept.clicked.connect(partial(self._accept_pattern_ws, self.dialog, is_new))
-
-
-    def _populate_ws_patterns_widgets(self, pattern, duplicate=False):
-        """ Fills in all the values for ws pattern dialog """
-
-        # Variables
-        txt_id = self.dialog.txt_pattern
-        txt_observ = self.dialog.txt_observ
-        tbl_pattern_value = self.dialog.tbl_pattern_value
-
-        sql = f"SELECT * FROM v_edit_inp_pattern WHERE pattern = '{pattern}'"
-        row = global_vars.gpkg_dao_data.get_row(sql)
-        if not row:
-            return
-
-        # Populate text & combobox widgets
-        if not duplicate:
-            tools_qt.set_widget_text(self.dialog, txt_id, pattern)
-            tools_qt.set_widget_enabled(self.dialog, txt_id, False)
-        tools_qt.set_widget_text(self.dialog, txt_observ, row['observ'])
-
-        # Populate table pattern_values
-        sql = f"SELECT factor_1, factor_2, factor_3, factor_4, factor_5, factor_6, factor_7, factor_8, factor_9, " \
-              f"factor_10, factor_11, factor_12, factor_13, factor_14, factor_15, factor_16, factor_17, factor_18 " \
-              f"FROM v_edit_inp_pattern_value WHERE pattern = '{pattern}'"
-        rows = global_vars.gpkg_dao_data.get_rows(sql)
-        if not rows:
-            return
-
-        for n, row in enumerate(rows):
-            for i, cell in enumerate(row):
-                value = f"{cell}"
-                if value in (None, 'None'):
-                    value = ''
-                tbl_pattern_value.setItem(n, i, QTableWidgetItem(value))
-            tbl_pattern_value.insertRow(tbl_pattern_value.rowCount())
-        # Set headers
-        headers = ['Multiplier' for n in range(0, tbl_pattern_value.rowCount() + 1)]
-        tbl_pattern_value.setVerticalHeaderLabels(headers)
-
-
-    def _load_ws_pattern_widgets(self, dialog):
-        """ Load values from session.config """
-
-        pass
-
-
-    def _save_ws_pattern_widgets(self, dialog):
-        """ Save values from session.config """
-
-        pass
-
-
-    def _accept_pattern_ws(self, dialog, is_new):
-        """ Manage accept button (insert & update) """
-
-        # Variables
-        txt_id = dialog.txt_pattern
-        txt_observ = dialog.txt_observ
-        tbl_pattern_value = dialog.tbl_pattern_value
-
-        # Get widget values
-        pattern = tools_qt.get_text(dialog, txt_id, add_quote=True)
-        observ = tools_qt.get_text(dialog, txt_observ, add_quote=True)
-
-        if is_new:
-            # Check that there are no empty fields
-            if not pattern or pattern == 'null':
-                tools_qt.set_stylesheet(txt_id)
-                return
-            tools_qt.set_stylesheet(txt_id, style="")
-
-            # Insert inp_pattern
-            sql = f"INSERT INTO inp_pattern (pattern, observ)" \
-                  f"VALUES({pattern}, {observ})"
-            result = tools_db.execute_sql(sql, commit=False)
-            if not result:
-                msg = "There was an error inserting pattern."
-                tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.gpkg_dao_data.rollback()
-                return
-
-            # Insert inp_pattern_value
-            result = self._insert_ws_pattern_values(dialog, tbl_pattern_value, pattern)
-            if not result:
-                return
-
-            # Commit
-            global_vars.gpkg_dao_data.commit()
-            # Reload manager table
-            self._reload_manager_table()
-        elif pattern is not None:
-            # Update inp_pattern
-            table_name = 'v_edit_inp_pattern'
-
-            observ = observ.strip("'")
-            fields = f"""{{"observ": "{observ}"}}"""
-
-            result = self._setfields(pattern.strip("'"), table_name, fields)
-            if not result:
-                return
-
-            # Update inp_pattern_value
-            sql = f"DELETE FROM v_edit_inp_pattern_value WHERE pattern = {pattern}"
-            result = tools_db.execute_sql(sql, commit=False)
-            if not result:
-                msg = "There was an error deleting old curve values."
-                tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.gpkg_dao_data.rollback()
-                return
-            result = self._insert_ws_pattern_values(dialog, tbl_pattern_value, pattern)
-            if not result:
-                return
-
-            # Commit
-            global_vars.gpkg_dao_data.commit()
-            # Reload manager table
-            self._reload_manager_table()
-
-        self._save_ws_pattern_widgets(dialog)
-        tools_gw.close_dialog(dialog)
-
-
-    def _insert_ws_pattern_values(self, dialog, tbl_pattern_value, pattern):
-        """ Insert table values into v_edit_inp_pattern_values """
-
-        # Insert inp_pattern_value
-        values = self._read_tbl_values(tbl_pattern_value)
-
-        is_empty = True
-        for row in values:
-            if row == (['null'] * tbl_pattern_value.columnCount()):
-                continue
-            is_empty = False
-
-        if is_empty:
-            msg = "You need at least one row of values."
-            tools_qgis.show_warning(msg, dialog=dialog)
-            global_vars.gpkg_dao_data.rollback()
-            return False
-
-        for row in values:
-            if row == (['null'] * tbl_pattern_value.columnCount()):
-                continue
-
-            sql = f"INSERT INTO v_edit_inp_pattern_value (pattern, factor_1, factor_2, factor_3, factor_4, factor_5, " \
-                  f"factor_6, factor_7, factor_8, factor_9, factor_10, factor_11, factor_12, factor_13, factor_14, " \
-                  f"factor_15, factor_16, factor_17, factor_18) " \
-                  f"VALUES ({pattern}, "
-            for x in row:
-                sql += f"{x}, "
-            sql = sql.rstrip(', ') + ")"
-            result = tools_db.execute_sql(sql, commit=False)
-            if not result:
-                msg = "There was an error inserting pattern value."
-                tools_qgis.show_warning(msg, dialog=dialog)
-                global_vars.gpkg_dao_data.rollback()
-                return False
-
-        return True
-
-
-    def _manage_ws_patterns_plot(self, table, plot_widget, row, column):
-        """ Note: row & column parameters are passed by the signal """
-
-        # Clear plot
-        plot_widget.axes.cla()
-
-        # Read row values
-        values = self._read_tbl_values(table)
-        temp_list = []  # String list with all table values
-        for v in values:
-            temp_list.append(v)
-
-        # Clean nulls of the end of the list
-        clean_list = []
-        for i, item in enumerate(temp_list):
-            last_idx = -1
-            for j, value in enumerate(item):
-                if value != 'null':
-                    last_idx = j
-            clean_list.append(item[:last_idx+1])
-
-        # Convert list items to float
-        float_list = []
-        for lst in clean_list:
-            temp_lst = []
-            for item in lst:
-                try:
-                    value = float(item)
-                except ValueError:
-                    value = 0
-                temp_lst.append(value)
-            float_list.append(temp_lst)
-
-        # Create lists for pandas DataFrame
-        x_offset = 0
-        for lst in float_list:
-            if not lst:
-                continue
-            # Create lists with x zeros as offset to append new rows to the graph
-            df_list = [0] * x_offset
-            df_list.extend(lst)
-
-            plot_widget.axes.bar(range(0, len(df_list)), df_list, width=1, align='edge', color='lightcoral', edgecolor='indianred')
-            plot_widget.axes.set_xticks(range(0, len(df_list)))
-            x_offset += len(lst)
-
-        # Draw plot
-        plot_widget.draw()
 
 
     def _manage_ud_patterns_dlg(self, pattern, duplicate=False):
@@ -1123,29 +886,26 @@ class GwNonVisual:
         txt_id = self.dialog.txt_pattern
         txt_name = self.dialog.txt_name
         cmb_pattern_type = self.dialog.cmb_pattern_type
-        chk_active = self.dialog.chk_active
         txt_descript = self.dialog.txt_descript
 
-        sql = f"SELECT * FROM cat_pattern WHERE id = '{pattern}'"
+        sql = f"SELECT id, idval, pattern_type, descript FROM cat_pattern WHERE id = '{pattern}'"
         row = global_vars.gpkg_dao_data.get_row(sql)
         if not row:
             return
 
-        name = row[1]
+        pattern_name = row[1]
         pattern_type = row[2]
         descript = row[3]
-        active = row[4]
 
         # Populate text & combobox widgets
         if not duplicate:
             tools_qt.set_widget_enabled(self.dialog, txt_name, False)
-            tools_qt.set_widget_text(self.dialog, txt_name, name)
+            tools_qt.set_widget_text(self.dialog, txt_name, pattern_name)
         tools_qt.set_widget_text(self.dialog, cmb_pattern_type, pattern_type)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
-        tools_qt.set_checked(self.dialog, chk_active, bool(active))
 
         # Populate table pattern_values
-        sql = f"SELECT * FROM cat_pattern_value WHERE idval = '{pattern}'"
+        sql = f"SELECT id, pattern, timestep, value FROM cat_pattern_value WHERE pattern = '{pattern_name}'"
         rows = tools_db.get_rows(sql)
         if not rows:
             return
@@ -1220,13 +980,11 @@ class GwNonVisual:
         txt_name = dialog.txt_name
         txt_descript = dialog.txt_descript
         cmb_pattern_type = dialog.cmb_pattern_type
-        chk_active = dialog.chk_active
 
         # Get widget values
         pattern = tools_qt.get_text(dialog, txt_id, add_quote=True)
         pattern_name = tools_qt.get_text(dialog, txt_name, add_quote=True)
         pattern_type = tools_qt.get_combo_value(dialog, cmb_pattern_type)
-        active = tools_qt.is_checked(dialog, chk_active)
         descript = tools_qt.get_text(dialog, txt_descript, add_quote=True)
 
         # Check that there are no empty fields
@@ -1237,20 +995,17 @@ class GwNonVisual:
 
         if is_new:
             # Insert inp_pattern
-            sql = f"INSERT INTO cat_pattern (idval, pattern_type, descript, active)" \
-                  f"VALUES({pattern_name}, '{pattern_type}', {descript}, {int(active)})"
+            sql = f"INSERT INTO cat_pattern (idval, pattern_type, descript)" \
+                  f"VALUES({pattern_name}, '{pattern_type}', {descript})"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting pattern."
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
-            # Get inserted pattern id
-            sql = "SELECT last_insert_rowid();"
-            pattern = tools_db.get_row(sql, commit=False)[0]
 
             # Insert inp_pattern_value
-            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern)
+            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_name)
             if not result:
                 return
 
@@ -1264,21 +1019,21 @@ class GwNonVisual:
 
             pattern = pattern.strip("'")
             descript = descript.strip("'")
-            fields = f"""{{"pattern_type": "{pattern_type}", "descript": "{descript}", "active": "{int(active)}"}}"""
+            fields = f"""{{"pattern_type": "{pattern_type}", "descript": "{descript}"}}"""
 
             result = self._setfields(pattern, table_name, fields)
             if not result:
                 return
 
             # Update inp_pattern_value
-            sql = f"DELETE FROM cat_pattern_value WHERE idval = '{pattern}'"
+            sql = f"DELETE FROM cat_pattern_value WHERE pattern = '{pattern_name}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old pattern values."
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
-            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern)
+            result = self._insert_ud_pattern_values(dialog, pattern_type, pattern_name)
             if not result:
                 return
 
@@ -1291,7 +1046,7 @@ class GwNonVisual:
         tools_gw.close_dialog(dialog)
 
 
-    def _insert_ud_pattern_values(self, dialog, pattern_type, pattern):
+    def _insert_ud_pattern_values(self, dialog, pattern_type, pattern_name):
         """ Insert table values into v_edit_inp_pattern_values """
 
         table = dialog.findChild(QTableWidget, f"tbl_{pattern_type.lower()}")
@@ -1315,8 +1070,8 @@ class GwNonVisual:
                 continue
 
             for n, x in enumerate(row):
-                sql = f"INSERT INTO cat_pattern_value (idval, timestep, value) "
-                sql += f"VALUES ({pattern}, {n+1}, {x});"
+                sql = f"INSERT INTO cat_pattern_value (pattern, timestep, value) "
+                sql += f"VALUES ({pattern_name}, {n+1}, {x});"
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
                     msg = "There was an error inserting pattern value."
