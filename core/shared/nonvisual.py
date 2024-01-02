@@ -23,7 +23,7 @@ from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
 from ..ui.ui_manager import GwNonVisualManagerUi, GwNonVisualControlsUi, GwNonVisualCurveUi, GwNonVisualPatternUDUi, \
-    GwNonVisualPatternWSUi, GwNonVisualRulesUi, GwNonVisualTimeseriesUi, GwNonVisualLidsUi, GwNonVisualPrint, GwNonVisualRasterUi
+    GwNonVisualTimeseriesUi, GwNonVisualLidsUi, GwNonVisualPrint, GwNonVisualRasterUi
 from ..utils.matplotlib_widget import MplCanvas
 from ..utils import tools_gw
 from ...lib import tools_qgis, tools_qt, tools_db, tools_log
@@ -835,13 +835,7 @@ class GwNonVisual:
         """ Opens dialog for patterns """
 
         # Get dialog
-        if global_vars.project_type == 'ws':
-            self.dialog = GwNonVisualPatternWSUi()
-        elif global_vars.project_type == 'ud':
-            self.dialog = GwNonVisualPatternUDUi()
-        else:
-            tools_log.log_warning(f"get_patterns: project type '{global_vars.project_type}' not supported")
-            return
+        self.dialog = GwNonVisualPatternUDUi()
         tools_gw.load_settings(self.dialog)
 
         # Manage widgets depending on the project_type

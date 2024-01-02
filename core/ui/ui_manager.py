@@ -47,14 +47,8 @@ class GwNonVisualControlsUi(GwDialog, FROM_CLASS):
 FROM_CLASS = _get_ui_class('nonvisual_manager.ui', 'main')
 class GwNonVisualManagerUi(GwDialog, FROM_CLASS):
     pass
-FROM_CLASS = _get_ui_class('nonvisual_pattern_ws.ui', 'main')
-class GwNonVisualPatternWSUi(GwDialog, FROM_CLASS):
-    pass
 FROM_CLASS = _get_ui_class('nonvisual_print.ui', 'main')
 class GwNonVisualPrint(GwDialog, FROM_CLASS):
-    pass
-FROM_CLASS = _get_ui_class('nonvisual_rules.ui', 'main')
-class GwNonVisualRulesUi(GwDialog, FROM_CLASS):
     pass
 FROM_CLASS = _get_ui_class('nonvisual_pattern_ud.ui', 'main')
 class GwNonVisualPatternUDUi(GwDialog, FROM_CLASS):
