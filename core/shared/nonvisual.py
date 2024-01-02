@@ -1026,7 +1026,7 @@ class GwNonVisual:
                 return
 
             # Update inp_pattern_value
-            sql = f"DELETE FROM cat_pattern_value WHERE pattern = '{pattern_name}'"
+            sql = f"DELETE FROM cat_pattern_value WHERE pattern = '{pattern}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old pattern values."
