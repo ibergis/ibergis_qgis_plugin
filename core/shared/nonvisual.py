@@ -1460,10 +1460,9 @@ class GwNonVisual:
         cmb_times_type = self.dialog.cmb_times_type
         txt_descript = self.dialog.txt_descript
         txt_fname = self.dialog.txt_fname
-        chk_active = self.dialog.chk_active
         tbl_timeseries_value = self.dialog.tbl_timeseries_value
 
-        sql = f"SELECT id, idval, timser_type, times_type, descript, fname, log, active FROM cat_timeseries WHERE id = '{timser_id}'"
+        sql = f"SELECT id, idval, timser_type, times_type, descript, fname FROM cat_timeseries WHERE id = '{timser_id}'"
         row = tools_db.get_row(sql)
         if not row:
             return
@@ -1473,7 +1472,6 @@ class GwNonVisual:
         times_type = row[3]
         descript = row[4]
         fname = row[5]
-        active = row[7]
 
         # Populate text & combobox widgets
         if not duplicate:
@@ -1483,10 +1481,9 @@ class GwNonVisual:
         tools_qt.set_widget_text(self.dialog, cmb_times_type, times_type)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
         tools_qt.set_widget_text(self.dialog, txt_fname, fname)
-        tools_qt.set_checked(self.dialog, chk_active, bool(active))
 
         # Populate table timeseries_values
-        sql = f"SELECT id, date, time, value FROM cat_timeseries_value WHERE idval = '{timser_id}'"
+        sql = f"SELECT id, date, time, value FROM cat_timeseries_value WHERE timeseries = '{idval}'"
         rows = tools_db.get_rows(sql)
         if not rows:
             return
@@ -1614,15 +1611,9 @@ class GwNonVisual:
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
-            # Get inserted curve id
-            sql = "SELECT last_insert_rowid();"
-            timeseries = tools_db.get_row(sql, commit=False)[0]
-
-            if fname not in (None, 'null'):
-                sql = ""  # No need to insert to inp_timeseries_value?
 
             # Insert inp_timeseries_value
-            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, timeseries)
+            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, idval)
             if not result:
                 return
 
@@ -1639,13 +1630,13 @@ class GwNonVisual:
             times_type = times_type.strip("'")
             descript = descript.strip("'")
             fname = fname.strip("'")
-            fields = f"""{{"idval": "{timeseries}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}", "active": {active}}}"""
+            fields = f"""{{"idval": "{timeseries}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}"}}"""
             result = self._setfields(timeseries, table_name, fields)
             if not result:
                 return
 
             # Update inp_timeseries_value
-            sql = f"DELETE FROM cat_timeseries_value WHERE idval = '{timeseries}'"
+            sql = f"DELETE FROM cat_timeseries_value WHERE timeseries = '{timeseries}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old timeseries values."
@@ -1705,7 +1696,7 @@ class GwNonVisual:
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (idval, date, value) "
+                sql = f"INSERT INTO cat_timeseries_value (timeseries, date, value) "
                 sql += f"VALUES ('{timeseries}', {row[0]}, {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
@@ -1725,7 +1716,7 @@ class GwNonVisual:
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (idval, time, value) "
+                sql = f"INSERT INTO cat_timeseries_value (timeseries, time, value) "
                 sql += f"VALUES ('{timeseries}', {row[1]}, {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
