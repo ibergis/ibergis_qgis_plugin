@@ -162,13 +162,6 @@
           </property>
          </widget>
         </item>
-        <item row="6" column="0">
-         <widget class="QCheckBox" name="chk_active">
-          <property name="text">
-           <string>Active</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
       <item row="3" column="0" colspan="2">

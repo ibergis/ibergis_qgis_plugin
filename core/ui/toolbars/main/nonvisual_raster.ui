@@ -69,21 +69,25 @@
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="1" column="3">
-         <widget class="QCheckBox" name="chk_active">
+        <item row="1" column="2">
+         <widget class="QComboBox" name="cmb_raster_type"/>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="txt_raster_name">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="text">
-           <string>Active</string>
-          </property>
          </widget>
         </item>
-        <item row="1" column="2">
-         <widget class="QComboBox" name="cmb_raster_type"/>
+        <item row="0" column="2">
+         <widget class="QLabel" name="lbl_raster_type">
+          <property name="text">
+           <string>Raster Type</string>
+          </property>
+         </widget>
         </item>
         <item row="0" column="1">
          <widget class="QLabel" name="lbl_raster_name">
@@ -118,23 +122,6 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="txt_raster_name">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="lbl_raster_type">
-          <property name="text">
-           <string>Raster Type</string>
           </property>
          </widget>
         </item>

@@ -1173,34 +1173,35 @@ class GwNonVisual:
     def _load_controls_widgets(self, dialog):
         """ Load values from session.config """
 
-        # Variables
-        chk_active = dialog.chk_active
-
-        # Get values
-        active = tools_gw.get_config_parser('nonvisual_controls', 'chk_active', "user", "session")
-
-        # Populate widgets
-        tools_qt.set_checked(dialog, chk_active, active)
+        pass
+        # # Variables
+        # chk_active = dialog.chk_active
+        #
+        # # Get values
+        # active = tools_gw.get_config_parser('nonvisual_controls', 'chk_active', "user", "session")
+        #
+        # # Populate widgets
+        # tools_qt.set_checked(dialog, chk_active, active)
 
 
     def _save_controls_widgets(self, dialog):
         """ Save values from session.config """
 
-        # Variables
-        chk_active = dialog.chk_active
-
-        # Get values
-        active = tools_qt.is_checked(dialog, chk_active)
-
-        # Populate widgets
-        tools_gw.set_config_parser('nonvisual_controls', 'chk_active', active)
+        pass
+        # # Variables
+        # chk_active = dialog.chk_active
+        #
+        # # Get values
+        # active = tools_qt.is_checked(dialog, chk_active)
+        #
+        # # Populate widgets
+        # tools_gw.set_config_parser('nonvisual_controls', 'chk_active', active)
 
 
     def _accept_controls(self, dialog, is_new, control_id):
         """ Manage accept button (insert & update) """
 
         # Variables
-        chk_active = dialog.chk_active
         txt_text = dialog.txt_text
 
         # Get widget values
@@ -2054,7 +2055,6 @@ class GwNonVisual:
         # Variables
         txt_name = self.dialog.txt_raster_name
         cmb_raster_type = self.dialog.cmb_raster_type
-        chk_active = self.dialog.chk_active
         tbl_raster_value = self.dialog.tbl_raster_value
 
         sql = f"SELECT * FROM cat_raster WHERE id = '{raster_id}'"
@@ -2071,10 +2071,9 @@ class GwNonVisual:
             tools_qt.set_widget_enabled(self.dialog, txt_name, False)
 
         tools_qt.set_combo_value(cmb_raster_type, raster_type, 0)
-        tools_qt.set_checked(self.dialog, chk_active, bool(active))
 
         # Populate table raster_values
-        sql = f"SELECT time, fname FROM cat_raster_value WHERE idval = '{raster_id}'"
+        sql = f"SELECT time, fname FROM cat_raster_value WHERE raster = '{raster_name}'"
         rows = tools_db.get_rows(sql)
         if not rows:
             return
@@ -2115,15 +2114,12 @@ class GwNonVisual:
         txt_id = dialog.txt_raster_id
         txt_idval = dialog.txt_raster_name
         cmb_raster_type = dialog.cmb_raster_type
-        chk_active = dialog.chk_active
         tbl_raster_value = dialog.tbl_raster_value
 
         # Get widget values
         raster_id = tools_qt.get_text(dialog, txt_id, add_quote=True)
         idval = tools_qt.get_text(dialog, txt_idval, add_quote=True)
         raster_type = tools_qt.get_combo_value(dialog, cmb_raster_type)
-        active = int(tools_qt.is_checked(dialog, chk_active))
-
 
         # Check that there are no empty fields
         if not idval or idval == 'null':
@@ -2147,7 +2143,7 @@ class GwNonVisual:
             raster_id = tools_db.get_row(sql, commit=False)[0]
 
             # Insert inp_raster_value
-            result = self._insert_raster_values(dialog, tbl_raster_value, raster_id)
+            result = self._insert_raster_values(dialog, tbl_raster_value, idval)
             if not result:
                 return
 
@@ -2161,21 +2157,21 @@ class GwNonVisual:
 
             raster_id = raster_id.strip("'")
             raster_type = raster_type.strip("'")
-            fields = f"""{{"idval": "{raster_id}", "raster_type": "{raster_type}", "active": {active}}}"""
+            fields = f"""{{"idval": "{raster_id}", "raster_type": "{raster_type}"}}"""
 
             result = self._setfields(raster_id, table_name, fields)
             if not result:
                 return
 
             # Update inp_raster_value
-            sql = f"DELETE FROM cat_raster_value WHERE idval = '{raster_id}'"
+            sql = f"DELETE FROM cat_raster_value WHERE raster = '{idval}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old timeseries values."
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
-            result = self._insert_raster_values(dialog, tbl_raster_value, raster_id)
+            result = self._insert_raster_values(dialog, tbl_raster_value, idval)
             if not result:
                 return
 
@@ -2208,7 +2204,7 @@ class GwNonVisual:
             if row == (['null'] * tbl_raster_value.columnCount()):
                 continue
 
-            sql = f"INSERT INTO cat_raster_value (idval, time, fname) "
+            sql = f"INSERT INTO cat_raster_value (raster, time, fname) "
             sql += f"VALUES ('{raster_id}', '{row[0]}', '{row[1]}')"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
