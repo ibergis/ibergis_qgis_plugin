@@ -9,9 +9,6 @@ This version of Giswater is provided by Giswater Association
 ---------------------------------------------------
 -- TRIGGERS TO CREATE AN AUTOINDEX FOR EACH ELEMENT
 -- ------------------------------------------------
-create trigger "trigger_insert_code_inp_subcatchment" after insert on "inp_subcatchment" BEGIN update inp_subcatchment set code = 'H'||fid; END;
-create trigger "trigger_insert_code_inp_raingage" after insert on "inp_raingage" BEGIN update inp_raingage set code = 'RG'||fid; END;
-
 create trigger "trigger_insert_code_inp_outlet" after insert on "inp_outlet" BEGIN update inp_outlet set code = 'T'||fid; END;
 create trigger "trigger_insert_code_inp_weir" after insert on "inp_weir" BEGIN update inp_weir set code = 'W'||fid;END;
 create trigger "trigger_insert_code_inp_orifice" after insert on "inp_orifice" BEGIN update inp_orifice set code = 'R'||fid; END;
