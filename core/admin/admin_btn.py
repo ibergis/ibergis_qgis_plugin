@@ -239,7 +239,7 @@ class GwAdminButton:
         self.file_pattern_trg = "trg"
 
         # Declare all folders
-        self.folder_software = os.path.join(self.sql_dir, "dev")
+        self.folder_software = self.sql_dir
 
         # Create dialog object
         self.dlg_readsql = GwAdminUi()
