@@ -16,7 +16,7 @@ from qgis.PyQt.QtCore import QVariant
 from qgis.utils import iface
 
 from . import createmesh_core as core
-from .validatemesh import validate_input_layers, validate_gullies_in_triangles
+from .validatemesh import validate_input_layers, validate_inlets_in_triangles
 from .task import GwTask
 from ..utils import mesh_parser
 from ..utils.meshing_process import triangulate_custom
@@ -74,15 +74,12 @@ class GwCreateMeshTask(GwTask):
                 "ground": None,
                 "roof": None,
                 "mesh_anchor_points": None,
-                "ground_roughness": None,
-                "gully": None,
+                "inlet": None,
             }
             for layer in layers:
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
                     return False
-                if layer == "ground_roughness" and not self.fill_roughness:
-                    continue
                 l = QgsVectorLayer(f"{path}{layer}", layer, "ogr")
                 if not l.isValid():
                     self.message = f"Layer '{layer}' is not valid. Check if GPKG file has a '{layer}' layer."
@@ -93,11 +90,11 @@ class GwCreateMeshTask(GwTask):
 
             # Validate landuses roughness values
             if self.fill_roughness:
-                sql = "SELECT id, manning FROM cat_landuses"
+                sql = "SELECT idval, manning FROM cat_landuses"
                 rows = self.dao.get_rows(sql)
                 landuses = {} if rows is None else dict(rows)
 
-                sql = "SELECT DISTINCT landuse FROM ground_roughness WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
+                sql = "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
                 rows = self.dao.get_rows(sql)
                 used_landuses = [] if rows is None else [row[0] for row in rows]
 
@@ -246,7 +243,7 @@ class GwCreateMeshTask(GwTask):
                 ggr_feedback.progressChanged.connect(ggr_progress)
                 ggr_feedback.canceled.connect(self.feedback.cancel)
                 roughness_dict = core.get_ground_roughness(
-                    self.mesh, layers["ground_roughness"], landuses, ggr_feedback
+                    self.mesh, layers["ground"], landuses, ggr_feedback
                 )
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
@@ -260,17 +257,14 @@ class GwCreateMeshTask(GwTask):
             sql = f"""
                 DELETE FROM cat_file
                 WHERE name = '{self.mesh_name}'
-                    AND file_name IN ('Iber2D.dat', 'Iber_SWMM_roof.dat')
             """
             self.dao.execute_sql(sql)
 
             # Save mesh
             mesh_str, roof_str = mesh_parser.dumps(self.mesh)
             sql = f"""
-                INSERT INTO cat_file (name, file_name, content)
-                VALUES
-                    ('{self.mesh_name}', 'Iber2D.dat', '{mesh_str}'),
-                    ('{self.mesh_name}', 'Iber_SWMM_roof.dat', '{roof_str}')
+                INSERT INTO cat_file (name, iber2d, roof)
+                VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}')
             """
             self.dao.execute_sql(sql)
 
@@ -323,11 +317,11 @@ class GwCreateMeshTask(GwTask):
             # Add temp layer to TOC
             tools_qt.add_layer_to_toc(temp_layer)
 
-            # Check for triangles with more than one gully
-            gully_warning = validate_gullies_in_triangles(temp_layer, layers["gully"])
-            if gully_warning.hasFeatures():
+            # Check for triangles with more than one inlet
+            inlet_warning = validate_inlets_in_triangles(temp_layer, layers["inlet"])
+            if inlet_warning.hasFeatures():
                 group_name = "Mesh inputs errors & warnings"
-                tools_qt.add_layer_to_toc(gully_warning, group_name, create_groups=True)
+                tools_qt.add_layer_to_toc(inlet_warning, group_name, create_groups=True)
                 project.layerTreeRoot().removeChildrenGroupWithoutLayers()
                 iface.layerTreeView().model().sourceModel().modelReset.emit()
 

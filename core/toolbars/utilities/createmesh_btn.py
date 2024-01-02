@@ -107,7 +107,7 @@ class GwCreateMeshButton(GwAction):
             return
 
         # Check for existent meshes in file
-        sql = 'SELECT group_concat(name) as names FROM cat_file WHERE file_name = "Iber2D.dat"'
+        sql = 'SELECT group_concat(name) as names FROM cat_file'
         retrieved_meshes = self.dao.get_row(sql)["names"]
         if retrieved_meshes is not None and mesh_name in retrieved_meshes:
             message = (

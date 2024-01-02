@@ -144,7 +144,7 @@ def validate_vert_edge(
     return output_layer
 
 
-def validate_ground_roughness_layer(
+def validate_ground_layer(
     layer: QgsVectorLayer, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
     # Create layer
@@ -206,7 +206,7 @@ def validate_roof_layer(
         slope = feature["slope"]
         width = feature["width"]
         isconnected = feature["isconnected"]
-        outlet_id = feature["outlet_id"]
+        outlet_id = feature["outlet_code"]
         outlet_vol = feature["outlet_vol"]
         street_vol = feature["street_vol"]
         infiltr_vol = feature["infiltr_vol"]
@@ -274,24 +274,6 @@ def validate_distance(
         provider.addFeature(feature)
 
     output_layer.updateExtents()
-
-    return output_layer
-
-
-def validate_ground_roughness_coverage(
-    layers_dict: dict, feedback: Feedback
-) -> QgsVectorLayer:
-    output_layer: QgsVectorLayer = processing.run(
-        "native:difference",
-        {
-            "INPUT": layers_dict["ground"],
-            "OVERLAY": layers_dict["ground_roughness"],
-            "OUTPUT": "TEMPORARY_OUTPUT",
-            "GRID_SIZE": None,
-        },
-    )["OUTPUT"]
-    output_layer.setCrs(layers_dict["ground"].crs())
-    output_layer.setName(f"Ground Roughness Misscoverage")
 
     return output_layer
 
@@ -426,8 +408,8 @@ _validation_steps = [
         "check_groundroughness_params": {
             "name": "Ground Roughness Invalid Parameters",
             "type": "error",
-            "function": validate_ground_roughness_layer,
-            "layer": "ground_roughness",
+            "function": validate_ground_layer,
+            "layer": "ground",
         },
         "check_roof_params": {
             "name": "Roof Invalid Parameters",
@@ -454,18 +436,6 @@ _validation_steps = [
             "name": "DEM Coverage",
             "type": "error",
             "function": validate_dem_coverage,
-            "layer": None,
-        },
-        "check_groundroughness_coverage": {
-            "name": "Ground Roughness Coverage",
-            "type": "error",
-            "function": validate_ground_roughness_coverage,
-            "layer": None,
-        },
-        "check_groundroughness_coverage": {
-            "name": "Ground Roughness Coverage",
-            "type": "error",
-            "function": validate_ground_roughness_coverage,
             "layer": None,
         },
         "check_missing_vertices": {
@@ -535,14 +505,14 @@ def validate_input_layers(
     return error_layers, warning_layers
 
 
-# FIXME: Empty gully layer crashes this function
-def validate_gullies_in_triangles(
-    mesh_layer: QgsVectorLayer, gully_layer: QgsVectorLayer
+# FIXME: Empty inlet layer crashes this function
+def validate_inlets_in_triangles(
+    mesh_layer: QgsVectorLayer, inlet_layer: QgsVectorLayer
 ) -> QgsVectorLayer:
 
     # Create layer
     output_layer = QgsVectorLayer(
-        "Polygon", "Triangles with more than one gully", "memory"
+        "Polygon", "Triangles with more than one inlet", "memory"
     )
     output_layer.setCrs(mesh_layer.crs())
     provider = output_layer.dataProvider()
@@ -550,7 +520,7 @@ def validate_gullies_in_triangles(
     output_layer.updateFields()
 
     # Filter errors
-    spatial_index = QgsSpatialIndexKDBush(gully_layer)
+    spatial_index = QgsSpatialIndexKDBush(inlet_layer)
     ground_triangles = (
         feature.geometry()
         for feature in mesh_layer.getFeatures()
