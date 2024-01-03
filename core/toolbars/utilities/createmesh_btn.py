@@ -64,13 +64,29 @@ class GwCreateMeshButton(GwAction):
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
 
-        # Create List Items and add to list
+        # Create List Items
         flags = Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
         for validation in self.validations.values():
             validation["list_item"] = QListWidgetItem(validation["name"])
             validation["list_item"].setFlags(flags)
             validation["list_item"].setCheckState(Qt.Checked)
-            dlg.list_validations.addItem(validation["list_item"])
+
+        # Add items to list, in categories
+        categories = {
+            "ground": "Ground Layer Checks:",
+            "roof": "Roof Layer Checks:",
+            None: "Other Checks:",
+        }
+        for category, label in categories.items():
+            item = QListWidgetItem(label)
+            item.setFlags(Qt.ItemIsEnabled)
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
+            dlg.list_validations.addItem(item)
+            for validation in self.validations.values():
+                if validation["layer"] == category:
+                    dlg.list_validations.addItem(validation["list_item"])
 
         tools_gw.open_dialog(dlg, dlg_name="create_mesh")
 
@@ -107,7 +123,7 @@ class GwCreateMeshButton(GwAction):
             return
 
         # Check for existent meshes in file
-        sql = 'SELECT group_concat(name) as names FROM cat_file'
+        sql = "SELECT group_concat(name) as names FROM cat_file"
         retrieved_meshes = self.dao.get_row(sql)["names"]
         if retrieved_meshes is not None and mesh_name in retrieved_meshes:
             message = (

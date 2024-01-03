@@ -432,18 +432,6 @@ _validation_steps = [
             "function": validate_dem_coverage,
             "layer": None,
         },
-        "check_dem_coverage": {
-            "name": "DEM Coverage",
-            "type": "error",
-            "function": validate_dem_coverage,
-            "layer": None,
-        },
-        "check_missing_vertices": {
-            "name": "Missing Vertices",
-            "type": "error",
-            "function": validate_vert_edge,
-            "layer": None,
-        },
         "check_missing_vertices": {
             "name": "Missing Vertices",
             "type": "error",
@@ -462,7 +450,7 @@ _validation_steps = [
 
 def validations_dict():
     val_list = {
-        val_id: {"name": validation["name"]}
+        val_id: {"name": validation["name"], "layer": validation["layer"]}
         for group in _validation_steps
         for val_id, validation in group.items()
     }
