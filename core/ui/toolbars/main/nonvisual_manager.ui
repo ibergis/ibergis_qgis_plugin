@@ -26,10 +26,29 @@
       <string/>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="3" column="6">
-       <widget class="QPushButton" name="btn_cancel">
+      <item row="3" column="0">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="btn_duplicate">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
-         <string>Close</string>
+         <string>Duplicate</string>
         </property>
        </widget>
       </item>
@@ -59,33 +78,14 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="4">
-       <widget class="QPushButton" name="btn_duplicate">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+      <item row="3" column="4">
+       <widget class="QPushButton" name="btn_cancel">
         <property name="text">
-         <string>Duplicate</string>
+         <string>Close</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="6">
+      <item row="1" column="4">
        <widget class="QPushButton" name="btn_delete">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -98,14 +98,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
-       <widget class="QPushButton" name="btn_print">
-        <property name="text">
-         <string>Print</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="7">
+      <item row="2" column="0" colspan="5">
        <widget class="QTabWidget" name="main_tab">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -125,7 +118,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="5">
+      <item row="1" column="3">
        <widget class="QPushButton" name="btn_create">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -135,13 +128,6 @@
         </property>
         <property name="text">
          <string>Create</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QCheckBox" name="chk_active">
-        <property name="text">
-         <string>Show only active</string>
         </property>
        </widget>
       </item>

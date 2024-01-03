@@ -84,11 +84,6 @@ class GwNonVisual:
         self.manager_dlg.btn_delete.clicked.connect(partial(self._delete_object, self.manager_dlg))
         self.manager_dlg.btn_cancel.clicked.connect(self.manager_dlg.reject)
         self.manager_dlg.finished.connect(partial(tools_gw.close_dialog, self.manager_dlg))
-        self.manager_dlg.btn_print.clicked.connect(partial(self._print_object))
-        self.manager_dlg.chk_active.stateChanged.connect(partial(self._filter_active, self.manager_dlg))
-        self.manager_dlg.main_tab.currentChanged.connect(partial(self._manage_tabs_changed))
-        self.manager_dlg.main_tab.currentChanged.connect(partial(self._filter_active, self.manager_dlg, None))
-        self._manage_tabs_changed()
 
         # Open dialog
         tools_gw.open_dialog(self.manager_dlg, dlg_name=f'dlg_nonvisual_manager')
@@ -110,23 +105,6 @@ class GwNonVisual:
             self._fill_manager_table(qtableview, key)
 
             qtableview.doubleClicked.connect(partial(self._get_nonvisual_object, qtableview, function_name))
-
-
-    def _manage_tabs_changed(self):
-
-        tab_name = self.manager_dlg.main_tab.currentWidget().objectName()
-
-        visibility_settings = {  # tab_name: (chk_active, btn_print)
-            'cat_curve': (False, True),
-            'v_edit_inp_pattern': (False, False),
-            'inp_lid': (False, False),
-        }
-        default_visibility = (True, False)
-
-        chk_active_visible, btn_print_visible = visibility_settings.get(tab_name, default_visibility)
-
-        self.manager_dlg.chk_active.setVisible(chk_active_visible)
-        self.manager_dlg.btn_print.setVisible(btn_print_visible)
 
 
     def _get_nonvisual_object(self, tbl_view, function_name):
@@ -177,24 +155,6 @@ class GwNonVisual:
             text = tools_qt.get_text(dialog, dialog.txt_filter, return_string_null=False)
 
         expr = f"CAST({id_field} AS TEXT) LIKE '%{text}%'"
-        # Refresh model with selected filter
-        widget_table.model().setFilter(expr)
-        widget_table.model().select()
-
-
-    def _filter_active(self, dialog, active):
-        """ Filters manager table by active """
-
-        widget_table = dialog.main_tab.currentWidget()
-        id_field = 'active'
-        if active is None:
-            active = dialog.chk_active.checkState()
-        active = 'true' if active == 2 else None
-
-        expr = ""
-        if active is not None:
-            expr = f"{id_field} = {active}"
-
         # Refresh model with selected filter
         widget_table.model().setFilter(expr)
         widget_table.model().select()
@@ -298,58 +258,6 @@ class GwNonVisual:
             global_vars.gpkg_dao_data.commit()
             self._reload_manager_table()
 
-    def _print_object(self):
-
-        # Get dialog
-        self.dlg_print = GwNonVisualPrint()
-        tools_gw.load_settings(self.dlg_print)
-
-        # Set values
-        value = tools_gw.get_config_parser('nonvisual_print', 'print_path', "user", "session")
-        tools_qt.set_widget_text(self.dlg_print, self.dlg_print.txt_path, value)
-
-        # Triggers
-        self.dlg_print.btn_path.clicked.connect(
-            partial(tools_qt.get_folder_path, self.dlg_print, self.dlg_print.txt_path))
-        self.dlg_print.btn_accept.clicked.connect(partial(self._exec_print))
-
-        # Open dialog
-        tools_gw.open_dialog(self.dlg_print, dlg_name=f'dlg_nonvisual_print')
-
-
-    def _exec_print(self):
-
-        path = tools_qt.get_text(self.dlg_print, 'txt_path')
-
-        if path in (None, 'null', '') or not os.path.exists(path):
-            msg = "Please choose a valid path"
-            tools_qgis.show_warning(msg)
-            return
-
-        tools_gw.set_config_parser('nonvisual_print', 'print_path', path)
-        filter = tools_qt.get_text(self.manager_dlg, 'txt_filter', return_string_null=False)
-        cross_arccat = tools_qt.is_checked(self.dlg_print, 'chk_cross_arccat')
-
-        if cross_arccat:
-            sql = f"select ic.id as curve, ca.id as arccat_id, geom1, geom2 from ud.cat_curve ic join ud.cat_arc ca on ca.curve = ic.id " \
-                  f"WHERE ic.curve_type = 'SHAPE' and ca.shape = 'CUSTOM' and ic.id ILIKE '%{filter}%'"
-            curve_results = global_vars.gpkg_dao_data.get_rows(sql)
-            for curve in curve_results:
-                geom1 = curve[2]
-                geom2 = curve[3]
-                name = f"{curve[0]} - {curve[1]}"
-                self.get_print_curves(curve[0], path, name, geom1, geom2)
-        else:
-            sql = f"select id as curve from cat_curve ic " \
-                  f"WHERE ic.curve_type = 'SHAPE' and UPPER(ic.id) LIKE '%{filter.upper()}%'"
-            curve_results = tools_db.get_rows(sql)
-            for curve in curve_results:
-                name = f"{curve[0]}"
-                self.get_print_curves(curve[0], path, name)
-
-        tools_gw.close_dialog(self.dlg_print)
-
-
     # endregion
 
     # region curves
@@ -400,30 +308,6 @@ class GwNonVisual:
         # Open dialog
         tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_curve')
 
-    def get_print_curves(self, curve, path, file_name, geom1=None, geom2=None):
-        """ Opens dialog for curve """
-
-        # Get dialog
-        self.dialog = GwNonVisualCurveUi()
-        tools_gw.load_settings(self.dialog)
-
-        # Create plot widget
-        plot_widget = self._create_plot_widget(self.dialog)
-
-        # Define variables
-        tbl_curve_value = self.dialog.tbl_curve_value
-        cmb_curve_type = self.dialog.cmb_curve_type
-
-        # Create & fill cmb_curve_type
-        curve_type_headers, curve_type_list = self._create_curve_type_lists()
-        tools_qt.fill_combo_values(cmb_curve_type, curve_type_list)
-
-        self._populate_curve_widgets(curve)
-
-        # Set initial curve_value table headers
-        self._manage_curve_plot(self.dialog, tbl_curve_value, plot_widget, file_name, geom1, geom2)
-        output_path = os.path.join(path, file_name)
-        plot_widget.figure.savefig(output_path)
 
     def _create_curve_type_lists(self):
         """ Creates a list & dict to manage curve_values table headers """
