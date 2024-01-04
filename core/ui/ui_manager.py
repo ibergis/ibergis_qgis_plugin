@@ -122,5 +122,8 @@ class GwProjectCheckUi(GwDialog, FORM_CLASS):
 FORM_CLASS = _get_ui_class('replace_in_file.ui')
 class GwReplaceInFileUi(GwDialog, FORM_CLASS):
     pass
+FORM_CLASS = _get_ui_class('dlg_lineedit.ui')
+class GwLineeditUi(GwDialog, FORM_CLASS):
+    pass
 
 # endregion

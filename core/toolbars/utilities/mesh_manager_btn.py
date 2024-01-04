@@ -1,14 +1,15 @@
 import datetime
 from functools import partial
+from pathlib import Path
 from time import time
 
 from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
-from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView
+from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog
 from qgis.PyQt.QtSql import QSqlTableModel
 
 from ..dialog import GwAction
-from ...ui.ui_manager import GwMeshManagerUi
+from ...ui.ui_manager import GwMeshManagerUi, GwLineeditUi
 from .createmesh_btn import GwCreateMeshButton
 from .openmesh_btn import GwOpenMeshButton
 from ....lib import tools_qgis, tools_qt, tools_db
@@ -113,8 +114,66 @@ class GwMeshManagerButton(GwAction):
         pass
 
     def _import_mesh(self):
-        self.create_mesh = GwOpenMeshButton('', None, None, None, None)
-        self.create_mesh.clicked_event()
+
+        self.dao = global_vars.gpkg_dao_data.clone()
+        project_folder = str(Path(self.dao.db_filepath).parent)
+        folder_path = QFileDialog.getExistingDirectory(
+            caption="Select folder",
+            directory=project_folder,
+        )
+
+        if not folder_path:
+            return
+
+        MESH_FILE = "Iber2D.dat"
+        mesh_path = Path(folder_path) / MESH_FILE
+        ROOF_FILE = "Iber_SWMM_roof.dat"
+        roof_path = Path(folder_path) / ROOF_FILE
+        LOSSES_FILE = "Iber_Losses.dat"
+        losses_path = Path(folder_path) / LOSSES_FILE
+
+        if not mesh_path.exists():
+            tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
+            return
+
+        self.dlg_lineedit = GwLineeditUi()
+        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_title', 'Choose a name for the mesh')
+
+        self.dlg_lineedit.btn_accept.clicked.connect(partial(self._insert_mesh, mesh_path, roof_path, losses_path))
+        self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_lineedit))
+        tools_gw.open_dialog(self.dlg_lineedit)
+
+
+    def _insert_mesh(self, mesh_path, roof_path, losses_path):
+        mesh_name = tools_qt.get_text(self.dlg_lineedit, 'txt_input')
+
+        columns = "name, iber2d"
+        values = f"'{mesh_name}'"
+        with open(mesh_path) as f:
+            content = f.read()
+            values += f", '{content}'"
+
+        if roof_path.exists():
+            columns += ", roof"
+            with open(roof_path) as f:
+                content = f.read()
+                values += f", '{content}'"
+        if losses_path.exists():
+            columns += ", losses"
+            with open(losses_path) as f:
+                content = f.read()
+                values += f", '{content}'"
+
+        sql = f"INSERT INTO cat_file ({columns}) VALUES ({values});"
+        status = self.dao.execute_sql(sql)
+        if status:
+            msg = "Mesh successfully imported"
+            tools_qgis.show_info(msg, dialog=self.dlg_manager)
+        self.dao.close_db()
+
+        self._reload_manager_table()
+        tools_gw.close_dialog(self.dlg_lineedit)
+
 
     def _delete_mesh(self):
         # Variables
@@ -144,22 +203,9 @@ class GwMeshManagerButton(GwAction):
             for value in id_list:
                 values.append(f"'{value}'")
 
-            # Delete values
-            id_field = 'code'
-            if id_field is not None:
-                for value in values:
-                    sql = f"DELETE FROM {self.tablename_value} WHERE {id_field} = {value}"
-                    print(sql)
-                    result = tools_db.execute_sql(sql, commit=False)
-                    if not result:
-                        msg = "There was an error deleting object values."
-                        tools_qgis.show_warning(msg, dialog=self.dlg_manager)
-                        global_vars.gpkg_dao_data.rollback()
-                        return
-
             # Delete object from main table
             for value in values:
-                id_field = 'idval'
+                id_field = 'name'
                 sql = f"DELETE FROM {self.tablename} WHERE {id_field} = {value}"
                 print(sql)
                 result = tools_db.execute_sql(sql, commit=False)
