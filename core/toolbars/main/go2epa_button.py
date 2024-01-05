@@ -254,7 +254,7 @@ class GwGo2IberButton(GwAction):
 
 
     def _go2epa_options(self):
-        self.go2epa_options = GwOptions()
+        self.go2epa_options = GwOptions(tabs_to_show=["tab_inp_swmm"])
         self.go2epa_options.open_options_dlg()
 
 

@@ -18,9 +18,12 @@ from ... import global_vars
 
 class GwOptions:
 
-    def __init__(self):
+    def __init__(self, tabs_to_show=None):
         self.epa_options_list = None
         self.dlg_go2epa_options = None
+        self.tabs_to_show = tabs_to_show
+        if self.tabs_to_show is None:
+            self.tabs_to_show = ["tab_main", "tab_rpt_iber", "tab_plugins", "tab_inp_swmm", "tab_rpt_swmm"]
 
     def open_options_dlg(self):
         self._go2epa_options()
@@ -53,6 +56,8 @@ class GwOptions:
 
         # Mount form tabs
         for tab in tab_list:
+            if tab[0] not in self.tabs_to_show:
+                continue
 
             tab_widget = QWidget(main_tab)
             tab_widget.setObjectName(f"{tab[0]}")

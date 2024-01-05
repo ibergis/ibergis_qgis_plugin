@@ -55,6 +55,7 @@ def getconfig(p_input: dict) -> dict:
         for row in v_raw_values:
             parameter, value = row
             for widget in v_widgets:
+                # TODO: improve performance, this code is called more times than needed
                 if widget['widgettype'] == 'combo':
                     cmb_ids = []
                     cmb_names = []
