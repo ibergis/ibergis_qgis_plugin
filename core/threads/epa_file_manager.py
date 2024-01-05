@@ -320,7 +320,7 @@ class GwEpaFileManager(GwTask):
                 FROM
                     cat_curve cc
                 JOIN
-                    cat_curve_value ccv ON cc.id = ccv.idval;"""
+                    cat_curve_value ccv ON cc.idval = ccv.curve;"""
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
 
