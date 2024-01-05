@@ -56,18 +56,19 @@ class GwOptions:
 
         # Mount form tabs
         for tab in tab_list:
-            if tab[0] not in self.tabs_to_show:
+            tab_name = tab[0]
+            if tab_name not in self.tabs_to_show:
                 continue
 
             tab_widget = QWidget(main_tab)
-            tab_widget.setObjectName(f"{tab[0]}")
-            main_tab.addTab(tab_widget, f"{tab[0]}")
+            tab_widget.setObjectName(f"{tab_name}")
+            main_tab.addTab(tab_widget, f"{tab_name}")
 
             # Mount layout tabs
             layout = QGridLayout()
 
             for i, lyt in enumerate(lyt_list):
-                if lyt[1] == tab[0]:
+                if lyt[1] == tab_name:
 
                     groupBox = QGroupBox()
                     gridlayout = QGridLayout()
