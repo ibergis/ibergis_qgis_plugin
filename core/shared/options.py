@@ -16,7 +16,7 @@ from ...lib import tools_qgis, tools_qt, tools_db, tools_log
 from ... import global_vars
 
 
-class PcOptions:
+class GwOptions:
 
     def __init__(self):
         self.epa_options_list = None

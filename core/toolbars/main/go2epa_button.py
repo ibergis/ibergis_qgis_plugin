@@ -20,7 +20,7 @@ from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGr
 from qgis.core import QgsApplication
 
 from ...threads.epa_file_manager import GwEpaFileManager
-from ...shared.options import PcOptions
+from ...shared.options import GwOptions
 from ...utils import tools_gw
 from ...ui.ui_manager import GwGo2EpaUI, GwGo2EpaOptionsUi
 from .... import global_vars
@@ -254,7 +254,7 @@ class GwGo2IberButton(GwAction):
 
 
     def _go2epa_options(self):
-        self.go2epa_options = PcOptions()
+        self.go2epa_options = GwOptions()
         self.go2epa_options.open_options_dlg()
 
 
