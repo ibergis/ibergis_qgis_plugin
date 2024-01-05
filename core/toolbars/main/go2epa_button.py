@@ -20,6 +20,7 @@ from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGr
 from qgis.core import QgsApplication
 
 from ...threads.epa_file_manager import GwEpaFileManager
+from ...shared.options import PcOptions
 from ...utils import tools_gw
 from ...ui.ui_manager import GwGo2EpaUI, GwGo2EpaOptionsUi
 from .... import global_vars
@@ -253,112 +254,8 @@ class GwGo2IberButton(GwAction):
 
 
     def _go2epa_options(self):
-        """ Button 23: Open form to set INP, RPT and project """
-
-        # Clear list
-        self.epa_options_list = []
-
-        # Create dialog
-        self.dlg_go2epa_options = GwGo2EpaOptionsUi()
-        tools_gw.load_settings(self.dlg_go2epa_options)
-
-        # Call getconfig
-        form = '"formName":"epaoptions"'
-        body = tools_gw.create_body(form=form)
-        json_result = tools_gw.execute_procedure('getconfig', body)
-        if not json_result or json_result['status'] == 'Failed':
-            return False
-
-        # Get sys_param values
-        v_sql = f"SELECT distinct tabname FROM sys_param_user WHERE tabname IS NOT NULL"
-        tab_list = global_vars.gpkg_dao_config.get_rows(v_sql)
-        v_sql = f"select distinct (layoutname), tabname FROM sys_param_user WHERE layoutname IS NOT NULL"
-        lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
-
-        main_tab = self.dlg_go2epa_options.findChild(QTabWidget, 'main_tab')
-
-        # Mount form tabs
-        for tab in tab_list:
-
-            tab_widget = QWidget(main_tab)
-            tab_widget.setObjectName(f"{tab[0]}")
-            main_tab.addTab(tab_widget, f"{tab[0]}")
-
-            # Mount layout tabs
-            layout = QGridLayout()
-
-            for i, lyt in enumerate(lyt_list):
-                if lyt[1] == tab[0]:
-
-                    groupBox = QGroupBox()
-                    gridlayout = QGridLayout()
-                    gridlayout.setObjectName(f"{lyt[0]}")
-
-                    row = i // 2
-                    col = i % 2
-
-                    layout.addWidget(groupBox, row, col)
-
-                    groupBox.setLayout(gridlayout)
-
-            # Add Vertical Spacer widget
-            vertical_spacer1 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-            layout.addItem(vertical_spacer1)
-
-            tab_widget.setLayout(layout)
-
-        # Build dialog widgets
-        tools_gw.build_dialog_options(
-            self.dlg_go2epa_options, json_result['body']['form']['formTabs'], 0, self.epa_options_list)
-
-        # Event on change from combo parent
-        self._get_event_combo_parent(json_result)
-        self.dlg_go2epa_options.btn_accept.clicked.connect(partial(self._update_values, self.epa_options_list))
-        self.dlg_go2epa_options.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_go2epa_options))
-        self.dlg_go2epa_options.rejected.connect(partial(tools_gw.close_dialog, self.dlg_go2epa_options))
-
-        tools_gw.open_dialog(self.dlg_go2epa_options, dlg_name='go2epa_options')
-
-
-    def _update_values(self, _json):
-
-        my_json = json.dumps(_json)
-        form = '"formName":"epaoptions"'
-        extras = f'"fields":{my_json}'
-        body = tools_gw.create_body(form=form, extras=extras)
-        json_result = tools_gw.execute_procedure('setconfig', body)
-        if not json_result or json_result['status'] == 'Failed':
-            return False
-
-        tools_gw.manage_current_selections_docker(json_result)
-
-        message = "Values has been updated"
-        tools_qgis.show_info(message)
-        # Close dialog
-        tools_gw.close_dialog(self.dlg_go2epa_options)
-
-
-    def _get_event_combo_parent(self, complet_result):
-
-        for field in complet_result['body']['form']['formTabs'][0]["fields"]:
-            if field['isparent']:
-                widget = self.dlg_go2epa_options.findChild(QComboBox, field['widgetname'])
-                if widget:
-                    widget.currentIndexChanged.connect(partial(self._fill_child, self.dlg_go2epa_options, widget))
-
-
-    def _fill_child(self, dialog, widget):
-
-        combo_parent = widget.objectName()
-        combo_id = tools_qt.get_combo_value(dialog, widget)
-        # TODO cambiar por gw_fct_getchilds then unified with tools_gw.get_child if posible
-        json_result = tools_gw.execute_procedure('gw_fct_getcombochilds', f"'epaoptions', '', '', '{combo_parent}', '{combo_id}', ''")
-        if not json_result or json_result['status'] == 'Failed':
-            return False
-
-        for combo_child in json_result['fields']:
-            if combo_child is not None:
-                tools_gw.manage_combo_child(dialog, widget, combo_child)
+        self.go2epa_options = PcOptions()
+        self.go2epa_options.open_options_dlg()
 
 
     def _calculate_elapsed_time(self, dialog):
