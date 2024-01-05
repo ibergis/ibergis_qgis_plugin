@@ -1655,7 +1655,7 @@ def fill_combo(widget, field):
     comboIds = []
     comboNames = []
 
-    if 'comboIds' in field and 'comboNames' in field:
+    if field.get('comboIds') and field.get('comboNames'):
         if tools_os.set_boolean(field.get('isNullValue'), False):
             combolist.append(['', ''])
         for record in field['comboIds'].split(','):

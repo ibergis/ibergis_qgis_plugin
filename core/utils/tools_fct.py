@@ -61,9 +61,9 @@ def getconfig(p_input: dict) -> dict:
                     if widget['dv_querytext']:
                         v_querystring = widget['dv_querytext']
                         result = global_vars.gpkg_dao_config.get_row(v_querystring)
-
-                        cmb_ids = result[0]
-                        cmb_names = result[1]
+                        if result:
+                            cmb_ids = result[0]
+                            cmb_names = result[1]
 
                     widget['comboIds'] = cmb_ids
                     widget['comboNames'] = cmb_names
