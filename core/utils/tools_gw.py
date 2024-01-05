@@ -2393,6 +2393,8 @@ def set_multi_completer_widget(tablenames: list, widget, fields_id: list, add_id
 def current_layer_changed(layer):
     if layer is None:
         return
+    if not hasattr(layer, "featureAdded"):
+        return
 
     disconnect_signal('layer_changed')
     connect_signal(layer.featureAdded, partial(check_topology), 'layer_changed', f'{layer.id()}')
