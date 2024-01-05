@@ -13,6 +13,7 @@ import subprocess
 import tempfile
 import sqlite3
 import pandas as pd
+from openpyxl import Workbook
 
 from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
 from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, QgsProject
@@ -213,6 +214,7 @@ class GwEpaFileManager(GwTask):
         FILE_PUMPS = self._copy_layer_renamed_fields('vi_pumps', rename=False)
         FILE_WEIRS = self._copy_layer_renamed_fields('vi_weirs', rename=False)
         FILE_CURVES = self._create_curves_file()
+        shutil.copy(FILE_CURVES, f"{self.debug_folder_path}{os.sep}{self.result_name}_curves.xlsx")
         FILE_PATTERNS = self._create_patterns_file()
         FILE_OPTIONS = self._create_options_file()
         # TODO: FILE_REPORT
@@ -242,7 +244,7 @@ class GwEpaFileManager(GwTask):
 
         if self.debug_mode:
             try:
-                shutil.copy(FILE_CURVES, f"{self.debug_folder_path}{os.sep}{self.result_name}_curves.xlsx")
+
                 shutil.copy(FILE_PATTERNS, f"{self.debug_folder_path}{os.sep}{self.result_name}_patterns.xlsx")
                 shutil.copy(FILE_OPTIONS, f"{self.debug_folder_path}{os.sep}{self.result_name}_options.xlsx")
                 shutil.copy(FILE_TIMESERIES, f"{self.debug_folder_path}{os.sep}{self.result_name}_timeseries.xlsx")
@@ -308,9 +310,7 @@ class GwEpaFileManager(GwTask):
 
         return output_layer
 
-
     def _create_curves_file(self):
-        # Use pandas to read the SQL table into a DataFrame
         query = """SELECT
                     cc.curve_type,
                     cc.idval AS curve_name,
@@ -324,21 +324,21 @@ class GwEpaFileManager(GwTask):
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
 
-        # Group the data by the 'curve_type' column
         grouped_data = df.groupby(['curve_type'])
 
         temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
         file_path = temp_file.name
-        # Create a new Excel writer
-        with pd.ExcelWriter(file_path) as writer:
-            headers = ["Name", "Depth", "Area", "Annotation"]  # TODO: maybe use respective x-value/y-value columns depending on curve_type
-            # Iterate over each group and save it to a separate sheet
+
+        with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
             for curve_type, data in grouped_data:
                 # Concatenate all curves of the same curve_type, with curve_name separated by semicolon
                 grouped_by_curve_name = data.groupby('curve_name')
-                # Track the current row position
-                current_row = 1
-                sheet_name = f"{curve_type[0].capitalize()}"
+
+                sheet_name = f"{curve_type.capitalize()}"
+                # data.to_excel(writer, sheet_name=sheet_name, index=False)
+                worksheet = writer.sheets[sheet_name]
+
+                current_row = 2
 
                 for curve_name, curve_data in grouped_by_curve_name:
                     # Remove the 'curve_type' columns from the individual sheets
@@ -347,14 +347,15 @@ class GwEpaFileManager(GwTask):
                     curve_data.to_excel(writer, sheet_name=sheet_name, startrow=current_row, index=False, header=False)
 
                     # Insert a semicolon between different curve_names
-                    writer.sheets[sheet_name].write(current_row + curve_data.shape[0], 0, ';')
+                    writer.sheets[sheet_name].cell(current_row + curve_data.shape[0], 1, ';')
 
                     # Update the current row position
                     current_row += curve_data.shape[0] + 1
 
                 # Write headers
-                for i, header in enumerate(headers):
-                    writer.sheets[sheet_name].write(0, i, header)
+                headers = ["Name", "Depth", "Area", "Annotation"]
+                for idx, header in enumerate(headers):
+                    writer.sheets[sheet_name].cell(row=1, column=idx + 1, value=header)
 
         return file_path
 
