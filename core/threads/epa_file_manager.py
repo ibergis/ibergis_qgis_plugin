@@ -369,7 +369,7 @@ class GwEpaFileManager(GwTask):
                 FROM
                     cat_pattern cp
                 JOIN
-                    cat_pattern_value cpv ON cp.id = cpv.idval;"""
+                    cat_pattern_value cpv ON cp.idval = cpv.pattern;"""
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
 
