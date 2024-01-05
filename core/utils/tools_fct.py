@@ -60,7 +60,11 @@ def getconfig(p_input: dict) -> dict:
                     cmb_names = []
                     if widget['dv_querytext']:
                         v_querystring = widget['dv_querytext']
+                        # First try to execute querytext on config.gpkg
                         result = global_vars.gpkg_dao_config.get_row(v_querystring)
+                        if not result:
+                            # If nothing is found, execute it on the project's gpkg
+                            result = global_vars.gpkg_dao_data.get_row(v_querystring)
                         if result:
                             cmb_ids = result[0]
                             cmb_names = result[1]
