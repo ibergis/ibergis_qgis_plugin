@@ -445,7 +445,7 @@ class GwEpaFileManager(GwTask):
                 FROM
                     cat_timeseries ct
                 LEFT JOIN
-                    cat_timeseries_value ctv ON ct.id = ctv.idval
+                    cat_timeseries_value ctv ON ct.idval = ctv.timeseries
                 WHERE
                     timser_type NOT IN ('BC ELEVATION', 'BC FLOW');"""
         conn = self.dao.conn
