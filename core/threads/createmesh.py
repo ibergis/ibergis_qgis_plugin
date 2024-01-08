@@ -284,6 +284,40 @@ class GwCreateMeshTask(GwTask):
                         polygon = self.mesh["polygons"][polygon_id]
                         polygon["roughness"] = landuses[landuse]
 
+            # Get ground losses
+            if self.losses_layer is None:
+                for polygon_id, polygon in self.mesh["polygons"].items():
+                    if polygon["category"] == "ground":
+                        polygon["scs_cn"] = 0
+            else:
+                self.feedback.setProgressText("Getting ground losses...")
+                self.feedback.setProgress(50)
+                ggl_feedback = QgsProcessingFeedback()
+                ggl_progress = lambda x: self.feedback.setProgress(
+                    x / 100 * (80 - 50) + 50
+                )
+                ggl_feedback.progressChanged.connect(ggl_progress)
+                ggl_feedback.canceled.connect(self.feedback.cancel)
+
+                if self.losses_layer == "ground_layer":
+                    losses_dict = core.get_ground_losses(
+                        self.mesh, layers["ground"], ggl_feedback
+                    )
+                else:
+                    losses_dict = core.get_value_from_raster(
+                        self.losses_layer,
+                        self.mesh,
+                        layers["ground"].crs(),
+                        ggl_feedback,
+                    )
+
+                if self.feedback.isCanceled():
+                    self.message = "Task canceled."
+                    return False
+                for polygon_id, losses in losses_dict.items():
+                    polygon = self.mesh["polygons"][polygon_id]
+                    polygon["scs_cn"] = losses
+
             # Delete old mesh
             self.feedback.setProgressText("Saving mesh to GPKG file...")
             sql = f"""

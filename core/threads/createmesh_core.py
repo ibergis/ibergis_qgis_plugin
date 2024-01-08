@@ -35,6 +35,50 @@ def feature_to_layer(feature, crs):
     return layer
 
 
+def get_ground_losses(mesh_dict, ground_layer, feedback):
+    # Copy ground_layer features to a new in-memory vector layer
+    copied_layer = QgsVectorLayer(
+        f"Polygon?crs={ground_layer.crs().authid()}", "copied_ground_layer", "memory"
+    )
+    copied_layer_data_provider = copied_layer.dataProvider()
+    attrs = ground_layer.fields().toList()
+    copied_layer_data_provider.addAttributes(attrs)
+    copied_layer.updateFields()
+    for feature in ground_layer.getFeatures():
+        copied_layer_data_provider.addFeature(feature)
+    copied_layer.updateExtents()
+
+    resolution = 1
+    e = copied_layer.extent()
+    params = {
+        "BURN": 0,
+        "DATA_TYPE": 5,
+        "EXTENT": f"{e.xMinimum()},{e.xMaximum()},{e.yMinimum()},{e.yMaximum()} [EPSG:25831]",
+        "EXTRA": "",
+        "FIELD": "scs_cn",
+        "HEIGHT": resolution,
+        "INIT": None,
+        "INPUT": copied_layer,
+        "INVERT": False,
+        "NODATA": 0,
+        "OPTIONS": "",
+        "OUTPUT": "TEMPORARY_OUTPUT",
+        "UNITS": 1,
+        "USE_Z": False,
+        "WIDTH": resolution,
+    }
+    res = processing.run("gdal:rasterize", params)
+    if feedback.isCanceled():
+        return
+    raster_layer = res["OUTPUT"]
+
+    losses_by_polygon = get_value_from_raster(
+        raster_layer, mesh_dict, ground_layer.crs(), feedback
+    )
+
+    return losses_by_polygon
+
+
 def get_ground_roughness(mesh_dict, ground_layer, landuses, feedback):
     # Calculate concrete values for each roughness polygon
     # (landuse or custom_roughness)
