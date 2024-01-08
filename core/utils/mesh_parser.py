@@ -6,7 +6,10 @@ def dump(mesh, mesh_fp, roof_fp):
     mesh_fp.write(f"  {len(mesh['polygons'])}\n")
     for i, tri in mesh["polygons"].items():
         v1, v2, v3, v4 = tri["vertice_ids"]
-        manning_number = 0.0180
+        try:
+            manning_number = tri["roughness"]
+        except KeyError:
+            print(f"{tri=}")
         mesh_fp.write(f"    {v1} {v2} {v3} {v4} {manning_number} {i}\n")
     mesh_fp.write("VERTEXS\n")
     mesh_fp.write(f"  {len(mesh['vertices'])}\n")

@@ -38,16 +38,31 @@ class GwCreateMeshButton(GwAction):
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
 
-        # Fill raster layers combo
+        # Fill raster layers combos
         project = QgsProject.instance()
         all_layers = project.mapLayers().values()
-        raster_layers = (
+        raster_layers = [
             [layer, layer.name()]
             for layer in all_layers
             if layer.type() == QgsMapLayer.RasterLayer and layer.bandCount() == 1
-        )
+        ]
+        # DEM
         rows = [[None, "Fill elevation with zeroes"], *raster_layers]
         tools_qt.fill_combo_values(dlg.cmb_dem_layer, rows, add_empty=True)
+        # Roughness
+        rows = [
+            [None, "Fill roughness with zeroes"],
+            ["ground_layer", "Ground"],
+            *raster_layers,
+        ]
+        tools_qt.fill_combo_values(dlg.cmb_roughness_layer, rows, add_empty=True)
+        # Roughness
+        rows = [
+            [None, "Fill losses with zeroes"],
+            ["ground_layer", "Ground"],
+            *raster_layers,
+        ]
+        tools_qt.fill_combo_values(dlg.cmb_losses_layer, rows, add_empty=True)
 
         # Set initial signals
         dlg.chk_validation.clicked.connect(dlg.btn_config.setEnabled)
@@ -109,7 +124,14 @@ class GwCreateMeshButton(GwAction):
         if dem_layer == "":
             tools_qt.show_info_box("Please, select a DEM layer!")
             return
-        fill_roughness = dlg.chk_roughness.isChecked()
+        roughness_layer = tools_qt.get_combo_value(dlg, dlg.cmb_roughness_layer)
+        if roughness_layer == "":
+            tools_qt.show_info_box("Please, select a roughness layer!")
+            return
+        losses_layer = tools_qt.get_combo_value(dlg, dlg.cmb_losses_layer)
+        if losses_layer == "":
+            tools_qt.show_info_box("Please, select a losses layer!")
+            return
         mesh_name = dlg.txt_name.text()
 
         if mesh_name == "":
@@ -141,7 +163,8 @@ class GwCreateMeshButton(GwAction):
             transition_start,
             transition_extent,
             dem_layer,
-            fill_roughness,
+            roughness_layer,
+            losses_layer,
             mesh_name,
             feedback=self.feedback,
         )

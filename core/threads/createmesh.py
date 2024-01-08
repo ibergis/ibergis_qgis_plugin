@@ -34,7 +34,8 @@ class GwCreateMeshTask(GwTask):
         transition_start,
         transition_extent,
         dem_layer,
-        fill_roughness,
+        roughness_layer,
+        losses_layer,
         mesh_name,
         feedback=None,
     ):
@@ -45,7 +46,8 @@ class GwCreateMeshTask(GwTask):
         self.transition_start = transition_start
         self.transition_extent = transition_extent
         self.dem_layer = dem_layer
-        self.fill_roughness = fill_roughness
+        self.roughness_layer = roughness_layer
+        self.losses_layer = losses_layer
         self.mesh_name = mesh_name
         self.feedback = feedback
 
@@ -89,19 +91,31 @@ class GwCreateMeshTask(GwTask):
             layers["dem"] = self.dem_layer
 
             # Validate landuses roughness values
-            if self.fill_roughness:
-                sql = "SELECT idval, manning FROM cat_landuses"
+            if self.roughness_layer is not None:
+                sql = "SELECT id, manning FROM cat_landuses"
                 rows = self.dao.get_rows(sql)
                 landuses = {} if rows is None else dict(rows)
 
-                sql = "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
-                rows = self.dao.get_rows(sql)
-                used_landuses = [] if rows is None else [row[0] for row in rows]
+                if self.roughness_layer == "ground_layer":
+                    sql = "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
+                    rows = self.dao.get_rows(sql)
+                    used_landuses = (
+                        [] if rows is None else [int(row[0]) for row in rows]
+                    )
+                else:
+                    rows = self.roughness_layer.height()
+                    cols = self.roughness_layer.width()
+                    provider = self.roughness_layer.dataProvider()
+                    bl = provider.block(1, provider.extent(), cols, rows)
+                    unique_values = set(
+                        [bl.value(r, c) for r in range(rows) for c in range(cols)]
+                    )
+                    used_landuses = {int(x) for x in unique_values if x != 255}
 
                 missing_roughness = [
                     str(l)
-                    for l in landuses
-                    if l in used_landuses and landuses[l] is None
+                    for l in used_landuses
+                    if l not in landuses or landuses[l] is None
                 ]
 
                 if missing_roughness:
@@ -233,7 +247,11 @@ class GwCreateMeshTask(GwTask):
                         vertice["elevation"] = val if res else 0
 
             # Get ground roughness
-            if self.fill_roughness:
+            if self.roughness_layer is None:
+                for polygon_id, polygon in self.mesh["polygons"].items():
+                    if polygon["category"] == "ground":
+                        polygon["roughness"] = 0
+            elif self.roughness_layer == "ground_layer":
                 self.feedback.setProgressText("Getting ground roughness...")
                 self.feedback.setProgress(50)
                 ggr_feedback = QgsProcessingFeedback()
@@ -251,6 +269,9 @@ class GwCreateMeshTask(GwTask):
                 for polygon_id, roughness in roughness_dict.items():
                     polygon = self.mesh["polygons"][polygon_id]
                     polygon["roughness"] = roughness
+            else:
+                # TODO
+                pass
 
             # Delete old mesh
             self.feedback.setProgressText("Saving mesh to GPKG file...")

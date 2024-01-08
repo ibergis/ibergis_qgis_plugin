@@ -35,12 +35,12 @@ def feature_to_layer(feature, crs):
     return layer
 
 
-def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
+def get_ground_roughness(mesh_dict, ground_layer, landuses, feedback):
     # Calculate concrete values for each roughness polygon
     # (landuse or custom_roughness)
     url = "MultiPolygon?index=yes"
     temp_roughness = QgsVectorLayer(url, "roughness", "memory")
-    temp_roughness.setCrs(roughness_layer.crs())
+    temp_roughness.setCrs(ground_layer.crs())
     provider = temp_roughness.dataProvider()
     fields = [
         QgsField("fid", QVariant.Int),
@@ -48,13 +48,13 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
     ]
     provider.addAttributes(fields)
     temp_roughness.updateFields()
-    for feature in roughness_layer.getFeatures():
+    for feature in ground_layer.getFeatures():
         new_feature = QgsFeature()
         new_feature.setGeometry(feature.geometry())
         if type(feature["custom_roughness"]) in [int, float]:
             roughness = feature["custom_roughness"]
         else:
-            roughness = landuses[feature["landuse"]]
+            roughness = landuses[int(feature["landuse"])]
         new_feature.setAttributes([feature["fid"], roughness])
         provider.addFeature(new_feature)
     temp_roughness.updateExtents()
@@ -87,7 +87,7 @@ def get_ground_roughness(mesh_dict, roughness_layer, landuses, feedback):
     # Get roughness for each ground polygon
     url = "Polygon?field=fid:integer&index=yes"
     ground_polygons = QgsVectorLayer(url, "gt", "memory")
-    ground_polygons.setCrs(roughness_layer.crs())
+    ground_polygons.setCrs(ground_layer.crs())
     for i, pol in mesh_dict["polygons"].items():
         if feedback.isCanceled():
             return
