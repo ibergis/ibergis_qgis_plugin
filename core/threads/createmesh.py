@@ -251,7 +251,7 @@ class GwCreateMeshTask(GwTask):
                 for polygon_id, polygon in self.mesh["polygons"].items():
                     if polygon["category"] == "ground":
                         polygon["roughness"] = 0
-            elif self.roughness_layer == "ground_layer":
+            else:
                 self.feedback.setProgressText("Getting ground roughness...")
                 self.feedback.setProgress(50)
                 ggr_feedback = QgsProcessingFeedback()
@@ -260,18 +260,29 @@ class GwCreateMeshTask(GwTask):
                 )
                 ggr_feedback.progressChanged.connect(ggr_progress)
                 ggr_feedback.canceled.connect(self.feedback.cancel)
-                roughness_dict = core.get_ground_roughness(
-                    self.mesh, layers["ground"], landuses, ggr_feedback
-                )
-                if self.feedback.isCanceled():
-                    self.message = "Task canceled."
-                    return False
-                for polygon_id, roughness in roughness_dict.items():
-                    polygon = self.mesh["polygons"][polygon_id]
-                    polygon["roughness"] = roughness
-            else:
-                # TODO
-                pass
+                if self.roughness_layer == "ground_layer":
+                    roughness_dict = core.get_ground_roughness(
+                        self.mesh, layers["ground"], landuses, ggr_feedback
+                    )
+                    if self.feedback.isCanceled():
+                        self.message = "Task canceled."
+                        return False
+                    for polygon_id, roughness in roughness_dict.items():
+                        polygon = self.mesh["polygons"][polygon_id]
+                        polygon["roughness"] = roughness
+                else:
+                    polygon_landuses = core.get_value_from_raster(
+                        self.roughness_layer,
+                        self.mesh,
+                        layers["ground"].crs(),
+                        ggr_feedback,
+                    )
+                    if self.feedback.isCanceled():
+                        self.message = "Task canceled."
+                        return False
+                    for polygon_id, landuse in polygon_landuses.items():
+                        polygon = self.mesh["polygons"][polygon_id]
+                        polygon["roughness"] = landuses[landuse]
 
             # Delete old mesh
             self.feedback.setProgressText("Saving mesh to GPKG file...")

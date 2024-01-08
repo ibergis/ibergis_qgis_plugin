@@ -84,10 +84,17 @@ def get_ground_roughness(mesh_dict, ground_layer, landuses, feedback):
         return
     raster_layer = res["OUTPUT"]
 
-    # Get roughness for each ground polygon
+    roughness_by_polygon = get_value_from_raster(
+        raster_layer, mesh_dict, ground_layer.crs(), feedback
+    )
+
+    return roughness_by_polygon
+
+
+def get_value_from_raster(raster_layer, mesh_dict, crs, feedback):
     url = "Polygon?field=fid:integer&index=yes"
     ground_polygons = QgsVectorLayer(url, "gt", "memory")
-    ground_polygons.setCrs(ground_layer.crs())
+    ground_polygons.setCrs(crs)
     for i, pol in mesh_dict["polygons"].items():
         if feedback.isCanceled():
             return
@@ -107,16 +114,16 @@ def get_ground_roughness(mesh_dict, ground_layer, landuses, feedback):
         "INPUT_RASTER": raster_layer,
         "OUTPUT": "TEMPORARY_OUTPUT",
         "RASTER_BAND": 1,
-        "STATISTICS": [9],
+        "STATISTICS": [9],  # majority
     }
     res = processing.run("native:zonalstatisticsfb", params, feedback=feedback)
     if feedback.isCanceled():
         return
     res_layer = res["OUTPUT"]
-    roughness_by_polygon = {
+    value_by_polygon = {
         ft["fid"]: round(ft["_majority"], 8) for ft in res_layer.getFeatures()
     }
-    return roughness_by_polygon
+    return value_by_polygon
 
 
 def triangulate_roof(roof_layer, feedback):
