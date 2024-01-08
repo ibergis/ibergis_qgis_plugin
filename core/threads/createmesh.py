@@ -327,10 +327,10 @@ class GwCreateMeshTask(GwTask):
             self.dao.execute_sql(sql)
 
             # Save mesh
-            mesh_str, roof_str = mesh_parser.dumps(self.mesh)
+            mesh_str, roof_str, losses_str = mesh_parser.dumps(self.mesh)
             sql = f"""
-                INSERT INTO cat_file (name, iber2d, roof)
-                VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}')
+                INSERT INTO cat_file (name, iber2d, roof, losses)
+                VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}')
             """
             self.dao.execute_sql(sql)
 

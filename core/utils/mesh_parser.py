@@ -1,7 +1,7 @@
 import io
 
 
-def dump(mesh, mesh_fp, roof_fp):
+def dump(mesh, mesh_fp, roof_fp, losses_fp):
     mesh_fp.write("MATRIU\n")
     mesh_fp.write(f"  {len(mesh['polygons'])}\n")
     for i, tri in mesh["polygons"].items():
@@ -25,33 +25,34 @@ def dump(mesh, mesh_fp, roof_fp):
             f"{pol_id} {side} 0      0 0 0 -40 1 1 0 1  -Salida en Critico/Rapido -\n"
         )
 
-    if not len(mesh["roofs"]):
-        return
+    if len(mesh["roofs"]):
+        roof_fp.write("Number of roofs\n")
+        roof_fp.write(str(len(mesh["roofs"])) + "\n")
+        roof_fp.write("Roofs properties\n")
+        for roof_id, roof in mesh["roofs"].items():
+            roof_fp.write(
+                f"{roof['name']} {roof_id} {roof['slope']} {roof['width']} "
+                f"{roof['roughness']} {roof['isconnected']} {roof['outlet_code']} "
+                f"{roof['outlet_vol']} {roof['street_vol']} {roof['infiltr_vol']}\n"
+            )
+        roof_fp.write("\nRoof elements\n")
+        for i, pol in mesh["polygons"].items():
+            if pol["category"] == "roof":
+                roof_fp.write(f"{i} {pol['roof_id']}\n")
 
-    roof_fp.write("Number of roofs\n")
-    roof_fp.write(str(len(mesh["roofs"])) + "\n")
-    roof_fp.write("Roofs properties\n")
-    for roof_id, roof in mesh["roofs"].items():
-        roof_fp.write(
-            f"{roof['name']} {roof_id} {roof['slope']} {roof['width']} "
-            f"{roof['roughness']} {roof['isconnected']} {roof['outlet_id']} "
-            f"{roof['outlet_vol']} {roof['street_vol']} {roof['infiltr_vol']}\n"
-        )
-    roof_fp.write("\nRoof elements\n")
     for i, pol in mesh["polygons"].items():
-        if pol["category"] == "roof":
-            roof_fp.write(f"{i} {pol['roof_id']}\n")
+        if "scs_cn" in pol:
+            losses_fp.write(f"{i} {pol['scs_cn']}\n")
 
 
 def dumps(mesh):
-    mesh_buffer = io.StringIO()
-    roof_buffer = io.StringIO()
-    dump(mesh, mesh_buffer, roof_buffer)
-    mesh_str = mesh_buffer.getvalue()
-    mesh_buffer.close()
-    roof_str = roof_buffer.getvalue()
-    roof_buffer.close()
-    return mesh_str, roof_str
+    with (
+        io.StringIO() as mesh_buffer,
+        io.StringIO() as roof_buffer,
+        io.StringIO() as losses_buffer,
+    ):
+        dump(mesh, mesh_buffer, roof_buffer, losses_buffer)
+        return mesh_buffer.getvalue(), roof_buffer.getvalue(), losses_buffer.getvalue()
 
 
 def load(mesh_fp, roof_fp=None):
