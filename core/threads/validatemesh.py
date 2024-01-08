@@ -206,7 +206,7 @@ def validate_roof_layer(
         slope = feature["slope"]
         width = feature["width"]
         isconnected = feature["isconnected"]
-        outlet_id = feature["outlet_code"]
+        outlet_code = feature["outlet_code"]
         outlet_vol = feature["outlet_vol"]
         street_vol = feature["street_vol"]
         infiltr_vol = feature["infiltr_vol"]
@@ -217,7 +217,7 @@ def validate_roof_layer(
             and type(slope) in [int, float]
             and type(width) in [int, float]
             and type(isconnected) == int
-            and type(outlet_id) == int
+            and type(outlet_code) == int
             and type(outlet_vol) in [int, float]
             and type(street_vol) in [int, float]
             and type(infiltr_vol) in [int, float]

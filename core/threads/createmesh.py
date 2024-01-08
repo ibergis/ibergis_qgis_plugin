@@ -192,8 +192,8 @@ class GwCreateMeshTask(GwTask):
             self.feedback.setProgressText("Getting roof data...")
             sql = """
                 SELECT 
-                    code, fid, slope, width, roughness, isconnected, outlet_id,
-                    outlet_vol, street_vol, infiltr_vol
+                    code, fid, slope, width, roughness, isconnected,
+                    outlet_code, outlet_vol, street_vol, infiltr_vol
                 FROM roof
             """
             rows = self.dao.get_rows(sql)
@@ -207,7 +207,7 @@ class GwCreateMeshTask(GwTask):
                         width,
                         roughness,
                         isconnected,
-                        outlet_id,
+                        outlet_code,
                         outlet_vol,
                         street_vol,
                         infiltr_vol,
@@ -219,7 +219,7 @@ class GwCreateMeshTask(GwTask):
                         "width": width,
                         "roughness": roughness,
                         "isconnected": isconnected,
-                        "outlet_id": outlet_id,
+                        "outlet_code": outlet_code,
                         "outlet_vol": outlet_vol,
                         "street_vol": street_vol,
                         "infiltr_vol": infiltr_vol,
