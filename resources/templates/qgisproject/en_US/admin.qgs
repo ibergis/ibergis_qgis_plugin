@@ -1768,24 +1768,33 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field configurationFlags="None" name="iber2d">
-          <editWidget type="">
+        <field name="iber2d" configurationFlags="None">
+          <editWidget type="TextEdit">
             <config>
-              <Option/>
+              <Option type="Map">
+                <Option value="true" type="bool" name="IsMultiline"/>
+                <Option value="false" type="bool" name="UseHtml"/>
+              </Option>
             </config>
           </editWidget>
         </field>
-        <field configurationFlags="None" name="roof">
-          <editWidget type="">
+        <field name="roof" configurationFlags="None">
+          <editWidget type="TextEdit">
             <config>
-              <Option/>
+              <Option type="Map">
+                <Option value="true" type="bool" name="IsMultiline"/>
+                <Option value="false" type="bool" name="UseHtml"/>
+              </Option>
             </config>
           </editWidget>
         </field>
-        <field configurationFlags="None" name="losses">
-          <editWidget type="">
+        <field name="losses" configurationFlags="None">
+          <editWidget type="TextEdit">
             <config>
-              <Option/>
+              <Option type="Map">
+                <Option value="true" type="bool" name="IsMultiline"/>
+                <Option value="false" type="bool" name="UseHtml"/>
+              </Option>
             </config>
           </editWidget>
         </field>
@@ -1824,11 +1833,12 @@ def my_form_open(dialog, layer, feature):
       </attributeactions>
       <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
         <columns>
-          <column name="id" hidden="0" type="field" width="-1"/>
-          <column name="name" hidden="0" type="field" width="-1"/>
-          <column name="file_name" hidden="0" type="field" width="-1"/>
-          <column name="content" hidden="1" type="field" width="-1"/>
-          <column hidden="1" type="actions" width="-1"/>
+          <column hidden="0" width="-1" type="field" name="id"/>
+          <column hidden="0" width="-1" type="field" name="name"/>
+          <column hidden="1" width="-1" type="field" name="iber2d"/>
+          <column hidden="1" width="-1" type="field" name="roof"/>
+          <column hidden="1" width="-1" type="field" name="losses"/>
+          <column hidden="1" width="-1" type="actions"/>
         </columns>
       </attributetableconfig>
       <conditionalstyles>
