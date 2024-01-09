@@ -195,6 +195,7 @@ def load(mesh_fp, roof_fp=None):
     return mesh
 
 
+# TODO: includes losses_str
 def loads(mesh_string, roof_string=None):
     mesh_file = io.StringIO(mesh_string)
     roof_file = io.StringIO(roof_string) if roof_string else io.StringIO("")

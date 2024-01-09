@@ -7,11 +7,12 @@ from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog
 from qgis.PyQt.QtSql import QSqlTableModel
+from qgis.utils import iface
 
 from ..dialog import GwAction
 from ...ui.ui_manager import GwMeshManagerUi, GwLineeditUi
 from .createmesh_btn import GwCreateMeshButton
-from .openmesh_btn import GwOpenMeshButton
+from ...threads.create_temp_layer import GwCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
 from ...utils import Feedback, tools_gw, mesh_parser
 from .... import global_vars
@@ -112,7 +113,42 @@ class GwMeshManagerButton(GwAction):
         # TODO: Update mesh list after mesh creation
 
     def _view_mesh(self):
-        pass
+        # Variables
+        table = self.dlg_manager.tbl_mesh_mng
+
+        # Get selected row
+        selected_list = table.selectionModel().selectedRows()
+        if len(selected_list) != 1:
+            message = "Select only one mesh to display"
+            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            return
+
+        # Get selected object IDs
+        col = 'idval'
+        col_idx = tools_qt.get_col_index_by_col_name(table, col)
+        if not col_idx:
+            col_idx = 0
+        idx = selected_list[0]
+        value = idx.sibling(idx.row(), col_idx).data()
+
+        # Load data from GPKG
+        sql = f"SELECT name, iber2d, roof, losses FROM cat_file WHERE name = '{value}'"
+        row = tools_db.get_row(sql)
+        
+        if not row:
+            return
+        
+        mesh = mesh_parser.loads(row["iber2d"], row["roof"])
+
+        self.thread = GwCreateTempMeshLayerTask("Create Temp Mesh Layer", mesh)
+        self.thread.taskCompleted.connect(self._load_layer)
+        QgsApplication.taskManager().addTask(self.thread)
+
+    def _load_layer(self):
+        """Add temp layer to TOC"""
+        tools_qt.add_layer_to_toc(self.thread.layer)
+        iface.setActiveLayer(self.thread.layer)
+        iface.zoomToActiveLayer()
 
     def _import_mesh(self):
 
