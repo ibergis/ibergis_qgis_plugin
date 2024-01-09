@@ -158,7 +158,7 @@ class GwCreateBCFromPolygon(GwAction):
             tools_qgis.show_warning(msg)
             bc_layer.rollBack()
             return
-        self.cur_scenario = row["id"]
+        self.cur_scenario = row["idval"]
         scenario_name = row["idval"]
 
         # TODO: Fill timeseries combo
@@ -244,7 +244,7 @@ class GwCreateBCFromPolygon(GwAction):
         layer.changeAttributeValue
         feature.setAttribute("code", self.dlg.txt_code.text())
         feature.setAttribute("descript", self.dlg.txt_descript.text())
-        feature.setAttribute("bscenario_id", self.cur_scenario)
+        feature.setAttribute("bscenario", self.cur_scenario)
         feature.setAttribute("boundary_type", self.boundary_type)
 
         config = self.bt_config[self.boundary_type]

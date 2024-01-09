@@ -17,13 +17,13 @@ from .... import global_vars
 
 def set_bc_filter():
 
-    sql = f"""SELECT id FROM cat_bscenario WHERE active = 1"""
+    sql = f"""SELECT idval FROM cat_bscenario WHERE active = 1"""
     row = tools_db.get_row(sql)
     if not row:
         msg = "No current bcscenario found"
         tools_qgis.show_warning(msg)
         return
-    cur_scenario = row['id']
+    cur_scenario = row['idval']
 
     layer_name = 'boundary_conditions'
     bc_layer = tools_qgis.get_layer_by_tablename(layer_name)
@@ -31,7 +31,7 @@ def set_bc_filter():
         msg = f"Layer {layer_name} not found."
         tools_qgis.show_warning(msg)
         return
-    bc_layer.setSubsetString(f"bscenario_id = '{cur_scenario}'")
+    bc_layer.setSubsetString(f"bscenario = '{cur_scenario}'")
 
 
 class GwBCScenarioManagerButton(GwAction):
