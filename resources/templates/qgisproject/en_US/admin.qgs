@@ -55,7 +55,7 @@
       <customproperties>
         <Option/>
       </customproperties>
-      <layer-tree-layer expanded="1" name="Boundary conditions" patch_size="-1,-1" providerKey="ogr" legend_split_behavior="0" checked="Qt::Checked" source="__DATASOURCE__|layername=boundary_conditions|subset=bscenario_id = '1'" id="boundary_conditions_5bf45338_125e_42c8_9895_bc8926982a2f" legend_exp="">
+      <layer-tree-layer expanded="1" name="Boundary conditions" patch_size="-1,-1" providerKey="ogr" legend_split_behavior="0" checked="Qt::Checked" source="__DATASOURCE__|layername=boundary_conditions" id="boundary_conditions_5bf45338_125e_42c8_9895_bc8926982a2f" legend_exp="">
         <customproperties>
           <Option/>
         </customproperties>
@@ -164,7 +164,7 @@
       <fieldRef referencingField="timeseries_id" referencedField="id"/>
     </relation>
     <relation name="cat_bscenario_boundary_conditions" referencedLayer="cat_bscenario_ed2a0139_5dce_4a6d_b036_02fd74e7ab54" strength="Association" id="cat_bscenario_boundary_conditions" referencingLayer="boundary_conditions_5bf45338_125e_42c8_9895_bc8926982a2f">
-      <fieldRef referencingField="bscenario_id" referencedField="id"/>
+      <fieldRef referencingField="bscenario" referencedField="idval"/>
     </relation>
     <relation name="cat_curve_inp_divider" referencedLayer="cat_curve_b860e9be_f0bc_45e2_a6c4_29f5c599cc9b" strength="Association" id="cat_curve_inp_divider" referencingLayer="inp_divider_3d79c937_4c7d_4a4b_ae42_bca2e739ddf0">
       <fieldRef referencingField="curve_id" referencedField="id"/>
@@ -370,7 +370,7 @@
   <projectlayers>
     <maplayer autoRefreshEnabled="0" simplifyLocal="1" styleCategories="AllStyleCategories" type="vector" legendPlaceholderImage="" readOnly="0" simplifyMaxScale="1" refreshOnNotifyMessage="" refreshOnNotifyEnabled="0" simplifyAlgorithm="0" autoRefreshTime="0" wkbType="MultiLineString" simplifyDrawingHints="1" symbologyReferenceScale="-1" minScale="100000000" geometry="Line" maxScale="0" labelsEnabled="0" simplifyDrawingTol="1" hasScaleBasedVisibilityFlag="0">
       <id>boundary_conditions_5bf45338_125e_42c8_9895_bc8926982a2f</id>
-      <datasource>__DATASOURCE__|layername=boundary_conditions|subset=bscenario_id = '1'</datasource>
+      <datasource>__DATASOURCE__|layername=boundary_conditions</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -750,9 +750,23 @@
           </editWidget>
         </field>
         <field configurationFlags="None" name="bscenario">
-          <editWidget type="">
+          <editWidget type="ValueRelation">
             <config>
-              <Option/>
+              <Option type="Map">
+                <Option value="false" type="bool" name="AllowMulti"/>
+                <Option value="false" type="bool" name="AllowNull"/>
+                <Option value="" type="QString" name="Description"/>
+                <Option value="" type="QString" name="FilterExpression"/>
+                <Option value="idval" type="QString" name="Key"/>
+                <Option value="cat_bscenario_ed2a0139_5dce_4a6d_b036_02fd74e7ab54" type="QString" name="Layer"/>
+                <Option value="Boundary Conditions" type="QString" name="LayerName"/>
+                <Option value="ogr" type="QString" name="LayerProviderName"/>
+                <Option value="C:/Users/pablo/Documents/drain_example/drain.gpkg|layername=cat_bscenario" type="QString" name="LayerSource"/>
+                <Option value="1" type="int" name="NofColumns"/>
+                <Option value="false" type="bool" name="OrderByValue"/>
+                <Option value="false" type="bool" name="UseCompleter"/>
+                <Option value="idval" type="QString" name="Value"/>
+              </Option>
             </config>
           </editWidget>
         </field>
@@ -820,7 +834,7 @@
         <default field="fid" expression="" applyOnUpdate="0"/>
         <default field="code" expression="" applyOnUpdate="0"/>
         <default field="descript" expression="" applyOnUpdate="0"/>
-        <default field="bscenario" expression="" applyOnUpdate="0"/>
+        <default expression="aggregate(layer:='cat_bscenario_ed2a0139_5dce_4a6d_b036_02fd74e7ab54', aggregate:='array_agg', expression:=&quot;idval&quot;, filter:=&quot;active&quot; = true)[0]" applyOnUpdate="0" field="bscenario"/>
         <default field="boundary_type" expression="" applyOnUpdate="0"/>
         <default field="timeseries" expression="" applyOnUpdate="0"/>
         <default field="other1" expression="" applyOnUpdate="0"/>
