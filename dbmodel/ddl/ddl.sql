@@ -345,6 +345,7 @@ CREATE TABLE inp_outfall (
     stage real check (typeof(stage) = 'real' or stage = null),
     curve text check (typeof(curve) = 'text' or curve = null),
     timeseries text check (typeof(timeseries) = 'text' or timeseries = null),
+    routeto text check (typeof(routeto) = 'text' or routeto = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry
     --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
@@ -792,7 +793,7 @@ geom3 as SideSlope, end_coeff as EndCoeff, geom from inp_weir;
 create view if not exists vi_pumps as select code as Name, node_1 as FromNode, node_2 as ToNode, curve as PumpCurve, state as Status, startup as Startup, shutoff as Shutoff, 
 annotation as Annotation, geom from inp_pump;
 
-create view if not exists vi_outfalls as select code as Name, elev as Elevation, outfall_type as Type, stage as FixedStage, curve as Curve_TS, gate as FlapGate, 
+create view if not exists vi_outfalls as select code as Name, elev as Elevation, routeto as RouteTo, outfall_type as Type, stage as FixedStage, curve as Curve_TS, gate as FlapGate, 
 annotation as Annotation, geom from inp_outfall;
 
 create view if not exists vi_dividers as select code as Name, elev as Elevation, divert_arc as DivertLink, divider_type as Type, curve as Curve, qmin as WeirMinFlo, 
