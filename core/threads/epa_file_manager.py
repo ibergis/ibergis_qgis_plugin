@@ -86,9 +86,9 @@ class GwEpaFileManager(GwTask):
         """ Set variables from object Go2Epa """
 
         self.dlg_go2epa = self.go2epa.dlg_go2epa
-        self.result_name = self.go2epa.result_name
         self.export_file = self.go2epa.export_file
         self.export_file_path = self.go2epa.export_file_path
+        self.result_name = self.export_file_path.split('.')[-2]
 
 
     def run(self):
@@ -172,30 +172,6 @@ class GwEpaFileManager(GwTask):
                     shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.debug_folder_path}{os.sep}{self.result_name}.inp")
                 except Exception as e:
                     print(e)
-
-            # Delete INP file if exists
-            sql = f"""
-                SELECT name FROM cat_file WHERE name = '{self.result_name}'
-            """
-            rows = self.dao.get_rows(sql)
-            if len(rows) > 0:
-                sql = f"""
-                    DELETE FROM cat_file
-                    WHERE name = '{self.result_name}'
-                """
-                self.dao.execute_sql(sql)
-
-            # Insert INP file to cat_file
-            file_path = self.QGIS_OUT_INP_FILE
-            with open(file_path) as f:
-                inp_str = f.read()
-
-            sql = f"""
-                INSERT INTO cat_file (name, file_name, content)
-                VALUES
-                    ('{self.result_name}', '{self.result_name}.inp', '{inp_str}')
-            """
-            self.dao.execute_sql(sql)
 
         return True
 

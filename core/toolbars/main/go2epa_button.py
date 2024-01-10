@@ -43,12 +43,6 @@ class GwGo2IberButton(GwAction):
         self._open_go2epa()
 
 
-    def check_result_id(self):
-        """ Check if selected @result_id already exists """
-
-        self.dlg_go2epa.txt_result_name.setStyleSheet(None)
-
-
     # region private functions
 
     def _open_go2epa(self):
@@ -76,7 +70,6 @@ class GwGo2IberButton(GwAction):
         # Set shortcut keys
         self.dlg_go2epa.key_escape.connect(partial(tools_gw.close_docker))
 
-        self.check_result_id()
         if global_vars.session_vars['dialog_docker']:
             tools_qt.manage_translation('go2epa', self.dlg_go2epa)
             tools_gw.docker_dialog(self.dlg_go2epa)
@@ -89,7 +82,6 @@ class GwGo2IberButton(GwAction):
     def _set_signals(self):
 
         self.dlg_go2epa.btn_cancel.clicked.connect(self._cancel_task)
-        self.dlg_go2epa.txt_result_name.textChanged.connect(partial(self.check_result_id))
         self.dlg_go2epa.chk_export_file.stateChanged.connect(partial(self._manage_chk_export_file))
         self.dlg_go2epa.btn_file_path.clicked.connect(partial(self._manage_btn_file_path))
         self.dlg_go2epa.btn_accept.clicked.connect(self._go2epa_accept)
@@ -134,26 +126,16 @@ class GwGo2IberButton(GwAction):
 
     def _check_fields(self):
 
-        result_name = tools_qt.get_text(self.dlg_go2epa, self.dlg_go2epa.txt_result_name, False, False)
+        result_name = tools_qt.get_text(self.dlg_go2epa, self.dlg_go2epa.txt_file_path, False, False)
 
         # Control result name
         if result_name == '':
-            self.dlg_go2epa.txt_result_name.setStyleSheet("border: 1px solid red")
+            self.dlg_go2epa.txt_file_path.setStyleSheet("border: 1px solid red")
             msg = "This parameter is mandatory. Please, set a value"
             tools_qt.show_details(msg, title="Rpt fail", inf_text=None)
             return False
 
-        self.dlg_go2epa.txt_result_name.setStyleSheet(None)
-
-        # TODO: check in cat_file
-        # sql = (f"SELECT result_id FROM rpt_cat_result "
-        #        f"WHERE result_id = '{result_name}' LIMIT 1")
-        # row = tools_db.get_row(sql)
-        # if row:
-        #     msg = "Result name already exists, do you want overwrite?"
-        #     answer = tools_qt.show_question(msg, title="Alert")
-        #     if not answer:
-        #         return False
+        self.dlg_go2epa.txt_file_path.setStyleSheet(None)
 
         return True
 
@@ -161,10 +143,6 @@ class GwGo2IberButton(GwAction):
     def _load_user_values(self):
         """ Load QGIS settings related with file_manager """
 
-        # Result name
-        self.dlg_go2epa.txt_result_name.setMaxLength(16)
-        self.result_name = tools_gw.get_config_parser('btn_go2epa', 'go2epa_RESULT_NAME', "user", "session")
-        self.dlg_go2epa.txt_result_name.setText(self.result_name)
         # Check export file
         value = tools_gw.get_config_parser('btn_go2epa', 'go2epa_chk_export_file', "user", "session")
         tools_qt.set_checked(self.dlg_go2epa, 'chk_export_file', value)
@@ -179,9 +157,6 @@ class GwGo2IberButton(GwAction):
     def _save_user_values(self):
         """ Save QGIS settings related with file_manager """
 
-        # Result name
-        txt_result_name = f"{tools_qt.get_text(self.dlg_go2epa, 'txt_result_name', return_string_null=False)}"
-        tools_gw.set_config_parser('btn_go2epa', 'go2epa_RESULT_NAME', f"{txt_result_name}")
         # Check export file
         chk_export_file = tools_qt.is_checked(self.dlg_go2epa, 'chk_export_file')
         tools_gw.set_config_parser('btn_go2epa', 'go2epa_chk_export_file', f"{chk_export_file}")
@@ -194,14 +169,16 @@ class GwGo2IberButton(GwAction):
 
     def _manage_form_settings(self, action):
 
-        if action == 'save':
-            # Get widgets form values
-            self.txt_result_name = tools_qt.get_text(self.dlg_go2epa, self.dlg_go2epa.txt_result_name)
-            # self.chk_export_subcatch = self.dlg_go2epa.chk_export_subcatch.isChecked()
-        elif action == 'restore':
-            # Set widgets form values
-            if self.txt_result_name is not 'null': tools_qt.set_widget_text(self.dlg_go2epa, self.dlg_go2epa.txt_result_name, self.txt_result_name)
-            # if self.chk_export_subcatch is not 'null': tools_qt.set_widget_text(self.dlg_go2epa, self.dlg_go2epa.chk_export_subcatch, self.chk_export_subcatch)
+        return
+
+        # if action == 'save':
+        #     # Get widgets form values
+        #     self.txt_result_name = tools_qt.get_text(self.dlg_go2epa, self.dlg_go2epa.txt_result_name)
+        #     # self.chk_export_subcatch = self.dlg_go2epa.chk_export_subcatch.isChecked()
+        # elif action == 'restore':
+        #     # Set widgets form values
+        #     if self.txt_result_name is not 'null': tools_qt.set_widget_text(self.dlg_go2epa, self.dlg_go2epa.txt_result_name, self.txt_result_name)
+        #     # if self.chk_export_subcatch is not 'null': tools_qt.set_widget_text(self.dlg_go2epa, self.dlg_go2epa.chk_export_subcatch, self.chk_export_subcatch)
 
 
     def _go2epa_accept(self):
@@ -226,8 +203,6 @@ class GwGo2IberButton(GwAction):
             return
 
         # Get widgets values
-        self.result_name = tools_qt.get_text(self.dlg_go2epa, self.dlg_go2epa.txt_result_name, False, False)
-        # self.export_subcatch = tools_qt.is_checked(self.dlg_go2epa, self.dlg_go2epa.chk_export_subcatch)
         self.export_file = tools_qt.is_checked(self.dlg_go2epa, 'chk_export_file')
         self.export_file_path = tools_qt.get_text(self.dlg_go2epa, 'txt_file_path')
 
