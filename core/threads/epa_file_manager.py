@@ -86,8 +86,7 @@ class GwEpaFileManager(GwTask):
 
         self.dlg_go2epa = self.go2epa.dlg_go2epa
         self.export_file = self.go2epa.export_file
-        self.result_name = "Iber_SWMM"
-        self.export_file_path = f"{self.go2epa.export_file_path}{os.sep}{self.result_name}.inp"
+        self.export_file_path = self.go2epa.export_file_path
 
 
     def run(self):
@@ -168,7 +167,7 @@ class GwEpaFileManager(GwTask):
                     print(e)
             if self.debug_mode:
                 try:
-                    shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.debug_folder_path}{os.sep}{self.result_name}.inp")
+                    shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.debug_folder_path}{os.sep}debug.inp")
                 except Exception as e:
                     print(e)
 
@@ -218,11 +217,11 @@ class GwEpaFileManager(GwTask):
 
         if self.debug_mode:
             try:
-                shutil.copy(FILE_CURVES, f"{self.debug_folder_path}{os.sep}{self.result_name}_curves.xlsx")
-                shutil.copy(FILE_PATTERNS, f"{self.debug_folder_path}{os.sep}{self.result_name}_patterns.xlsx")
-                shutil.copy(FILE_OPTIONS, f"{self.debug_folder_path}{os.sep}{self.result_name}_options.xlsx")
-                shutil.copy(FILE_TIMESERIES, f"{self.debug_folder_path}{os.sep}{self.result_name}_timeseries.xlsx")
-                shutil.copy(FILE_INFLOWS, f"{self.debug_folder_path}{os.sep}{self.result_name}_inflows.xlsx")
+                shutil.copy(FILE_CURVES, f"{self.debug_folder_path}{os.sep}debug_curves.xlsx")
+                shutil.copy(FILE_PATTERNS, f"{self.debug_folder_path}{os.sep}debug_patterns.xlsx")
+                shutil.copy(FILE_OPTIONS, f"{self.debug_folder_path}{os.sep}debug_options.xlsx")
+                shutil.copy(FILE_TIMESERIES, f"{self.debug_folder_path}{os.sep}debug_timeseries.xlsx")
+                shutil.copy(FILE_INFLOWS, f"{self.debug_folder_path}{os.sep}debug_inflows.xlsx")
             except Exception as e:
                 print(e)
 
