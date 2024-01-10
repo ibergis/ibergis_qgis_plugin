@@ -161,8 +161,6 @@ class GwCreateBCFromPolygon(GwAction):
         self.cur_scenario = row["idval"]
         scenario_name = row["idval"]
 
-        # TODO: Fill timeseries combo
-
         self.dlg.txt_fid.setText(feat["fid"])
         self.dlg.txt_bscenario_id.setText(str(scenario_name))
         tools_qt.double_validator(self.dlg.txt_other1)

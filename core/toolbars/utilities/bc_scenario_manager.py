@@ -154,7 +154,7 @@ class GwBCScenarioManagerButton(GwAction):
         
         # TODO: Check for empty scenarios
 
-        sql = "SELECT name FROM cat_file WHERE file_name = 'Iber2D.dat'"
+        sql = "SELECT name FROM cat_file"
         rows = dao.get_rows(sql)
         if not rows:
             message = (
@@ -481,14 +481,13 @@ class GwBCScenarioManagerButton(GwAction):
         mesh_name = self.dlg_ms.cmb_mesh.currentText()
         dao = global_vars.gpkg_dao_data
 
-        sql = f"SELECT content FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber2D.dat'"
-        mesh_str = dao.get_row(sql)["content"]
-
-        sql = f"SELECT content FROM cat_file WHERE name = '{mesh_name}' AND file_name = 'Iber_SWMM_roof.dat'"
+        sql = f"SELECT iber2d, roof FROM cat_file WHERE name = '{mesh_name}'"
         row = dao.get_row(sql)
-        roof_str = None if row is None else row["content"]
+        mesh_str = row["iber2d"]
+        roof_str = None if row["roof"] is None else row["roof"]
 
         # Parse mesh and check for preexistent boundary conditions
+        # FIXME: loads() don't accept losses string, so losses get erased in this process
         mesh = mesh_parser.loads(mesh_str, roof_str)
 
         if mesh["boundary_conditions"]:

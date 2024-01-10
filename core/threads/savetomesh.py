@@ -20,7 +20,6 @@ from ..utils.join_boundaries import SetBoundaryConditonsToMeshBoundaries
 from ... import global_vars
 
 
-
 def pairwise(iterable):
     # pairwise('ABCDEFG') --> AB BC CD DE EF FG
     a, b = tee(iterable)
@@ -59,7 +58,7 @@ class GwSaveToMeshTask(GwTask):
             self.feedback.setProgressText("Loading data...")
             dao = global_vars.gpkg_dao_data.clone()
             db_file_path = dao.db_filepath
-            bc_path = f"{db_file_path}|layername=boundary_conditions|subset=code = '{self.bc_scenario}'"
+            bc_path = f"{db_file_path}|layername=boundary_conditions|subset=bscenario = '{self.bc_scenario}'"
             bc_layer = QgsVectorLayer(bc_path, "boundary_conditions", "ogr")
 
             # Create a layer with mesh edges exclusive to only one polygon
@@ -79,8 +78,8 @@ class GwSaveToMeshTask(GwTask):
                         boundary_edges[edge] = (pol_id, side)
 
                 if self.feedback.isCanceled():
-                  self.message = "Task canceled."
-                  return False
+                    self.message = "Task canceled."
+                    return False
 
             layer = QgsVectorLayer("LineString", "boundary_edges", "memory")
             layer.setCrs(bc_layer.crs())
@@ -103,9 +102,9 @@ class GwSaveToMeshTask(GwTask):
                 features.append(feature)
 
                 if self.feedback.isCanceled():
-                  self.message = "Task canceled."
-                  return False
-                
+                    self.message = "Task canceled."
+                    return False
+
             provider.addFeatures(features)
             layer.updateExtents()
 
@@ -140,9 +139,11 @@ class GwSaveToMeshTask(GwTask):
             self.mesh["boundary_conditions"] = {}
             for feature in result_layer.getFeatures():
                 # TODO handle bc cases
-                self.mesh["boundary_conditions"][(feature["pol_id"], feature["side"])] = ""
+                self.mesh["boundary_conditions"][
+                    (feature["pol_id"], feature["side"])
+                ] = ""
 
-            new_mesh_str, new_roof_str = mesh_parser.dumps(self.mesh)
+            new_mesh_str, new_roof_str, new_losses_str = mesh_parser.dumps(self.mesh)
 
             if self.feedback.isCanceled():
                 self.message = "Task canceled."
@@ -152,21 +153,15 @@ class GwSaveToMeshTask(GwTask):
             self.feedback.setProgress(80)
 
             # Delete old mesh
-            sql = f"""
-              DELETE FROM cat_file
-              WHERE name = '{self.mesh_name}'
-                  AND file_name IN ('Iber2D.dat', 'Iber_SWMM_roof.dat')
-            """
+            sql = f"DELETE FROM cat_file WHERE name = '{self.mesh_name}'"
             dao.execute_sql(sql)
 
             # Save mesh
             sql = f"""
-              INSERT INTO cat_file (name, file_name, content)
+              INSERT INTO cat_file (name, iber2d, roof, losses)
               VALUES
-                  ('{self.mesh_name}', 'Iber2D.dat', '{new_mesh_str}')
+                  ('{self.mesh_name}', '{new_mesh_str}', '{new_roof_str}', '{new_losses_str}')
             """
-            if new_roof_str:
-                sql += f",('{self.mesh_name}', 'Iber_SWMM_roof.dat', '{new_roof_str}')"
             dao.execute_sql(sql)
 
             self.feedback.setProgressText("Process finished!!!")

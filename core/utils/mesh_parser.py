@@ -55,6 +55,7 @@ def dumps(mesh):
         return mesh_buffer.getvalue(), roof_buffer.getvalue(), losses_buffer.getvalue()
 
 
+# FIXME: load losses_fp
 def load(mesh_fp, roof_fp=None):
     mesh = {"polygons": {}, "vertices": {}, "roofs": {}, "boundary_conditions": {}}
 

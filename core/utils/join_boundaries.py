@@ -31,7 +31,7 @@ class SetBoundaryConditonsToMeshBoundaries(QgsProcessingAlgorithm):
 
         # Extract by attribute
         alg_params = {
-            'FIELD': 'code',
+            'FIELD': 'bscenario',
             'INPUT': parameters['boundary_conditions'],
             'OPERATOR': 0,  # =
             'VALUE': parameters['bc_scenario'],
