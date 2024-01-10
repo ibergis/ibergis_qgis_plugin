@@ -17,7 +17,7 @@ from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QAp
 
 from . import global_vars
 from .lib import tools_qgis, tools_os, tools_log, tools_qt
-install_args = ['python', '-m', 'pip', 'install', 'gmsh==4.11.1', 'pandamesh==0.1.2', 'openpyxl==3.1.2']
+install_args = ['python', '-m', 'pip', 'install', 'gmsh==4.11.1', 'pandamesh==0.1.2', 'openpyxl==3.1.2', 'xlsxwriter==3.1.9']
 try:
     import geopandas
     try:
@@ -29,6 +29,7 @@ try:
     import gmsh
     import pandamesh
     import openpyxl
+    import xlsxwriter
 except ImportError:
     if tools_qt.show_question(
         "It appears that certain dependencies required for the DRAIN plugin are not installed. " 
