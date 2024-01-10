@@ -85,7 +85,6 @@ class GwEpaFileManager(GwTask):
         """ Set variables from object Go2Epa """
 
         self.dlg_go2epa = self.go2epa.dlg_go2epa
-        self.export_file = self.go2epa.export_file
         self.export_file_path = self.go2epa.export_file_path
 
 
@@ -160,7 +159,7 @@ class GwEpaFileManager(GwTask):
         self.output = self.process.processAlgorithm(params, context, feedback)
 
         if self.output is not None:
-            if self.export_file and self.export_file_path:
+            if self.export_file_path:
                 try:
                     shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.export_file_path}")
                 except Exception as e:

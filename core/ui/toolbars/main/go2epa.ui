@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Go2Iber</string>
+   <string>Generate INP</string>
   </property>
   <layout class="QGridLayout" name="gridLayout" rowstretch="0,0">
    <item row="1" column="0">
@@ -156,16 +156,9 @@
                 <item>
                  <layout class="QGridLayout" name="gridLayout_3">
                   <item row="0" column="0">
-                   <widget class="QCheckBox" name="chk_export_file">
-                    <property name="text">
-                     <string>Export INP file</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
                    <widget class="QLineEdit" name="txt_file_path"/>
                   </item>
-                  <item row="0" column="2">
+                  <item row="0" column="1">
                    <widget class="QPushButton" name="btn_file_path">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -226,7 +219,7 @@
             <x>0</x>
             <y>0</y>
             <width>581</width>
-            <height>180</height>
+            <height>165</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
