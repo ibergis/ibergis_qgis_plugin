@@ -86,8 +86,8 @@ class GwEpaFileManager(GwTask):
 
         self.dlg_go2epa = self.go2epa.dlg_go2epa
         self.export_file = self.go2epa.export_file
-        self.export_file_path = self.go2epa.export_file_path
-        self.result_name = self.export_file_path.split('.')[-2]
+        self.result_name = "Iber_SWMM"
+        self.export_file_path = f"{self.go2epa.export_file_path}{os.sep}{self.result_name}.inp"
 
 
     def run(self):

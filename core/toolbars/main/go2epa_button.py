@@ -99,7 +99,7 @@ class GwGo2IberButton(GwAction):
 
     def _manage_btn_file_path(self):
 
-        path = tools_os.open_save_file_path(extension="*.inp")
+        path = tools_os.open_folder_path()
         if path:
             tools_qt.set_widget_text(self.dlg_go2epa, 'txt_file_path', str(path))
 
