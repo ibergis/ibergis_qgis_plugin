@@ -20,10 +20,35 @@ def dump(mesh, mesh_fp, roof_fp, losses_fp):
     mesh_fp.write("CONDICIONS INICIALS\n")
     mesh_fp.write("CC: CONDICIONS CONTORN\n")
     for (pol_id, side), value in mesh["boundary_conditions"].items():
-        # TODO: Handle BC cases
-        mesh_fp.write(
-            f"{pol_id} {side} 0      0 0 0 -40 1 1 0 1  -Salida en Critico/Rapido -\n"
-        )
+        bt = value["type"]
+
+        if bt == "INLET TOTAL DISCHARGE (SUB)CRITICAL":
+            for time, flow in value["timeseries"].items():
+                mesh_fp.write(
+                    f"{pol_id} {side} {time} -{flow} -1 -1 -41 2 1 {value['inlet']} -Hidrograma Q CriticoLento-\n"
+                )
+        elif bt == "INLET WATER ELEVATION":
+            for time, elevation in value["timeseries"].items():
+                mesh_fp.write(
+                    f"{pol_id} {side} {time} 0 0 {elevation} -34 1 1 3 -Nivel dado-\n"
+                )
+        elif bt == "OUTLET (SUPER)CRITICAL":
+            mesh_fp.write(
+                f"{pol_id} {side} 0 0 0 0 -40 1 1 0 {value['outlet']} -Salida en Critico/Rapido -\n"
+            )
+        elif bt == "OUTLET SUBCRITICAL WEIR HEIGHT":
+            mesh_fp.write(
+                f"{pol_id} {side} 0 0 0 {value['height']} {value['weir_coefficient']} 1 1 0 {value['outlet']} -Salida Vertedero Altura-\n"
+            )
+        elif bt == "OUTLET SUBCRITICAL WEIR ELEVATION":
+            mesh_fp.write(
+                f"{pol_id} {side} 0 0 0 {value['elevation']} {value['weir_coefficient']} 3 1 0 {value['outlet']} -Salida Vertedero Cota-\n"
+            )
+        elif bt == "OUTLET SUBCRITICAL GIVEN LEVEL":
+            for time, elevation in value["timeseries"].items():
+                mesh_fp.write(
+                    f"{pol_id} {side} {time} 0 0 {elevation} -34 1 1 0 {value['outlet']} -Salida Nivel Dado-\n"
+                )
 
     if len(mesh["roofs"]):
         roof_fp.write("Number of roofs\n")

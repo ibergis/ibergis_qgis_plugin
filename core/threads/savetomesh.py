@@ -136,12 +136,86 @@ class GwSaveToMeshTask(GwTask):
 
             # TODO: Handle empty results
 
+            # Create a dict of configuration for each boundary condition
+            sql = f"""
+                SELECT fid, boundary_type, timeseries, other1, other2
+                FROM boundary_conditions
+                WHERE bscenario = '{self.bc_scenario}'
+            """
+            rows = dao.get_rows(sql)
+            if rows is None:
+                self.message = "No boundary conditions found for this scenario"
+                return False
+
+            def get_timeseries(timeseries_id):
+                sql = f"""
+                    SELECT time, value
+                    FROM cat_timeseries_value
+                    WHERE timeseries IN (
+                        SELECT idval
+                        FROM cat_timeseries
+                        WHERE id = {timeseries_id}
+                    )
+                """
+                rows = dao.get_rows(sql)
+                if rows is None:
+                    self.message = f"Timeseries id {timeseries_id} is empty."
+                    return False
+                timeseries_dict = {}
+                for row in rows:
+                    hours, minutes = map(int, row["time"].split(":"))
+                    seconds = hours * 3600 + minutes * 60
+                    timeseries_dict[seconds] = row["value"]
+                return timeseries_dict
+
+            bc_dict = {}
+            for row in rows:
+                bt = row["boundary_type"]
+
+                if bt == "INLET TOTAL DISCHARGE (SUB)CRITICAL":
+                    bc_dict[row["fid"]] = {
+                        "type": "INLET TOTAL DISCHARGE (SUB)CRITICAL",
+                        "timeseries": get_timeseries(row["timeseries"]),
+                        "inlet": row["fid"],
+                    }
+                elif bt == "INLET WATER ELEVATION":
+                    bc_dict[row["fid"]] = {
+                        "type": "INLET WATER ELEVATION",
+                        "timeseries": get_timeseries(row["timeseries"]),
+                    }
+                elif bt == "OUTLET (SUPER)CRITICAL":
+                    bc_dict[row["fid"]] = {
+                        "type": "OUTLET (SUPER)CRITICAL",
+                        "outlet": row["fid"],
+                    }
+                elif bt == "OUTLET SUBCRITICAL WEIR HEIGHT":
+                    bc_dict[row["fid"]] = {
+                        "type": "OUTLET SUBCRITICAL WEIR HEIGHT",
+                        "weir_coefficient": row["other1"],
+                        "height": row["other2"],
+                        "outlet": row["fid"],
+                    }
+                elif bt == "OUTLET SUBCRITICAL WEIR ELEVATION":
+                    bc_dict[row["fid"]] = {
+                        "type": "OUTLET SUBCRITICAL WEIR ELEVATION",
+                        "weir_coefficient": row["other1"],
+                        "elevation": row["other2"],
+                        "outlet": row["fid"],
+                    }
+                elif bt == "OUTLET SUBCRITICAL GIVEN LEVEL":
+                    bc_dict[row["fid"]] = {
+                        "type": "OUTLET SUBCRITICAL GIVEN LEVEL",
+                        "timeseries": get_timeseries(row["timeseries"]),
+                        "outlet": row["fid"],
+                    }
+
+            # Save boundary conditions to mesh dict
             self.mesh["boundary_conditions"] = {}
             for feature in result_layer.getFeatures():
                 # TODO handle bc cases
                 self.mesh["boundary_conditions"][
                     (feature["pol_id"], feature["side"])
-                ] = ""
+                ] = bc_dict[feature["bc_fid"]]
 
             new_mesh_str, new_roof_str, new_losses_str = mesh_parser.dumps(self.mesh)
 
