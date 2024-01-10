@@ -777,7 +777,7 @@ create view if not exists vi_options as select parameter as Option, value as Val
 
 create view if not exists vi_conduits as select code as Name, node_1 as FromNode, node_2 as ToNode, length as Length, roughness as Roughness, z1 as InOffset, 
 z2 as OutOffset, q0 as InitFlow, qmax as MaxFlow, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, culvert as Culvert, 
-kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation, geom from inp_conduit;
+transect as Shp_Trnsct, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation, geom from inp_conduit;
 
 create view if not exists vi_outlets as select code as Name, node_1 as FromNode, node_2 as ToNode, offsetval as InOffset, outlet_type as RateCurve, cd1 as Qcoeff, cd2 as Qexpon, 
 flap as FlapGate, curve as CurveName, annotation as Annotation, geom from inp_outlet;
