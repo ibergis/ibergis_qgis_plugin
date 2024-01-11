@@ -287,6 +287,7 @@ class GwCreateMeshTask(GwTask):
             # Get ground losses
             if self.losses_layer is None:
                 for polygon_id, polygon in self.mesh["polygons"].items():
+                    # FIXME: put losses OFF
                     if polygon["category"] == "ground":
                         polygon["scs_cn"] = 0
             else:
@@ -317,6 +318,7 @@ class GwCreateMeshTask(GwTask):
                 for polygon_id, losses in losses_dict.items():
                     polygon = self.mesh["polygons"][polygon_id]
                     polygon["scs_cn"] = losses
+                # FIXME: configure self.mesh["losses"]
 
             # Delete old mesh
             self.feedback.setProgressText("Saving mesh to GPKG file...")

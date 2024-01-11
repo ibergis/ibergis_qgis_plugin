@@ -65,9 +65,21 @@ def dump(mesh, mesh_fp, roof_fp, losses_fp):
             if pol["category"] == "roof":
                 roof_fp.write(f"{i} {pol['roof_id']}\n")
 
-    for i, pol in mesh["polygons"].items():
-        if "scs_cn" in pol:
-            losses_fp.write(f"{i} {pol['scs_cn']}\n")
+    if "losses" in mesh:
+        losses_config = mesh["losses"]
+
+        # Infiltration losses OFF
+        if losses_config["type"] == "OFF":
+            losses_fp.write("0")
+
+        # Infiltration losses - Manual / By Parameters - SCS
+        elif losses_config["type"] == "SCS":
+            losses_fp.write(
+                f"2 {losses_config['cn_multiplier']} {losses_config['ia_coefficient']} {losses_config['start_time']}\n"
+            )
+            for i, pol in mesh["polygons"].items():
+                if "scs_cn" in pol:
+                    losses_fp.write(f"{i} {pol['scs_cn']}\n")
 
 
 def dumps(mesh):
@@ -80,8 +92,7 @@ def dumps(mesh):
         return mesh_buffer.getvalue(), roof_buffer.getvalue(), losses_buffer.getvalue()
 
 
-# FIXME: load losses_fp
-def load(mesh_fp, roof_fp=None):
+def load(mesh_fp, roof_fp=None, losses_fp=None):
     mesh = {"polygons": {}, "vertices": {}, "roofs": {}, "boundary_conditions": {}}
 
     section = ""
@@ -218,14 +229,38 @@ def load(mesh_fp, roof_fp=None):
                     mesh["polygons"][polygon_id]["category"] = "roof"
                     mesh["polygons"][polygon_id]["roof_id"] = roof_id
 
+    if losses_fp:
+        first_line = True
+        for line in losses_fp:
+            if first_line:
+                first_line = False
+                configuration = line.split()
+
+                # Infiltration losses OFF
+                if configuration[0] == "0":
+                    mesh["losses"] = {"type": "OFF"}
+                    break
+
+                # Infiltration losses - Manual / By Parameters - SCS
+                elif configuration[0] == "2":
+                    mesh["losses"] = {
+                        "type": "SCS",
+                        "cn_multiplier": float(configuration[1]),
+                        "ia_coefficient": float(configuration[2]),
+                        "start_time": float(configuration[3]),
+                    }
+                    continue
+            else:
+                polygon_id, cn_value = line.split()
+                mesh["polygons"][polygon_id]["scs_cn"] = cn_value
+
     return mesh
 
 
-# TODO: includes losses_str
-def loads(mesh_string, roof_string=None):
-    mesh_file = io.StringIO(mesh_string)
-    roof_file = io.StringIO(roof_string) if roof_string else io.StringIO("")
-    mesh = load(mesh_file, roof_file)
-    mesh_file.close()
-    roof_file.close()
-    return mesh
+def loads(mesh_string, roof_string="", losses_string=""):
+    with (
+        io.StringIO(mesh_string) as mesh_file,
+        io.StringIO(roof_string) as roof_file,
+        io.StringIO(losses_string) as losses_file,
+    ):
+        return load(mesh_file, roof_file, losses_file)
