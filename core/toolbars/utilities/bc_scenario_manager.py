@@ -481,14 +481,14 @@ class GwBCScenarioManagerButton(GwAction):
         mesh_name = self.dlg_ms.cmb_mesh.currentText()
         dao = global_vars.gpkg_dao_data
 
-        sql = f"SELECT iber2d, roof FROM cat_file WHERE name = '{mesh_name}'"
+        sql = f"SELECT iber2d, roof, losses FROM cat_file WHERE name = '{mesh_name}'"
         row = dao.get_row(sql)
         mesh_str = row["iber2d"]
         roof_str = None if row["roof"] is None else row["roof"]
+        losses_str = None if row["losses"] is None else row["losses"]
 
         # Parse mesh and check for preexistent boundary conditions
-        # FIXME: loads() don't accept losses string, so losses get erased in this process
-        mesh = mesh_parser.loads(mesh_str, roof_str)
+        mesh = mesh_parser.loads(mesh_str, roof_str, losses_str)
 
         if mesh["boundary_conditions"]:
             message = "This process will override the boundary conditions of this mesh. Are you sure?"
