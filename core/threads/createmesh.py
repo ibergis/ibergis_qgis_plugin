@@ -286,10 +286,7 @@ class GwCreateMeshTask(GwTask):
 
             # Get ground losses
             if self.losses_layer is None:
-                for polygon_id, polygon in self.mesh["polygons"].items():
-                    # FIXME: put losses OFF
-                    if polygon["category"] == "ground":
-                        polygon["scs_cn"] = 0
+                self.mesh["losses"] = {"type": "OFF"}
             else:
                 self.feedback.setProgressText("Getting ground losses...")
                 self.feedback.setProgress(50)
@@ -318,7 +315,14 @@ class GwCreateMeshTask(GwTask):
                 for polygon_id, losses in losses_dict.items():
                     polygon = self.mesh["polygons"][polygon_id]
                     polygon["scs_cn"] = losses
-                # FIXME: configure self.mesh["losses"]
+
+                # FIXME: user values self.mesh["losses"]
+                self.mesh["losses"] = {
+                    "type": "SCS",
+                    "cn_multiplier": 1,
+                    "ia_coefficient": 0.2,
+                    "start_time": 0,
+                }
 
             # Delete old mesh
             self.feedback.setProgressText("Saving mesh to GPKG file...")
@@ -330,6 +334,7 @@ class GwCreateMeshTask(GwTask):
 
             # Save mesh
             mesh_str, roof_str, losses_str = mesh_parser.dumps(self.mesh)
+            print(losses_str)
             sql = f"""
                 INSERT INTO cat_file (name, iber2d, roof, losses)
                 VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}')
