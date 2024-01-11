@@ -90,6 +90,16 @@ class GwCreateMeshTask(GwTask):
 
             layers["dem"] = self.dem_layer
 
+            # Validate missing ground roughness values
+            if self.roughness_layer == "ground_layer":
+                sql = "SELECT fid FROM ground WHERE landuse IS NULL AND custom_roughness IS NULL"
+                rows = self.dao.get_rows(sql)
+                if rows is not None:
+                    self.message = "Roughness information missing in following objects in Ground layer: "
+                    self.message += ', '.join(str(row["fid"]) for row in rows)
+                    self.message += ". Review your data and try again."
+                    return False
+
             # Validate landuses roughness values
             if self.roughness_layer is not None:
                 sql = "SELECT id, manning FROM cat_landuses"
