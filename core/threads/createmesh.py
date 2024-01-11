@@ -135,6 +135,16 @@ class GwCreateMeshTask(GwTask):
                         "Please, verify the 'cat_landuses' table and try again."
                     )
                     return False
+                
+            # Validate missing ground losses values
+            if self.losses_layer == "ground_layer":
+                sql = "SELECT fid FROM ground WHERE scs_cn IS NULL"
+                rows = self.dao.get_rows(sql)
+                if rows is not None:
+                    self.message = "Losses information ('scs_cn' column) missing in following objects in Ground layer: "
+                    self.message += ', '.join(str(row["fid"]) for row in rows)
+                    self.message += ". Review your data and try again."
+                    return False
 
             self.feedback.setProgress(5)
 
