@@ -10,10 +10,10 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QVariant
 from ..utils.feedback import Feedback
 from ..utils.meshing_process import layer_to_gdf
-from ...ext_libs import geopandas as gpd
 from qgis import processing
 
 from typing import Tuple, Optional
+import geopandas as gpd
 import pandas as pd
 import shapely
 import itertools
