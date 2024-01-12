@@ -189,6 +189,8 @@ class GwGo2IberButton(GwAction):
         # Get widgets values
         self.export_file_path = tools_qt.get_text(self.dlg_go2epa, 'txt_file_path')
 
+        tools_gw.set_tabs_enabled(self.dlg_go2epa)
+        self.dlg_go2epa.mainTab.setCurrentIndex(1)
         self.dlg_go2epa.btn_accept.setEnabled(False)
         self.dlg_go2epa.btn_cancel.setEnabled(True)
 
