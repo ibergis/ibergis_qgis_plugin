@@ -13,10 +13,7 @@ from qgis.PyQt.QtCore import QVariant
 import shapely
 import numpy as np
 import time
-
-# Vendored Geopandas to use `exclusive` parameter in `sjoin_nearest`
-from ...ext_libs import geopandas as gpd
-# from ...ext_libs import pandamesh as pm
+import geopandas as gpd
 
 try:
     import gmsh

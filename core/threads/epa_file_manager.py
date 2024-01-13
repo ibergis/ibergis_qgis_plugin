@@ -15,7 +15,9 @@ import sqlite3
 import pandas as pd
 
 from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
-from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, QgsProject
+from qgis.PyQt.QtWidgets import QTextEdit
+from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, \
+    QgsProject
 
 from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils import tools_gw
@@ -155,8 +157,9 @@ class GwEpaFileManager(GwTask):
         self.process.initAlgorithm(None)
         params = self._manage_params()
         context = QgsProcessingContext()
-        feedback = QgsProcessingFeedback()
-        self.output = self.process.processAlgorithm(params, context, feedback)
+        self.feedback = QgsProcessingFeedback()
+        self.feedback.progressChanged.connect(self._progress_changed)
+        self.output = self.process.processAlgorithm(params, context, self.feedback)
 
         if self.output is not None:
             if self.export_file_path:
@@ -171,6 +174,15 @@ class GwEpaFileManager(GwTask):
                     print(e)
 
         return True
+
+    def _progress_changed(self, progress):
+
+        text = self.feedback.textLog()
+        txt_infolog = self.dlg_go2epa.findChild(QTextEdit, 'txt_infolog')
+        # cur_text = tools_qt.get_text(self.dlg_go2epa, txt_infolog, return_string_null=False)
+        text = f"{text}"
+        txt_infolog.setText(text)
+        txt_infolog.show()
 
 
     def _manage_params(self):

@@ -36,6 +36,7 @@ class GwExecuteModelButton(GwAction):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
         self.project_type = global_vars.project_type
         self.epa_options_list = []
+        self.export_path = None
 
 
     def clicked_event(self):
@@ -72,3 +73,11 @@ class GwExecuteModelButton(GwAction):
     def _execute_model(self):
         msg = "This tool hasn't been implemented yet."
         tools_qt.show_info_box(msg)
+        return
+
+        inp_file_path = f"{self.export_path}{os.sep}Iber_SWMM.inp"
+        if os.path.exists(inp_file_path):
+            message = "An Iber_SWMM.inp file already exists in this path. Do you want to overwrite file?"
+            answer = tools_qt.show_question(message, "overwrite file", force_action=True)
+            if not answer:
+                return False
