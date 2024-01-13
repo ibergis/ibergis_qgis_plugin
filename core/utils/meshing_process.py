@@ -238,6 +238,7 @@ try:
 
         gmsh.initialize()
         gmsh.option.setNumber("General.Terminal", 0)
+        gmsh.option.setNumber("General.NumThreads", 0)
 
         pm.common.check_geodataframe(data)
         pm.gmsh_geometry.add_geometry(
