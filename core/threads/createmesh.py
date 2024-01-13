@@ -7,7 +7,9 @@ from qgis.core import (
     QgsFeedback,
     QgsField,
     QgsGeometry,
+    QgsTriangle,
     QgsPointXY,
+    QgsPoint,
     QgsProcessingFeedback,
     QgsProject,
     QgsRasterLayer,
@@ -24,6 +26,7 @@ from ..utils.meshing_process import triangulate_custom
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt
 
+import time
 
 class GwCreateMeshTask(GwTask):
     def __init__(
@@ -95,7 +98,7 @@ class GwCreateMeshTask(GwTask):
             if self.roughness_layer == "ground_layer":
                 sql = "SELECT fid FROM ground WHERE landuse IS NULL AND custom_roughness IS NULL"
                 rows = self.dao.get_rows(sql)
-                if rows is not None:
+                if rows is not None and len(rows) > 0:
                     self.message = "Roughness information missing in following objects in Ground layer: "
                     self.message += ", ".join(str(row["fid"]) for row in rows)
                     self.message += ". Review your data and try again."
@@ -202,7 +205,7 @@ class GwCreateMeshTask(GwTask):
             gt_feedback = QgsFeedback()
             gt_progress = lambda x: self.feedback.setProgress(x / 100 * (30 - 15) + 15)
             gt_feedback.progressChanged.connect(gt_progress)
-            ground_triang = triangulate_custom(
+            triangles, vertices, roughnesses = triangulate_custom(
                 layers["ground"],
                 point_anchor_layer=layers["mesh_anchor_points"],
                 enable_transition=self.enable_transition,
@@ -214,7 +217,7 @@ class GwCreateMeshTask(GwTask):
             if self.feedback.isCanceled():
                 self.message = "Task canceled."
                 return False
-            triangulations.append((*ground_triang, {"category": "ground"}))
+            triangulations.append((triangles, vertices, {"category": "ground"}))
 
             self.feedback.setProgressText("Creating roof mesh...")
             self.feedback.setProgress(30)
@@ -284,6 +287,8 @@ class GwCreateMeshTask(GwTask):
                         vertice["elevation"] = val if res else 0
 
             # Get ground roughness
+            start = time.time()
+            print("Getting roughness... ", end="")
             if self.roughness_layer is None:
                 for polygon_id, polygon in self.mesh["polygons"].items():
                     if polygon["category"] == "ground":
@@ -298,6 +303,13 @@ class GwCreateMeshTask(GwTask):
                 ggr_feedback.progressChanged.connect(ggr_progress)
                 ggr_feedback.canceled.connect(self.feedback.cancel)
                 if self.roughness_layer == "ground_layer":
+                    assert len(roughnesses) == len(triangles)
+                    index = 0
+                    for polygon in self.mesh["polygons"].values():
+                        if polygon["category"] == "ground":
+                            polygon["roughness"] = float(roughnesses[index])
+                            index += 1
+                elif self.roughness_layer == "ground_layer" and False:
                     roughness_dict = core.get_ground_roughness(
                         self.mesh, layers["ground"], landuses, ggr_feedback
                     )
@@ -320,6 +332,7 @@ class GwCreateMeshTask(GwTask):
                     for polygon_id, landuse in polygon_landuses.items():
                         polygon = self.mesh["polygons"][polygon_id]
                         polygon["roughness"] = landuses[landuse]
+            print(f"Done! {time.time() - start}s")
 
             # Get ground losses
             if self.losses_layer is None:
@@ -397,19 +410,21 @@ class GwCreateMeshTask(GwTask):
             ]
             provider.addAttributes(fields)
             temp_layer.updateFields()
+
             for i, tri in self.mesh["polygons"].items():
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
                     return False
-                feature = QgsFeature()
-                vertices = (self.mesh["vertices"][vert] for vert in tri["vertice_ids"])
-                wkt = "TRIANGLE(("
-                wkt += ",".join(
-                    f"{v['coordinates'][0]} {v['coordinates'][1]} {v['elevation']}"
-                    for v in vertices
+
+                vertices = [self.mesh["vertices"][vert] for vert in tri["vertice_ids"]]
+                geom = QgsTriangle(
+                    QgsPoint(*vertices[0]["coordinates"], vertices[0]["elevation"]),
+                    QgsPoint(*vertices[1]["coordinates"], vertices[1]["elevation"]),
+                    QgsPoint(*vertices[2]["coordinates"], vertices[2]["elevation"]),
                 )
-                wkt += "))"
-                feature.setGeometry(QgsGeometry.fromWkt(wkt))
+
+                feature = QgsFeature()
+                feature.setGeometry(geom)
                 feature.setAttributes(
                     [i, tri["category"], *tri["vertice_ids"], tri["roughness"]]
                 )

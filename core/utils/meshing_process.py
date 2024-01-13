@@ -145,6 +145,8 @@ try:
     def layer_to_gdf(layer, feedback=None) -> gpd.GeoDataFrame:
         geoms = []
         sizes = []
+        fids = []
+        roughnesses = []
         total = layer.featureCount()
         for i, feature in enumerate(layer.getFeatures()):
             wkt = feature.geometry().asWkt()
@@ -152,14 +154,22 @@ try:
                 geoms.append(shapely.wkt.loads(wkt))
             except Exception as e:
                 print(e, wkt)
+            fids.append(feature['fid'])
             if feature.fieldNameIndex("cellsize") != -1:
                 sizes.append(feature["cellsize"])
+
+            if feature.fieldNameIndex("custom_roughness") != -1:
+                roughnesses.append(feature["custom_roughness"])
 
             if feedback:
                 if feedback.isCanceled():
                     return {}
 
-        gdf = gpd.GeoDataFrame(geometry=geoms, data={"cellsize": sizes})
+        data = {"fid": fids, "cellsize": sizes}
+        if len(roughnesses) > 0:
+            data["roughness"] = roughnesses
+
+        gdf = gpd.GeoDataFrame(geometry=geoms, data=data)
         gdf = gdf.explode(ignore_index=True)
 
         return gdf
@@ -178,7 +188,7 @@ try:
     }
 
     def triangulate_custom(
-        source_layer,
+        source_layer: QgsVectorLayer,
         line_anchor_layer=None,
         point_anchor_layer=None,
         algorithm=ALGORITHMS["Frontal-Delaunay"],
@@ -324,9 +334,18 @@ try:
         vertices = get_vertices()
         triangles = get_faces()
 
+        roughnesses = np.empty(len(triangles))
+        start = 0
+        for i, feature in data.iterrows():
+            element_types, element_tags, _ = gmsh.model.mesh.getElements(2, feature["__polygon_id"])
+            _TRIANGLE = 2
+            tri = element_tags[np.where(element_types == _TRIANGLE)[0][0]]
+            roughnesses[start : start + len(tri)] = feature["roughness"]
+            start += len(tri)
+
         feedback.setProgress(100)
 
-        return triangles, vertices
+        return triangles, vertices, roughnesses
 
 except ImportError:
 
