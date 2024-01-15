@@ -56,9 +56,9 @@ def dump(mesh, mesh_fp, roof_fp, losses_fp):
         roof_fp.write("Roofs properties\n")
         for roof_id, roof in mesh["roofs"].items():
             roof_fp.write(
-                f"{roof['name']} {roof_id} {roof['slope']} {roof['width']} "
-                f"{roof['roughness']} {roof['isconnected']} {roof['outlet_code']} "
-                f"{roof['outlet_vol']} {roof['street_vol']} {roof['infiltr_vol']}\n"
+                f"{roof['name']} {roof_id} {roof['slope'] or -9999} {roof['width'] or -9999} "
+                f"{roof['roughness'] or -9999} {roof['isconnected'] or -9999} {roof['outlet_code'] or -9999} "
+                f"{roof['outlet_vol'] or -9999} {roof['street_vol'] or -9999} {roof['infiltr_vol'] or -9999}\n"
             )
         roof_fp.write("\nRoof elements\n")
         for i, pol in mesh["polygons"].items():
