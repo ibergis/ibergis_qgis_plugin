@@ -69,11 +69,11 @@ def dump(mesh, mesh_fp, roof_fp, losses_fp):
         losses_config = mesh["losses"]
 
         # Infiltration losses OFF
-        if losses_config["type"] == "OFF":
+        if losses_config["method"] == 0:
             losses_fp.write("0")
 
         # Infiltration losses - Manual / By Parameters - SCS
-        elif losses_config["type"] == "SCS":
+        elif losses_config["method"] == 2:
             losses_fp.write(
                 f"2 {losses_config['cn_multiplier']} {losses_config['ia_coefficient']} {losses_config['start_time']}\n"
             )
@@ -238,13 +238,13 @@ def load(mesh_fp, roof_fp=None, losses_fp=None):
 
                 # Infiltration losses OFF
                 if configuration[0] == "0":
-                    mesh["losses"] = {"type": "OFF"}
+                    mesh["losses"] = {"method": 0}
                     break
 
                 # Infiltration losses - Manual / By Parameters - SCS
                 elif configuration[0] == "2":
                     mesh["losses"] = {
-                        "type": "SCS",
+                        "method": 2,
                         "cn_multiplier": float(configuration[1]),
                         "ia_coefficient": float(configuration[2]),
                         "start_time": float(configuration[3]),

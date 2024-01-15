@@ -323,7 +323,7 @@ class GwCreateMeshTask(GwTask):
 
             # Get ground losses
             if self.losses_layer is None:
-                self.mesh["losses"] = {"type": "OFF"}
+                self.mesh["losses"] = {"method": 0}
             else:
                 self.feedback.setProgressText("Getting ground losses...")
                 self.feedback.setProgress(50)
@@ -355,7 +355,7 @@ class GwCreateMeshTask(GwTask):
 
                 # FIXME: user values self.mesh["losses"]
                 self.mesh["losses"] = {
-                    "type": "SCS",
+                    "method": 2,
                     "cn_multiplier": 1,
                     "ia_coefficient": 0.2,
                     "start_time": 0,
