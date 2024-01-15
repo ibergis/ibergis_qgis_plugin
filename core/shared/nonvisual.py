@@ -1395,20 +1395,20 @@ class GwNonVisual:
             times_type = times_type.strip("'")
             descript = descript.strip("'")
             fname = fname.strip("'")
-            fields = f"""{{"idval": "{timeseries}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}"}}"""
+            fields = f"""{{"idval": "{idval}", "timser_type": "{timser_type}", "times_type": "{times_type}", "descript": "{descript}", "fname": "{fname}"}}"""
             result = self._setfields(timeseries, table_name, fields)
             if not result:
                 return
 
             # Update inp_timeseries_value
-            sql = f"DELETE FROM cat_timeseries_value WHERE timeseries = '{timeseries}'"
+            sql = f"DELETE FROM cat_timeseries_value WHERE timeseries = '{idval}'"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error deleting old timeseries values."
                 tools_qgis.show_warning(msg, dialog=dialog)
                 global_vars.gpkg_dao_data.rollback()
                 return
-            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, timeseries)
+            result = self._insert_timeseries_value(dialog, tbl_timeseries_value, times_type, idval)
             if not result:
                 return
 
