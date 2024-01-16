@@ -14,6 +14,7 @@ import shapely
 import numpy as np
 import time
 import geopandas as gpd
+from typing import Dict
 
 try:
     import gmsh
@@ -139,32 +140,27 @@ try:
         data = data[~data.is_empty]
         return data
 
-    def layer_to_gdf(layer, feedback=None) -> gpd.GeoDataFrame:
+    def layer_to_gdf(layer: QgsVectorLayer, fields: list = [], feedback=None) -> gpd.GeoDataFrame:
         geoms = []
-        sizes = []
-        fids = []
-        roughnesses = []
-        total = layer.featureCount()
-        for i, feature in enumerate(layer.getFeatures()):
+
+        data: Dict[str, list] = {}
+        for field in fields:
+            data[field] = []
+        
+        for feature in layer.getFeatures():
             wkt = feature.geometry().asWkt()
             try:
                 geoms.append(shapely.wkt.loads(wkt))
             except Exception as e:
                 print(e, wkt)
-            fids.append(feature['fid'])
-            if feature.fieldNameIndex("cellsize") != -1:
-                sizes.append(feature["cellsize"])
 
-            if feature.fieldNameIndex("custom_roughness") != -1:
-                roughnesses.append(feature["custom_roughness"])
+            for field in fields:
+                assert feature.fieldNameIndex(field) != -1, f"Layer `{layer.name()}` has features without field `{field}`"
+                data[field].append(feature[field])
 
             if feedback:
                 if feedback.isCanceled():
                     return {}
-
-        data = {"fid": fids, "cellsize": sizes}
-        if len(roughnesses) > 0:
-            data["roughness"] = roughnesses
 
         gdf = gpd.GeoDataFrame(geometry=geoms, data=data)
         gdf = gdf.explode(ignore_index=True)
@@ -186,6 +182,7 @@ try:
 
     def triangulate_custom(
         source_layer: QgsVectorLayer,
+        extra_fields = [],
         line_anchor_layer=None,
         point_anchor_layer=None,
         algorithm=ALGORITHMS["Frontal-Delaunay"],
@@ -202,11 +199,12 @@ try:
         start = time.time()
         print("Getting data... ", end="")
 
-        data = layer_to_gdf(source_layer, feedback)
+        fields = ["cellsize"]
+        data = layer_to_gdf(source_layer, fields + extra_fields, feedback=feedback)
 
         line_anchors = None
         if line_anchor_layer is not None:
-            line_anchors = layer_to_gdf(line_anchor_layer, feedback)
+            line_anchors = layer_to_gdf(line_anchor_layer, fields, feedback=feedback)
         else:
             line_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": []}, crs=data.crs
@@ -214,7 +212,7 @@ try:
 
         point_anchors = None
         if point_anchor_layer is not None:
-            point_anchors = layer_to_gdf(point_anchor_layer, feedback)
+            point_anchors = layer_to_gdf(point_anchor_layer, fields, feedback=feedback)
         else:
             point_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": []}, crs=data.crs
@@ -332,18 +330,23 @@ try:
         vertices = get_vertices()
         triangles = get_faces()
 
-        roughnesses = np.empty(len(triangles))
+        extra_data = {
+            field: np.empty(len(triangles))
+            for field in extra_fields
+        }
+        
         start = 0
         for i, feature in data.iterrows():
             element_types, element_tags, _ = gmsh.model.mesh.getElements(2, feature["__polygon_id"])
             _TRIANGLE = 2
             tri = element_tags[np.where(element_types == _TRIANGLE)[0][0]]
-            roughnesses[start : start + len(tri)] = feature["roughness"]
+            for field in extra_fields:
+                extra_data[field][start : start + len(tri)] = feature[field]
             start += len(tri)
 
         feedback.setProgress(100)
 
-        return triangles, vertices, roughnesses
+        return triangles, vertices, extra_data
 
 except ImportError:
 

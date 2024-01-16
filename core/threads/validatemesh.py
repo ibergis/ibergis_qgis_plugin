@@ -17,6 +17,7 @@ import geopandas as gpd
 import pandas as pd
 import shapely
 import itertools
+import time
 
 
 def validate_cellsize(
@@ -239,7 +240,7 @@ def validate_roof_layer(
 def validate_distance(
     layer: QgsVectorLayer, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
-    data: gpd.GeoDataFrame = layer_to_gdf(layer)
+    data: gpd.GeoDataFrame = layer_to_gdf(layer, ["cellsize"])
     vertices = []
     cellsize = []
     for i, row in data.iterrows():
@@ -473,7 +474,12 @@ def validate_input_layers(
                 if validation["layer"] is None
                 else layers_dict[validation["layer"]]
             )
+
+            start = time.time()
+            print(f"Executing '{validation['name']}' validation... ", end="")
             result_layers = validation["function"](parameter, feedback)
+            print(f"Done! {time.time() - start}s")
+            
             if type(result_layers) not in (tuple, list):
                 result_layers = [result_layers]
 

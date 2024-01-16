@@ -205,8 +205,9 @@ class GwCreateMeshTask(GwTask):
             gt_feedback = QgsFeedback()
             gt_progress = lambda x: self.feedback.setProgress(x / 100 * (30 - 15) + 15)
             gt_feedback.progressChanged.connect(gt_progress)
-            triangles, vertices, roughnesses = triangulate_custom(
+            triangles, vertices, extra_data = triangulate_custom(
                 layers["ground"],
+                ["custom_roughness"],
                 point_anchor_layer=layers["mesh_anchor_points"],
                 enable_transition=self.enable_transition,
                 transition_slope=self.transition_slope,
@@ -266,6 +267,8 @@ class GwCreateMeshTask(GwTask):
                     }
 
             # Get ground elevation
+            start = time.time()
+            print("Getting vertices elevation... ", end="")
             self.feedback.setProgressText("Getting vertice elevations...")
             # TODO: Fill roof elevations
             self.feedback.setProgress(40)
@@ -285,10 +288,11 @@ class GwCreateMeshTask(GwTask):
                         point = qct.transform(QgsPointXY(*vertice["coordinates"]))
                         val, res = self.dem_layer.dataProvider().sample(point, 1)
                         vertice["elevation"] = val if res else 0
+            print(f"Done! {time.time() - start}s")
 
             # Get ground roughness
             start = time.time()
-            print("Getting roughness... ", end="")
+            print("Getting triangles roughness... ", end="")
             if self.roughness_layer is None:
                 for polygon_id, polygon in self.mesh["polygons"].items():
                     if polygon["category"] == "ground":
@@ -303,11 +307,11 @@ class GwCreateMeshTask(GwTask):
                 ggr_feedback.progressChanged.connect(ggr_progress)
                 ggr_feedback.canceled.connect(self.feedback.cancel)
                 if self.roughness_layer == "ground_layer":
-                    assert len(roughnesses) == len(triangles)
+                    assert len(extra_data["custom_roughness"]) == len(triangles)
                     index = 0
                     for polygon in self.mesh["polygons"].values():
                         if polygon["category"] == "ground":
-                            polygon["roughness"] = float(roughnesses[index])
+                            polygon["roughness"] = float(extra_data["custom_roughness"][index])
                             index += 1
                 elif self.roughness_layer == "ground_layer" and False:
                     roughness_dict = core.get_ground_roughness(
