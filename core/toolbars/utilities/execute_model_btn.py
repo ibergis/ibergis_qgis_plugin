@@ -54,7 +54,7 @@ class GwExecuteModelButton(GwAction):
         # Signals
         self.execute_dlg.btn_options.clicked.connect(self._go2epa_options)
         self.execute_dlg.btn_folder_path.clicked.connect(partial(self._manage_btn_folder_path))
-        self.execute_dlg.btn_accept.clicked.connect(partial(self._execute_model))
+        self.execute_dlg.btn_accept.clicked.connect(partial(self._manage_btn_accept))
 
         tools_gw.open_dialog(self.execute_dlg, 'dlg_execute_model')
 
@@ -77,7 +77,7 @@ class GwExecuteModelButton(GwAction):
             tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', str(path))
 
 
-    def _execute_model(self):
+    def _manage_btn_accept(self):
         # Check if results exist on folder
         self.export_path = tools_qt.get_text(self.execute_dlg, 'txt_folder_path')
         if os.path.exists(f"{self.export_path}{os.sep}Iber2D.dat"):
@@ -86,29 +86,39 @@ class GwExecuteModelButton(GwAction):
             if not answer:
                 return False
 
+        # TODO: ask for import
+        do_import = True
+
+        self.execute_model(folder_path=self.export_path, do_generate_inp=True, do_export=True, do_run=True,
+                           do_import=do_import)
+
+
+    def execute_model(self, folder_path: str = '', do_generate_inp: bool = True, do_export: bool = True, do_run: bool = True, do_import: bool = True):
         # Mesh files
-        self._copy_mesh_files()
+        if do_export:
+            mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
+            self._copy_mesh_files(mesh_id, folder_path)
 
         # INP file
-        self._generate_inp()
+        if do_generate_inp:
+            self._generate_inp(folder_path)
 
 
-    def _copy_mesh_files(self):
+    def _copy_mesh_files(self, mesh_id, folder_path):
 
-        mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
         sql = f"SELECT iber2d, roof, losses FROM cat_file WHERE id = '{mesh_id}'"
         row = tools_db.get_row(sql)
         if row:
             iber2d_content, roof_content, losses_content = row
 
             # Write content to files
-            self._write_to_file(f'{self.export_path}{os.sep}Iber2D.dat', iber2d_content)
+            self._write_to_file(f'{folder_path}{os.sep}Iber2D.dat', iber2d_content)
 
             if roof_content:
-                self._write_to_file(f'{self.export_path}{os.sep}Iber_SWMM_roof.dat', roof_content)
+                self._write_to_file(f'{folder_path}{os.sep}Iber_SWMM_roof.dat', roof_content)
 
             if losses_content:
-                self._write_to_file(f'{self.export_path}{os.sep}Iber_Losses.dat', losses_content)
+                self._write_to_file(f'{folder_path}{os.sep}Iber_Losses.dat', losses_content)
 
 
     def _write_to_file(self, file_path, content):
@@ -116,9 +126,9 @@ class GwExecuteModelButton(GwAction):
             file.write(content)
 
 
-    def _generate_inp(self):
+    def _generate_inp(self, folder_path):
         # INP file
-        self.export_file_path = f"{self.export_path}{os.sep}Iber_SWMM.inp"
+        self.export_file_path = f"{folder_path}{os.sep}Iber_SWMM.inp"
 
         # Create timer
         self.t0 = time()
