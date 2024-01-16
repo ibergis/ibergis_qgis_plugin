@@ -607,11 +607,10 @@ class GwNonVisual:
 
         if is_new:
             curve_name = curve_name.strip("'")
-            descript = descript.strip("'")
 
             # Insert cat_curve
             sql = f"""INSERT INTO cat_curve (idval, curve_type, descript) """ \
-                  f"""VALUES ('{curve_name}', '{curve_type}', '{descript}')"""
+                  f"""VALUES ('{curve_name}', '{curve_type}', {descript})"""
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting curve."
