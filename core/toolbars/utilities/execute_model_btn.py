@@ -24,7 +24,7 @@ from ...shared.options import GwOptions
 from ...utils import tools_gw
 from ...ui.ui_manager import GwExecuteModelUi
 from .... import global_vars
-from ....lib import tools_qgis, tools_qt, tools_db
+from ....lib import tools_qgis, tools_qt, tools_db, tools_os
 from ..dialog import GwAction
 
 
@@ -53,7 +53,8 @@ class GwExecuteModelButton(GwAction):
 
         # Signals
         self.execute_dlg.btn_options.clicked.connect(self._go2epa_options)
-        self.execute_dlg.btn_ok.clicked.connect(partial(self._execute_model))
+        self.execute_dlg.btn_folder_path.clicked.connect(partial(self._manage_btn_folder_path))
+        self.execute_dlg.btn_accept.clicked.connect(partial(self._execute_model))
 
         tools_gw.open_dialog(self.execute_dlg, 'dlg_execute_model')
 
@@ -70,14 +71,79 @@ class GwExecuteModelButton(GwAction):
         self.go2epa_options.open_options_dlg()
 
 
-    def _execute_model(self):
-        msg = "This tool hasn't been implemented yet."
-        tools_qt.show_info_box(msg)
-        return
+    def _manage_btn_folder_path(self):
+        path = tools_os.open_folder_path()
+        if path:
+            tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', str(path))
 
-        inp_file_path = f"{self.export_path}{os.sep}Iber_SWMM.inp"
-        if os.path.exists(inp_file_path):
-            message = "An Iber_SWMM.inp file already exists in this path. Do you want to overwrite file?"
+
+    def _execute_model(self):
+        # Check if results exist on folder
+        self.export_path = tools_qt.get_text(self.execute_dlg, 'txt_folder_path')
+        if os.path.exists(f"{self.export_path}{os.sep}Iber2D.dat"):
+            message = "Results files already exist in this path. Do you want to overwrite them?"
             answer = tools_qt.show_question(message, "overwrite file", force_action=True)
             if not answer:
                 return False
+
+        # Mesh files
+        self._copy_mesh_files()
+
+        # INP file
+        self._generate_inp()
+
+
+    def _copy_mesh_files(self):
+
+        mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
+        sql = f"SELECT iber2d, roof, losses FROM cat_file WHERE id = '{mesh_id}'"
+        row = tools_db.get_row(sql)
+        if row:
+            iber2d_content, roof_content, losses_content = row
+
+            # Write content to files
+            self._write_to_file(f'{self.export_path}{os.sep}Iber2D.dat', iber2d_content)
+
+            if roof_content:
+                self._write_to_file(f'{self.export_path}{os.sep}Iber_SWMM_roof.dat', roof_content)
+
+            if losses_content:
+                self._write_to_file(f'{self.export_path}{os.sep}Iber_Losses.dat', losses_content)
+
+
+    def _write_to_file(self, file_path, content):
+        with open(file_path, 'w') as file:
+            file.write(content)
+
+
+    def _generate_inp(self):
+        # INP file
+        self.export_file_path = f"{self.export_path}{os.sep}Iber_SWMM.inp"
+
+        # Create timer
+        self.t0 = time()
+        self.timer = QTimer()
+        self.timer.timeout.connect(partial(self._calculate_elapsed_time, self.execute_dlg))
+        self.timer.start(1000)
+
+        # Set background task 'Go2Epa'
+        description = f"Go2Epa"
+        self.go2epa_task = GwEpaFileManager(description, self, timer=self.timer)
+        QgsApplication.taskManager().addTask(self.go2epa_task)
+        QgsApplication.taskManager().triggerTask(self.go2epa_task)
+
+
+    def _calculate_elapsed_time(self, dialog):
+
+        tf = time()  # Final time
+        td = tf - self.t0  # Delta time
+        self._update_time_elapsed(f"Exec. time: {timedelta(seconds=round(td))}", dialog)
+
+    def _update_time_elapsed(self, text, dialog):
+
+        if isdeleted(dialog):
+            self.timer.stop()
+            return
+
+        lbl_timer = dialog.findChild(QLabel, 'lbl_timer')
+        lbl_timer.setText(text)

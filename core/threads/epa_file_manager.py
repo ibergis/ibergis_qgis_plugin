@@ -86,7 +86,10 @@ class GwEpaFileManager(GwTask):
     def set_variables_from_go2epa(self):
         """ Set variables from object Go2Epa """
 
-        self.dlg_go2epa = self.go2epa.dlg_go2epa
+        try:
+            self.dlg_go2epa = self.go2epa.dlg_go2epa
+        except:
+            self.dlg_go2epa = self.go2epa.execute_dlg
         self.export_file_path = self.go2epa.export_file_path
 
 
