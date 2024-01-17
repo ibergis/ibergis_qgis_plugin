@@ -45,6 +45,11 @@ LAT_FLOW_TOL         5
 MINIMUM_STEP         0.5
 THREADS              1
 
+[EVAPORATION]
+;;Data Source    Parameters
+;;-------------- ----------------
+CONSTANT         0.0
+DRY_ONLY         NO
 
 [JUNCTIONS]
 ;;Name           Elevation  MaxDepth   InitDepth  SurDepth   Aponded   
@@ -156,8 +161,6 @@ THREADS              1
 ;2 CIRC_MANHOLE
 18882            29.470     1.760      0.0000     0.0000     0.0000    
 ;2 CIRC_MANHOLE
-18883            28.000     2.000      0.0000     0.0000     0.0000    
-;2 CIRC_MANHOLE
 18884            27.270     2.010      0.0000     0.0000     0.0000    
 ;2 CIRC_MANHOLE
 18885            26.670     2.250      0.0000     0.0000     0.0000    
@@ -183,14 +186,25 @@ THREADS              1
 [OUTFALLS]
 ;;Name           Elevation  Type       Stage Data       Gated    Route To        
 ;;-------------- ---------- ---------- ---------------- -------- ----------------
-18967            27.830     NORMAL                      NO                       
-100016           34         NORMAL                      NO                       
+;Outfall 18967
+18967            27.830     FREE                        NO                       
+;Outfall 100016
+100016           34         FIXED      33               NO                       
+;Outfall 18888
 18888            25.680     NORMAL                      NO                       
+;Outfall 1
 1                30         FREE                        NO                       
+
+[DIVIDERS]
+;;Name           Elevation  Diverted Link    Type       Parameters
+;;-------------- ---------- ---------------- ---------- ----------
+;Divider example
+18883            28.000     18958            CUTOFF     0          0          0          0          0         
 
 [STORAGE]
 ;;Name           Elev.    MaxDepth   InitDepth  Shape      Curve Name/Params            N/A      Fevap    Psi      Ksat     IMD     
 ;;-------------- -------- ---------- ----------- ---------- ---------------------------- -------- --------          -------- --------
+;Example storage
 18828            26.470   3.500      0.0000     TABULAR    EBAR-02                      0.0000   0       
 
 [CONDUITS]
@@ -344,22 +358,26 @@ THREADS              1
 [PUMPS]
 ;;Name           From Node        To Node          Pump Curve       Status   Sartup Shutoff 
 ;;-------------- ---------------- ---------------- ---------------- ------ -------- --------
+;Example pump
 18828PU1         18828            18828VN1         PUMP-02          ON       2.0000   0.4000  
 
 [ORIFICES]
 ;;Name           From Node        To Node          Type         Offset     Qcoeff     Gated    CloseTime 
 ;;-------------- ---------------- ---------------- ------------ ---------- ---------- -------- ----------
+;Example orifice
 100020           18848            100017           SIDE         37         1.5        NO       0         
 
 [WEIRS]
 ;;Name           From Node        To Node          Type         CrestHt    Qcoeff     Gated    EndCon   EndCoeff   Surcharge  RoadWidth  RoadSurf   Coeff. Curve
 ;;-------------- ---------------- ---------------- ------------ ---------- ---------- -------- -------- ---------- ---------- ---------- ---------- ----------------
+;Example weir
 18828WE1         18828            18828VN2         TRANSVERSE   17.1500    1.5000     NO       0        0          YES       
 
 [OUTLETS]
 ;;Name           From Node        To Node          Offset     Type            QTable/Qcoeff    Qexpon     Gated   
 ;;-------------- ---------------- ---------------- ---------- --------------- ---------------- ---------- --------
-100024           18872            100021           *          TABULAR/HEAD    outlet_1                    NO      
+;Example outlet
+100024           18872            100021           *          TABULAR/HEAD    OUTLET_DEMO                 NO      
 
 [XSECTIONS]
 ;;Link           Shape        Geom1            Geom2      Geom3      Geom4      Barrels    Culvert   
@@ -373,7 +391,7 @@ THREADS              1
 18937            CIRCULAR     0.4000           0.0000     0.0000     0.0000     1                    
 20583            CIRCULAR     0.6000           0.0000     0.0000     0.0000     1                    
 18944            CIRCULAR     0.6000           0.0000     0.0000     0.0000     1                    
-18903            CIRCULAR     0.3150           0.0000     0.0000     0.0000     1                    
+18903            CUSTOM       0.3150           SHAPE_DEMO 0          0          1                    
 18959            CIRCULAR     0.3150           0.0000     0.0000     0.0000     1                    
 18935            CIRCULAR     0.4000           0.0000     0.0000     0.0000     1                    
 18909            CIRCULAR     0.3150           0.0000     0.0000     0.0000     1                    
@@ -391,7 +409,7 @@ THREADS              1
 18916            CIRCULAR     0.4000           0.0000     0.0000     0.0000     1                    
 18904            CIRCULAR     0.4000           0.0000     0.0000     0.0000     1                    
 18924            CIRCULAR     1.0000           0.0000     0.0000     0.0000     1                    
-18902            CIRCULAR     0.3150           0.0000     0.0000     0.0000     1                    
+18902            IRREGULAR    TRANSECT-DEMO    0          0          0          1                    
 18951            CIRCULAR     0.4000           0.0000     0.0000     0.0000     1                    
 18953            CIRCULAR     0.6000           0.0000     0.0000     0.0000     1                    
 18947            CIRCULAR     0.4000           0.0000     0.0000     0.0000     1                    
@@ -436,16 +454,25 @@ THREADS              1
 20576            CIRCULAR     0.4000           0.0000     0.0000     0.0000     1                    
 18936            CIRCULAR     0.4000           0.0000     0.0000     0.0000     1                    
 18922            CIRCULAR     1.0000           0.0000     0.0000     0.0000     1                    
-100020           RECT_CLOSED  2.0000           2.0000     0.0000     0.0000		1
-18828WE1         RECT_OPEN    1.0000           1.0000     0.0000     0.0000     1
+100020           RECT_CLOSED  2.0000           2.0000     0          0
+18828WE1         RECT_OPEN    1.0000           1.0000     0.0000     0.0000    
+
+[TRANSECTS]
+;;Transect Data in HEC-2 format
+;
+;Demo value for transect
+NC 0.01     0.01     0.01    
+X1 TRANSECT-DEMO     4        0.0      0.0      0.0      0.0      0.0      0.0      0.0     
+GR 0.8      0        0.02     2        0.02     6        0.8      8       
 
 [CONTROLS]
 ;;text
 ;;----------
 RULE EXAMPLE
-IF NODE 18828 DEPTH > 1 
+IF NODE 18828 DEPTH > 1
 THEN PUMP 18828PU1 STATUS = ON
 ELSE PUMP 18828PU1 STATUS = OFF
+
 
 
 [INFLOWS]
@@ -456,86 +483,90 @@ ELSE PUMP 18828PU1 STATUS = OFF
 [DWF]
 ;;Node           Constituent      Baseline   Patterns  
 ;;-------------- ---------------- ---------- ----------
-100017	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-100021	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18832	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18833	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18834	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18835	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18836	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18837	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18838	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18839	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18840	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18841	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18842	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18843	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18844	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18845	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18846	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18847	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18848	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18849	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18850	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18851	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18852	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18853	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18854	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18855	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18856	FLOW	0.0001	MONTH	DAY	HOUR	WEEKEND
-18857	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18858	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18859	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18860	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18861	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18862	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18863	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18864	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18865	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18866	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18867	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18868	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18869	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18870	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18871	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18872	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18873	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18874	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18875	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18876	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18877	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18878	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18879	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18880	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18881	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18882	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18883	FLOW	0.0002	MONTH	DAY	HOUR	WEEKEND
-18884	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18885	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18886	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18887	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18911	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18912	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18913	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18960	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18830	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18828VN1	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-18828VN2	FLOW	0.0003	MONTH	DAY	HOUR	WEEKEND
-
+100017           FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+100021           FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18832            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18833            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18834            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18835            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18836            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18837            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18838            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18839            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18840            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18841            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18842            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18843            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18844            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18845            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18846            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18847            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18848            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18849            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18850            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18851            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18852            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18853            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18854            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18855            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18856            FLOW             0.0001     "MONTH" "DAY" "HOUR" "WEEKEND"
+18857            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18858            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18859            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18860            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18861            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18862            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18863            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18864            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18865            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18866            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18867            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18868            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18869            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18870            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18871            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18872            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18873            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18874            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18875            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18876            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18877            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18878            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18879            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18880            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18881            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18882            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
+18884            FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18885            FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18886            FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18887            FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18911            FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18912            FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18913            FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18960            FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18830            FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18828VN1         FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18828VN2         FLOW             0.0003     "MONTH" "DAY" "HOUR" "WEEKEND"
+18883            FLOW             0.0002     "MONTH" "DAY" "HOUR" "WEEKEND"
 
 [CURVES]
 ;;Name           Type       X-Value    Y-Value   
 ;;-------------- ---------- ---------- ----------
-;
 PUMP-02          PUMP2      10.000000  0.045000  
 PUMP-02                     20.000000  0.038000  
 PUMP-02                     30.000000  0.035000  
 PUMP-02                     40.000000  0.033000  
 ;
-outlet_1         RATING     0          0         
-outlet_1                    1          1         
-outlet_1                    2          1         
-outlet_1                    3          1         
+OUTLET_DEMO      RATING     0          0         
+OUTLET_DEMO                 1          1         
+OUTLET_DEMO                 2          1         
+OUTLET_DEMO                 3          1         
+;
+;Curve demo for shape
+SHAPE_DEMO       Shape      0          0         
+SHAPE_DEMO                  0.05       0.4       
+SHAPE_DEMO                  0.9        0.4       
+SHAPE_DEMO                  0.97       0.2       
 ;
 EBAR-02          STORAGE    0.000000   15.000000 
 EBAR-02                     10.000000  15.000000 
@@ -543,19 +574,31 @@ EBAR-02                     10.000000  15.000000
 [TIMESERIES]
 ;;Name           Date       Time       Value     
 ;;-------------- ---------- ---------- ----------
+ABSOLUTE-5m      01/01/2017 0:00       0.0100    
+ABSOLUTE-5m      01/01/2017 0:05       0.0100    
+ABSOLUTE-5m      01/01/2017 0:10       0.0100    
+ABSOLUTE-5m      01/01/2017 0:15       0.0100    
+ABSOLUTE-5m      01/01/2017 0:20       0.0100    
+ABSOLUTE-5m      01/01/2017 0:25       0.0100    
+ABSOLUTE-5m      01/01/2017 0:30       0.0100    
+ABSOLUTE-5m      01/01/2017 0:35       0.0100    
+ABSOLUTE-5m      01/01/2017 0:40       0.0100    
+ABSOLUTE-5m      01/01/2017 0:45       0.0100    
+ABSOLUTE-5m      01/01/2017 0:50       0.0100    
+ABSOLUTE-5m      01/01/2017 0:55       0.0100    
 ;
-INFLOW-5m                       0:00       0.0100    
-INFLOW-5m                       0:05       0.0100    
-INFLOW-5m                       0:10       0.0100    
-INFLOW-5m                       0:15       0.0100    
-INFLOW-5m                       0:20       0.0100    
-INFLOW-5m                       0:25       0.0100    
-INFLOW-5m                       0:30       0.0100    
-INFLOW-5m                       0:35       0.0100    
-INFLOW-5m                       0:40       0.0100    
-INFLOW-5m                       0:45       0.0100    
-INFLOW-5m                       0:50       0.0100    
-INFLOW-5m                       0:55       0.0100    
+INFLOW-5m                   0:00       0.0100    
+INFLOW-5m                   0:05       0.0100    
+INFLOW-5m                   0:10       0.0100    
+INFLOW-5m                   0:15       0.0100    
+INFLOW-5m                   0:20       0.0100    
+INFLOW-5m                   0:25       0.0100    
+INFLOW-5m                   0:30       0.0100    
+INFLOW-5m                   0:35       0.0100    
+INFLOW-5m                   0:40       0.0100    
+INFLOW-5m                   0:45       0.0100    
+INFLOW-5m                   0:50       0.0100    
+INFLOW-5m                   0:55       0.0100    
 ;
 T5-5m                       0:00       0.7800    
 T5-5m                       0:05       1.1500    
@@ -608,8 +651,6 @@ T10-5m-e2                   0:40       2.8300
 T10-5m-e2                   0:45       2.2800    
 T10-5m-e2                   0:50       1.9200    
 T10-5m-e2                   0:55       1.6600    
-;
-;test
 
 [PATTERNS]
 ;;Name           Type       Multipliers
@@ -625,7 +666,7 @@ DAY              DAILY      1.0   1.0   1.0   1.0   1.0   1.0   1.0
 HOUR             HOURLY     0.2   0.3   0.5   0.5   0.7   0.9  
 HOUR                        1.2   1.1   1.3   1.0   1.1   1.2  
 HOUR                        1.0   0.8   0.9   0.8   1.0   1.1  
-HOUR                        1.2   1.3   1.1   1.1   0.8   0.4
+HOUR                        1.2   1.3   1.1   1.1   0.8   0.4  
 ;
 ;TIME PATTERN FOR WEEKEND
 WEEKEND          WEEKEND    1.0   1.0   1.0   1.0   1.0   1.0  
@@ -702,7 +743,6 @@ Units      None
 18880            418651.186         4577975.481       
 18881            418658.498         4577934.531       
 18882            418542.473         4578014.724       
-18883            418532.967         4578069.812       
 18884            418579.523         4578082.487       
 18885            418631.442         4578092.237       
 18886            418641.436         4578033.737       
@@ -718,6 +758,7 @@ Units      None
 100016           418479.883         4577550.548       
 18888            418670.686         4578106.618       
 1                418440.746         4578045.896       
+18883            418532.967         4578069.812       
 18828            418716.023         4577601.812       
 
 [VERTICES]
@@ -733,10 +774,4 @@ Units      None
 18969            418716.460         4577600.003       
 20576            418715.716         4577603.551       
 20576            418715.716         4577603.551       
-
-
-[SYMBOLS]
-;;Gage           X-Coord            Y-Coord           
-;;-------------- ------------------ ------------------
-RG-01            419104.158         4576995.253       
 
