@@ -8,6 +8,7 @@ or (at your option) any later version.
 import os
 import sys
 import json
+from pathlib import Path
 
 from functools import partial
 from sip import isdeleted
@@ -102,6 +103,9 @@ class GwExecuteModelButton(GwAction):
         # INP file
         if do_generate_inp:
             self._generate_inp(folder_path)
+            ini_path = Path(folder_path) / "Iber_SWMM.ini"
+            ini_content = "[Results]\nSaved=1\nCurrent=1"
+            self._write_to_file(ini_path, ini_content)
 
 
     def _copy_mesh_files(self, mesh_id, folder_path):
