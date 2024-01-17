@@ -252,9 +252,7 @@ def inp2dict(readfile, feedback):
         all_curves["XVal"] = [float(x) for x in all_curves["XVal"]]
         all_curves["YVal"] = [float(x) for x in all_curves["YVal"]]
         all_curves = {
-            "data": v[["Name", "XVal", "YVal"]]
-            for k, v in all_curves.groupby("CurveType")
-            # k: v[["Name", "XVal", "YVal"]] for k, v in all_curves.groupby("CurveType")
+            k: v[["Name", "XVal", "YVal"]] for k, v in all_curves.groupby("CurveType")
         }
     else:
         all_curves = dict()
