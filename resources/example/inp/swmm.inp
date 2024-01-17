@@ -45,11 +45,6 @@ LAT_FLOW_TOL         5
 MINIMUM_STEP         0.5
 THREADS              1
 
-[EVAPORATION]
-;;Data Source    Parameters
-;;-------------- ----------------
-CONSTANT         0.0
-DRY_ONLY         NO
 
 [JUNCTIONS]
 ;;Name           Elevation  MaxDepth   InitDepth  SurDepth   Aponded   
