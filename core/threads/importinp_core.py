@@ -1,3 +1,5 @@
+import pandas as pd
+
 try:
     import geopandas as gpd
 except ImportError:
@@ -44,7 +46,6 @@ _tables = (
             "Seepage": "seepage",
         },
     },
-    
     {
         "table_name": "inp_outlet",
         "section": "OUTLETS",
@@ -188,7 +189,7 @@ _tables = (
             "Annotation": "annotation",
         },
     },
-       {
+    {
         "table_name": "cat_curve_value",
         "section": "CURVES",
         "mapper": {
@@ -218,7 +219,7 @@ _tables = (
             "Time_Stamp": "pattern_type",
             "Factor": "value",
         },
-    },   
+    },
     {
         "table_name": "inp_dwf",
         "section": "DWF",
@@ -338,7 +339,14 @@ def get_dataframes(inp_dict, epsg):
             continue
 
         if section == "CURVES":
-            print(f"{inp_dict[section]=}")
+            df = pd.DataFrame(columns=["curve_type", "idval", "xcoord", "ycoord"])
+            for curve_type, curve_df in inp_dict[section].items():
+                ct = curve_type.upper()
+                curve_df.insert(0, "curve_type", ct)
+                curve_df.columns = df.columns
+                df = pd.concat([df, curve_df], ignore_index=True)
+            dataframes.append({"table": "CURVES", "df": df})
+            continue
 
         data = inp_dict[section]["data"]
         if type(data) in (dict, list):
