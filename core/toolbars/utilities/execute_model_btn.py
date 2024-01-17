@@ -117,8 +117,32 @@ class GwExecuteModelButton(GwAction):
             if roof_content:
                 self._write_to_file(f'{folder_path}{os.sep}Iber_SWMM_roof.dat', roof_content)
 
-            if losses_content:
-                self._write_to_file(f'{folder_path}{os.sep}Iber_Losses.dat', losses_content)
+            if not losses_content:
+                losses_content = '0'
+            else:
+                # Losses method
+                sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_method'"
+                row = tools_db.get_row(sql, is_thread=True)
+                losses_method = row[0] if row and row[0] is not None else 2
+                # cn_multiplier
+                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_cn_multiplier'"
+                row = tools_db.get_row(sql, is_thread=True)
+                cn_multiplier = row[0] if row else 0
+                # ia_coeff
+                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_ia_coefficient'"
+                row = tools_db.get_row(sql, is_thread=True)
+                ia_coeff = row[0] if row else 0
+                # start_time
+                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_starttime'"
+                row = tools_db.get_row(sql, is_thread=True)
+                start_time = row[0] if row else 0
+                # Replace first line
+                new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
+                losses_content_lines = losses_content.split('\n')
+                losses_content_lines[0] = new_first_line
+                losses_content = '\n'.join(losses_content_lines)
+
+            self._write_to_file(f'{folder_path}{os.sep}Iber_Losses.dat', losses_content)
 
 
     def _write_to_file(self, file_path, content):
