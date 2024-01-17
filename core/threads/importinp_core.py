@@ -345,7 +345,7 @@ def get_dataframes(inp_dict, epsg):
                 curve_df.insert(0, "curve_type", ct)
                 curve_df.columns = df.columns
                 df = pd.concat([df, curve_df], ignore_index=True)
-            dataframes.append({"table": "CURVES", "df": df})
+            dataframes.append({"table": "cat_curve", "df": df})
             continue
 
         data = inp_dict[section]["data"]
