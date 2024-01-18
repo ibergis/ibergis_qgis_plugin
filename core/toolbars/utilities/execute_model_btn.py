@@ -6,6 +6,7 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
+import shutil
 import sys
 import json
 from pathlib import Path
@@ -99,13 +100,11 @@ class GwExecuteModelButton(GwAction):
         if do_export:
             mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
             self._copy_mesh_files(mesh_id, folder_path)
+            self._copy_static_files(folder_path)
 
         # INP file
         if do_generate_inp:
             self._generate_inp(folder_path)
-            ini_path = Path(folder_path) / "Iber_SWMM.ini"
-            ini_content = "[Results]\nSaved=1\nCurrent=1"
-            self._write_to_file(ini_path, ini_content)
 
 
     def _copy_mesh_files(self, mesh_id, folder_path):
@@ -153,6 +152,11 @@ class GwExecuteModelButton(GwAction):
         with open(file_path, 'w') as file:
             file.write(content)
 
+    def _copy_static_files(self, folder_path: str):
+        folder = Path(global_vars.plugin_dir) / "resources" / "static"
+        file_names = ["Iber_Problemdata.dat", "Iber_SWMM.ini"]
+        for file_name in file_names:
+            shutil.copy(folder / file_name, folder_path)
 
     def _generate_inp(self, folder_path):
         # INP file
