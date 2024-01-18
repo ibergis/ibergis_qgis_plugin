@@ -193,11 +193,10 @@ CREATE TABLE inlet (
 );
 
 
-CREATE TABLE hyetograf (
-    id integer primary key,
+CREATE TABLE hyetograph (
+    fid integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
     timeseries text CHECK (typeof(timeseries)='text' OR timeseries=NULL),
-    timeseries_type text check (typeof(timeseries_type) in ('text', null) and timeseries_type in ('Intensity', 'Volume')),
 	geom geometry
     --FOREIGN KEY (timeseries) references cat_timeseries (idval) on update cascade on delete restrict
 );
