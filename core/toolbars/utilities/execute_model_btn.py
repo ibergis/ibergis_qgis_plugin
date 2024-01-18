@@ -153,7 +153,7 @@ class GwExecuteModelButton(GwAction):
             file.write(content)
 
     def _copy_static_files(self, folder_path: str):
-        folder = Path(global_vars.plugin_dir) / "resources" / "static"
+        folder = Path(global_vars.plugin_dir) / "resources" / "drain"
         file_names = ["Iber_Problemdata.dat", "Iber_SWMM.ini"]
         for file_name in file_names:
             shutil.copy(folder / file_name, folder_path)
