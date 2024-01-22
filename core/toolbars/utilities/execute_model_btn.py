@@ -164,6 +164,15 @@ class GwExecuteModelButton(GwAction):
 
     def _create_hyetograph_file(self, folder_path):
         file_name = Path(folder_path) / "Iber_Hyetograph.dat"
+
+        sql = "SELECT value FROM config_param_user WHERE parameter = 'options_rain_class'"
+        row = tools_db.get_row(sql)
+        rain_class = int(row[0]) if row else 0
+
+        if rain_class != 1:
+            file_name.write_text("Hyetographs\n0\nEnd\n")
+            return
+        
         gdf = gpd.read_file(global_vars.gpkg_dao_data.db_filepath, layer="hyetograph")
         gdf['x'] = gdf.geometry.x
         gdf['y'] = gdf.geometry.y
