@@ -110,7 +110,7 @@ class GwMeshManagerButton(GwAction):
     def _create_mesh(self):
         self.create_mesh = GwCreateMeshButton('', None, None, None, None)
         self.create_mesh.clicked_event()
-        # TODO: Update mesh list after mesh creation
+        self.create_mesh.dlg_mesh.finished.connect(self._reload_manager_table)
 
     def _view_mesh(self):
         # Variables

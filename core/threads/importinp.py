@@ -50,16 +50,31 @@ class GwImportInpTask(GwTask):
             if self.isCanceled():
                 return False
             self.feedback.setProgressText(f"Saving table {item['table']}")
-            invalid_columns = set(item["df"].columns).difference(
-                columns[item["table"]], {"geometry"}
-            )
-            if invalid_columns:
-                # FIXME: Import of cat_curve
-                raise ValueError(f"Invalid columns for {item['table']}: {invalid_columns}")
-            missing_columns = columns[item["table"]].difference(item["df"].columns)
-            for column in missing_columns:
-                item["df"][column] = None
-            item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
+
+            if item["table"] == "cat_curve":
+                curves = item["df"][["idval", "curve_type"]].drop_duplicates()
+                curve_values = item["df"][["idval", "xcoord", "ycoord"]].rename(
+                    columns={"idval": "curve"}
+                )
+                connection = self.dao.conn
+                curves.to_sql("cat_curve", connection, if_exists="append", index=False)
+                curve_values.to_sql(
+                    "cat_curve_value", connection, if_exists="append", index=False
+                )
+            else:
+                invalid_columns = set(item["df"].columns).difference(
+                    columns[item["table"]], {"geometry"}
+                )
+                if invalid_columns:
+                    raise ValueError(
+                        f"Invalid columns for {item['table']}: {invalid_columns}"
+                    )
+                missing_columns = columns[item["table"]].difference(item["df"].columns)
+                for column in missing_columns:
+                    item["df"][column] = None
+                item["df"].to_file(
+                    gpkg_file, driver="GPKG", layer=item["table"], mode="a"
+                )
 
         # for i, item in enumerate(data.values()):
 

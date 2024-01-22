@@ -6,6 +6,9 @@ This version of Giswater is provided by Giswater Association
 */
 
 
+
+PRAGMA foreign_keys = OFF;
+
 -- ---------
 -- SELECTORS
 -- ---------
@@ -406,3 +409,5 @@ INSERT INTO inlet (fid, top_elev, geom) VALUES(100, 29.45, ST_GeomFromText('POIN
 INSERT INTO inlet (fid, top_elev, geom) VALUES(101, 43.71, ST_GeomFromText('POINT(418433.725819 4577764.492275)', <SRID_VALUE>));
 INSERT INTO inlet (fid, top_elev, geom) VALUES(102, 40.02, ST_GeomFromText('POINT(418586.092223 4577689.973094)', <SRID_VALUE>));
 INSERT INTO inlet (fid, top_elev, geom) VALUES(103, 40.1, ST_GeomFromText('POINT(418584.066459 4577703.285258)', <SRID_VALUE>));
+
+PRAGMA foreign_keys = ON;

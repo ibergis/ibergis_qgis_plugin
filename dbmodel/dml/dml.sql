@@ -44,7 +44,8 @@ INSERT INTO tables_geom (table_name, isgeom) values
 ('vi_outfalls', 'POINT'),
 ('vi_dividers', 'POINT'),
 ('vi_storage', 'POINT'),
-('vi_junctions', 'POINT');
+('vi_junctions', 'POINT'),
+('hyetograph', 'POINT');
 
 
 

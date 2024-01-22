@@ -152,7 +152,7 @@ class GwCreateMeshTask(GwTask):
             if self.losses_layer == "ground_layer":
                 sql = "SELECT fid FROM ground WHERE scs_cn IS NULL"
                 rows = self.dao.get_rows(sql)
-                if rows is not None:
+                if len(rows):
                     self.message = "Losses information ('scs_cn' column) missing in following objects in Ground layer: "
                     self.message += ", ".join(str(row["fid"]) for row in rows)
                     self.message += ". Review your data and try again."
@@ -298,6 +298,31 @@ class GwCreateMeshTask(GwTask):
                     if polygon["category"] == "ground":
                         polygon["roughness"] = 0
             else:
+                sql = """
+                    SELECT parameter, value 
+                    FROM config_param_user 
+                    WHERE parameter IN [
+                        'options_losses_method',
+                        'options_losses_scs_cn_multiplier',
+                        'options_losses_scs_ia_coefficient',
+                        'options_losses_starttime'
+                    ]
+                """
+                rows = self.dao.get_rows(sql)
+                params = {}
+                if rows is not None:
+                    params = {row["parameter"]: row["value"] for row in rows}
+
+                cn_mult = params.get("options_losses_scs_cn_multiplier") or -9999
+                ia_coef = params.get("options_losses_scs_ia_coefficient") or -9999
+                new_var = params.get("options_losses_starttime") or -9999
+                self.mesh["losses"] = {
+                    "method": 2,
+                    "cn_multiplier": cn_mult,
+                    "ia_coefficient": ia_coef,
+                    "start_time": new_var,
+                }
+
                 self.feedback.setProgressText("Getting ground roughness...")
                 self.feedback.setProgress(50)
                 ggr_feedback = QgsProcessingFeedback()
@@ -340,7 +365,7 @@ class GwCreateMeshTask(GwTask):
 
             # Get ground losses
             if self.losses_layer is None:
-                self.mesh["losses"] = {"type": "OFF"}
+                self.mesh["losses"] = {"method": 0}
             else:
                 self.feedback.setProgressText("Getting ground losses...")
                 self.feedback.setProgress(50)
@@ -369,14 +394,6 @@ class GwCreateMeshTask(GwTask):
                 for polygon_id, losses in losses_dict.items():
                     polygon = self.mesh["polygons"][polygon_id]
                     polygon["scs_cn"] = losses
-
-                # FIXME: user values self.mesh["losses"]
-                self.mesh["losses"] = {
-                    "type": "SCS",
-                    "cn_multiplier": 1,
-                    "ia_coefficient": 0.2,
-                    "start_time": 0,
-                }
 
             # Delete old mesh
             self.feedback.setProgressText("Saving mesh to GPKG file...")
