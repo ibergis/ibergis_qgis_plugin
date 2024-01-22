@@ -21,6 +21,8 @@ from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGr
     QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout
 from qgis.core import QgsApplication
 
+import geopandas as gpd
+
 from ...threads.epa_file_manager import GwEpaFileManager
 from ...shared.options import GwOptions
 from ...utils import tools_gw
@@ -101,6 +103,8 @@ class GwExecuteModelButton(GwAction):
             mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
             self._copy_mesh_files(mesh_id, folder_path)
             self._copy_static_files(folder_path)
+            self._create_hyetograph_file(folder_path)
+            return
 
         # INP file
         if do_generate_inp:
@@ -157,6 +161,35 @@ class GwExecuteModelButton(GwAction):
         file_names = ["Iber_Problemdata.dat", "Iber_SWMM.ini"]
         for file_name in file_names:
             shutil.copy(folder / file_name, folder_path)
+
+    def _create_hyetograph_file(self, folder_path):
+        file_name = Path(folder_path) / "Iber_Hyetograph.dat"
+        gdf = gpd.read_file(global_vars.gpkg_dao_data.db_filepath, layer="hyetograph")
+        gdf['x'] = gdf.geometry.x
+        gdf['y'] = gdf.geometry.y
+
+        with open(file_name, "w") as file:
+            file.write("Hyetographs\n")
+            file.write(f"{len(gdf)}\n")
+
+            for i, ht_row in enumerate(gdf.itertuples(), start=1):
+                file.write(f"{i}\n")
+                file.write(f"{ht_row.x} {ht_row.y}\n")
+                
+                sql = f"""
+                    SELECT time, value 
+                    FROM cat_timeseries_value 
+                    WHERE timeseries ='{ht_row.timeseries}'
+                """
+                ts_rows = tools_db.get_rows(sql)
+                if ts_rows:
+                    file.write(f"{len(ts_rows)}\n")
+                    for ts_row in ts_rows:
+                        hours, minutes = map(int, ts_row["time"].split(":"))
+                        seconds = hours * 3600 + minutes * 60
+                        file.write(f"{seconds} {ts_row['value']}\n")
+
+            file.write("End\n")
 
     def _generate_inp(self, folder_path):
         # INP file
