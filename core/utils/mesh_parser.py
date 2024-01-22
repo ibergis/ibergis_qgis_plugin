@@ -49,6 +49,7 @@ def dump(mesh, mesh_fp, roof_fp, losses_fp):
                 mesh_fp.write(
                     f"{pol_id} {side} {time} 0 0 {elevation} -34 1 1 0 {value['outlet']} -Salida Nivel Dado-\n"
                 )
+    mesh_fp.write("123456789\n")
 
     if len(mesh["roofs"]):
         roof_fp.write("Number of roofs\n")
