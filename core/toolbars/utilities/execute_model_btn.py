@@ -104,6 +104,7 @@ class GwExecuteModelButton(GwAction):
             self._copy_mesh_files(mesh_id, folder_path)
             self._copy_static_files(folder_path)
             self._create_hyetograph_file(folder_path)
+            self._create_rain_file(folder_path)
             return
 
         # INP file
@@ -199,6 +200,17 @@ class GwExecuteModelButton(GwAction):
                         file.write(f"{seconds} {ts_row['value']}\n")
 
             file.write("End\n")
+
+    def _create_rain_file(self, folder_path):
+        file_name = Path(folder_path) / "Iber_Rain.dat"
+
+        sql = "SELECT value FROM config_param_user WHERE parameter = 'options_rain_class'"
+        row = tools_db.get_row(sql)
+        rain_class = int(row[0]) if row else 0
+
+        if rain_class != 2:
+            file_name.write_text(f"{rain_class} 0\n")
+            return
 
     def _generate_inp(self, folder_path):
         # INP file
