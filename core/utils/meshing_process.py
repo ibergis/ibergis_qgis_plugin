@@ -145,6 +145,8 @@ try:
 
         data: Dict[str, list] = {}
         for field in fields:
+            field_index = layer.fields().indexFromName(field)
+            assert field_index != -1, f"Layer `{layer.name()}` has no field `{field}`"
             data[field] = []
         
         for feature in layer.getFeatures():
@@ -155,8 +157,8 @@ try:
                 print(e, wkt)
 
             for field in fields:
-                assert feature.fieldNameIndex(field) != -1, f"Layer `{layer.name()}` has features without field `{field}`"
-                data[field].append(feature[field])
+                val = feature[field]
+                data[field].append(val if val else None)
 
             if feedback:
                 if feedback.isCanceled():
@@ -339,6 +341,7 @@ try:
         for i, feature in data.iterrows():
             element_types, element_tags, _ = gmsh.model.mesh.getElements(2, feature["__polygon_id"])
             _TRIANGLE = 2
+            # List of triangles in the polygon
             tri = element_tags[np.where(element_types == _TRIANGLE)[0][0]]
             for field in extra_fields:
                 extra_data[field][start : start + len(tri)] = feature[field]

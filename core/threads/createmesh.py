@@ -27,6 +27,7 @@ from ... import global_vars
 from ...lib import tools_qgis, tools_qt
 
 import time
+import numpy as np
 
 class GwCreateMeshTask(GwTask):
     def __init__(
@@ -207,7 +208,7 @@ class GwCreateMeshTask(GwTask):
             gt_feedback.progressChanged.connect(gt_progress)
             triangles, vertices, extra_data = triangulate_custom(
                 layers["ground"],
-                ["custom_roughness"],
+                ["custom_roughness", "landuse"],
                 point_anchor_layer=layers["mesh_anchor_points"],
                 enable_transition=self.enable_transition,
                 transition_slope=self.transition_slope,
@@ -336,7 +337,10 @@ class GwCreateMeshTask(GwTask):
                     index = 0
                     for polygon in self.mesh["polygons"].values():
                         if polygon["category"] == "ground":
-                            polygon["roughness"] = float(extra_data["custom_roughness"][index])
+                            roughness = extra_data["custom_roughness"][index]
+                            if np.isnan(roughness):
+                                roughness = landuses[int(extra_data["landuse"][index])]
+                            polygon["roughness"] = float(roughness)
                             index += 1
                 elif self.roughness_layer == "ground_layer" and False:
                     roughness_dict = core.get_ground_roughness(
@@ -432,6 +436,8 @@ class GwCreateMeshTask(GwTask):
             provider.addAttributes(fields)
             temp_layer.updateFields()
 
+            start = time.time()
+            print("Creating temp layer... ", end="")
             for i, tri in self.mesh["polygons"].items():
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
@@ -450,6 +456,8 @@ class GwCreateMeshTask(GwTask):
                     [i, tri["category"], *tri["vertice_ids"], tri["roughness"]]
                 )
                 provider.addFeature(feature)
+            
+            print(f"Done! {time.time() - start}s")
 
             temp_layer.updateExtents()
 
