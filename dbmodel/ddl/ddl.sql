@@ -164,12 +164,14 @@ CREATE TABLE roof (
 
 CREATE TABLE mesh_anchor_points (
     fid integer PRIMARY KEY,
-    geom geometry
+    geom geometry,
+    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0
 );
 
 CREATE TABLE mesh_anchor_lines (
     fid integer PRIMARY KEY,
-    geom geometry
+    geom geometry,
+    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0
 );
 
 CREATE TABLE inlet (
