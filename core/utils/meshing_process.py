@@ -146,7 +146,8 @@ try:
         data: Dict[str, list] = {}
         for field in fields:
             field_index = layer.fields().indexFromName(field)
-            assert field_index != -1, f"Layer `{layer.name()}` has no field `{field}`"
+            if field_index == -1:
+                raise ValueError(f"Layer `{layer.name()}` has no field `{field}`")
             data[field] = []
         
         for feature in layer.getFeatures():
