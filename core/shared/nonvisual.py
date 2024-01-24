@@ -275,6 +275,9 @@ class GwNonVisual:
         tbl_curve_value = self.dialog.tbl_curve_value
         cmb_curve_type = self.dialog.cmb_curve_type
 
+        paste_shortcut = QShortcut(QKeySequence.Paste, tbl_curve_value)
+        paste_shortcut.activated.connect(partial(self._paste_curve_values, tbl_curve_value))
+
         # Create & fill cmb_curve_type
         curve_type_headers, curve_type_list = self._create_curve_type_lists()
         if curve_type_list:
@@ -307,6 +310,23 @@ class GwNonVisual:
 
         # Open dialog
         tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_curve')
+
+
+    def _paste_curve_values(self, tbl_curve_value):
+        selected = tbl_curve_value.selectedRanges()
+        if not selected:
+            return
+
+        text = QApplication.clipboard().text()
+        rows = text.split("\n")
+
+        for r, row in enumerate(rows):
+            columns = row.split("\t")
+            for c, value in enumerate(columns):
+                item = QTableWidgetItem(value)
+                row_pos = selected[0].topRow() + r
+                col_pos = selected[0].leftColumn() + c
+                tbl_curve_value.setItem(row_pos, col_pos, item)
 
 
     def _create_curve_type_lists(self):
@@ -733,6 +753,10 @@ class GwNonVisual:
         # Create plot widget
         plot_widget = self._create_plot_widget(self.dialog)
 
+        for table in [self.dialog.tbl_monthly, self.dialog.tbl_daily, self.dialog.tbl_hourly, self.dialog.tbl_weekend]:
+            paste_shortcut = QShortcut(QKeySequence.Paste, table)
+            paste_shortcut.activated.connect(partial(self._paste_patterns_values, table))
+
         sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
@@ -753,6 +777,21 @@ class GwNonVisual:
         # Connect OK button to insert all inp_pattern and inp_pattern_value data to database
         is_new = (pattern is None) or duplicate
         self.dialog.btn_accept.clicked.connect(partial(self._accept_pattern_ud, self.dialog, is_new))
+
+
+    def _paste_patterns_values(self, tbl_pattern_value):
+        selected = tbl_pattern_value.selectedRanges()
+        if not selected:
+            return
+
+        text = QApplication.clipboard().text()
+        rows = text.split("\n")
+        columns = rows[0].split("\t")
+        for c, value in enumerate(columns):
+            item = QTableWidgetItem(value)
+            row_pos = selected[0].topRow()
+            col_pos = selected[0].leftColumn() + c
+            tbl_pattern_value.setItem(row_pos, col_pos, item)
 
 
     def _scale_to_fit_pattern_tableviews(self, dialog):
