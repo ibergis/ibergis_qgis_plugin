@@ -53,17 +53,17 @@ class GwEpaFileManager(GwTask):
 
     fake_progress = pyqtSignal()
 
-    def __init__(self, description, go2epa, timer=None):
+    def __init__(self, description, params, timer=None):
 
         super().__init__(description)
-        self.go2epa = go2epa
+        self.params = params
         self.json_result = None
         self.rpt_result = None
         self.fid = 140
         self.function_name = None
         self.timer = timer
         self.initialize_variables()
-        self.set_variables_from_go2epa()
+        self.set_variables_from_params()
 
         # If enabled it will: add the output layers to your project, save the .xlsx files and the generated .inp file
         self.debug_mode = False
@@ -83,14 +83,12 @@ class GwEpaFileManager(GwTask):
         self.dao = global_vars.gpkg_dao_data.clone()
 
 
-    def set_variables_from_go2epa(self):
+    def set_variables_from_params(self):
         """ Set variables from object Go2Epa """
 
-        try:
-            self.dlg_go2epa = self.go2epa.dlg_go2epa
-        except:
-            self.dlg_go2epa = self.go2epa.execute_dlg
-        self.export_file_path = self.go2epa.export_file_path
+        self.dlg_go2epa = self.params.get("dialog")
+        self.export_file_path = self.params.get("export_file_path")
+        self.is_subtask = self.params.get("is_subtask", False)
 
 
     def run(self):
@@ -110,8 +108,9 @@ class GwEpaFileManager(GwTask):
 
         super().finished(result)
 
-        self.dlg_go2epa.btn_cancel.setEnabled(False)
-        self.dlg_go2epa.btn_accept.setEnabled(True)
+        if not self.is_subtask:
+            self.dlg_go2epa.btn_cancel.setEnabled(False)
+            self.dlg_go2epa.btn_accept.setEnabled(True)
 
         # self._close_file()
         if self.timer:
@@ -122,9 +121,10 @@ class GwEpaFileManager(GwTask):
         print("OUTPUT:")
         print(self.output)
 
-        # If Database exception, show dialog after task has finished
-        if global_vars.session_vars['last_error']:
-            tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
+        if not self.is_subtask:
+            # If Database exception, show dialog after task has finished
+            if global_vars.session_vars['last_error']:
+                tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
 
 
     def cancel(self):

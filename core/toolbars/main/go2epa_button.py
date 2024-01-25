@@ -202,7 +202,8 @@ class GwGo2IberButton(GwAction):
 
         # Set background task 'Go2Epa'
         description = f"Go2Epa"
-        self.go2epa_task = GwEpaFileManager(description, self, timer=self.timer)
+        params = {"dialog": self.dlg_go2epa, "export_file_path": self.export_file_path}
+        self.go2epa_task = GwEpaFileManager(description, params, timer=self.timer)
         QgsApplication.taskManager().addTask(self.go2epa_task)
         QgsApplication.taskManager().triggerTask(self.go2epa_task)
 
