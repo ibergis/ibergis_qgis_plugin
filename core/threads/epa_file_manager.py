@@ -52,6 +52,7 @@ class GwEpaFileManager(GwTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()
+    progress_changed = pyqtSignal(int, str)
 
     def __init__(self, description, params, timer=None):
 
@@ -180,12 +181,8 @@ class GwEpaFileManager(GwTask):
 
     def _progress_changed(self, progress):
 
-        text = self.feedback.textLog()
-        txt_infolog = self.dlg_go2epa.findChild(QTextEdit, 'txt_infolog')
-        # cur_text = tools_qt.get_text(self.dlg_go2epa, txt_infolog, return_string_null=False)
-        text = f"{text}"
-        txt_infolog.setText(text)
-        txt_infolog.show()
+        text = f"{self.feedback.textLog()}"
+        self.progress_changed.emit(progress, text)
 
 
     def _manage_params(self):

@@ -6,20 +6,14 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-import shutil
-import subprocess
-import sys
-import json
-from pathlib import Path
 
 from functools import partial
 from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.PyQt.QtCore import QStringListModel, Qt, QTimer
-from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGroupBox, QSpacerItem, QSizePolicy, \
-    QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout
+from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.PyQt.QtWidgets import QTextEdit, QLabel
 from qgis.core import QgsApplication
 
 from ...threads.execute_model import GwExecuteModel
@@ -40,6 +34,8 @@ class GwExecuteModelButton(GwAction):
         self.project_type = global_vars.project_type
         self.epa_options_list = []
         self.export_path = None
+        self.cur_process = None
+        self.cur_text = None
 
 
     def clicked_event(self):
@@ -53,6 +49,9 @@ class GwExecuteModelButton(GwAction):
 
         # Populate combobox
         self._populate_mesh_cmb()
+
+        # Fill widget values
+        self._load_user_values()
 
         # Signals
         self.execute_dlg.btn_options.clicked.connect(self._go2epa_options)
@@ -92,6 +91,12 @@ class GwExecuteModelButton(GwAction):
         # TODO: ask for import
         do_import = True
 
+        self._save_user_values()
+
+        # Show tab log
+        tools_gw.set_tabs_enabled(self.execute_dlg)
+        self.execute_dlg.mainTab.setCurrentIndex(1)
+
         # Create timer
         self.t0 = time()
         self.timer = QTimer()
@@ -102,11 +107,66 @@ class GwExecuteModelButton(GwAction):
         description = f"Execute model"
         params = {"dialog": self.execute_dlg, "folder_path": self.export_path,
                   "do_generate_inp": True, "do_export": True, "do_run": True, "do_import": do_import}
-        self.go2epa_task = GwExecuteModel(description, params, timer=self.timer)
-        QgsApplication.taskManager().addTask(self.go2epa_task)
-        QgsApplication.taskManager().triggerTask(self.go2epa_task)
-        # self.execute_model(folder_path=self.export_path, do_generate_inp=True, do_export=True, do_run=True,
-        #                    do_import=do_import)
+        self.execute_model_task = GwExecuteModel(description, params, timer=self.timer)
+        self.execute_model_task.progress_changed.connect(self._progress_changed)
+        QgsApplication.taskManager().addTask(self.execute_model_task)
+        QgsApplication.taskManager().triggerTask(self.execute_model_task)
+
+
+    def _progress_changed(self, process, progress, text, new_line):
+        # Progress bar
+        self.execute_dlg.progress_bar.setValue(progress)
+
+        # TextEdit log
+        txt_infolog = self.execute_dlg.findChild(QTextEdit, 'txt_infolog')
+        cur_text = tools_qt.get_text(self.execute_dlg, txt_infolog, return_string_null=False)
+        if process and process not in (self.cur_process, "Generate INP algorithm"):
+            cur_text = f"{cur_text}\n" \
+                       f"--------------------\n" \
+                       f"{process}\n" \
+                       f"--------------------\n\n"
+            self.cur_process = process
+            self.cur_text = None
+
+        # Generate INP log is cumulative, so it's saved until the process ends
+        if process == "Generate INP algorithm" and not self.cur_text:
+            self.cur_text = cur_text
+
+        if self.cur_text:
+            cur_text = self.cur_text
+
+        end_line = '\n' if new_line else ''
+        txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
+
+    def _load_user_values(self):
+        """ Load QGIS settings related with file_manager """
+
+        # Mesh combo
+        value = tools_gw.get_config_parser('btn_execute_model', 'cmb_mesh', "user", "session")
+        if value:
+            tools_qt.set_combo_value(self.execute_dlg.cmb_mesh, value, 0)
+
+        # Export file path
+        value = tools_gw.get_config_parser('btn_execute_model', 'txt_folder_path', "user", "session")
+        if value:
+            tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', value)
+
+
+    def _save_user_values(self):
+        """ Save QGIS settings related with file_manager """
+
+        # Mesh combo
+        value = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
+        tools_gw.set_config_parser('btn_execute_model', 'cmb_mesh', value, "user", "session")
+
+        # Export file path
+        value = f"{tools_qt.get_text(self.execute_dlg, 'txt_folder_path', return_string_null=False)}"
+        tools_gw.set_config_parser('btn_execute_model', 'txt_folder_path', f"{value}")
 
 
     def _calculate_elapsed_time(self, dialog):

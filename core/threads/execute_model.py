@@ -25,10 +25,27 @@ from .task import GwTask
 from .epa_file_manager import GwEpaFileManager
 
 
+def lerp_progress(subtask_progress: int, global_min: int, global_max: int) -> int:
+    global_progress = global_min + ((subtask_progress - 0) / (100 - 0)) * (global_max - global_min)
+
+    return int(global_progress)
+
+
 class GwExecuteModel(GwTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()
+    progress_changed = pyqtSignal(str, int, str, bool)  # (Process, Progress, Text, '\n')
+
+    # Progress percentages
+    PROGRESS_INIT = 0
+    PROGRESS_MESH_FILES = 15
+    PROGRESS_STATIC_FILES = 20
+    PROGRESS_HYETOGRAPHS = 35
+    PROGRESS_RAIN = 45
+    PROGRESS_INP = 70
+    PROGRESS_IBER = 90
+    PROGRESS_END = 100
 
     def __init__(self, description: str, params: dict, timer=None):
         """ Constructor for thread GwExecuteModel
@@ -46,6 +63,7 @@ class GwExecuteModel(GwTask):
         self.timer = timer
         self.dao = None
         self.init_params()
+        self.generate_inp_infolog = None
 
 
     def init_params(self):
@@ -114,26 +132,41 @@ class GwExecuteModel(GwTask):
         try:
             # Mesh files
             if self.do_export:
-                print("exporting files...")
+                # Export mesh
+                self.progress_changed.emit("Export files", self.PROGRESS_INIT, "Exporting mesh files...", False)
                 mesh_id = tools_qt.get_combo_value(self.dialog, 'cmb_mesh')
-                print(f"{mesh_id=}")
                 self._copy_mesh_files(mesh_id)
+                self.progress_changed.emit("Export files", self.PROGRESS_MESH_FILES, "done!", True)
+
+                # Copy static files
+                self.progress_changed.emit("Export files", self.PROGRESS_MESH_FILES, "Copying static files...", False)
                 self._copy_static_files()
+                self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "done!", True)
+
+                # Create hyetograph file
+                self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "Creating hyetograph files...", False)
                 self._create_hyetograph_file()
+                self.progress_changed.emit("Export files", self.PROGRESS_HYETOGRAPHS, "done!", True)
+
+                # Create rain file
+                self.progress_changed.emit("Export files", self.PROGRESS_HYETOGRAPHS, "Creating rain files...", False)
                 self._create_rain_file()
+                self.progress_changed.emit("Export files", self.PROGRESS_RAIN, "done!", True)
                 # return
-                print("finished!")
 
             # INP file
             if self.do_generate_inp:
-                print("generating INP...")
+                self.progress_changed.emit("Generate INP", self.PROGRESS_RAIN, "Generating INP...", False)
                 self._generate_inp()
-                print("finished!")
+                self.progress_changed.emit("Generate INP", self.PROGRESS_INP, "done!", True)
+                self.progress_changed.emit("Generate INP", self.PROGRESS_INP, self.generate_inp_infolog, True)
 
             if self.do_run:
-                print("running IberPlus.exe...")
+                self.progress_changed.emit("Run Iber", self.PROGRESS_INP, "Running Iber software...", False)
                 self._run_iber()
-                print("finished!")
+                self.progress_changed.emit("Run Iber", self.PROGRESS_IBER, "done!", True)
+
+            self.progress_changed.emit("", self.PROGRESS_END, "", True)
         except Exception as e:
             print(f"Exception in ExecuteModel thread: {e}")
             return False
@@ -144,15 +177,17 @@ class GwExecuteModel(GwTask):
 
         sql = f"SELECT iber2d, roof, losses FROM cat_file WHERE id = '{mesh_id}'"
         row = self.dao.get_row(sql)
-        print(f"{row=}")
+        self.progress_changed.emit("Export files", lerp_progress(10, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
         if row:
             iber2d_content, roof_content, losses_content = row
 
             # Write content to files
             self._write_to_file(f'{self.folder_path}{os.sep}Iber2D.dat', iber2d_content)
+            self.progress_changed.emit("Export files", lerp_progress(30, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             if roof_content:
                 self._write_to_file(f'{self.folder_path}{os.sep}Iber_SWMM_roof.dat', roof_content)
+            self.progress_changed.emit("Export files", lerp_progress(40, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             if not losses_content:
                 losses_content = '0'
@@ -161,25 +196,31 @@ class GwExecuteModel(GwTask):
                 sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_method'"
                 row = self.dao.get_row(sql)
                 losses_method = row[0] if row and row[0] is not None else 2
+                self.progress_changed.emit("Export files", lerp_progress(50, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                 # cn_multiplier
                 sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_cn_multiplier'"
                 row = self.dao.get_row(sql)
                 cn_multiplier = row[0] if row else 0
+                self.progress_changed.emit("Export files", lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                 # ia_coeff
                 sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_ia_coefficient'"
                 row = self.dao.get_row(sql)
                 ia_coeff = row[0] if row else 0
+                self.progress_changed.emit("Export files", lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                 # start_time
                 sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_starttime'"
                 row = self.dao.get_row(sql)
                 start_time = row[0] if row else 0
+                self.progress_changed.emit("Export files", lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                 # Replace first line
                 new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
                 losses_content_lines = losses_content.split('\n')
                 losses_content_lines[0] = new_first_line
                 losses_content = '\n'.join(losses_content_lines)
+            self.progress_changed.emit("Export files", lerp_progress(90, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber_Losses.dat', losses_content)
+            self.progress_changed.emit("Export files", lerp_progress(100, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
     def _write_to_file(self, file_path, content):
         with open(file_path, 'w') as file:
@@ -188,8 +229,9 @@ class GwExecuteModel(GwTask):
     def _copy_static_files(self):
         folder = Path(global_vars.plugin_dir) / "resources" / "drain"
         file_names = ["Iber_Problemdata.dat", "Iber_SWMM.ini"]
-        for file_name in file_names:
+        for i, file_name in enumerate(file_names):
             shutil.copy(folder / file_name, self.folder_path)
+            self.progress_changed.emit("Export files", lerp_progress(lerp_progress(i, 0, len(file_names)), self.PROGRESS_MESH_FILES, self.PROGRESS_STATIC_FILES), '', False)
 
     def _create_hyetograph_file(self):
         file_name = Path(self.folder_path) / "Iber_Hyetograph.dat"
@@ -205,6 +247,7 @@ class GwExecuteModel(GwTask):
         gdf = gpd.read_file(global_vars.gpkg_dao_data.db_filepath, layer="hyetograph")
         gdf['x'] = gdf.geometry.x
         gdf['y'] = gdf.geometry.y
+        self.progress_changed.emit("Export files", lerp_progress(10, self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
         with open(file_name, "w") as file:
             file.write("Hyetographs\n")
@@ -226,6 +269,7 @@ class GwExecuteModel(GwTask):
                         hours, minutes = map(int, ts_row["time"].split(":"))
                         seconds = hours * 3600 + minutes * 60
                         file.write(f"{seconds} {ts_row['value']}\n")
+                self.progress_changed.emit("Export files", lerp_progress(lerp_progress(i, 10, len(gdf)), self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
             file.write("End\n")
 
@@ -235,6 +279,7 @@ class GwExecuteModel(GwTask):
         sql = "SELECT value FROM config_param_user WHERE parameter = 'options_rain_class'"
         row = self.dao.get_row(sql)
         rain_class = int(row[0]) if row and row[0] else 0
+        self.progress_changed.emit("Export files", lerp_progress(50, self.PROGRESS_HYETOGRAPHS, self.PROGRESS_RAIN), '', False)
 
         if rain_class != 2:
             file_name.write_text(f"{rain_class} 0\n")
@@ -244,11 +289,14 @@ class GwExecuteModel(GwTask):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}
         self.generate_inp_task = GwEpaFileManager("Go2Epa", go2epa_params, None)
         self.generate_inp_task.debug_mode = False
+        self.generate_inp_task.progress_changed.connect(self._generate_inp_progress_changed)
         result = self.generate_inp_task._export_inp()
-        # self.addSubTask(self.generate_inp_task)
-        # result = self.generate_inp_task.run()
         return result
 
+    def _generate_inp_progress_changed(self, progress, text):
+
+        self.progress_changed.emit("Generate INP algorithm", lerp_progress(progress, self.PROGRESS_RAIN, self.PROGRESS_INP), text, True)
+        self.generate_inp_infolog = text
 
     def _run_iber(self):
         iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"
@@ -269,6 +317,8 @@ class GwExecuteModel(GwTask):
             destination_path = os.path.join(destination_folder, file)
             shutil.copy2(source_path, destination_path)  # shutil.copy2 preserves metadata
 
+        self.progress_changed.emit("Run Iber", lerp_progress(20, self.PROGRESS_INP, self.PROGRESS_IBER), '', False)
+
         result = subprocess.run([iber_exe_path],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
@@ -281,6 +331,6 @@ class GwExecuteModel(GwTask):
         print(result.stdout)
         print("Standard Error:")
         print(result.stderr)
-        # self.step_completed.emit({"message": {"level": 1, "text": "EPA model finished."}}, "\n")
+        self.progress_changed.emit("Run Iber", lerp_progress(100, self.PROGRESS_INP, self.PROGRESS_IBER), f'{result.stdout}', True)
 
     # endregion
