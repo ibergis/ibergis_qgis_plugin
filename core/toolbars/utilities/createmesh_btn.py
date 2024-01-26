@@ -211,6 +211,16 @@ class GwCreateMeshButton(GwAction):
 
         self.timer.stop()
 
+        # Add errors to TOC
+        if thread.error_layers or thread.warning_layers:
+            group_name = "Mesh inputs errors & warnings"
+            for layer in thread.error_layers:
+                tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+            for layer in thread.warning_layers:
+                tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+            QgsProject.instance().layerTreeRoot().removeChildrenGroupWithoutLayers()
+            self.iface.layerTreeView().model().sourceModel().modelReset.emit()
+
         dlg = self.dlg_mesh
         dlg.btn_cancel.clicked.disconnect()
         dlg.btn_cancel.clicked.connect(dlg.reject)
