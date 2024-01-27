@@ -410,4 +410,12 @@ INSERT INTO inlet (fid, top_elev, geom) VALUES(101, 43.71, ST_GeomFromText('POIN
 INSERT INTO inlet (fid, top_elev, geom) VALUES(102, 40.02, ST_GeomFromText('POINT(418586.092223 4577689.973094)', <SRID_VALUE>));
 INSERT INTO inlet (fid, top_elev, geom) VALUES(103, 40.1, ST_GeomFromText('POINT(418584.066459 4577703.285258)', <SRID_VALUE>));
 
+
+UPDATE roof SET code=1000+fid, slope = 1.5, width = 30, outlet_type = 1, outlet_vol =100, street_vol=0, infiltr_vol=0;
+
+UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', weir_cd = 1.6 , orifice_cd = 0.7, efficiency = 90 , width = 1, length = 0.2 where fid < 99;
+UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'UPC', a_param = 0.496 , b_param = 0.712, efficiency = 90 , width = 1, length = 0.2 where fid > 98;; 
+UPDATE inlet SET outlet_type = 'SINK', method = 'UPC', a_param = 0.496 , b_param = 0.712, efficiency = 90 , width = 1, length = 0.2 where fid = 44; 
+UPDATE inlet SET code = 1000+fid;
+
 PRAGMA foreign_keys = ON;
