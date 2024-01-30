@@ -1986,7 +1986,6 @@ class GwNonVisual:
             return
         raster_name = row[1]
         raster_type = row[2]
-        active = row[3]
 
         # Populate text & combobox widgets
         if not duplicate:
