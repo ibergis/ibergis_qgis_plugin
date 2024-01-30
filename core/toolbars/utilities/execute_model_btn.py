@@ -36,6 +36,7 @@ class GwExecuteModelButton(GwAction):
         self.export_path = None
         self.cur_process = None
         self.cur_text = None
+        self.execute_model_task = None
 
 
     def clicked_event(self):
@@ -57,6 +58,10 @@ class GwExecuteModelButton(GwAction):
         self.execute_dlg.btn_options.clicked.connect(self._go2epa_options)
         self.execute_dlg.btn_folder_path.clicked.connect(partial(self._manage_btn_folder_path))
         self.execute_dlg.btn_accept.clicked.connect(partial(self._manage_btn_accept))
+        self.execute_dlg.btn_cancel.clicked.connect(partial(self._cancel_task))
+        self.execute_dlg.btn_close.clicked.connect(partial(tools_gw.close_dialog, self.execute_dlg))
+
+        self.execute_dlg.btn_cancel.setVisible(False)
 
         tools_gw.open_dialog(self.execute_dlg, 'dlg_execute_model')
 
@@ -97,6 +102,9 @@ class GwExecuteModelButton(GwAction):
         tools_gw.set_tabs_enabled(self.execute_dlg)
         self.execute_dlg.mainTab.setCurrentIndex(1)
 
+        self.execute_dlg.btn_cancel.setVisible(True)
+        self.execute_dlg.btn_close.setVisible(False)
+
         # Create timer
         self.t0 = time()
         self.timer = QTimer()
@@ -111,6 +119,11 @@ class GwExecuteModelButton(GwAction):
         self.execute_model_task.progress_changed.connect(self._progress_changed)
         QgsApplication.taskManager().addTask(self.execute_model_task)
         QgsApplication.taskManager().triggerTask(self.execute_model_task)
+
+
+    def _cancel_task(self):
+        if self.execute_model_task:
+            self.execute_model_task.cancel()
 
 
     def _progress_changed(self, process, progress, text, new_line):

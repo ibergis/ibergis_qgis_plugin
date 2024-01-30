@@ -92,8 +92,9 @@ class GwExecuteModel(GwTask):
 
         super().finished(result)
 
-        self.dialog.btn_cancel.setEnabled(False)
-        self.dialog.btn_accept.setEnabled(True)
+        self.dialog.btn_cancel.setVisible(False)
+        self.dialog.btn_accept.setVisible(False)
+        self.dialog.btn_close.setVisible(True)
 
         # self._close_file()
         if self.timer:
@@ -130,6 +131,8 @@ class GwExecuteModel(GwTask):
 
     def _execute_model(self):
         try:
+            if self.isCanceled():
+                return False
             # Mesh files
             if self.do_export:
                 # Export mesh
@@ -138,21 +141,32 @@ class GwExecuteModel(GwTask):
                 self._copy_mesh_files(mesh_id)
                 self.progress_changed.emit("Export files", self.PROGRESS_MESH_FILES, "done!", True)
 
+                if self.isCanceled():
+                    return False
+
                 # Copy static files
                 self.progress_changed.emit("Export files", self.PROGRESS_MESH_FILES, "Copying static files...", False)
                 self._copy_static_files()
                 self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "done!", True)
+
+                if self.isCanceled():
+                    return False
 
                 # Create hyetograph file
                 self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "Creating hyetograph files...", False)
                 self._create_hyetograph_file()
                 self.progress_changed.emit("Export files", self.PROGRESS_HYETOGRAPHS, "done!", True)
 
+                if self.isCanceled():
+                    return False
+
                 # Create rain file
                 self.progress_changed.emit("Export files", self.PROGRESS_HYETOGRAPHS, "Creating rain files...", False)
                 self._create_rain_file()
                 self.progress_changed.emit("Export files", self.PROGRESS_RAIN, "done!", True)
-                # return
+
+            if self.isCanceled():
+                return False
 
             # INP file
             if self.do_generate_inp:
@@ -161,10 +175,16 @@ class GwExecuteModel(GwTask):
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, "done!", True)
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, self.generate_inp_infolog, True)
 
+            if self.isCanceled():
+                return False
+
             if self.do_run:
                 self.progress_changed.emit("Run Iber", self.PROGRESS_INP, "Running Iber software...", False)
                 self._run_iber()
                 self.progress_changed.emit("Run Iber", self.PROGRESS_IBER, "done!", True)
+
+            if self.isCanceled():
+                return False
 
             self.progress_changed.emit("", self.PROGRESS_END, "", True)
         except Exception as e:
