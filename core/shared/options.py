@@ -23,7 +23,10 @@ class GwOptions:
         self.dlg_go2epa_options = None
         self.tabs_to_show = tabs_to_show
         if self.tabs_to_show is None:
-            self.tabs_to_show = ["tab_main", "tab_rpt_iber", "tab_plugins", "tab_inp_swmm", "tab_rpt_swmm"]
+            self.tabs_to_show = ["tab_inp_swmm", "tab_rpt_swmm", "tab_main", "tab_rpt_iber", "tab_plugins"]
+        self.tab_aliases = {"tab_inp_swmm": "SWMM OPTIONS", "tab_rpt_swmm": "SWMM RESULTS",
+                            "tab_main": "IBER OPTIONS", "tab_rpt_iber": "IBER RESULTS", "tab_plugins": "IBER PLUGINS",
+                            }
 
     def open_options_dlg(self):
         self._go2epa_options()
@@ -49,6 +52,8 @@ class GwOptions:
         # Get sys_param values
         v_sql = f"SELECT distinct tabname FROM sys_param_user WHERE tabname IS NOT NULL"
         tab_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        tab_list = sorted(tab_list, key=lambda tab: self.tabs_to_show.index(tab[0]) if tab[0] in self.tabs_to_show else float('inf'))
+
         v_sql = f"select distinct (layoutname), tabname FROM sys_param_user WHERE layoutname IS NOT NULL"
         lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
 
@@ -62,7 +67,7 @@ class GwOptions:
 
             tab_widget = QWidget(main_tab)
             tab_widget.setObjectName(f"{tab_name}")
-            main_tab.addTab(tab_widget, f"{tab_name}")
+            main_tab.addTab(tab_widget, f"{self.tab_aliases.get(tab_name, tab_name)}")
 
             # Mount layout tabs
             layout = QGridLayout()
