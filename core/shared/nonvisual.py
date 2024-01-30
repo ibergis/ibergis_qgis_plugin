@@ -149,7 +149,8 @@ class GwNonVisual:
         """ Filters manager table by id """
 
         widget_table = dialog.main_tab.currentWidget()
-        id_field = 'idval'
+        tablename = widget_table.objectName()
+        id_field = self.dict_ids.get(tablename, 'idval')
 
         if text is None:
             text = tools_qt.get_text(dialog, dialog.txt_filter, return_string_null=False)
