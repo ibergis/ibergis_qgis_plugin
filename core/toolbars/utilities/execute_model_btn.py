@@ -16,16 +16,16 @@ from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import QTextEdit, QLabel
 from qgis.core import QgsApplication
 
-from ...threads.execute_model import GwExecuteModel
-from ...shared.options import GwOptions
+from ...threads.execute_model import DrExecuteModel
+from ...shared.options import DrOptions
 from ...utils import tools_gw
-from ...ui.ui_manager import GwExecuteModelUi
+from ...ui.ui_manager import DrExecuteModelUi
 from .... import global_vars
 from ....lib import tools_qgis, tools_qt, tools_db, tools_os
-from ..dialog import GwAction
+from ..dialog import DrAction
 
 
-class GwExecuteModelButton(GwAction):
+class DrExecuteModelButton(DrAction):
     """ Button 38: Execute model """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -45,7 +45,7 @@ class GwExecuteModelButton(GwAction):
 
 
     def _open_execute_dlg(self):
-        self.execute_dlg = GwExecuteModelUi()
+        self.execute_dlg = DrExecuteModelUi()
         tools_gw.load_settings(self.execute_dlg)
 
         # Populate combobox
@@ -74,7 +74,7 @@ class GwExecuteModelButton(GwAction):
 
 
     def _go2epa_options(self):
-        self.go2epa_options = GwOptions()
+        self.go2epa_options = DrOptions()
         self.go2epa_options.open_options_dlg()
 
 
@@ -115,7 +115,7 @@ class GwExecuteModelButton(GwAction):
         description = f"Execute model"
         params = {"dialog": self.execute_dlg, "folder_path": self.export_path,
                   "do_generate_inp": True, "do_export": True, "do_run": True, "do_import": do_import}
-        self.execute_model_task = GwExecuteModel(description, params, timer=self.timer)
+        self.execute_model_task = DrExecuteModel(description, params, timer=self.timer)
         self.execute_model_task.progress_changed.connect(self._progress_changed)
         QgsApplication.taskManager().addTask(self.execute_model_task)
         QgsApplication.taskManager().triggerTask(self.execute_model_task)

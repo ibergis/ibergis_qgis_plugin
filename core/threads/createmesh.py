@@ -18,14 +18,14 @@ from qgis.utils import iface
 
 from . import createmesh_core as core
 from .validatemesh import validate_input_layers, validate_inlets_in_triangles
-from .task import GwTask
+from .task import DrTask
 from ..utils import mesh_parser
 from ..utils.meshing_process import triangulate_custom
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt
 
 
-class GwCreateMeshTask(GwTask):
+class DrCreateMeshTask(DrTask):
     def __init__(
         self,
         description,

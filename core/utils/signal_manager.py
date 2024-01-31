@@ -8,7 +8,7 @@ or (at your option) any later version.
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 
 
-class GwSignalManager(QObject):
+class DrSignalManager(QObject):
     show_message = pyqtSignal(str, int, int)
     refresh_selectors = pyqtSignal(str)
 
@@ -16,7 +16,7 @@ class GwSignalManager(QObject):
         """
         This class has signals that are needed to bypass the limitation of threads working with Qt objects.
         An instance of this class always exists in global_vars
-                                (signal_manager, created in main.py -> global_vars.signal_manager = GwSignalManager())
+                                (signal_manager, created in main.py -> global_vars.signal_manager = DrSignalManager())
 
         To create a new signal you need to:
                 1- Create the variable above like: signal_name = pyqtSignal(arg1_type, ...)

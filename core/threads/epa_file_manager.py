@@ -23,7 +23,7 @@ from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils import tools_gw
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
-from .task import GwTask
+from .task import DrTask
 from .importinp_core import _tables
 
 _tables_dict = {}
@@ -48,7 +48,7 @@ for table_name, table_info in _tables_dict.items():
     }
 
 
-class GwEpaFileManager(GwTask):
+class DrEpaFileManager(DrTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()

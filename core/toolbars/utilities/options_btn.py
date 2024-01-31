@@ -5,11 +5,11 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
-from ..dialog import GwAction
-from ...shared.options import GwOptions
+from ..dialog import DrAction
+from ...shared.options import DrOptions
 
 
-class GwOptionsButton(GwAction):
+class DrOptionsButton(DrAction):
     """ Button 99: Options """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -24,7 +24,7 @@ class GwOptionsButton(GwAction):
 
     def _open_options(self):
 
-        self.options = GwOptions()
+        self.options = DrOptions()
         self.options.open_options_dlg()
 
     # endregion

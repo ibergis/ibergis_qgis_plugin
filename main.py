@@ -50,12 +50,12 @@ except ImportError:
                 "Restart QGIS to apply the changes."
             )
 
-from .core.admin.admin_btn import GwAdminButton
-from .core.load_project import GwLoadProject
+from .core.admin.admin_btn import DrAdminButton
+from .core.load_project import DrLoadProject
 from .core.utils import tools_gw
-from .core.utils.signal_manager import GwSignalManager
-from .core.ui.dialog import GwDialog
-from .core.ui.main_window import GwMainWindow
+from .core.utils.signal_manager import DrSignalManager
+from .core.ui.dialog import DrDialog
+from .core.ui.main_window import DrMainWindow
 
 
 class Drain(QObject):
@@ -256,7 +256,7 @@ class Drain(QObject):
         if python_enable_console == 'TRUE':
             tools_qgis.enable_python_console()
 
-        # Create the GwSignalManager
+        # Create the DrSignalManager
         self._create_signal_manager()
 
         # Define signals
@@ -269,9 +269,9 @@ class Drain(QObject):
 
 
     def _create_signal_manager(self):
-        """ Creates an instance of GwSignalManager and connects all the signals """
+        """ Creates an instance of DrSignalManager and connects all the signals """
 
-        global_vars.signal_manager = GwSignalManager()
+        global_vars.signal_manager = DrSignalManager()
         global_vars.signal_manager.show_message.connect(tools_qgis.show_message)
 
 
@@ -346,7 +346,7 @@ class Drain(QObject):
             self.action = QAction("Show info", self.iface.mainWindow())
 
         main_toolbutton.setDefaultAction(self.action)
-        admin_button = GwAdminButton()
+        admin_button = DrAdminButton()
         self.action.triggered.connect(partial(admin_button.init_sql))
 
 
@@ -371,7 +371,7 @@ class Drain(QObject):
 
         toolbar = self.iface.mainWindow().findChild(QDockWidget, 'Layers').findChildren(QToolBar)[-1]
         for action in toolbar.actions():
-            if action.objectName() not in ('GwAddChildLayerButton', 'GwEpaWorldButton'):
+            if action.objectName() not in ('DrAddChildLayerButton', 'DrEpaWorldButton'):
                 continue
             toolbar.removeAction(action)  # Remove from toolbar
             action.deleteLater()  # Schedule for deletion
@@ -395,7 +395,7 @@ class Drain(QObject):
             global_vars.logger.add_file_handler()
 
         # Create class to manage code that performs project configuration
-        self.load_project = GwLoadProject()
+        self.load_project = DrLoadProject()
         self.load_project.project_read(show_warning)
 
 
@@ -469,7 +469,7 @@ class Drain(QObject):
 
         # Only keep Giswater widgets that are currently open
         windows = [x for x in allwidgets if getattr(x, "isVisible", False)
-                   and (issubclass(type(x), GwMainWindow) or issubclass(type(x), GwDialog))]
+                   and (issubclass(type(x), DrMainWindow) or issubclass(type(x), DrDialog))]
 
         # Close them
         for window in windows:

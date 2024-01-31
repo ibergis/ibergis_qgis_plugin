@@ -9,16 +9,16 @@ from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.utils import iface
 
-from ..dialog import GwAction
-from ...ui.ui_manager import GwMeshManagerUi, GwLineeditUi
-from .createmesh_btn import GwCreateMeshButton
-from ...threads.create_temp_layer import GwCreateTempMeshLayerTask
+from ..dialog import DrAction
+from ...ui.ui_manager import DrMeshManagerUi, DrLineeditUi
+from .createmesh_btn import DrCreateMeshButton
+from ...threads.create_temp_layer import DrCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
 from ...utils import Feedback, tools_gw, mesh_parser
 from .... import global_vars
 
 
-class GwMeshManagerButton(GwAction):
+class DrMeshManagerButton(DrAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
@@ -33,7 +33,7 @@ class GwMeshManagerButton(GwAction):
 
     def manage_meshes(self):
 
-        self.dlg_manager = GwMeshManagerUi()
+        self.dlg_manager = DrMeshManagerUi()
 
         # Variables
         tbl_mesh_mng = self.dlg_manager.tbl_mesh_mng
@@ -108,7 +108,7 @@ class GwMeshManagerButton(GwAction):
         widget_table.model().select()
 
     def _create_mesh(self):
-        self.create_mesh = GwCreateMeshButton('', None, None, None, None)
+        self.create_mesh = DrCreateMeshButton('', None, None, None, None)
         self.create_mesh.clicked_event()
         self.create_mesh.dlg_mesh.finished.connect(self._reload_manager_table)
 
@@ -140,7 +140,7 @@ class GwMeshManagerButton(GwAction):
         
         mesh = mesh_parser.loads(row["iber2d"], row["roof"])
 
-        self.thread = GwCreateTempMeshLayerTask("Create Temp Mesh Layer", mesh)
+        self.thread = DrCreateTempMeshLayerTask("Create Temp Mesh Layer", mesh)
         self.thread.taskCompleted.connect(self._load_layer)
         QgsApplication.taskManager().addTask(self.thread)
 
@@ -173,7 +173,7 @@ class GwMeshManagerButton(GwAction):
             tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
             return
 
-        self.dlg_lineedit = GwLineeditUi()
+        self.dlg_lineedit = DrLineeditUi()
         tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_title', 'Choose a name for the mesh')
 
         self.dlg_lineedit.btn_accept.clicked.connect(partial(self._insert_mesh, mesh_path, roof_path, losses_path))

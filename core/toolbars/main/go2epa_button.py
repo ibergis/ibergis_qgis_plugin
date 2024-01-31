@@ -19,16 +19,16 @@ from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGr
     QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout
 from qgis.core import QgsApplication
 
-from ...threads.epa_file_manager import GwEpaFileManager
-from ...shared.options import GwOptions
+from ...threads.epa_file_manager import DrEpaFileManager
+from ...shared.options import DrOptions
 from ...utils import tools_gw
-from ...ui.ui_manager import GwGo2EpaUI, GwGo2EpaOptionsUi
+from ...ui.ui_manager import DrGo2EpaUI, DrGo2EpaOptionsUi
 from .... import global_vars
 from ....lib import tools_qgis, tools_qt, tools_db, tools_os
-from ..dialog import GwAction
+from ..dialog import DrAction
 
 
-class GwGo2IberButton(GwAction):
+class DrGo2IberButton(DrAction):
     """ Button 23: Go2epa """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -52,7 +52,7 @@ class GwGo2IberButton(GwAction):
         # tools_gw.init_docker('qgis_form_docker')
 
         # Create dialog
-        self.dlg_go2epa = GwGo2EpaUI()
+        self.dlg_go2epa = DrGo2EpaUI()
         tools_gw.load_settings(self.dlg_go2epa)
         self._load_user_values()
         # self.dlg_go2epa.chk_export_subcatch.setVisible(False)
@@ -203,7 +203,7 @@ class GwGo2IberButton(GwAction):
         # Set background task 'Go2Epa'
         description = f"Go2Epa"
         params = {"dialog": self.dlg_go2epa, "export_file_path": self.export_file_path}
-        self.go2epa_task = GwEpaFileManager(description, params, timer=self.timer)
+        self.go2epa_task = DrEpaFileManager(description, params, timer=self.timer)
         QgsApplication.taskManager().addTask(self.go2epa_task)
         QgsApplication.taskManager().triggerTask(self.go2epa_task)
 
@@ -215,7 +215,7 @@ class GwGo2IberButton(GwAction):
 
 
     def _go2epa_options(self):
-        self.go2epa_options = GwOptions(tabs_to_show=["tab_inp_swmm"])
+        self.go2epa_options = DrOptions(tabs_to_show=["tab_inp_swmm"])
         self.go2epa_options.open_options_dlg()
 
 

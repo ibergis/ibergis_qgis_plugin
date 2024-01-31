@@ -191,7 +191,7 @@ def open_selected_path(**kwargs):
 
 def filter_table(**kwargs):
     """
-         Function called in module GwInfo: def _set_filter_listeners(self, complet_result, dialog, widget_list, columnname, widgetname)
+         Function called in module DrInfo: def _set_filter_listeners(self, complet_result, dialog, widget_list, columnname, widgetname)
          at lines:  widget.textChanged.connect(partial(getattr(tools_backend_calls, widgetfunction), **kwargs))
                     widget.currentIndexChanged.connect(partial(getattr(tools_backend_calls, widgetfunction), **kwargs))
 

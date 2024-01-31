@@ -9,13 +9,13 @@ from qgis.PyQt.QtWidgets import QComboBox, QCheckBox, QDoubleSpinBox, QSpinBox, 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.gui import QgsDateTimeEdit
 
-from .task import GwTask
+from .task import DrTask
 from ..utils import tools_gw
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_qgis
 
 
-class GwToolBoxTask(GwTask):
+class DrToolBoxTask(DrTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()

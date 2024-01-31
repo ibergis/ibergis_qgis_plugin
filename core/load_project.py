@@ -12,7 +12,7 @@ from qgis.core import QgsProject, QgsSnappingUtils
 from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtWidgets import QToolBar, QActionGroup, QDockWidget, QApplication, QDialog
 
-from .models.plugin_toolbar import GwPluginToolbar
+from .models.plugin_toolbar import DrPluginToolbar
 from .toolbars import buttons
 from .utils import tools_gw
 from .toolbars.utilities.bc_scenario_manager import set_bc_filter
@@ -20,7 +20,7 @@ from .. import global_vars
 from ..lib import tools_qgis, tools_log, tools_qt, tools_os, tools_gpkgdao
 
 
-class GwLoadProject(QObject):
+class DrLoadProject(QObject):
 
     def __init__(self):
         """ Class to manage layers. Refactor code from main.py """
@@ -154,7 +154,7 @@ class GwLoadProject(QObject):
         """ Set database connection to Geopackage file """
 
         # Create object to manage GPKG database connection
-        gpkg_dao_config = tools_gpkgdao.GwGpkgDao()
+        gpkg_dao_config = tools_gpkgdao.DrGpkgDao()
         global_vars.gpkg_dao_config = gpkg_dao_config
         # Define filepath of configuration GPKG
         filename = "config.gpkg"
@@ -179,7 +179,7 @@ class GwLoadProject(QObject):
             return False
 
         # Create object to manage GPKG database connection
-        gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
+        gpkg_dao_data = tools_gpkgdao.DrGpkgDao()
         global_vars.gpkg_dao_data = gpkg_dao_data
 
 
@@ -321,7 +321,7 @@ class GwLoadProject(QObject):
             list_actions = [list_actions]
 
         toolbar_name = tools_qt.tr(f'toolbar_{toolbar_id}_name')
-        plugin_toolbar = GwPluginToolbar(toolbar_id, toolbar_name, True)
+        plugin_toolbar = DrPluginToolbar(toolbar_id, toolbar_name, True)
 
         # If the toolbar is ToC, add it to the Layers docker toolbar, if not, create a new toolbar
         if toolbar_id == "toc":

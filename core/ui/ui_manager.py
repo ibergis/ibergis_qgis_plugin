@@ -10,8 +10,8 @@ import os
 from qgis.core import QgsProject
 from qgis.PyQt import uic, QtCore
 
-from .dialog import GwDialog
-from .main_window import GwMainWindow
+from .dialog import DrDialog
+from .main_window import DrMainWindow
 from ...lib import tools_qgis, tools_qt
 
 # region private functions
@@ -33,97 +33,97 @@ def _get_ui_class(ui_file_name, subfolder='shared'):
 
 # region main
 FORM_CLASS = _get_ui_class('go2epa.ui', 'main')
-class GwGo2EpaUI(GwDialog, FORM_CLASS):
+class DrGo2EpaUI(DrDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('go2epa_options.ui', 'main')
-class GwGo2EpaOptionsUi(GwDialog, FORM_CLASS):
+class DrGo2EpaOptionsUi(DrDialog, FORM_CLASS):
     pass
 FROM_CLASS = _get_ui_class('nonvisual_curve.ui', 'main')
-class GwNonVisualCurveUi(GwDialog, FROM_CLASS):
+class DrNonVisualCurveUi(DrDialog, FROM_CLASS):
     pass
 FROM_CLASS = _get_ui_class('nonvisual_controls.ui', 'main')
-class GwNonVisualControlsUi(GwDialog, FROM_CLASS):
+class DrNonVisualControlsUi(DrDialog, FROM_CLASS):
     pass
 FROM_CLASS = _get_ui_class('nonvisual_manager.ui', 'main')
-class GwNonVisualManagerUi(GwDialog, FROM_CLASS):
+class DrNonVisualManagerUi(DrDialog, FROM_CLASS):
     pass
 FROM_CLASS = _get_ui_class('nonvisual_print.ui', 'main')
-class GwNonVisualPrint(GwDialog, FROM_CLASS):
+class DrNonVisualPrint(DrDialog, FROM_CLASS):
     pass
 FROM_CLASS = _get_ui_class('nonvisual_pattern_ud.ui', 'main')
-class GwNonVisualPatternUDUi(GwDialog, FROM_CLASS):
+class DrNonVisualPatternUDUi(DrDialog, FROM_CLASS):
     pass
 FROM_CLASS = _get_ui_class('nonvisual_timeseries.ui', 'main')
-class GwNonVisualTimeseriesUi(GwDialog, FROM_CLASS):
+class DrNonVisualTimeseriesUi(DrDialog, FROM_CLASS):
     pass
 FROM_CLASS = _get_ui_class('nonvisual_lids.ui', 'main')
-class GwNonVisualLidsUi(GwDialog, FROM_CLASS):
+class DrNonVisualLidsUi(DrDialog, FROM_CLASS):
     pass
 FROM_CLASS = _get_ui_class('nonvisual_raster.ui', 'main')
-class GwNonVisualRasterUi(GwDialog, FROM_CLASS):
+class DrNonVisualRasterUi(DrDialog, FROM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('csv.ui', 'utilities')
-class GwCsvUi(GwDialog, FORM_CLASS):
+class DrCsvUi(DrDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('toolbox_reports.ui', 'utilities')
-class GwToolboxReportsUi(GwDialog, FORM_CLASS):
+class DrToolboxReportsUi(DrDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('import_inp.ui', 'utilities')
-class GwImportInpUi(GwDialog, FORM_CLASS):
+class DrImportInpUi(DrDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('execute_model.ui', 'utilities')
-class GwExecuteModelUi(GwDialog, FORM_CLASS):
+class DrExecuteModelUi(DrDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('mesh_selector.ui', 'utilities')
-class GwMeshSelectorUi(GwDialog, FORM_CLASS):
+class DrMeshSelectorUi(DrDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('create_mesh.ui', 'utilities')
-class GwCreateMeshUi(GwDialog, FORM_CLASS):
+class DrCreateMeshUi(DrDialog, FORM_CLASS):
     pass
 # endregion
 
 
 # region ADMIN
 FORM_CLASS = _get_ui_class('admin_ui.ui', 'admin')
-class GwAdminUi(GwMainWindow, FORM_CLASS):
+class DrAdminUi(DrMainWindow, FORM_CLASS):
     dlg_closed = QtCore.pyqtSignal()
 
 FORM_CLASS = _get_ui_class('toolbox.ui', 'utilities')
-class GwToolboxUi(GwDialog, FORM_CLASS):
+class DrToolboxUi(DrDialog, FORM_CLASS):
     pass
 
 FORM_CLASS = _get_ui_class('toolbox_tool.ui', 'utilities')
-class GwToolboxManagerUi(GwDialog, FORM_CLASS):
+class DrToolboxManagerUi(DrDialog, FORM_CLASS):
     pass
 
 FORM_CLASS = _get_ui_class('bc_scenario_manager.ui', 'utilities')
-class GwBCScenarioManagerUi(GwDialog, FORM_CLASS):
+class DrBCScenarioManagerUi(DrDialog, FORM_CLASS):
     pass
 
 FORM_CLASS = _get_ui_class('bc_scenario.ui', 'utilities')
-class GwBCScenarioUi(GwDialog, FORM_CLASS):
+class DrBCScenarioUi(DrDialog, FORM_CLASS):
     pass
 
 FORM_CLASS = _get_ui_class('bc_form.ui', 'utilities')
-class GwBCFormUi(GwDialog, FORM_CLASS):
+class DrBCFormUi(DrDialog, FORM_CLASS):
     pass
 
 FORM_CLASS = _get_ui_class('mesh_manager.ui', 'utilities')
-class GwMeshManagerUi(GwDialog, FORM_CLASS):
+class DrMeshManagerUi(DrDialog, FORM_CLASS):
     pass
 
 FORM_CLASS = _get_ui_class('project_check.ui', 'utilities')
-class GwProjectCheckUi(GwDialog, FORM_CLASS):
+class DrProjectCheckUi(DrDialog, FORM_CLASS):
     pass
 # endregion
 
 
 # region SHARED
 FORM_CLASS = _get_ui_class('replace_in_file.ui')
-class GwReplaceInFileUi(GwDialog, FORM_CLASS):
+class DrReplaceInFileUi(DrDialog, FORM_CLASS):
     pass
 FORM_CLASS = _get_ui_class('dlg_lineedit.ui')
-class GwLineeditUi(GwDialog, FORM_CLASS):
+class DrLineeditUi(DrDialog, FORM_CLASS):
     pass
 
 # endregion

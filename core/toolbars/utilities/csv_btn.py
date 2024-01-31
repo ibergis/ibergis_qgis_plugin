@@ -13,14 +13,14 @@ from functools import partial
 from qgis.PyQt.QtGui import QStandardItem, QStandardItemModel
 from qgis.PyQt.QtWidgets import QFileDialog
 
-from ..dialog import GwAction
-from ...ui.ui_manager import GwCsvUi
+from ..dialog import DrAction
+from ...ui.ui_manager import DrCsvUi
 from ...utils import tools_gw
 from .... import global_vars
 from ....lib import tools_qt, tools_log, tools_qgis, tools_os
 
 
-class GwCSVButton(GwAction):
+class DrCSVButton(DrAction):
     """ Button 83: Csv """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -53,7 +53,7 @@ class GwCSVButton(GwAction):
     def _open_csv(self):
 
         self.func_name = None
-        self.dlg_csv = GwCsvUi()
+        self.dlg_csv = DrCsvUi()
         tools_gw.load_settings(self.dlg_csv)
 
         temp_tablename = 'temp_csv'

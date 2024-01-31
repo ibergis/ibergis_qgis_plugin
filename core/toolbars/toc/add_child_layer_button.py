@@ -14,12 +14,12 @@ from qgis.PyQt.QtCore import QPoint
 from qgis.PyQt.QtWidgets import QMenu, QCheckBox, QWidgetAction
 from qgis.PyQt.QtGui import QCursor
 
-from ..dialog import GwAction
+from ..dialog import DrAction
 from ...utils import tools_gw
 from ....lib import tools_qgis
 
 
-class GwAddChildLayerButton(GwAction):
+class DrAddChildLayerButton(DrAction):
     """ Button 306: Add child layer """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):

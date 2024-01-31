@@ -7,16 +7,16 @@ from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import QListWidgetItem
 
-from ..dialog import GwAction
-from ...threads.createmesh import GwCreateMeshTask
+from ..dialog import DrAction
+from ...threads.createmesh import DrCreateMeshTask
 from ...threads.validatemesh import validations_dict
-from ...ui.ui_manager import GwCreateMeshUi
+from ...ui.ui_manager import DrCreateMeshUi
 from ...utils import Feedback, tools_gw, mesh_parser
 from .... import global_vars
 from ....lib import tools_qt
 
 
-class GwCreateMeshButton(GwAction):
+class DrCreateMeshButton(DrAction):
     """Button 36: CreateMesh"""
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -24,7 +24,7 @@ class GwCreateMeshButton(GwAction):
 
     def clicked_event(self):
         self.dao = global_vars.gpkg_dao_data.clone()
-        self.dlg_mesh = GwCreateMeshUi()
+        self.dlg_mesh = DrCreateMeshUi()
         dlg = self.dlg_mesh
         self.validations = validations_dict()
 
@@ -155,7 +155,7 @@ class GwCreateMeshButton(GwAction):
                 return
 
         self.feedback = Feedback()
-        self.thread_triangulation = GwCreateMeshTask(
+        self.thread_triangulation = DrCreateMeshTask(
             "Triangulation",
             execute_validations,
             enable_transition,

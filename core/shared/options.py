@@ -10,13 +10,13 @@ from functools import partial
 
 from qgis.PyQt.QtWidgets import QWidget, QComboBox, QGroupBox, QSpacerItem, QSizePolicy, \
     QGridLayout, QTabWidget
-from ..ui.ui_manager import GwGo2EpaOptionsUi
+from ..ui.ui_manager import DrGo2EpaOptionsUi
 from ..utils import tools_gw
 from ...lib import tools_qgis, tools_qt, tools_db, tools_log
 from ... import global_vars
 
 
-class GwOptions:
+class DrOptions:
 
     def __init__(self, tabs_to_show=None):
         self.epa_options_list = None
@@ -39,7 +39,7 @@ class GwOptions:
         self.epa_options_list = []
 
         # Create dialog
-        self.dlg_go2epa_options = GwGo2EpaOptionsUi()
+        self.dlg_go2epa_options = DrGo2EpaOptionsUi()
         tools_gw.load_settings(self.dlg_go2epa_options)
 
         # Call getconfig

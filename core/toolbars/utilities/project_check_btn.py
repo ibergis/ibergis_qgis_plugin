@@ -14,15 +14,15 @@ from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QLabel, QTextEdit
 
-from ..dialog import GwAction
-from ...threads.project_check import GwProjectCheckTask
-from ...ui.ui_manager import GwProjectCheckUi
+from ..dialog import DrAction
+from ...threads.project_check import DrProjectCheckTask
+from ...ui.ui_manager import DrProjectCheckUi
 
 from ...utils import tools_gw
 from ....lib import tools_qgis, tools_qt
 
 
-class GwProjectCheckButton(GwAction):
+class DrProjectCheckButton(DrAction):
     """ Button 59: Check project """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -51,7 +51,7 @@ class GwProjectCheckButton(GwAction):
         self.timer.start(1000)
 
         params = {"layers": layers, "init_project": "false", "dialog": self.dlg_audit_project}
-        self.project_check_task = GwProjectCheckTask('check_project', params, timer=self.timer)
+        self.project_check_task = DrProjectCheckTask('check_project', params, timer=self.timer)
         self.project_check_task.progressUpdate.connect(partial(self._progress_update, self.dlg_audit_project))
         QgsApplication.taskManager().addTask(self.project_check_task)
         QgsApplication.taskManager().triggerTask(self.project_check_task)
@@ -69,7 +69,7 @@ class GwProjectCheckButton(GwAction):
     def _open_dialog(self):
 
         # Create dialog
-        self.dlg_audit_project = GwProjectCheckUi()
+        self.dlg_audit_project = DrProjectCheckUi()
         tools_gw.load_settings(self.dlg_audit_project)
 
         tools_qt.set_widget_enabled(self.dlg_audit_project, 'btn_accept', False)

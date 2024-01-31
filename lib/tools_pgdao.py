@@ -9,7 +9,7 @@ import psycopg2
 import psycopg2.extras
 
 
-class GwPgDao(object):
+class DrPgDao(object):
 
     def __init__(self):
 

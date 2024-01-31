@@ -11,15 +11,15 @@ from qgis.gui import QgsMapToolIdentifyFeature, QgsRubberBand
 from qgis.PyQt.QtGui import QColor
 from qgis.utils import iface
 
-from ..dialog import GwAction
-from ...ui.ui_manager import GwBCFormUi
+from ..dialog import DrAction
+from ...ui.ui_manager import DrBCFormUi
 from ...utils import tools_gw
 from ...utils.get_boundary import GetBoundary
 from .... import global_vars
 from ....lib import tools_db, tools_qgis, tools_qt
 
 
-class GwCreateBCFromPolygon(GwAction):
+class DrCreateBCFromPolygon(DrAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
         self.layers = {"ground": None, "roof": None, "boundary_conditions": None}
@@ -149,7 +149,7 @@ class GwCreateBCFromPolygon(GwAction):
         self.rubber_band.setToGeometry(geometry)
 
         # Configure and open form
-        self.dlg = GwBCFormUi()
+        self.dlg = DrBCFormUi()
 
         sql = f"""SELECT id, idval FROM cat_bscenario WHERE active = 1"""
         row = tools_db.get_row(sql)

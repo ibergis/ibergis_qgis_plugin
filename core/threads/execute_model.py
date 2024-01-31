@@ -22,8 +22,8 @@ from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils import tools_gw
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
-from .task import GwTask
-from .epa_file_manager import GwEpaFileManager
+from .task import DrTask
+from .epa_file_manager import DrEpaFileManager
 
 
 def lerp_progress(subtask_progress: int, global_min: int, global_max: int) -> int:
@@ -32,7 +32,7 @@ def lerp_progress(subtask_progress: int, global_min: int, global_max: int) -> in
     return int(global_progress)
 
 
-class GwExecuteModel(GwTask):
+class DrExecuteModel(DrTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()
@@ -50,7 +50,7 @@ class GwExecuteModel(GwTask):
     PROGRESS_END = 100
 
     def __init__(self, description: str, params: dict, timer=None):
-        """ Constructor for thread GwExecuteModel
+        """ Constructor for thread DrExecuteModel
             :param description: description of the task (str)
             :param params: possible params: {"dialog": QDialog, "folder_path": str, "do_generate_inp": bool, "do_export": bool, "do_run": bool, "do_import": bool}
             :param timer: QTimer
@@ -344,7 +344,7 @@ class GwExecuteModel(GwTask):
 
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}
-        self.generate_inp_task = GwEpaFileManager("Go2Epa", go2epa_params, None)
+        self.generate_inp_task = DrEpaFileManager("Go2Epa", go2epa_params, None)
         self.generate_inp_task.debug_mode = False
         self.generate_inp_task.progress_changed.connect(self._generate_inp_progress_changed)
         result = self.generate_inp_task._export_inp()

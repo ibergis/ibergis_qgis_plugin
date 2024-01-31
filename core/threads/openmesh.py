@@ -3,12 +3,12 @@ from pathlib import Path
 from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QVariant
 
-from .task import GwTask
+from .task import DrTask
 from ..utils import mesh_parser
 from ... import global_vars
 
 
-class GwOpenMeshTask(GwTask):
+class DrOpenMeshTask(DrTask):
     def __init__(self, description, folder_path):
         super().__init__(description)
         self.folder_path = folder_path

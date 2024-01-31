@@ -7,10 +7,10 @@ from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView
 from qgis.PyQt.QtSql import QSqlTableModel
 
-from ..dialog import GwAction
-from ...ui.ui_manager import GwBCScenarioManagerUi, GwBCScenarioUi, GwMeshSelectorUi
+from ..dialog import DrAction
+from ...ui.ui_manager import DrBCScenarioManagerUi, DrBCScenarioUi, DrMeshSelectorUi
 from ....lib import tools_qgis, tools_qt, tools_db
-from ...threads.savetomesh import GwSaveToMeshTask
+from ...threads.savetomesh import DrSaveToMeshTask
 from ...utils import Feedback, tools_gw, mesh_parser
 from .... import global_vars
 
@@ -34,7 +34,7 @@ def set_bc_filter():
     bc_layer.setSubsetString(f"bscenario = '{cur_scenario}'")
 
 
-class GwBCScenarioManagerButton(GwAction):
+class DrBCScenarioManagerButton(DrAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
@@ -49,7 +49,7 @@ class GwBCScenarioManagerButton(GwAction):
 
     def manage_bc_scenario(self):
 
-        self.dlg_manager = GwBCScenarioManagerUi()
+        self.dlg_manager = DrBCScenarioManagerUi()
 
         # Variables
         tbl_bcs = self.dlg_manager.tbl_bcs
@@ -164,7 +164,7 @@ class GwBCScenarioManagerButton(GwAction):
             tools_qgis.show_warning(message, dialog=self.dlg_manager)
             return
 
-        self.dlg_ms = GwMeshSelectorUi()
+        self.dlg_ms = DrMeshSelectorUi()
         dlg = self.dlg_ms
         tools_gw.load_settings(dlg)
         tools_gw.disable_tab_log(dlg)
@@ -217,7 +217,7 @@ class GwBCScenarioManagerButton(GwAction):
 
     def _create_scenario(self):
         # Create dialog
-        self.dlg_bc = GwBCScenarioUi()
+        self.dlg_bc = DrBCScenarioUi()
 
         tools_qt.set_widget_visible(self.dlg_bc, 'lbl_id', False)
         tools_qt.set_widget_visible(self.dlg_bc, 'txt_id', False)
@@ -257,7 +257,7 @@ class GwBCScenarioManagerButton(GwAction):
         idval = row['idval']
 
         # Create dialog
-        self.dlg_bc = GwBCScenarioUi()
+        self.dlg_bc = DrBCScenarioUi()
 
         # Populate widgets
         tools_qt.set_widget_text(self.dlg_bc, 'txt_idval', f"{idval}_copy")
@@ -301,7 +301,7 @@ class GwBCScenarioManagerButton(GwAction):
         descript = row['descript']
 
         # Create dialog
-        self.dlg_bc = GwBCScenarioUi()
+        self.dlg_bc = DrBCScenarioUi()
 
         # Populate widgets
         tools_qt.set_widget_text(self.dlg_bc, 'txt_id', _id)
@@ -497,7 +497,7 @@ class GwBCScenarioManagerButton(GwAction):
                 return
 
         self.feedback = Feedback()
-        self.thread_savetomesh = GwSaveToMeshTask(
+        self.thread_savetomesh = DrSaveToMeshTask(
             "Save to mesh",
             bcscenario,
             mesh_name,

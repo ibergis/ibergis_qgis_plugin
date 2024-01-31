@@ -17,7 +17,7 @@ from .. import global_vars
 from . import tools_qt, tools_os
 
 
-class GwLogger(object):
+class DrLogger(object):
 
     def __init__(self, log_name, log_level, log_suffix, folder_has_tstamp=False, file_has_tstamp=True,
                  remove_previous=False):
@@ -168,7 +168,7 @@ def set_logger(logger_name, min_log_level=20):
 
     if global_vars.logger is None:
         log_suffix = '%Y%m%d'
-        global_vars.logger = GwLogger(logger_name, min_log_level, str(log_suffix))
+        global_vars.logger = DrLogger(logger_name, min_log_level, str(log_suffix))
         values = {10: 0, 20: 0, 30: 1, 40: 2}
         global_vars.logger.min_message_level = values.get(int(min_log_level), 0)
 

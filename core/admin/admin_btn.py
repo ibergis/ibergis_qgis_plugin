@@ -18,13 +18,13 @@ from qgis.core import QgsProject
 from qgis.utils import reloadPlugin
 
 from .gis_file_create import DrGisFileCreate
-from ..ui.ui_manager import GwAdminUi
+from ..ui.ui_manager import DrAdminUi
 from ..utils import tools_gw
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
 
 
-class GwAdminButton:
+class DrAdminButton:
 
     def __init__(self):
         """ Class to control action 'Admin' """
@@ -48,7 +48,7 @@ class GwAdminButton:
         """ Button 100: Execute SQL. Info show info """
 
         # Connect to sqlite database
-        self.gpkg_dao_config = tools_gpkgdao.GwGpkgDao()
+        self.gpkg_dao_config = tools_gpkgdao.DrGpkgDao()
 
         # Create the dialog and signals
         self._init_show_database()
@@ -242,7 +242,7 @@ class GwAdminButton:
         self.folder_software = self.sql_dir
 
         # Create dialog object
-        self.dlg_readsql = GwAdminUi()
+        self.dlg_readsql = DrAdminUi()
         tools_gw.load_settings(self.dlg_readsql)
 
         # Get widgets form
@@ -567,7 +567,7 @@ class GwAdminButton:
         """ Set database connection to Geopackage file """
 
         # Create object to manage GPKG database connection
-        gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
+        gpkg_dao_data = tools_gpkgdao.DrGpkgDao()
         global_vars.gpkg_dao_data = gpkg_dao_data
 
         # Check if file path exists

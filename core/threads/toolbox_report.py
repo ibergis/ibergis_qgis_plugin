@@ -7,13 +7,13 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 from qgis.PyQt.QtCore import pyqtSignal
 
-from .task import GwTask
+from .task import DrTask
 from ..utils import tools_gw
 from ... import global_vars
 from ...lib import tools_log, tools_qt
 
 
-class GwReportTask(GwTask):
+class DrReportTask(DrTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()

@@ -20,16 +20,16 @@ from qgis.PyQt.QtWidgets import QSpinBox, QWidget, QLineEdit, QComboBox, QCheckB
 from qgis.core import QgsApplication, QgsProject
 from qgis.gui import QgsDateTimeEdit
 
-from ..dialog import GwAction
-from ...threads.toolbox_execute import GwToolBoxTask
-from ...threads.toolbox_report import GwReportTask
-from ...ui.ui_manager import GwToolboxUi, GwToolboxManagerUi, GwToolboxReportsUi
+from ..dialog import DrAction
+from ...threads.toolbox_execute import DrToolBoxTask
+from ...threads.toolbox_report import DrReportTask
+from ...ui.ui_manager import DrToolboxUi, DrToolboxManagerUi, DrToolboxReportsUi
 from ...utils import tools_gw, tools_backend_calls
 from ....lib import tools_qt, tools_qgis, tools_db
 from .... import global_vars
 
 
-class GwToolBoxButton(GwAction):
+class DrToolBoxButton(DrAction):
     """ Button 206: Toolbox """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -51,7 +51,7 @@ class GwToolBoxButton(GwAction):
 
     def open_function_by_id(self, func_id, connect_signal=None):
 
-        self.dlg_functions = GwToolboxManagerUi()
+        self.dlg_functions = DrToolboxManagerUi()
         tools_gw.load_settings(self.dlg_functions)
         self.dlg_functions.progressBar.setVisible(False)
         self.dlg_functions.btn_cancel.hide()
@@ -169,7 +169,7 @@ class GwToolBoxButton(GwAction):
             tools_qgis.show_warning("Function not found in database", parameter=function_name)
             return
 
-        self.dlg_toolbox = GwToolboxUi('toolbox')
+        self.dlg_toolbox = DrToolboxUi('toolbox')
         self.dlg_toolbox.trv.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.dlg_toolbox.trv.setHeaderHidden(True)
 
@@ -224,7 +224,7 @@ class GwToolBoxButton(GwAction):
                 vdefault = json.loads(vdefault.replace("'", '"'))
                 self.queryAdd = vdefault.get('queryAdd')
 
-            self.dlg_reports = GwToolboxReportsUi()
+            self.dlg_reports = DrToolboxReportsUi()
             tools_gw.load_settings(self.dlg_reports)
 
             # Set description & query labels
@@ -254,7 +254,7 @@ class GwToolBoxButton(GwAction):
             self.timer.start(1000)
 
             # Create thread
-            self.report_thread = GwReportTask(function_name, self.dlg_reports, self.function_selected, self.queryAdd, timer=self.timer)
+            self.report_thread = DrReportTask(function_name, self.dlg_reports, self.function_selected, self.queryAdd, timer=self.timer)
             self.report_thread.finished_execute.connect(self._report_finished)
             QgsApplication.taskManager().addTask(self.report_thread)
             QgsApplication.taskManager().triggerTask(self.report_thread)
@@ -264,7 +264,7 @@ class GwToolBoxButton(GwAction):
 
         elif 'processes' in index.parent().parent().data().lower():
 
-            self.dlg_functions = GwToolboxManagerUi()
+            self.dlg_functions = DrToolboxManagerUi()
             tools_gw.load_settings(self.dlg_functions)
             self.dlg_functions.progressBar.setVisible(False)
             self.dlg_functions.btn_cancel.hide()
@@ -581,8 +581,8 @@ class GwToolBoxButton(GwAction):
         self.timer.timeout.connect(partial(self._calculate_elapsed_time, self.dlg_functions))
 
         self.timer.start(1000)
-        # Set background task 'GwToolBoxTask'
-        self.toolbox_task = GwToolBoxTask(self, description, dialog, combo, result, timer=self.timer)
+        # Set background task 'DrToolBoxTask'
+        self.toolbox_task = DrToolBoxTask(self, description, dialog, combo, result, timer=self.timer)
         QgsApplication.taskManager().addTask(self.toolbox_task)
         QgsApplication.taskManager().triggerTask(self.toolbox_task)
 

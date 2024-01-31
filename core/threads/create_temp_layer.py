@@ -3,11 +3,11 @@ from pathlib import Path
 from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QVariant
 
-from .task import GwTask
+from .task import DrTask
 from ... import global_vars
 
 
-class GwCreateTempMeshLayerTask(GwTask):
+class DrCreateTempMeshLayerTask(DrTask):
     # TODO: includes losses_str
     def __init__(self, description, mesh):
         super().__init__(description)

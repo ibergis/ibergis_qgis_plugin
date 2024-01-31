@@ -7,22 +7,22 @@ from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QFileDialog
 
-from ..dialog import GwAction
-from ...threads.importinp import GwImportInpTask
-from ...ui.ui_manager import GwImportInpUi
+from ..dialog import DrAction
+from ...threads.importinp import DrImportInpTask
+from ...ui.ui_manager import DrImportInpUi
 from ...utils import Feedback, tools_gw
 from .... import global_vars
 from ....lib import tools_qt
 
 
-class GwImportINPButton(GwAction):
+class DrImportINPButton(DrAction):
     """Button 42: ImportINP"""
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
     def clicked_event(self):
-        self.dlg_import = GwImportInpUi()
+        self.dlg_import = DrImportInpUi()
         dlg = self.dlg_import
 
         tools_gw.load_settings(dlg)
@@ -37,7 +37,7 @@ class GwImportINPButton(GwAction):
         if not self._validate_inputs():
             return
         self._save_user_values()
-        self.thread = GwImportInpTask(
+        self.thread = DrImportInpTask(
             "Import INP file",
             self.input_file,
             global_vars.gpkg_dao_data.db_filepath,

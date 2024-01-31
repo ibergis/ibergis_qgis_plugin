@@ -22,15 +22,15 @@ from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTableWidget, QTa
 from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
-from ..ui.ui_manager import GwNonVisualManagerUi, GwNonVisualControlsUi, GwNonVisualCurveUi, GwNonVisualPatternUDUi, \
-    GwNonVisualTimeseriesUi, GwNonVisualLidsUi, GwNonVisualPrint, GwNonVisualRasterUi
+from ..ui.ui_manager import DrNonVisualManagerUi, DrNonVisualControlsUi, DrNonVisualCurveUi, DrNonVisualPatternUDUi, \
+    DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualPrint, DrNonVisualRasterUi
 from ..utils.matplotlib_widget import MplCanvas
 from ..utils import tools_gw
 from ...lib import tools_qgis, tools_qt, tools_db, tools_log
 from ... import global_vars
 
 
-class GwNonVisual:
+class DrNonVisual:
 
     def __init__(self):
         """ Class to control 'Add element' of toolbar 'edit' """
@@ -70,7 +70,7 @@ class GwNonVisual:
         """ Opens Non-Visual objects manager. Called from 'Non-Visual object manager' button. """
 
         # Get dialog
-        self.manager_dlg = GwNonVisualManagerUi()
+        self.manager_dlg = DrNonVisualManagerUi()
         tools_gw.load_settings(self.manager_dlg)
 
         # Make and populate tabs
@@ -266,7 +266,7 @@ class GwNonVisual:
         """ Opens dialog for curve """
 
         # Get dialog
-        self.dialog = GwNonVisualCurveUi()
+        self.dialog = DrNonVisualCurveUi()
         tools_gw.load_settings(self.dialog)
 
         # Create plot widget
@@ -730,7 +730,7 @@ class GwNonVisual:
         """ Opens dialog for patterns """
 
         # Get dialog
-        self.dialog = GwNonVisualPatternUDUi()
+        self.dialog = DrNonVisualPatternUDUi()
         tools_gw.load_settings(self.dialog)
 
         # Manage widgets depending on the project_type
@@ -1061,7 +1061,7 @@ class GwNonVisual:
         """ Opens dialog for controls """
 
         # Get dialog
-        self.dialog = GwNonVisualControlsUi()
+        self.dialog = DrNonVisualControlsUi()
         tools_gw.load_settings(self.dialog)
 
         if control_id is not None:
@@ -1176,7 +1176,7 @@ class GwNonVisual:
         """ Opens dialog for timeseries """
 
         # Get dialog
-        self.dialog = GwNonVisualTimeseriesUi()
+        self.dialog = DrNonVisualTimeseriesUi()
         tools_gw.load_settings(self.dialog)
 
         # Variables
@@ -1539,7 +1539,7 @@ class GwNonVisual:
         """ Opens dialog for lids """
 
         # Get dialog
-        self.dialog = GwNonVisualLidsUi()
+        self.dialog = DrNonVisualLidsUi()
 
         # Set dialog not resizable
         self.dialog.setFixedSize(self.dialog.size())
@@ -1928,7 +1928,7 @@ class GwNonVisual:
         """ Opens dialog for raster """
 
         # Get dialog
-        self.dialog = GwNonVisualRasterUi()
+        self.dialog = DrNonVisualRasterUi()
         tools_gw.load_settings(self.dialog)
 
         # Define variables

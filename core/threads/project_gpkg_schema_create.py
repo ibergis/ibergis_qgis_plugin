@@ -9,12 +9,12 @@ from qgis.PyQt.QtCore import Qt, pyqtSignal
 
 import os
 
-from .task import GwTask
+from .task import DrTask
 from ..utils import tools_gw
 from ...lib import tools_qt, tools_log
 
 
-class GwGpkgCreateSchemaTask(GwTask):
+class DrGpkgCreateSchemaTask(DrTask):
 
     task_finished = pyqtSignal(list)
 

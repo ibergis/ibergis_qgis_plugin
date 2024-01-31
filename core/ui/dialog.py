@@ -16,7 +16,7 @@ from qgis.gui import QgsMessageBar
 from ... import global_vars
 
 
-class GwDialog(QDialog):
+class DrDialog(QDialog):
 
     key_escape = QtCore.pyqtSignal()
 
