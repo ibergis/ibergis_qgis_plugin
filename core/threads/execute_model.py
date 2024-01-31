@@ -11,6 +11,8 @@ import subprocess
 from pathlib import Path
 import geopandas as gpd
 import threading
+import csv
+import traceback
 
 from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
 from qgis.PyQt.QtWidgets import QTextEdit
@@ -41,6 +43,7 @@ class GwExecuteModel(GwTask):
     PROGRESS_INIT = 0
     PROGRESS_MESH_FILES = 25
     PROGRESS_STATIC_FILES = 30
+    PROGRESS_INLET = 35
     PROGRESS_HYETOGRAPHS = 40
     PROGRESS_RAIN = 50
     PROGRESS_INP = 70
@@ -152,8 +155,16 @@ class GwExecuteModel(GwTask):
                 if self.isCanceled():
                     return False
 
+                # Create inlet file
+                self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "Creating inlet files...", False)
+                self._create_inlet_file()
+                self.progress_changed.emit("Export files", self.PROGRESS_INLET, "done!", True)
+
+                if self.isCanceled():
+                    return False
+
                 # Create hyetograph file
-                self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "Creating hyetograph files...", False)
+                self.progress_changed.emit("Export files", self.PROGRESS_INLET, "Creating hyetograph files...", False)
                 self._create_hyetograph_file()
                 self.progress_changed.emit("Export files", self.PROGRESS_HYETOGRAPHS, "done!", True)
 
@@ -189,6 +200,7 @@ class GwExecuteModel(GwTask):
             self.progress_changed.emit("", self.PROGRESS_END, "", True)
         except Exception as e:
             print(f"Exception in ExecuteModel thread: {e}")
+            self.progress_changed.emit("ERROR", None, f"Exception in ExecuteModel thread: {e}\n {traceback.format_exc()}", True)
             return False
 
         return True
@@ -252,6 +264,28 @@ class GwExecuteModel(GwTask):
         for i, file_name in enumerate(file_names):
             shutil.copy(folder / file_name, self.folder_path)
             self.progress_changed.emit("Export files", lerp_progress(lerp_progress(i, 0, len(file_names)), self.PROGRESS_MESH_FILES, self.PROGRESS_STATIC_FILES), '', False)
+
+    def _create_inlet_file(self):
+        file_name = Path(self.folder_path) / "Iber_SWMM_inlet_info.dat"
+
+        sql = "SELECT * FROM vi_inlet"
+        rows = self.dao.get_rows(sql)
+
+        # Fetch column names
+        column_names = ['gully_id', 'outlet_type', 'node_id', 'xcoord', 'ycoord', 'zcoord', 'width', 'length',
+                        'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
+        if rows:
+            column_names = [key for key in rows[0].keys()]
+
+        with open(file_name, 'w', newline='') as dat_file:
+            dat_writer = csv.writer(dat_file, delimiter=' ')
+            dat_writer.writerow(column_names)
+            if not rows:
+                return
+            for row in rows:
+                # Replace None values with -9999
+                row_values = [-9999 if value is None else value for value in row]
+                dat_writer.writerow(row_values)
 
     def _create_hyetograph_file(self):
         file_name = Path(self.folder_path) / "Iber_Hyetograph.dat"

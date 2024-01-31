@@ -128,7 +128,8 @@ class GwExecuteModelButton(GwAction):
 
     def _progress_changed(self, process, progress, text, new_line):
         # Progress bar
-        self.execute_dlg.progress_bar.setValue(progress)
+        if progress is not None:
+            self.execute_dlg.progress_bar.setValue(progress)
 
         # TextEdit log
         txt_infolog = self.execute_dlg.findChild(QTextEdit, 'txt_infolog')
