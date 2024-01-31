@@ -832,6 +832,26 @@ create view if not exists vi_xsections as
     select code as Link, shape as Shape, geom1, geom2, null , null , null, null from inp_orifice union
     select code as Link, shape as Shape, geom1, geom2, null , null , null, null from inp_weir;
 
+
+CREATE VIEW IF NOT EXISTS vi_inlet AS 
+SELECT code AS gully_id,
+    outlet_type,
+   	outlet_node AS node_id,
+   	ST_X(geom) AS xcoord,
+   	ST_Y(geom) AS ycoord,
+   	top_elev AS zcoord,
+  	width,
+    length,
+    depth,
+    method,
+    weir_cd,
+    orifice_cd,
+    a_param,
+    b_param,
+    efficiency,
+    geom 
+FROM inlet;
+
    
 CREATE VIEW if not exists v_node as
     select code, geom from inp_storage union
