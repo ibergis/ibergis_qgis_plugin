@@ -16,7 +16,7 @@ from qgis.PyQt.QtGui import QColor
 from qgis.core import Qgis, QgsWkbTypes, QgsSpatialIndex, QgsPointXY, QgsField, QgsProject, QgsVectorLayer, QgsFeature
 
 from .task import DrTask
-from ..utils import tools_gw
+from ..utils import tools_dr
 from ..ui.ui_manager import DrProjectCheckUi
 from ... import global_vars
 from ...lib import tools_qgis, tools_log, tools_qt, tools_os

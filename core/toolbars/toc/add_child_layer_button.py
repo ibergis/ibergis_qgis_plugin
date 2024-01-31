@@ -15,7 +15,7 @@ from qgis.PyQt.QtWidgets import QMenu, QCheckBox, QWidgetAction
 from qgis.PyQt.QtGui import QCursor
 
 from ..dialog import DrAction
-from ...utils import tools_gw
+from ...utils import tools_dr
 from ....lib import tools_qgis
 
 
@@ -49,8 +49,8 @@ class DrAddChildLayerButton(DrAction):
         for layer in QgsProject.instance().mapLayers().values():
             layer_list.append(tools_qgis.get_layer_source_table_name(layer))
 
-        body = tools_gw.create_body()
-        json_result = tools_gw.execute_procedure('gw_fct_getaddlayervalues', body)
+        body = tools_dr.create_body()
+        json_result = tools_dr.execute_procedure('gw_fct_getaddlayervalues', body)
         if not json_result or json_result['status'] == 'Failed':
             return False
 
@@ -156,7 +156,7 @@ class DrAddChildLayerButton(DrAction):
         if state == 2:
             layer = tools_qgis.get_layer_by_tablename(tablename)
             if layer is None:
-                tools_gw.add_layer_database(tablename, the_geom, field_id, group, sub_group, style_id, alias, sub_sub_group=sub_sub_group)
+                tools_dr.add_layer_database(tablename, the_geom, field_id, group, sub_group, style_id, alias, sub_sub_group=sub_sub_group)
         elif state == 0:
             layer = tools_qgis.get_layer_by_tablename(tablename)
             if layer is not None:

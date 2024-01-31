@@ -10,7 +10,7 @@ from qgis.PyQt.QtCore import pyqtSignal
 from qgis.gui import QgsDateTimeEdit
 
 from .task import DrTask
-from ..utils import tools_gw
+from ..utils import tools_dr
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_qgis
 
@@ -138,9 +138,9 @@ class DrToolBoxTask(DrTask):
         if len(widget_list) > 0:
             extras = extras[:-2]
         extras += '}'
-        self.body = tools_gw.create_body(feature=feature_field, extras=extras)
+        self.body = tools_dr.create_body(feature=feature_field, extras=extras)
         tools_log.log_info(f"Task 'Toolbox execute' execute procedure '{self.function_name}' with parameters: '{self.body}', 'aux_conn={self.aux_conn}', 'is_thread=True'")
-        self.json_result = tools_gw.execute_procedure(self.function_name, self.body,
+        self.json_result = tools_dr.execute_procedure(self.function_name, self.body,
                                                       aux_conn=self.aux_conn, is_thread=True)
 
         if self.isCanceled():
@@ -162,7 +162,7 @@ class DrToolBoxTask(DrTask):
             sql += f"{self.body}"
         sql += f");"
         tools_log.log_info(f"Task 'Toolbox execute' manage json response with parameters: '{self.json_result}', '{sql}', 'None'")
-        tools_gw.manage_json_response(self.json_result, sql, None)
+        tools_dr.manage_json_response(self.json_result, sql, None)
 
         self.dialog.btn_cancel.hide()
         self.dialog.btn_close.show()
@@ -182,7 +182,7 @@ class DrToolBoxTask(DrTask):
         elif result is False and global_vars.session_vars['last_error_msg'] is not None:
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
         elif result:
-            tools_gw.fill_tab_log(self.dialog, self.json_result['body']['data'], True, True, 1, False, False)
+            tools_dr.fill_tab_log(self.dialog, self.json_result['body']['data'], True, True, 1, False, False)
         # If sql function return null
         elif result is False:
             msg = f"Database returned null. Check postgres function 'gw_fct_getinfofromid'"

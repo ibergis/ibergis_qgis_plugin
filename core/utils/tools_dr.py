@@ -2847,7 +2847,7 @@ def set_widgets(dialog, complet_result, field, tablename, class_info):
                   "class": class_info}
         widget = globals()[f"_manage_{field['widgettype']}"](**kwargs)
     except Exception as e:
-        msg = (f"{type(e).__name__}: {e} Python function: tools_gw.set_widgets. WHERE columname='{field['columnname']}' "
+        msg = (f"{type(e).__name__}: {e} Python function: tools_dr.set_widgets. WHERE columname='{field['columnname']}' "
                f"AND widgetname='{field['widgetname']}' AND widgettype='{field['widgettype']}'")
         tools_qgis.show_message(msg, 2, dialog=dialog)
         return label, widget

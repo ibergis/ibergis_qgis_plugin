@@ -19,7 +19,7 @@ from qgis.utils import reloadPlugin
 
 from .gis_file_create import DrGisFileCreate
 from ..ui.ui_manager import DrAdminUi
-from ..utils import tools_gw
+from ..utils import tools_dr
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
 
@@ -79,11 +79,11 @@ class DrAdminButton:
                               "project_tstamp": str(time.strftime(log_suffix)),"project_version": self.plugin_version}
 
         # Save in settings
-        tools_gw.set_config_parser('btn_admin', 'gpkg_name', f'{self.gpkg_name}', prefix=False)
-        tools_gw.set_config_parser('btn_admin', 'project_description', f'{self.project_descript}', prefix=False)
-        tools_gw.set_config_parser('btn_admin', 'project_path', f'{self.project_path}', prefix=False)
-        tools_gw.set_config_parser('btn_admin', 'project_srid', f'{self.project_epsg}', prefix=False)
-        tools_gw.set_config_parser('btn_admin', 'project_locale', f'{self.locale}', prefix=False)
+        tools_dr.set_config_parser('btn_admin', 'gpkg_name', f'{self.gpkg_name}', prefix=False)
+        tools_dr.set_config_parser('btn_admin', 'project_description', f'{self.project_descript}', prefix=False)
+        tools_dr.set_config_parser('btn_admin', 'project_path', f'{self.project_path}', prefix=False)
+        tools_dr.set_config_parser('btn_admin', 'project_srid', f'{self.project_epsg}', prefix=False)
+        tools_dr.set_config_parser('btn_admin', 'project_locale', f'{self.locale}', prefix=False)
 
         # Check if srid value is valid
         if self.last_srids is None:
@@ -120,9 +120,9 @@ class DrAdminButton:
     def change_tab(self):
 
         self.dlg_readsql.tabWidget.setCurrentIndex(1)
-        gpkg_name = tools_gw.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
-                                                              False, force_reload=True)
-        gpkg_path = tools_gw.get_config_parser('btn_admin', 'project_path', "user", "session",
+        gpkg_name = tools_dr.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
+                                               False, force_reload=True)
+        gpkg_path = tools_dr.get_config_parser('btn_admin', 'project_path', "user", "session",
                                                               False, force_reload=True)
         self.dlg_readsql.txt_gis_file.setText(gpkg_name)
         self.dlg_readsql.txt_gis_gpkg.setText(f"{gpkg_path}/{gpkg_name}.gpkg")
@@ -142,7 +142,7 @@ class DrAdminButton:
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
             tools_qgis.show_info("A rollback on schema will be done.")
             if dlg:
-                tools_gw.close_dialog(dlg)
+                tools_dr.close_dialog(dlg)
 
 
     def init_dialog_create_project(self):
@@ -158,13 +158,13 @@ class DrAdminButton:
         self.txt_srid = self.dlg_readsql.findChild(QLineEdit, 'srid_id')
 
         # Load user values
-        self.txt_gpkg_name.setText(tools_gw.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
+        self.txt_gpkg_name.setText(tools_dr.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
                                                              False, force_reload=True))
-        self.txt_description.setText(tools_gw.get_config_parser('btn_admin', 'project_description', "user", "session",
+        self.txt_description.setText(tools_dr.get_config_parser('btn_admin', 'project_description', "user", "session",
+                                                                False, force_reload=True))
+        self.txt_data_path.setText(tools_dr.get_config_parser('btn_admin', 'project_path', "user", "session",
                                                               False, force_reload=True))
-        self.txt_data_path.setText(tools_gw.get_config_parser('btn_admin', 'project_path', "user", "session",
-                                                              False, force_reload=True))
-        self.txt_srid.setText(tools_gw.get_config_parser('btn_admin', 'project_srid', "user", "session",
+        self.txt_srid.setText(tools_dr.get_config_parser('btn_admin', 'project_srid', "user", "session",
                                                               False, force_reload=True))
 
         # Manage SRID
@@ -179,7 +179,7 @@ class DrAdminButton:
             if status:
                 list_locale = self._select_active_locales()
                 tools_qt.fill_combo_values(self.cmb_locale, list_locale, 1)
-                locale = tools_gw.get_config_parser('btn_admin', 'project_locale', 'user', 'session', False,
+                locale = tools_dr.get_config_parser('btn_admin', 'project_locale', 'user', 'session', False,
                                                     force_reload=True)
                 tools_qt.set_combo_value(self.cmb_locale, locale, 0)
             else:
@@ -190,7 +190,7 @@ class DrAdminButton:
 
         # Set shortcut keys
         self.dlg_readsql.key_escape.connect(
-            partial(tools_gw.close_dialog, self.dlg_readsql, False))
+            partial(tools_dr.close_dialog, self.dlg_readsql, False))
 
         # Populate tbl_srid
         self._filter_srid_changed()
@@ -243,7 +243,7 @@ class DrAdminButton:
 
         # Create dialog object
         self.dlg_readsql = DrAdminUi()
-        tools_gw.load_settings(self.dlg_readsql)
+        tools_dr.load_settings(self.dlg_readsql)
 
         # Get widgets form
         self.cmb_connection = self.dlg_readsql.findChild(QComboBox, 'cmb_connection')
@@ -252,7 +252,7 @@ class DrAdminButton:
         self.dlg_readsql.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_readsql))
 
         # Set shortcut keys
-        self.dlg_readsql.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_readsql))
+        self.dlg_readsql.key_escape.connect(partial(tools_dr.close_dialog, self.dlg_readsql))
 
         self.message_update = ''
         self.error_count = 0
@@ -261,7 +261,7 @@ class DrAdminButton:
         window_title = f'Drain ({self.plugin_version})'
         self.dlg_readsql.setWindowTitle(window_title)
 
-        tools_gw.open_dialog(self.dlg_readsql, 'admin_ui')
+        tools_dr.open_dialog(self.dlg_readsql, 'admin_ui')
 
         self.init_dialog_create_project()
 
@@ -282,8 +282,8 @@ class DrAdminButton:
             tools_qgis.show_warning("GKPG file path name not set")
             return
 
-        tools_gw.set_config_parser('btn_admin', 'qgis_file_path', gis_folder, prefix=False)
-        tools_gw.set_config_parser('btn_admin', 'gpkg_file_path', gpkg_file, prefix=False)
+        tools_dr.set_config_parser('btn_admin', 'qgis_file_path', gis_folder, prefix=False)
+        tools_dr.set_config_parser('btn_admin', 'gpkg_file_path', gpkg_file, prefix=False)
 
         gis_file = tools_qt.get_text(self.dlg_readsql, 'txt_gis_file')
         if gis_file is None or gis_file == 'null':
@@ -319,13 +319,13 @@ class DrAdminButton:
         """"""
 
         # Set default values
-        qgis_file_path = tools_gw.get_config_parser('btn_admin', 'qgis_file_path', "user", "session", prefix=False,
+        qgis_file_path = tools_dr.get_config_parser('btn_admin', 'qgis_file_path', "user", "session", prefix=False,
                                                     force_reload=True)
         if qgis_file_path is None:
             qgis_file_path = os.path.expanduser("~")
         tools_qt.set_widget_text(self.dlg_readsql, 'txt_gis_folder', qgis_file_path)
-        gpkg_file_path = tools_gw.get_config_parser('btn_admin', 'gpkg_file_path', "user", "session", prefix=False,
-                                                       force_reload=True)
+        gpkg_file_path = tools_dr.get_config_parser('btn_admin', 'gpkg_file_path', "user", "session", prefix=False,
+                                                    force_reload=True)
         tools_qt.set_widget_text(self.dlg_readsql, 'txt_gis_gpkg', gpkg_file_path)
 
         # Set listeners
@@ -337,12 +337,12 @@ class DrAdminButton:
         self.dlg_readsql.dlg_closed.connect(partial(self._close_dialog_admin, self.dlg_readsql))
 
         # Set shortcut keys
-        self.dlg_readsql.key_escape.connect(partial(tools_gw.close_dialog, self.dlg_readsql))
+        self.dlg_readsql.key_escape.connect(partial(tools_dr.close_dialog, self.dlg_readsql))
 
 
     def _close_dialog_admin(self, dlg):
         """ Close dialog """
-        tools_gw.close_dialog(dlg, delete_dlg=False)
+        tools_dr.close_dialog(dlg, delete_dlg=False)
 
 
     def _update_locale(self):
@@ -514,14 +514,14 @@ class DrAdminButton:
 
         if self.rdb_sample.isChecked():
             tools_log.log_info("Execute 'custom_execution' (example data)")
-            tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
+            tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
             load_sample = self.load_sample_data()
             if not load_sample:
                 return
             return self.populate_config_params()
         elif self.rdb_data.isChecked():
             tools_log.log_info("Execute 'custom_execution' (empty data)")
-            tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
+            tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
             return True
 
     def populate_config_params(self):

@@ -19,7 +19,7 @@ from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLaye
     QgsProject
 
 from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
-from ..utils import tools_gw
+from ..utils import tools_dr
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
 from .task import DrTask

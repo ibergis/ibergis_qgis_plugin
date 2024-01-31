@@ -18,7 +18,7 @@ from qgis.core import QgsApplication
 
 from ...threads.execute_model import DrExecuteModel
 from ...shared.options import DrOptions
-from ...utils import tools_gw
+from ...utils import tools_dr
 from ...ui.ui_manager import DrExecuteModelUi
 from .... import global_vars
 from ....lib import tools_qgis, tools_qt, tools_db, tools_os
@@ -46,7 +46,7 @@ class DrExecuteModelButton(DrAction):
 
     def _open_execute_dlg(self):
         self.execute_dlg = DrExecuteModelUi()
-        tools_gw.load_settings(self.execute_dlg)
+        tools_dr.load_settings(self.execute_dlg)
 
         # Populate combobox
         self._populate_mesh_cmb()
@@ -59,11 +59,11 @@ class DrExecuteModelButton(DrAction):
         self.execute_dlg.btn_folder_path.clicked.connect(partial(self._manage_btn_folder_path))
         self.execute_dlg.btn_accept.clicked.connect(partial(self._manage_btn_accept))
         self.execute_dlg.btn_cancel.clicked.connect(partial(self._cancel_task))
-        self.execute_dlg.btn_close.clicked.connect(partial(tools_gw.close_dialog, self.execute_dlg))
+        self.execute_dlg.btn_close.clicked.connect(partial(tools_dr.close_dialog, self.execute_dlg))
 
         self.execute_dlg.btn_cancel.setVisible(False)
 
-        tools_gw.open_dialog(self.execute_dlg, 'dlg_execute_model')
+        tools_dr.open_dialog(self.execute_dlg, 'dlg_execute_model')
 
 
     def _populate_mesh_cmb(self):
@@ -99,7 +99,7 @@ class DrExecuteModelButton(DrAction):
         self._save_user_values()
 
         # Show tab log
-        tools_gw.set_tabs_enabled(self.execute_dlg)
+        tools_dr.set_tabs_enabled(self.execute_dlg)
         self.execute_dlg.mainTab.setCurrentIndex(1)
 
         self.execute_dlg.btn_cancel.setVisible(True)
@@ -161,12 +161,12 @@ class DrExecuteModelButton(DrAction):
         """ Load QGIS settings related with file_manager """
 
         # Mesh combo
-        value = tools_gw.get_config_parser('btn_execute_model', 'cmb_mesh', "user", "session")
+        value = tools_dr.get_config_parser('btn_execute_model', 'cmb_mesh', "user", "session")
         if value:
             tools_qt.set_combo_value(self.execute_dlg.cmb_mesh, value, 0)
 
         # Export file path
-        value = tools_gw.get_config_parser('btn_execute_model', 'txt_folder_path', "user", "session")
+        value = tools_dr.get_config_parser('btn_execute_model', 'txt_folder_path', "user", "session")
         if value:
             tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', value)
 
@@ -176,11 +176,11 @@ class DrExecuteModelButton(DrAction):
 
         # Mesh combo
         value = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
-        tools_gw.set_config_parser('btn_execute_model', 'cmb_mesh', value, "user", "session")
+        tools_dr.set_config_parser('btn_execute_model', 'cmb_mesh', value, "user", "session")
 
         # Export file path
         value = f"{tools_qt.get_text(self.execute_dlg, 'txt_folder_path', return_string_null=False)}"
-        tools_gw.set_config_parser('btn_execute_model', 'txt_folder_path', f"{value}")
+        tools_dr.set_config_parser('btn_execute_model', 'txt_folder_path', f"{value}")
 
 
     def _calculate_elapsed_time(self, dialog):

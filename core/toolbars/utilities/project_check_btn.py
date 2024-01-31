@@ -18,7 +18,7 @@ from ..dialog import DrAction
 from ...threads.project_check import DrProjectCheckTask
 from ...ui.ui_manager import DrProjectCheckUi
 
-from ...utils import tools_gw
+from ...utils import tools_dr
 from ....lib import tools_qgis, tools_qt
 
 
@@ -70,15 +70,15 @@ class DrProjectCheckButton(DrAction):
 
         # Create dialog
         self.dlg_audit_project = DrProjectCheckUi()
-        tools_gw.load_settings(self.dlg_audit_project)
+        tools_dr.load_settings(self.dlg_audit_project)
 
         tools_qt.set_widget_enabled(self.dlg_audit_project, 'btn_accept', False)
 
         self.dlg_audit_project.btn_accept.clicked.connect(self.dlg_audit_project.reject)
-        self.dlg_audit_project.rejected.connect(partial(tools_gw.save_settings, self.dlg_audit_project))
+        self.dlg_audit_project.rejected.connect(partial(tools_dr.save_settings, self.dlg_audit_project))
 
         # Open dialog
-        tools_gw.open_dialog(self.dlg_audit_project, dlg_name='project_check')
+        tools_dr.open_dialog(self.dlg_audit_project, dlg_name='project_check')
 
 
     def _calculate_elapsed_time(self, dialog):

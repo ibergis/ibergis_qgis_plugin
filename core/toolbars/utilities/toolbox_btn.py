@@ -24,7 +24,7 @@ from ..dialog import DrAction
 from ...threads.toolbox_execute import DrToolBoxTask
 from ...threads.toolbox_report import DrReportTask
 from ...ui.ui_manager import DrToolboxUi, DrToolboxManagerUi, DrToolboxReportsUi
-from ...utils import tools_gw, tools_backend_calls
+from ...utils import tools_dr, tools_backend_calls
 from ....lib import tools_qt, tools_qgis, tools_db
 from .... import global_vars
 
@@ -52,7 +52,7 @@ class DrToolBoxButton(DrAction):
     def open_function_by_id(self, func_id, connect_signal=None):
 
         self.dlg_functions = DrToolboxManagerUi()
-        tools_gw.load_settings(self.dlg_functions)
+        tools_dr.load_settings(self.dlg_functions)
         self.dlg_functions.progressBar.setVisible(False)
         self.dlg_functions.btn_cancel.hide()
         self.dlg_functions.btn_close.show()
@@ -65,8 +65,8 @@ class DrToolBoxButton(DrAction):
         self.dlg_functions.rbt_layer.setChecked(True)
 
         extras = f'"functionId":{func_id}'
-        body = tools_gw.create_body(extras=extras)
-        json_result = tools_gw.execute_procedure('gw_fct_getprocess', body)
+        body = tools_dr.create_body(extras=extras)
+        json_result = tools_dr.execute_procedure('gw_fct_getprocess', body)
         if not json_result or json_result['status'] == 'Failed':
             return False
         sql = f"SELECT alias FROM config_toolbox WHERE id = {func_id}"
@@ -78,15 +78,15 @@ class DrToolBoxButton(DrAction):
             return
 
         # Disable tab log
-        tools_gw.disable_tab_log(self.dlg_functions)
+        tools_dr.disable_tab_log(self.dlg_functions)
 
         # Connect signals
         self.dlg_functions.mainTab.currentChanged.connect(partial(self._manage_btn_run))
         self.dlg_functions.btn_run.clicked.connect(partial(self._execute_function, self.function_selected,
                                                            self.dlg_functions, self.dlg_functions.cmb_layers,
                                                            json_result['body']['data']))
-        self.dlg_functions.btn_close.clicked.connect(partial(tools_gw.close_dialog, self.dlg_functions))
-        self.dlg_functions.rejected.connect(partial(tools_gw.close_dialog, self.dlg_functions))
+        self.dlg_functions.btn_close.clicked.connect(partial(tools_dr.close_dialog, self.dlg_functions))
+        self.dlg_functions.rejected.connect(partial(tools_dr.close_dialog, self.dlg_functions))
         self.dlg_functions.btn_cancel.clicked.connect(partial(self.remove_layers))
         if connect_signal:
             for signal in connect_signal:
@@ -94,7 +94,7 @@ class DrToolBoxButton(DrAction):
 
         # Open form and set title
         self.dlg_functions.setWindowTitle(f"{self.function_selected}")
-        tools_gw.open_dialog(self.dlg_functions, dlg_name='toolbox')
+        tools_dr.open_dialog(self.dlg_functions, dlg_name='toolbox')
         return self.dlg_functions
 
     def remove_layers(self):
@@ -138,24 +138,24 @@ class DrToolBoxButton(DrAction):
         widgets = layout.findChildren(QWidget)
         for widget in widgets:
             if type(widget) is QCheckBox:
-                tools_gw.set_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}",
+                tools_dr.set_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}",
                                            f"{widget.isChecked()}")
             elif type(widget) is QComboBox:
                 value = tools_qt.get_combo_value(dialog, widget, 0)
-                tools_gw.set_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", f"{value}")
+                tools_dr.set_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", f"{value}")
             elif type(widget) in (QLineEdit, QSpinBox):
                 value = tools_qt.get_text(dialog, widget, False, False)
-                tools_gw.set_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", f"{value}")
+                tools_dr.set_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", f"{value}")
 
 
     def save_settings_values(self, dialog, function_name):
         """ Save QGIS settings related with toolbox options """
 
         feature_type = tools_qt.get_combo_value(dialog, dialog.cmb_feature_type, 0)
-        tools_gw.set_config_parser('btn_toolbox', f"{function_name}_cmb_feature_type", f"{feature_type}")
+        tools_dr.set_config_parser('btn_toolbox', f"{function_name}_cmb_feature_type", f"{feature_type}")
         layer = tools_qt.get_combo_value(dialog, dialog.cmb_layers, 0)
-        tools_gw.set_config_parser('btn_toolbox', f"{function_name}_cmb_layers", f"{layer}")
-        tools_gw.set_config_parser('btn_toolbox', f"{function_name}_rbt_previous", f"{dialog.rbt_previous.isChecked()}")
+        tools_dr.set_config_parser('btn_toolbox', f"{function_name}_cmb_layers", f"{layer}")
+        tools_dr.set_config_parser('btn_toolbox', f"{function_name}_rbt_previous", f"{dialog.rbt_previous.isChecked()}")
 
 
     # region private functions
@@ -174,8 +174,8 @@ class DrToolBoxButton(DrAction):
         self.dlg_toolbox.trv.setHeaderHidden(True)
 
         extras = '"isToolbox":true'
-        body = tools_gw.create_body(extras=extras)
-        json_result = tools_gw.execute_procedure('gw_fct_gettoolbox', body)
+        body = tools_dr.create_body(extras=extras)
+        json_result = tools_dr.execute_procedure('gw_fct_gettoolbox', body)
         if json_result and json_result['status'] != 'Failed':
             self._populate_trv(self.dlg_toolbox.trv, json_result['body']['data'])
             self.dlg_toolbox.txt_filter.textChanged.connect(partial(self._filter_functions))
@@ -183,21 +183,21 @@ class DrToolBoxButton(DrAction):
             tools_qt.manage_translation('toolbox_docker', self.dlg_toolbox)
 
         # Set shortcut keys
-        self.dlg_toolbox.key_escape.connect(partial(tools_gw.close_docker))
+        self.dlg_toolbox.key_escape.connect(partial(tools_dr.close_docker))
 
         # Show form in docker
-        tools_gw.init_docker('qgis_form_docker')
+        tools_dr.init_docker('qgis_form_docker')
         if global_vars.session_vars['dialog_docker']:
-            tools_gw.docker_dialog(self.dlg_toolbox)
+            tools_dr.docker_dialog(self.dlg_toolbox)
         else:
-            tools_gw.open_dialog(self.dlg_toolbox)
+            tools_dr.open_dialog(self.dlg_toolbox)
 
 
     def _filter_functions(self, text):
 
         extras = f'"filterText":"{text}"'
-        body = tools_gw.create_body(extras=extras)
-        json_result = tools_gw.execute_procedure('gw_fct_gettoolbox', body)
+        body = tools_dr.create_body(extras=extras)
+        json_result = tools_dr.execute_procedure('gw_fct_gettoolbox', body)
         if not json_result or json_result['status'] == 'Failed':
             return False
 
@@ -225,7 +225,7 @@ class DrToolBoxButton(DrAction):
                 self.queryAdd = vdefault.get('queryAdd')
 
             self.dlg_reports = DrToolboxReportsUi()
-            tools_gw.load_settings(self.dlg_reports)
+            tools_dr.load_settings(self.dlg_reports)
 
             # Set description & query labels
             sql = f"SELECT alias, query_text, descript FROM config_report WHERE id = {self.function_selected}"
@@ -240,7 +240,7 @@ class DrToolBoxButton(DrAction):
             # Set listeners
             self.dlg_reports.btn_export_path.clicked.connect(self._select_file_report)
             self.dlg_reports.btn_export.clicked.connect(partial(self._export_reports, self.dlg_reports, self.dlg_reports.tbl_reports, self.dlg_reports.txt_export_path))
-            self.dlg_reports.rejected.connect(partial(tools_gw.close_dialog, self.dlg_reports))
+            self.dlg_reports.rejected.connect(partial(tools_dr.close_dialog, self.dlg_reports))
             self.dlg_reports.btn_close.clicked.connect(self.dlg_reports.reject)
 
             # Disable buttons
@@ -260,12 +260,12 @@ class DrToolBoxButton(DrAction):
             QgsApplication.taskManager().triggerTask(self.report_thread)
 
             self.dlg_reports.setWindowTitle(f"{function_name}")
-            tools_gw.open_dialog(self.dlg_reports, dlg_name='reports')
+            tools_dr.open_dialog(self.dlg_reports, dlg_name='reports')
 
         elif 'processes' in index.parent().parent().data().lower():
 
             self.dlg_functions = DrToolboxManagerUi()
-            tools_gw.load_settings(self.dlg_functions)
+            tools_dr.load_settings(self.dlg_functions)
             self.dlg_functions.progressBar.setVisible(False)
             self.dlg_functions.btn_cancel.hide()
             self.dlg_functions.btn_close.show()
@@ -279,8 +279,8 @@ class DrToolBoxButton(DrAction):
 
             function_id = index.sibling(index.row(), 2).data()
             extras = f'"functionId":"{function_id}"'
-            body = tools_gw.create_body(extras=extras)
-            json_result = tools_gw.execute_procedure('gw_fct_getprocess', body)
+            body = tools_dr.create_body(extras=extras)
+            json_result = tools_dr.execute_procedure('gw_fct_getprocess', body)
             if not json_result or json_result['status'] == 'Failed':
                 return False
             status = self._populate_functions_dlg(self.dlg_functions, json_result['body']['data'])
@@ -291,19 +291,19 @@ class DrToolBoxButton(DrAction):
                 return
 
             # Disable tab log
-            tools_gw.disable_tab_log(self.dlg_functions)
+            tools_dr.disable_tab_log(self.dlg_functions)
 
             # Connect signals
             self.dlg_functions.mainTab.currentChanged.connect(partial(self._manage_btn_run))
             self.dlg_functions.btn_run.clicked.connect(partial(self._execute_function, self.function_selected,
                 self.dlg_functions, self.dlg_functions.cmb_layers, json_result['body']['data']))
-            self.dlg_functions.btn_close.clicked.connect(partial(tools_gw.close_dialog, self.dlg_functions))
-            self.dlg_functions.rejected.connect(partial(tools_gw.close_dialog, self.dlg_functions))
+            self.dlg_functions.btn_close.clicked.connect(partial(tools_dr.close_dialog, self.dlg_functions))
+            self.dlg_functions.rejected.connect(partial(tools_dr.close_dialog, self.dlg_functions))
             self.dlg_functions.btn_cancel.clicked.connect(partial(self.remove_layers))
 
             # Open form and set title
             self.dlg_functions.setWindowTitle(f"{self.function_selected}")
-            tools_gw.open_dialog(self.dlg_functions, dlg_name='toolbox')
+            tools_dr.open_dialog(self.dlg_functions, dlg_name='toolbox')
 
 
     def _report_finished(self, status, json_result):
@@ -324,7 +324,7 @@ class DrToolBoxButton(DrAction):
                 label.setObjectName('lbl_' + field['widgetname'])
                 label.setText(field['label'].capitalize())
                 if field.get('stylesheet') is not None and 'label' in field['stylesheet']:
-                    label = tools_gw.set_stylesheet(field, label)
+                    label = tools_dr.set_stylesheet(field, label)
                 if 'tooltip' in field:
                     label.setToolTip(field['tooltip'])
                 else:
@@ -332,17 +332,17 @@ class DrToolBoxButton(DrAction):
 
             if field['widgettype'] == 'text' or field['widgettype'] == 'typeahead':
                 completer = QCompleter()
-                widget = tools_gw.add_lineedit(field)
-                widget = tools_gw.set_widget_size(widget, field)
-                widget = tools_gw.set_data_type(field, widget)
+                widget = tools_dr.add_lineedit(field)
+                widget = tools_dr.set_widget_size(widget, field)
+                widget = tools_dr.set_data_type(field, widget)
                 if field.get('filterDefault') is not None:
                     tools_qt.set_widget_text(self.dlg_reports, widget, field.get('filterDefault'))
                 widget.textChanged.connect(partial(self._update_tbl_reports))
                 if field['widgettype'] == 'typeahead':
-                    widget = tools_gw.set_typeahead(field, self.dlg_reports, widget, completer)
+                    widget = tools_dr.set_typeahead(field, self.dlg_reports, widget, completer)
             elif field['widgettype'] == 'combo':
-                widget = tools_gw.add_combo(field)
-                widget = tools_gw.set_widget_size(widget, field)
+                widget = tools_dr.add_combo(field)
+                widget = tools_dr.set_widget_size(widget, field)
                 widget.setProperty('filterSign', field.get('filterSign'))
                 widget.setProperty('showOnTableModel', field.get('showOnTableModel'))
                 if field.get('filterDefault') is not None:
@@ -350,12 +350,12 @@ class DrToolBoxButton(DrAction):
                 widget.currentIndexChanged.connect(partial(self._update_tbl_reports))
             elif field['widgettype'] == 'check':
                 kwargs = {"dialog": self.dlg_reports, "field": field}
-                widget = tools_gw.add_checkbox(**kwargs)
+                widget = tools_dr.add_checkbox(**kwargs)
                 if field.get('filterDefault') is not None:
                     tools_qt.set_widget_text(self.dlg_reports, widget, field.get('filterDefault'))
                 widget.stateChanged.connect(partial(self._update_tbl_reports))
             elif field['widgettype'] == 'datetime':
-                widget = tools_gw.add_calendar(self.dlg_reports, field)
+                widget = tools_dr.add_calendar(self.dlg_reports, field)
                 if field.get('filterDefault') is not None:
                     tools_qt.set_widget_text(self.dlg_reports, widget, field.get('filterDefault'))
                 widget.valueChanged.connect(partial(self._update_tbl_reports))
@@ -433,8 +433,8 @@ class DrToolBoxButton(DrAction):
         extras = f'"filter":{json.dumps(filters)}, "listId":"{self.function_selected}"'
         if self.queryAdd:
             extras += f', "queryAdd": "{self.queryAdd}"'
-        body = tools_gw.create_body(extras=extras)
-        json_result = tools_gw.execute_procedure('gw_fct_getreport', body)
+        body = tools_dr.create_body(extras=extras)
+        json_result = tools_dr.execute_procedure('gw_fct_getreport', body)
         if not json_result or json_result['status'] == 'Failed':
             return False
 
@@ -518,17 +518,17 @@ class DrToolBoxButton(DrAction):
             if type(widget) not in (QCheckBox, QComboBox, QLineEdit, QRadioButton):
                 continue
             if type(widget) in (QCheckBox, QRadioButton):
-                value = tools_gw.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
+                value = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
                                                    "session")
                 tools_qt.set_checked(dialog, widget, value)
             elif type(widget) is QComboBox and widget.property('selectedId') in (None,'','NULL'):
-                value = tools_gw.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
+                value = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
                                                    "session")
                 if value in (None, '', 'NULL') and widget.property('selectedId') not in (None, '', 'NULL'):
                     value = widget.property('selectedId')
                 tools_qt.set_combo_value(widget, value, 0)
             elif type(widget) in (QLineEdit, QSpinBox) and widget.property('value') in (None, ''):
-                value = tools_gw.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
+                value = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
                                                    "session")
                 tools_qt.set_widget_text(dialog, widget, value)
 
@@ -538,18 +538,18 @@ class DrToolBoxButton(DrAction):
 
         function_name = function['functionname']
         if dialog.cmb_feature_type.property('selectedId') in (None, '', 'NULL'):
-            feature_type = tools_gw.get_config_parser('btn_toolbox', f"{function_name}_cmb_feature_type", "user",
+            feature_type = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_cmb_feature_type", "user",
                                                       "session")
         else:
             feature_type = dialog.cmb_feature_type.property('selectedId')
         tools_qt.set_combo_value(dialog.cmb_feature_type, feature_type, 0)
         if dialog.cmb_layers.property('selectedId') in (None, '', 'NULL'):
-            layer = tools_gw.get_config_parser('btn_toolbox', f"{function_name}_cmb_layers", "user", "session")
+            layer = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_cmb_layers", "user", "session")
         else:
             layer = dialog.cmb_layers.property('selectedId')
         tools_qt.set_combo_value(dialog.cmb_layers, layer, 0)
 
-        if tools_gw.get_config_parser('btn_toolbox', f"{function_name}_rbt_previous", "user", "session") == 'True':
+        if tools_dr.get_config_parser('btn_toolbox', f"{function_name}_rbt_previous", "user", "session") == 'True':
             tools_qt.set_checked(dialog, 'rbt_previous', True)
         else:
             tools_qt.set_checked(dialog, 'rbt_layer', True)
@@ -638,7 +638,7 @@ class DrToolBoxButton(DrAction):
                 self._populate_cmb_type(feature_types)
                 self.dlg_functions.cmb_feature_type.currentIndexChanged.connect(partial(self._populate_layer_combo))
                 self._populate_layer_combo()
-            tools_gw.build_dialog_options(dialog, result, 0, self.function_list, self.temp_layers_added, module)
+            tools_dr.build_dialog_options(dialog, result, 0, self.function_list, self.temp_layers_added, module)
             self._load_settings_values(dialog, result)
             self._load_parametric_values(dialog, result)
             # Execute any connected signal

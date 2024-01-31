@@ -14,7 +14,7 @@ from ...ui.ui_manager import DrMeshManagerUi, DrLineeditUi
 from .createmesh_btn import DrCreateMeshButton
 from ...threads.create_temp_layer import DrCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
-from ...utils import Feedback, tools_gw, mesh_parser
+from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
 
 
@@ -54,9 +54,9 @@ class DrMeshManagerButton(DrAction):
         btn_import_mesh.clicked.connect(partial(self._import_mesh))
         btn_delete_mesh.clicked.connect(partial(self._delete_mesh))
         tbl_mesh_mng.doubleClicked.connect(partial(self._view_mesh))
-        btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_manager))
+        btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_manager))
 
-        tools_gw.open_dialog(self.dlg_manager, dlg_name="dlg_mesh_manager")
+        tools_dr.open_dialog(self.dlg_manager, dlg_name="dlg_mesh_manager")
 
     def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.NoEditTriggers, expr=None):
         """ Fills manager table """
@@ -177,8 +177,8 @@ class DrMeshManagerButton(DrAction):
         tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_title', 'Choose a name for the mesh')
 
         self.dlg_lineedit.btn_accept.clicked.connect(partial(self._insert_mesh, mesh_path, roof_path, losses_path))
-        self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_lineedit))
-        tools_gw.open_dialog(self.dlg_lineedit)
+        self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_lineedit))
+        tools_dr.open_dialog(self.dlg_lineedit)
 
 
     def _insert_mesh(self, mesh_path, roof_path, losses_path):
@@ -209,7 +209,7 @@ class DrMeshManagerButton(DrAction):
         self.dao.close_db()
 
         self._reload_manager_table()
-        tools_gw.close_dialog(self.dlg_lineedit)
+        tools_dr.close_dialog(self.dlg_lineedit)
 
 
     def _delete_mesh(self):

@@ -15,7 +15,7 @@ from qgis.PyQt.QtWidgets import QFileDialog
 
 from ..dialog import DrAction
 from ...ui.ui_manager import DrCsvUi
-from ...utils import tools_gw
+from ...utils import tools_dr
 from .... import global_vars
 from ....lib import tools_qt, tools_log, tools_qgis, tools_os
 
@@ -36,16 +36,16 @@ class DrCSVButton(DrAction):
     def save_settings_values(self):
         """ Save QGIS settings related with csv options """
 
-        tools_gw.set_config_parser('btn_csv2pg', 'cmb_import_type',
+        tools_dr.set_config_parser('btn_csv2pg', 'cmb_import_type',
                                    f"{tools_qt.get_combo_value(self.dlg_csv, 'cmb_import_type', 0)}")
-        tools_gw.set_config_parser('btn_csv2pg', 'txt_import', tools_qt.get_text(self.dlg_csv, 'txt_import'))
-        tools_gw.set_config_parser('btn_csv2pg', 'txt_file_csv', tools_qt.get_text(self.dlg_csv, 'txt_file_csv'))
-        tools_gw.set_config_parser('btn_csv2pg', 'cmb_unicode_list',tools_qt.get_text(self.dlg_csv, 'cmb_unicode_list'))
-        tools_gw.set_config_parser('btn_csv2pg', 'chk_ignore_header', f"{self.dlg_csv.chk_ignore_header.isChecked()}")
-        tools_gw.set_config_parser('btn_csv2pg', 'rb_semicolon', f"{self.dlg_csv.rb_semicolon.isChecked()}")
-        tools_gw.set_config_parser('btn_csv2pg', 'rb_space', f"{self.dlg_csv.rb_space.isChecked()}")
-        tools_gw.set_config_parser('btn_csv2pg', 'rb_dec_comma', f"{self.dlg_csv.rb_dec_comma.isChecked()}")
-        tools_gw.set_config_parser('btn_csv2pg', 'rb_dec_period', f"{self.dlg_csv.rb_dec_period.isChecked()}")
+        tools_dr.set_config_parser('btn_csv2pg', 'txt_import', tools_qt.get_text(self.dlg_csv, 'txt_import'))
+        tools_dr.set_config_parser('btn_csv2pg', 'txt_file_csv', tools_qt.get_text(self.dlg_csv, 'txt_file_csv'))
+        tools_dr.set_config_parser('btn_csv2pg', 'cmb_unicode_list', tools_qt.get_text(self.dlg_csv, 'cmb_unicode_list'))
+        tools_dr.set_config_parser('btn_csv2pg', 'chk_ignore_header', f"{self.dlg_csv.chk_ignore_header.isChecked()}")
+        tools_dr.set_config_parser('btn_csv2pg', 'rb_semicolon', f"{self.dlg_csv.rb_semicolon.isChecked()}")
+        tools_dr.set_config_parser('btn_csv2pg', 'rb_space', f"{self.dlg_csv.rb_space.isChecked()}")
+        tools_dr.set_config_parser('btn_csv2pg', 'rb_dec_comma', f"{self.dlg_csv.rb_dec_comma.isChecked()}")
+        tools_dr.set_config_parser('btn_csv2pg', 'rb_dec_period', f"{self.dlg_csv.rb_dec_period.isChecked()}")
 
 
     # region private functions
@@ -54,7 +54,7 @@ class DrCSVButton(DrAction):
 
         self.func_name = None
         self.dlg_csv = DrCsvUi()
-        tools_gw.load_settings(self.dlg_csv)
+        tools_dr.load_settings(self.dlg_csv)
 
         temp_tablename = 'temp_csv'
         tools_qt.fill_combo_unicodes(self.dlg_csv.cmb_unicode_list)
@@ -68,8 +68,8 @@ class DrCSVButton(DrAction):
         self.dlg_csv.rb_space.setChecked(False)
 
         # Signals
-        self.dlg_csv.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_csv))
-        self.dlg_csv.rejected.connect(partial(tools_gw.close_dialog, self.dlg_csv))
+        self.dlg_csv.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_csv))
+        self.dlg_csv.rejected.connect(partial(tools_dr.close_dialog, self.dlg_csv))
         self.dlg_csv.btn_accept.clicked.connect(partial(self._write_csv, self.dlg_csv, temp_tablename))
         self.dlg_csv.cmb_import_type.currentIndexChanged.connect(partial(self._update_info, self.dlg_csv))
         self.dlg_csv.cmb_import_type.currentIndexChanged.connect(partial(self._get_function_name))
@@ -87,10 +87,10 @@ class DrCSVButton(DrAction):
         self.dlg_csv.progressBar.setVisible(False)
 
         # Disable tab log
-        tools_gw.disable_tab_log(self.dlg_csv)
+        tools_dr.disable_tab_log(self.dlg_csv)
 
         # Open dialog
-        tools_gw.open_dialog(self.dlg_csv, dlg_name='csv')
+        tools_dr.open_dialog(self.dlg_csv, dlg_name='csv')
 
         # Finally set label info
         self._update_info(self.dlg_csv)
@@ -141,13 +141,13 @@ class DrCSVButton(DrAction):
         # TODO: Migrate to GPKG
         extras = f'"importParam":"{label_aux}"'
         extras += f', "fid":"{fid_aux}"'
-        body = tools_gw.create_body(extras=extras)
-        result = tools_gw.execute_procedure(self.func_name, body)
+        body = tools_dr.create_body(extras=extras)
+        result = tools_dr.execute_procedure(self.func_name, body)
         if not result:
             return
         else:
             if result['status'] == "Accepted":
-                tools_gw.fill_tab_log(dialog, result['body']['data'], close=False)
+                tools_dr.fill_tab_log(dialog, result['body']['data'], close=False)
             message = result.get('message')
             if message:
                 msg = message.get('text')
@@ -216,33 +216,33 @@ class DrCSVButton(DrAction):
     def _load_settings_values(self):
         """ Load QGIS settings related with csv options """
 
-        value = tools_gw.get_config_parser('btn_csv2pg', 'cmb_import_type', "user", "session")
+        value = tools_dr.get_config_parser('btn_csv2pg', 'cmb_import_type', "user", "session")
         tools_qt.set_combo_value(self.dlg_csv.cmb_import_type, value, 0, add_new=False)
 
-        value = tools_gw.get_config_parser('btn_csv2pg', 'txt_import', "user", "session")
+        value = tools_dr.get_config_parser('btn_csv2pg', 'txt_import', "user", "session")
         tools_qt.set_widget_text(self.dlg_csv, self.dlg_csv.txt_import, value)
 
-        value = tools_gw.get_config_parser('btn_csv2pg', 'txt_file_csv', "user", "session")
+        value = tools_dr.get_config_parser('btn_csv2pg', 'txt_file_csv', "user", "session")
         tools_qt.set_widget_text(self.dlg_csv, self.dlg_csv.txt_file_csv, value)
 
-        unicode = tools_gw.get_config_parser('btn_csv2pg', 'cmb_unicode_list', "user", "session")
+        unicode = tools_dr.get_config_parser('btn_csv2pg', 'cmb_unicode_list', "user", "session")
         if not unicode:
             unicode = 'latin1'
         tools_qt.set_widget_text(self.dlg_csv, self.dlg_csv.cmb_unicode_list, unicode)
 
-        if tools_gw.get_config_parser('btn_csv2pg', 'chk_ignore_header', "user", "session") == 'True':
+        if tools_dr.get_config_parser('btn_csv2pg', 'chk_ignore_header', "user", "session") == 'True':
             self.dlg_csv.chk_ignore_header.setChecked(True)
 
-        if tools_gw.get_config_parser('btn_csv2pg', 'rb_semicolon', "user", "session") == 'True':
+        if tools_dr.get_config_parser('btn_csv2pg', 'rb_semicolon', "user", "session") == 'True':
             self.dlg_csv.rb_semicolon.setChecked(True)
-        elif tools_gw.get_config_parser('btn_csv2pg', 'rb_space', "user", "session") == 'True':
+        elif tools_dr.get_config_parser('btn_csv2pg', 'rb_space', "user", "session") == 'True':
             self.dlg_csv.rb_space.setChecked(True)
         else:
             self.dlg_csv.rb_comma.setChecked(True)
 
-        if tools_gw.get_config_parser('btn_csv2pg', 'rb_dec_comma', "user", "session") == 'True':
+        if tools_dr.get_config_parser('btn_csv2pg', 'rb_dec_comma', "user", "session") == 'True':
             self.dlg_csv.rb_dec_comma.setChecked(True)
-        elif tools_gw.get_config_parser('btn_csv2pg', 'rb_dec_period', "user", "session") == 'True':
+        elif tools_dr.get_config_parser('btn_csv2pg', 'rb_dec_period', "user", "session") == 'True':
             self.dlg_csv.rb_dec_period.setChecked(True)
 
 
@@ -318,8 +318,8 @@ class DrCSVButton(DrAction):
 
         # TODO: Migrate to GPKG
         values = f'"separator": {decimal_sep}, "values":{(json.dumps(fields, ensure_ascii=False).encode(_unicode)).decode()}'
-        body = tools_gw.create_body(extras=values)
-        result = tools_gw.execute_procedure('gw_fct_setcsv', body)
+        body = tools_dr.create_body(extras=values)
+        result = tools_dr.execute_procedure('gw_fct_setcsv', body)
         if result and result.get('status') == 'Accepted':
             return True
 

@@ -13,7 +13,7 @@ from qgis.utils import iface
 
 from ..dialog import DrAction
 from ...ui.ui_manager import DrBCFormUi
-from ...utils import tools_gw
+from ...utils import tools_dr
 from ...utils.get_boundary import GetBoundary
 from .... import global_vars
 from ....lib import tools_db, tools_qgis, tools_qt
@@ -182,7 +182,7 @@ class DrCreateBCFromPolygon(DrAction):
         )
 
         iface.mapCanvas().setMapTool(self.lastMapTool)
-        tools_gw.open_dialog(self.dlg, dlg_name="new_boundary_condition")
+        tools_dr.open_dialog(self.dlg, dlg_name="new_boundary_condition")
         tools_qt.fill_combo_box_list(
             self.dlg, self.dlg.cmb_bt1, self.dropdown_tree, allow_nulls=False
         )

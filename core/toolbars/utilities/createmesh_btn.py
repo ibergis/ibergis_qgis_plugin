@@ -11,7 +11,7 @@ from ..dialog import DrAction
 from ...threads.createmesh import DrCreateMeshTask
 from ...threads.validatemesh import validations_dict
 from ...ui.ui_manager import DrCreateMeshUi
-from ...utils import Feedback, tools_gw, mesh_parser
+from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
 from ....lib import tools_qt
 
@@ -32,8 +32,8 @@ class DrCreateMeshButton(DrAction):
         self.roof_layer = self._get_layer(self.dao, "roof")
 
         # Set widgets
-        tools_gw.load_settings(dlg)
-        tools_gw.disable_tab_log(dlg)
+        tools_dr.load_settings(dlg)
+        tools_dr.disable_tab_log(dlg)
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
@@ -77,7 +77,7 @@ class DrCreateMeshButton(DrAction):
         dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
-        dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
+        dlg.rejected.connect(partial(tools_dr.close_dialog, dlg))
 
         # Create List Items
         flags = Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
@@ -103,7 +103,7 @@ class DrCreateMeshButton(DrAction):
                 if validation["layer"] == category:
                     dlg.list_validations.addItem(validation["list_item"])
 
-        tools_gw.open_dialog(dlg, dlg_name="create_mesh")
+        tools_dr.open_dialog(dlg, dlg_name="create_mesh")
 
     def _execute_process(self):
         dlg = self.dlg_mesh
@@ -201,7 +201,7 @@ class DrCreateMeshButton(DrAction):
     def _on_task_end(self):
         thread = self.thread_triangulation
         message = "Task canceled." if thread.isCanceled() else thread.message
-        tools_gw.fill_tab_log(
+        tools_dr.fill_tab_log(
             self.dlg_mesh,
             {"info": {"values": [{"message": message}]}},
             reset_text=False,
@@ -235,7 +235,7 @@ class DrCreateMeshButton(DrAction):
         self.dlg_mesh.lbl_timer.setText(text)
 
     def _set_progress_text(self, txt):
-        tools_gw.fill_tab_log(
+        tools_dr.fill_tab_log(
             self.dlg_mesh,
             {"info": {"values": [{"message": txt}]}},
             reset_text=False,

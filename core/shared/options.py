@@ -11,7 +11,7 @@ from functools import partial
 from qgis.PyQt.QtWidgets import QWidget, QComboBox, QGroupBox, QSpacerItem, QSizePolicy, \
     QGridLayout, QTabWidget
 from ..ui.ui_manager import DrGo2EpaOptionsUi
-from ..utils import tools_gw
+from ..utils import tools_dr
 from ...lib import tools_qgis, tools_qt, tools_db, tools_log
 from ... import global_vars
 
@@ -40,12 +40,12 @@ class DrOptions:
 
         # Create dialog
         self.dlg_go2epa_options = DrGo2EpaOptionsUi()
-        tools_gw.load_settings(self.dlg_go2epa_options)
+        tools_dr.load_settings(self.dlg_go2epa_options)
 
         # Call getconfig
         form = '"formName":"epaoptions"'
-        body = tools_gw.create_body(form=form)
-        json_result = tools_gw.execute_procedure('getconfig', body)
+        body = tools_dr.create_body(form=form)
+        json_result = tools_dr.execute_procedure('getconfig', body)
         if not json_result or json_result['status'] == 'Failed':
             return False
 
@@ -93,16 +93,16 @@ class DrOptions:
             tab_widget.setLayout(layout)
 
         # Build dialog widgets
-        tools_gw.build_dialog_options(
+        tools_dr.build_dialog_options(
             self.dlg_go2epa_options, json_result['body']['form']['formTabs'], 0, self.epa_options_list)
 
         # Event on change from combo parent
         self._get_event_combo_parent(json_result)
         self.dlg_go2epa_options.btn_accept.clicked.connect(partial(self._update_values, self.epa_options_list))
-        self.dlg_go2epa_options.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_go2epa_options))
-        self.dlg_go2epa_options.rejected.connect(partial(tools_gw.close_dialog, self.dlg_go2epa_options))
+        self.dlg_go2epa_options.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_go2epa_options))
+        self.dlg_go2epa_options.rejected.connect(partial(tools_dr.close_dialog, self.dlg_go2epa_options))
 
-        tools_gw.open_dialog(self.dlg_go2epa_options, dlg_name='go2epa_options')
+        tools_dr.open_dialog(self.dlg_go2epa_options, dlg_name='go2epa_options')
 
 
     def _update_values(self, _json):
@@ -110,17 +110,17 @@ class DrOptions:
         my_json = json.dumps(_json)
         form = '"formName":"epaoptions"'
         extras = f'"fields":{my_json}'
-        body = tools_gw.create_body(form=form, extras=extras)
-        json_result = tools_gw.execute_procedure('setconfig', body)
+        body = tools_dr.create_body(form=form, extras=extras)
+        json_result = tools_dr.execute_procedure('setconfig', body)
         if not json_result or json_result['status'] == 'Failed':
             return False
 
-        tools_gw.manage_current_selections_docker(json_result)
+        tools_dr.manage_current_selections_docker(json_result)
 
         message = "Values has been updated"
         tools_qgis.show_info(message)
         # Close dialog
-        tools_gw.close_dialog(self.dlg_go2epa_options)
+        tools_dr.close_dialog(self.dlg_go2epa_options)
 
 
     def _get_event_combo_parent(self, complet_result):
@@ -136,11 +136,11 @@ class DrOptions:
 
         combo_parent = widget.objectName()
         combo_id = tools_qt.get_combo_value(dialog, widget)
-        # TODO cambiar por gw_fct_getchilds then unified with tools_gw.get_child if posible
-        json_result = tools_gw.execute_procedure('gw_fct_getcombochilds', f"'epaoptions', '', '', '{combo_parent}', '{combo_id}', ''")
+        # TODO cambiar por gw_fct_getchilds then unified with tools_dr.get_child if posible
+        json_result = tools_dr.execute_procedure('gw_fct_getcombochilds', f"'epaoptions', '', '', '{combo_parent}', '{combo_id}', ''")
         if not json_result or json_result['status'] == 'Failed':
             return False
 
         for combo_child in json_result['fields']:
             if combo_child is not None:
-                tools_gw.manage_combo_child(dialog, widget, combo_child)
+                tools_dr.manage_combo_child(dialog, widget, combo_child)
