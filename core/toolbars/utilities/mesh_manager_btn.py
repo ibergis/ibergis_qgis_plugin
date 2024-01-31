@@ -146,7 +146,7 @@ class GwMeshManagerButton(GwAction):
 
     def _load_layer(self):
         """Add temp layer to TOC"""
-        tools_qt.add_layer_to_toc(self.thread.layer)
+        tools_qt.add_layer_to_toc(self.thread.layer, group="DRAIN Layers")
         iface.setActiveLayer(self.thread.layer)
         iface.zoomToActiveLayer()
 
