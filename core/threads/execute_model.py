@@ -11,7 +11,6 @@ import subprocess
 from pathlib import Path
 import geopandas as gpd
 import threading
-import csv
 import traceback
 
 from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
@@ -268,7 +267,8 @@ class GwExecuteModel(GwTask):
     def _create_inlet_file(self):
         file_name = Path(self.folder_path) / "Iber_SWMM_inlet_info.dat"
 
-        sql = "SELECT * FROM vi_inlet"
+        sql = "SELECT gully_id, outlet_type, node_id, xcoord, ycoord, zcoord, width, length, depth, method, weir_cd, " \
+              "orifice_cd, a_param, b_param, efficiency FROM vi_inlet"
         rows = self.dao.get_rows(sql)
 
         # Fetch column names
@@ -278,14 +278,17 @@ class GwExecuteModel(GwTask):
             column_names = [key for key in rows[0].keys()]
 
         with open(file_name, 'w', newline='') as dat_file:
-            dat_writer = csv.writer(dat_file, delimiter=' ')
-            dat_writer.writerow(column_names)
-            if not rows:
-                return
+            # Write column headers
+            header_str = f"{' '.join(column_names)}\n"
+            dat_file.write(header_str)
+            transform_dict = {None: -9999, 'TO NETWORK': 'To_network'}
             for row in rows:
-                # Replace None values with -9999
-                row_values = [-9999 if value is None else value for value in row]
-                dat_writer.writerow(row_values)
+                values = []
+                for value in row:
+                    value_str = str(transform_dict.get(value, value))
+                    values.append(value_str)
+                values_str = f"{' '.join(values)}\n"
+                dat_file.write(values_str)
 
     def _create_hyetograph_file(self):
         file_name = Path(self.folder_path) / "Iber_Hyetograph.dat"
