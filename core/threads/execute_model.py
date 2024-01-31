@@ -373,18 +373,31 @@ class GwExecuteModel(GwTask):
 
         self.progress_changed.emit("Run Iber", lerp_progress(20, self.PROGRESS_INP, self.PROGRESS_IBER), '', False)
 
-        result = subprocess.run([iber_exe_path],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                text=True,
-                                cwd=self.folder_path  # Execute from wanted folder
-                                )
-        print("IberPlus execution finished.")
-        print("Exit code:", result.returncode)
-        print("Standard Output:")
-        print(result.stdout)
-        print("Standard Error:")
-        print(result.stderr)
-        self.progress_changed.emit("Run Iber", lerp_progress(100, self.PROGRESS_INP, self.PROGRESS_IBER), f'{result.stdout}', True)
+        process = subprocess.Popen([iber_exe_path],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   text=True,
+                                   cwd=self.folder_path,
+                                   bufsize=1,
+                                   creationflags=subprocess.CREATE_NO_WINDOW)
+
+        # Read output in real-time
+        while not self.isCanceled():
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                self.progress_changed.emit("Run Iber", None, f'{output.strip()}', True)
+
+        if process.poll() is None:
+            process.terminate()
+
+        # Wait for the process to finish and get the return code
+        return_code = process.wait()
+
+        print(f"IberPlus execution finished. Return code: {return_code}")
+
+        self.progress_changed.emit("Run Iber", lerp_progress(100, self.PROGRESS_INP, self.PROGRESS_IBER), f'', True)
+
 
     # endregion
