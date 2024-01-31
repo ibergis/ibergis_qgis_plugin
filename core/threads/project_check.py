@@ -225,11 +225,16 @@ class DrProjectCheckTask(DrTask):
         """ Create temporal layers with the conflicting features """
 
         # Create a group & add layers to the group
-        group_name = "Check Project Results"
+        group_name = "DRAIN TEMPORAL"
         root = QgsProject.instance().layerTreeRoot()
         my_group = root.findGroup(group_name)
         if my_group is None:
             my_group = root.insertGroup(0, group_name)
+        else:
+            # If the group already exists, remove existing layers with names "node" and "arc"
+            for child in my_group.children():
+                if child.name() in ["node", "arc"]:
+                    QgsProject.instance().removeMapLayer(child.layerId())
 
         if self.log_features_node:
             # Create in-memory layers

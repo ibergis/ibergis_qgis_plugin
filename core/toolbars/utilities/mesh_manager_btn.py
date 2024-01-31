@@ -146,7 +146,7 @@ class DrMeshManagerButton(DrAction):
 
     def _load_layer(self):
         """Add temp layer to TOC"""
-        tools_qt.add_layer_to_toc(self.thread.layer, group="DRAIN Layers")
+        tools_qt.add_layer_to_toc(self.thread.layer, group="DRAIN TEMPORAL")
         iface.setActiveLayer(self.thread.layer)
         iface.zoomToActiveLayer()
 
