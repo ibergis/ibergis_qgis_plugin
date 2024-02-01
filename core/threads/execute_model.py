@@ -40,6 +40,7 @@ class DrExecuteModel(DrTask):
 
     # Progress percentages
     PROGRESS_INIT = 0
+    PROGRESS_CONFIG = 5
     PROGRESS_MESH_FILES = 25
     PROGRESS_STATIC_FILES = 30
     PROGRESS_INLET = 35
@@ -137,8 +138,16 @@ class DrExecuteModel(DrTask):
                 return False
             # Mesh files
             if self.do_export:
+                # Export config
+                self.progress_changed.emit("Export files", self.PROGRESS_INIT, "Exporting config files...", False)
+                self._create_config_files()
+                self.progress_changed.emit("Export files", self.PROGRESS_CONFIG, "done!", True)
+
+                if self.isCanceled():
+                    return False
+
                 # Export mesh
-                self.progress_changed.emit("Export files", self.PROGRESS_INIT, "Exporting mesh files...", False)
+                self.progress_changed.emit("Export files", self.PROGRESS_CONFIG, "Exporting mesh files...", False)
                 mesh_id = tools_qt.get_combo_value(self.dialog, 'cmb_mesh')
                 self._copy_mesh_files(mesh_id)
                 self.progress_changed.emit("Export files", self.PROGRESS_MESH_FILES, "done!", True)
@@ -203,6 +212,46 @@ class DrExecuteModel(DrTask):
             return False
 
         return True
+
+    def _create_config_files(self):
+        # Iber_Results.dat
+        file_name = Path(self.folder_path) / "Iber_Results.dat"
+        mapper = {
+            "result_depth": "Depth",
+            "result_vel": "Velocity",
+            "result_specific_discharge": "Specific_Discharge",
+            "result_water_elevation": "Water_Elevation",
+            "result_fronde_number": "Froude_Number",
+            "result_localtime_step": "Local_Time_Step",
+            "result_manning_coefficient": "Manning_Coefficient",
+            "result_critical_diameter": "Critical_Diameter",
+            "result_max_depth": "Maximum_Depth",
+            "result_max_vel": "Maximum_Velocity",
+            "result_max_spec_discharge": "Maximum_Spec_Discharge",
+            "result_max_water_elev": "Maximum_Water_Elev",
+            "result_max_localtime_step": "Maximum_Local_Time_Step",
+            "result_max_critical_diameter": "Maximum_Critical_Diameter",
+            "result_hazard_rd9_2008": "Hazard RD9/2008",
+            "result_hazard_aca2003": "Hazard ACA2003",
+            "result_depth_vector": "Depth_vector",
+            "result_bed_shear_stress": "Bed_Shear_Stress",
+            "result_max_bed_shear_stress": "Maximum_Bed_Shear_Stress",
+            "result_energy": "Energy",
+            "result_steamlines": "Streamlines",
+        }
+        sql = "SELECT parameter, value FROM config_param_user WHERE parameter like 'result_%'"
+        rows = self.dao.get_rows(sql)
+        if rows:
+            with open(file_name, 'w', newline='') as dat_file:
+                for row in rows:
+                    value = row['value']
+                    if value in (None, "True", "False"):
+                        value = "1" if value == "True" else "0"
+                    parameter = mapper.get(row['parameter'], row['parameter'])
+                    line = f"{value}\t{parameter}\n"
+                    dat_file.write(line)
+
+        # Iber_SWMM.dat
 
     def _copy_mesh_files(self, mesh_id):
 
