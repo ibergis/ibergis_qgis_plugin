@@ -127,7 +127,7 @@ CREATE TABLE cat_raster_value (
 
 CREATE TABLE ground (
     fid integer PRIMARY KEY,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
     annotation text check (typeof(annotation) = 'text' or annotation = null),
@@ -140,7 +140,7 @@ CREATE TABLE ground (
 
 CREATE TABLE roof (
     fid integer PRIMARY KEY,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
     cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
     elev real CHECK (typeof(elev)='real' OR elev = NULL),
@@ -174,7 +174,7 @@ CREATE TABLE mesh_anchor_lines (
 
 CREATE TABLE inlet (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
    	outlet_node text check (typeof(outlet_node) = 'text' or outlet_node = null),
     outlet_type text check (typeof(outlet_type) in ('text', null) and outlet_type in ('SINK', 'TO NETWORK')),
@@ -203,7 +203,7 @@ CREATE TABLE hyetograph (
 
 create table boundary_conditions (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     bscenario text check (typeof(bscenario)='text' or bscenario=null),
     boundary_type text check (typeof(boundary_type) in ('text', null) and boundary_type in (
@@ -226,7 +226,7 @@ create table boundary_conditions (
 
 CREATE TABLE inp_conduit (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
@@ -258,7 +258,7 @@ CREATE TABLE inp_conduit (
 
 CREATE TABLE inp_outlet (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript)='text' or descript= null),
     node_1 text check (typeof(node_1)='text' or node_1= null),
     node_2 text check (typeof(node_2)='text' or node_2= null),
@@ -276,7 +276,7 @@ CREATE TABLE inp_outlet (
 
 CREATE TABLE inp_orifice (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
@@ -294,7 +294,7 @@ CREATE TABLE inp_orifice (
 
 CREATE TABLE inp_weir (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
@@ -322,7 +322,7 @@ CREATE TABLE inp_weir (
 
 CREATE TABLE inp_pump (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
@@ -337,7 +337,7 @@ CREATE TABLE inp_pump (
 
 CREATE TABLE inp_outfall (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     gate text check (typeof(gate) in ('text', null) and gate in ('YES', 'NO')),
     outfall_type text check (typeof(outfall_type) in ('text', null) and outfall_type in ('FIXED', 'FREE', 'NORMAL', 'TIDAL', 'TIMESERIES')),
@@ -353,7 +353,7 @@ CREATE TABLE inp_outfall (
 
 CREATE TABLE inp_divider (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     ymax real check (typeof(ymax) = 'real' or ymax = null),
@@ -374,7 +374,7 @@ CREATE TABLE inp_divider (
 
 CREATE TABLE inp_storage (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     ymax real check (typeof(ymax) = 'real' or ymax = null),
@@ -396,7 +396,7 @@ CREATE TABLE inp_storage (
 
 CREATE TABLE inp_junction (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     ymax real check (typeof(ymax) = 'real' or ymax = null),
@@ -418,7 +418,7 @@ create table inp_files (
 
 create table inp_dwf (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     avg_value real check (typeof(avg_value)='real' or avg_value = null),
     pattern1 text check (typeof(pattern1) = 'text' or pattern1 = null),
@@ -435,7 +435,7 @@ create table inp_dwf (
 
 create table inp_inflow (
     fid integer primary key,
-    code text check (typeof(code) = 'text' or code = null),
+    code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     timeseries text check (typeof(timeseries) = 'text' or timeseries = null),
     format text check (typeof(format) = 'text' or format =null) default 'FLOW',
