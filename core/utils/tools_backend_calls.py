@@ -18,14 +18,14 @@ from qgis.gui import QgsDateTimeEdit
 from qgis.PyQt.QtWidgets import QComboBox
 
 from ... import global_vars
-from ..utils import tools_gw
+from ..utils import tools_dr
 from ...lib import tools_qgis, tools_qt, tools_log, tools_os, tools_db
 
 
 def add_object(**kwargs):
     """
     Open form of selected element of the @qtable??
-        function called in module tools_gw: def add_button(module=sys.modules[__name__], **kwargs):
+        function called in module tools_dr: def add_button(module=sys.modules[__name__], **kwargs):
         at lines:   widget.clicked.connect(partial(getattr(module, function_name), **kwargs))
     """
     dialog = kwargs['dialog']
@@ -94,7 +94,7 @@ def add_object(**kwargs):
 
 def delete_object(**kwargs):
     """ Delete selected objects (elements or documents) of the @widget
-         function called in module tools_gw: def add_button(module=sys.modules[__name__], **kwargs):
+         function called in module tools_dr: def add_button(module=sys.modules[__name__], **kwargs):
         at lines:   widget.clicked.connect(partial(getattr(module, function_name), **kwargs))
     """
     dialog = kwargs['dialog']
@@ -154,7 +154,7 @@ def delete_object(**kwargs):
 
 def open_selected_path(**kwargs):
     """ Open selected path of the @widget
-        function called in module tools_gw: def add_tableview(complet_result, field, module=sys.modules[__name__])
+        function called in module tools_dr: def add_tableview(complet_result, field, module=sys.modules[__name__])
         at lines:   widget.doubleClicked.connect(partial(getattr(module, function_name), **kwargs))
     """
     func_params = kwargs['func_params']
@@ -191,11 +191,11 @@ def open_selected_path(**kwargs):
 
 def filter_table(**kwargs):
     """
-         Function called in module GwInfo: def _set_filter_listeners(self, complet_result, dialog, widget_list, columnname, widgetname)
+         Function called in module DrInfo: def _set_filter_listeners(self, complet_result, dialog, widget_list, columnname, widgetname)
          at lines:  widget.textChanged.connect(partial(getattr(tools_backend_calls, widgetfunction), **kwargs))
                     widget.currentIndexChanged.connect(partial(getattr(tools_backend_calls, widgetfunction), **kwargs))
 
-         Might be called in tools_gw also: def set_filter_listeners(complet_result, dialog, widget_list, columnname, widgetname, feature_id=None)
+         Might be called in tools_dr also: def set_filter_listeners(complet_result, dialog, widget_list, columnname, widgetname, feature_id=None)
          at lines:  widget.textChanged.connect(partial(getattr(module, function_name), **kwargs))
                     widget.currentIndexChanged.connect(partial(getattr(module, function_name), **kwargs))
                     widget.dateChanged.connect(partial(getattr(module, function_name), **kwargs))
@@ -235,9 +235,9 @@ def filter_table(**kwargs):
                 model.removeRows(0, model.rowCount())
                 return complet_list
             model.clear()
-            tools_gw.add_tableview_header(qtable, field)
-            tools_gw.fill_tableview_rows(qtable, field)
-            tools_gw.set_tablemodel_config(dialog, qtable, field['widgetname'], 1, True)
+            tools_dr.add_tableview_header(qtable, field)
+            tools_dr.fill_tableview_rows(qtable, field)
+            tools_dr.set_tablemodel_config(dialog, qtable, field['widgetname'], 1, True)
             tools_qt.set_tableview_config(qtable)
 
     return complet_list
@@ -261,10 +261,10 @@ def set_layer_index(**kwargs):
 
 
 def set_style_mapzones(**kwargs):
-    """ A bridge function to call tools_gw->set_style_mapzones """
+    """ A bridge function to call tools_dr->set_style_mapzones """
     """ Function called in def get_actions_from_json(...) --> getattr(tools_backend_calls, f"{function_name}")(**params) """
 
-    tools_gw.set_style_mapzones()
+    tools_dr.set_style_mapzones()
 
 
 def add_query_layer(**kwargs):
@@ -310,8 +310,8 @@ def refresh_attribute_table(**kwargs):
 
         feature = '"tableName":"' + str(layer_name) + '", "id":"", "isLayer":true'
         extras = f'"infoType":"{qgis_project_infotype}"'
-        body = tools_gw.create_body(feature=feature, extras=extras)
-        result = tools_gw.execute_procedure('gw_fct_getinfofromid', body)
+        body = tools_dr.create_body(feature=feature, extras=extras)
+        result = tools_dr.execute_procedure('gw_fct_getinfofromid', body)
         if not result:
             continue
         for field in result['body']['data']['fields']:
@@ -511,9 +511,9 @@ def fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields):
 
         widget = dialog.findChild(QTableView, field['widgetname'])
         if widget is None: continue
-        widget = tools_gw.add_tableview_header(widget, field)
-        widget = tools_gw.fill_tableview_rows(widget, field)
-        widget = tools_gw.set_tablemodel_config(dialog, widget, field['widgetname'], 1, True)
+        widget = tools_dr.add_tableview_header(widget, field)
+        widget = tools_dr.fill_tableview_rows(widget, field)
+        widget = tools_dr.set_tablemodel_config(dialog, widget, field['widgetname'], 1, True)
         tools_qt.set_tableview_config(widget)
 
     widget_list = []
@@ -573,8 +573,8 @@ def _get_list(complet_result, form_name='', tab_name='', filter_fields='', widge
     form = f'"formName":"{form_name}", "tabName":"{tab_name}", "widgetname":"{widgetname}", "formtype":"{formtype}"'
     id_name = complet_result['body']['feature']['idName'] if id_name is None else id_name
     feature = f'"tableName":"{linkedobject}", "idName":"{id_name}", "id":"{feature_id}"'
-    body = tools_gw.create_body(form, feature, filter_fields)
-    json_result = tools_gw.execute_procedure('gw_fct_getlist', body, log_sql=True)
+    body = tools_dr.create_body(form, feature, filter_fields)
+    json_result = tools_dr.execute_procedure('gw_fct_getlist', body, log_sql=True)
     if json_result is None or json_result['status'] == 'Failed':
         return False
     complet_list = json_result
@@ -644,7 +644,7 @@ def get_selector(**kwargs):
     """
     Refreshes the selectors if the selector dialog is open
 
-    Function connected -> global_vars.signal_manager.refresh_selectors.connect(tools_gw.refresh_selectors)
+    Function connected -> global_vars.signal_manager.refresh_selectors.connect(tools_dr.refresh_selectors)
     """
 
     tab_name = kwargs.get('tab')

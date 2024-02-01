@@ -4,13 +4,13 @@ from qgis.core import QgsApplication
 from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.utils import iface
 
-from ..dialog import GwAction
-from ...threads.openmesh import GwOpenMeshTask
+from ..dialog import DrAction
+from ...threads.openmesh import DrOpenMeshTask
 from .... import global_vars
 from ....lib import tools_qt
 
 
-class GwOpenMeshButton(GwAction):
+class DrOpenMeshButton(DrAction):
     """Button 33: OpenMesh"""
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -34,7 +34,7 @@ class GwOpenMeshButton(GwAction):
             tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
             return
 
-        self.thread = GwOpenMeshTask("Open mesh file", folder_path)
+        self.thread = DrOpenMeshTask("Open mesh file", folder_path)
         self.thread.taskCompleted.connect(self._load_layer)
         QgsApplication.taskManager().addTask(self.thread)
 

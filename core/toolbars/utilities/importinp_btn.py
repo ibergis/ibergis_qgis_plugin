@@ -7,29 +7,29 @@ from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QFileDialog
 
-from ..dialog import GwAction
-from ...threads.importinp import GwImportInpTask
-from ...ui.ui_manager import GwImportInpUi
-from ...utils import Feedback, tools_gw
+from ..dialog import DrAction
+from ...threads.importinp import DrImportInpTask
+from ...ui.ui_manager import DrImportInpUi
+from ...utils import Feedback, tools_dr
 from .... import global_vars
 from ....lib import tools_qt
 
 
-class GwImportINPButton(GwAction):
+class DrImportINPButton(DrAction):
     """Button 42: ImportINP"""
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
     def clicked_event(self):
-        self.dlg_import = GwImportInpUi()
+        self.dlg_import = DrImportInpUi()
         dlg = self.dlg_import
 
-        tools_gw.load_settings(dlg)
+        tools_dr.load_settings(dlg)
         self._load_user_values()
         self._set_initial_signals()
-        tools_gw.disable_tab_log(dlg)
-        tools_gw.open_dialog(dlg, dlg_name="import")
+        tools_dr.disable_tab_log(dlg)
+        tools_dr.open_dialog(dlg, dlg_name="import")
 
     def _execute_process(self):
         dlg = self.dlg_import
@@ -37,7 +37,7 @@ class GwImportINPButton(GwAction):
         if not self._validate_inputs():
             return
         self._save_user_values()
-        self.thread = GwImportInpTask(
+        self.thread = DrImportInpTask(
             "Import INP file",
             self.input_file,
             global_vars.gpkg_dao_data.db_filepath,
@@ -86,7 +86,7 @@ class GwImportINPButton(GwAction):
         self._on_task_end("Task finished!")
 
     def _on_task_end(self, message):
-        tools_gw.fill_tab_log(
+        tools_dr.fill_tab_log(
             self.dlg_import,
             {"info": {"values": [{"message": message}]}},
             reset_text=False,
@@ -119,10 +119,10 @@ class GwImportINPButton(GwAction):
         )
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
-        dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
+        dlg.rejected.connect(partial(tools_dr.close_dialog, dlg))
 
     def _set_progress_text(self, txt):
-        tools_gw.fill_tab_log(
+        tools_dr.fill_tab_log(
             self.dlg_import,
             {"info": {"values": [{"message": txt}]}},
             reset_text=False,
@@ -136,7 +136,7 @@ class GwImportINPButton(GwAction):
 
         for widget in txt_widgets:
             if action == "load":
-                value = tools_gw.get_config_parser(
+                value = tools_dr.get_config_parser(
                     "add_demand_check",
                     widget,
                     "user",
@@ -146,7 +146,7 @@ class GwImportINPButton(GwAction):
             elif action == "save":
                 value = tools_qt.get_text(self.dlg_import, widget, False, False)
                 value = value.replace("%", "%%")
-                tools_gw.set_config_parser(
+                tools_dr.set_config_parser(
                     "add_demand_check",
                     widget,
                     value,

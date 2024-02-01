@@ -7,11 +7,11 @@ from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView
 from qgis.PyQt.QtSql import QSqlTableModel
 
-from ..dialog import GwAction
-from ...ui.ui_manager import GwBCScenarioManagerUi, GwBCScenarioUi, GwMeshSelectorUi
+from ..dialog import DrAction
+from ...ui.ui_manager import DrBCScenarioManagerUi, DrBCScenarioUi, DrMeshSelectorUi
 from ....lib import tools_qgis, tools_qt, tools_db
-from ...threads.savetomesh import GwSaveToMeshTask
-from ...utils import Feedback, tools_gw, mesh_parser
+from ...threads.savetomesh import DrSaveToMeshTask
+from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
 
 
@@ -34,7 +34,7 @@ def set_bc_filter():
     bc_layer.setSubsetString(f"bscenario = '{cur_scenario}'")
 
 
-class GwBCScenarioManagerButton(GwAction):
+class DrBCScenarioManagerButton(DrAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
@@ -49,7 +49,7 @@ class GwBCScenarioManagerButton(GwAction):
 
     def manage_bc_scenario(self):
 
-        self.dlg_manager = GwBCScenarioManagerUi()
+        self.dlg_manager = DrBCScenarioManagerUi()
 
         # Variables
         tbl_bcs = self.dlg_manager.tbl_bcs
@@ -75,9 +75,9 @@ class GwBCScenarioManagerButton(GwAction):
         btn_edit_scenario.clicked.connect(partial(self._edit_scenario))
         btn_delete_scenario.clicked.connect(partial(self._delete_scenario))
         tbl_bcs.doubleClicked.connect(partial(self._edit_scenario))
-        btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_manager))
+        btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_manager))
 
-        tools_gw.open_dialog(self.dlg_manager, dlg_name="bc_scenario_manager")
+        tools_dr.open_dialog(self.dlg_manager, dlg_name="bc_scenario_manager")
 
     def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.NoEditTriggers, expr=None):
         """ Fills manager table """
@@ -164,11 +164,11 @@ class GwBCScenarioManagerButton(GwAction):
             tools_qgis.show_warning(message, dialog=self.dlg_manager)
             return
 
-        self.dlg_ms = GwMeshSelectorUi()
+        self.dlg_ms = DrMeshSelectorUi()
         dlg = self.dlg_ms
-        tools_gw.load_settings(dlg)
-        tools_gw.disable_tab_log(dlg)
-        dlg.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, dlg))
+        tools_dr.load_settings(dlg)
+        tools_dr.disable_tab_log(dlg)
+        dlg.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, dlg))
         dlg.btn_ok.clicked.connect(partial(self._accept_save_to_mesh, idval))
         set_ok_enabled = lambda x: dlg.btn_ok.setEnabled(bool(x))
         dlg.cmb_mesh.currentTextChanged.connect(set_ok_enabled)
@@ -176,7 +176,7 @@ class GwBCScenarioManagerButton(GwAction):
         mesh_names = [row[0] for row in rows]
         tools_qt.fill_combo_box_list(None, dlg.cmb_mesh, mesh_names)
         
-        tools_gw.open_dialog(dlg)
+        tools_dr.open_dialog(dlg)
 
     def _set_current_scenario(self):
         # Variables
@@ -217,7 +217,7 @@ class GwBCScenarioManagerButton(GwAction):
 
     def _create_scenario(self):
         # Create dialog
-        self.dlg_bc = GwBCScenarioUi()
+        self.dlg_bc = DrBCScenarioUi()
 
         tools_qt.set_widget_visible(self.dlg_bc, 'lbl_id', False)
         tools_qt.set_widget_visible(self.dlg_bc, 'txt_id', False)
@@ -226,7 +226,7 @@ class GwBCScenarioManagerButton(GwAction):
         self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_create_scenario))
 
         # Open dialog
-        tools_gw.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
+        tools_dr.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
 
     def _duplicate_scenario(self):
         # Variables
@@ -257,7 +257,7 @@ class GwBCScenarioManagerButton(GwAction):
         idval = row['idval']
 
         # Create dialog
-        self.dlg_bc = GwBCScenarioUi()
+        self.dlg_bc = DrBCScenarioUi()
 
         # Populate widgets
         tools_qt.set_widget_text(self.dlg_bc, 'txt_idval', f"{idval}_copy")
@@ -266,7 +266,7 @@ class GwBCScenarioManagerButton(GwAction):
         self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_duplicate_scenario, idval))
 
         # Open dialog
-        tools_gw.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
+        tools_dr.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
 
     def _edit_scenario(self):
         # Variables
@@ -301,7 +301,7 @@ class GwBCScenarioManagerButton(GwAction):
         descript = row['descript']
 
         # Create dialog
-        self.dlg_bc = GwBCScenarioUi()
+        self.dlg_bc = DrBCScenarioUi()
 
         # Populate widgets
         tools_qt.set_widget_text(self.dlg_bc, 'txt_id', _id)
@@ -316,7 +316,7 @@ class GwBCScenarioManagerButton(GwAction):
         self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_edit_scenario))
 
         # Open dialog
-        tools_gw.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
+        tools_dr.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
 
     def _delete_scenario(self):
         # Variables
@@ -414,7 +414,7 @@ class GwBCScenarioManagerButton(GwAction):
             msg = f"There was an error inserting the scenario"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
-        tools_gw.close_dialog(self.dlg_bc)
+        tools_dr.close_dialog(self.dlg_bc)
         self._reload_manager_table()
 
     def _accept_edit_scenario(self):
@@ -440,7 +440,7 @@ class GwBCScenarioManagerButton(GwAction):
             msg = f"There was an error updating the scenario"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
-        tools_gw.close_dialog(self.dlg_bc)
+        tools_dr.close_dialog(self.dlg_bc)
         self._reload_manager_table()
 
     def _accept_duplicate_scenario(self, code_from):
@@ -474,7 +474,7 @@ class GwBCScenarioManagerButton(GwAction):
             return
 
         global_vars.gpkg_dao_data.commit()
-        tools_gw.close_dialog(self.dlg_bc)
+        tools_dr.close_dialog(self.dlg_bc)
         self._reload_manager_table()
 
     def _accept_save_to_mesh(self, bcscenario):
@@ -497,7 +497,7 @@ class GwBCScenarioManagerButton(GwAction):
                 return
 
         self.feedback = Feedback()
-        self.thread_savetomesh = GwSaveToMeshTask(
+        self.thread_savetomesh = DrSaveToMeshTask(
             "Save to mesh",
             bcscenario,
             mesh_name,
@@ -533,7 +533,7 @@ class GwBCScenarioManagerButton(GwAction):
     def _on_s2m_end(self):
         thread = self.thread_savetomesh
         message = "Task canceled." if thread.isCanceled() else thread.message
-        tools_gw.fill_tab_log(
+        tools_dr.fill_tab_log(
             self.dlg_ms,
             {"info": {"values": [{"message": message}]}},
             reset_text=False,
@@ -557,7 +557,7 @@ class GwBCScenarioManagerButton(GwAction):
         self.dlg_ms.lbl_timer.setText(text)
 
     def _set_progress_text(self, txt):
-        tools_gw.fill_tab_log(
+        tools_dr.fill_tab_log(
             self.dlg_ms,
             {"info": {"values": [{"message": txt}]}},
             reset_text=False,

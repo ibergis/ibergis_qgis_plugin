@@ -9,16 +9,16 @@ from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.utils import iface
 
-from ..dialog import GwAction
-from ...ui.ui_manager import GwMeshManagerUi, GwLineeditUi
-from .createmesh_btn import GwCreateMeshButton
-from ...threads.create_temp_layer import GwCreateTempMeshLayerTask
+from ..dialog import DrAction
+from ...ui.ui_manager import DrMeshManagerUi, DrLineeditUi
+from .createmesh_btn import DrCreateMeshButton
+from ...threads.create_temp_layer import DrCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
-from ...utils import Feedback, tools_gw, mesh_parser
+from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
 
 
-class GwMeshManagerButton(GwAction):
+class DrMeshManagerButton(DrAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
@@ -33,7 +33,7 @@ class GwMeshManagerButton(GwAction):
 
     def manage_meshes(self):
 
-        self.dlg_manager = GwMeshManagerUi()
+        self.dlg_manager = DrMeshManagerUi()
 
         # Variables
         tbl_mesh_mng = self.dlg_manager.tbl_mesh_mng
@@ -54,9 +54,9 @@ class GwMeshManagerButton(GwAction):
         btn_import_mesh.clicked.connect(partial(self._import_mesh))
         btn_delete_mesh.clicked.connect(partial(self._delete_mesh))
         tbl_mesh_mng.doubleClicked.connect(partial(self._view_mesh))
-        btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_manager))
+        btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_manager))
 
-        tools_gw.open_dialog(self.dlg_manager, dlg_name="dlg_mesh_manager")
+        tools_dr.open_dialog(self.dlg_manager, dlg_name="dlg_mesh_manager")
 
     def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.NoEditTriggers, expr=None):
         """ Fills manager table """
@@ -108,7 +108,7 @@ class GwMeshManagerButton(GwAction):
         widget_table.model().select()
 
     def _create_mesh(self):
-        self.create_mesh = GwCreateMeshButton('', None, None, None, None)
+        self.create_mesh = DrCreateMeshButton('', None, None, None, None)
         self.create_mesh.clicked_event()
         self.create_mesh.dlg_mesh.finished.connect(self._reload_manager_table)
 
@@ -140,13 +140,13 @@ class GwMeshManagerButton(GwAction):
         
         mesh = mesh_parser.loads(row["iber2d"], row["roof"])
 
-        self.thread = GwCreateTempMeshLayerTask("Create Temp Mesh Layer", mesh)
+        self.thread = DrCreateTempMeshLayerTask("Create Temp Mesh Layer", mesh)
         self.thread.taskCompleted.connect(self._load_layer)
         QgsApplication.taskManager().addTask(self.thread)
 
     def _load_layer(self):
         """Add temp layer to TOC"""
-        tools_qt.add_layer_to_toc(self.thread.layer)
+        tools_qt.add_layer_to_toc(self.thread.layer, group="DRAIN TEMPORAL")
         iface.setActiveLayer(self.thread.layer)
         iface.zoomToActiveLayer()
 
@@ -173,12 +173,12 @@ class GwMeshManagerButton(GwAction):
             tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
             return
 
-        self.dlg_lineedit = GwLineeditUi()
+        self.dlg_lineedit = DrLineeditUi()
         tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_title', 'Choose a name for the mesh')
 
         self.dlg_lineedit.btn_accept.clicked.connect(partial(self._insert_mesh, mesh_path, roof_path, losses_path))
-        self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_gw.close_dialog, self.dlg_lineedit))
-        tools_gw.open_dialog(self.dlg_lineedit)
+        self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_lineedit))
+        tools_dr.open_dialog(self.dlg_lineedit)
 
 
     def _insert_mesh(self, mesh_path, roof_path, losses_path):
@@ -209,7 +209,7 @@ class GwMeshManagerButton(GwAction):
         self.dao.close_db()
 
         self._reload_manager_table()
-        tools_gw.close_dialog(self.dlg_lineedit)
+        tools_dr.close_dialog(self.dlg_lineedit)
 
 
     def _delete_mesh(self):

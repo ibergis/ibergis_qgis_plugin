@@ -7,16 +7,16 @@ from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import QListWidgetItem
 
-from ..dialog import GwAction
-from ...threads.createmesh import GwCreateMeshTask
+from ..dialog import DrAction
+from ...threads.createmesh import DrCreateMeshTask
 from ...threads.validatemesh import validations_dict
-from ...ui.ui_manager import GwCreateMeshUi
-from ...utils import Feedback, tools_gw, mesh_parser
+from ...ui.ui_manager import DrCreateMeshUi
+from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
 from ....lib import tools_qt
 
 
-class GwCreateMeshButton(GwAction):
+class DrCreateMeshButton(DrAction):
     """Button 36: CreateMesh"""
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -24,7 +24,7 @@ class GwCreateMeshButton(GwAction):
 
     def clicked_event(self):
         self.dao = global_vars.gpkg_dao_data.clone()
-        self.dlg_mesh = GwCreateMeshUi()
+        self.dlg_mesh = DrCreateMeshUi()
         dlg = self.dlg_mesh
         self.validations = validations_dict()
 
@@ -32,8 +32,8 @@ class GwCreateMeshButton(GwAction):
         self.roof_layer = self._get_layer(self.dao, "roof")
 
         # Set widgets
-        tools_gw.load_settings(dlg)
-        tools_gw.disable_tab_log(dlg)
+        tools_dr.load_settings(dlg)
+        tools_dr.disable_tab_log(dlg)
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
@@ -77,7 +77,7 @@ class GwCreateMeshButton(GwAction):
         dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
-        dlg.rejected.connect(partial(tools_gw.close_dialog, dlg))
+        dlg.rejected.connect(partial(tools_dr.close_dialog, dlg))
 
         # Create List Items
         flags = Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
@@ -103,7 +103,7 @@ class GwCreateMeshButton(GwAction):
                 if validation["layer"] == category:
                     dlg.list_validations.addItem(validation["list_item"])
 
-        tools_gw.open_dialog(dlg, dlg_name="create_mesh")
+        tools_dr.open_dialog(dlg, dlg_name="create_mesh")
 
     def _execute_process(self):
         dlg = self.dlg_mesh
@@ -155,7 +155,7 @@ class GwCreateMeshButton(GwAction):
                 return
 
         self.feedback = Feedback()
-        self.thread_triangulation = GwCreateMeshTask(
+        self.thread_triangulation = DrCreateMeshTask(
             "Triangulation",
             execute_validations,
             enable_transition,
@@ -201,7 +201,7 @@ class GwCreateMeshButton(GwAction):
     def _on_task_end(self):
         thread = self.thread_triangulation
         message = "Task canceled." if thread.isCanceled() else thread.message
-        tools_gw.fill_tab_log(
+        tools_dr.fill_tab_log(
             self.dlg_mesh,
             {"info": {"values": [{"message": message}]}},
             reset_text=False,
@@ -210,6 +210,16 @@ class GwCreateMeshButton(GwAction):
         sb.setValue(sb.maximum())
 
         self.timer.stop()
+
+        # Add errors to TOC
+        if thread.error_layers or thread.warning_layers:
+            group_name = "Mesh inputs errors & warnings"
+            for layer in thread.error_layers:
+                tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+            for layer in thread.warning_layers:
+                tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+            QgsProject.instance().layerTreeRoot().removeChildrenGroupWithoutLayers()
+            self.iface.layerTreeView().model().sourceModel().modelReset.emit()
 
         dlg = self.dlg_mesh
         dlg.btn_cancel.clicked.disconnect()
@@ -225,7 +235,7 @@ class GwCreateMeshButton(GwAction):
         self.dlg_mesh.lbl_timer.setText(text)
 
     def _set_progress_text(self, txt):
-        tools_gw.fill_tab_log(
+        tools_dr.fill_tab_log(
             self.dlg_mesh,
             {"info": {"values": [{"message": txt}]}},
             reset_text=False,

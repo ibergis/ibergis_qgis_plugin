@@ -410,4 +410,38 @@ INSERT INTO inlet (fid, top_elev, geom) VALUES(101, 43.71, ST_GeomFromText('POIN
 INSERT INTO inlet (fid, top_elev, geom) VALUES(102, 40.02, ST_GeomFromText('POINT(418586.092223 4577689.973094)', <SRID_VALUE>));
 INSERT INTO inlet (fid, top_elev, geom) VALUES(103, 40.1, ST_GeomFromText('POINT(418584.066459 4577703.285258)', <SRID_VALUE>));
 
+
+UPDATE roof SET code=1000+fid, slope = 1.5, width = 30, outlet_type = 1, outlet_vol =100, street_vol=0, infiltr_vol=0;
+
+UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', weir_cd = 1.6 , orifice_cd = 0.7, efficiency = 90 , width = 1, length = 0.2 where fid < 99;
+UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'UPC', a_param = 0.496 , b_param = 0.712, efficiency = 90 , width = 1, length = 0.2 where fid > 98;; 
+UPDATE inlet SET outlet_type = 'SINK', method = 'UPC', a_param = 0.496 , b_param = 0.712, efficiency = 90 , width = 1, length = 0.2 where fid = 44; 
+UPDATE inlet SET code = 1000+fid;
+
+insert into cat_raster VALUES (1, 'demo-rain' ,'Volume');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'00:00', 'rain\20200121_00.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'01:00', 'rain\20200121_01.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'02:00', 'rain\20200121_02.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'03:00', 'rain\20200121_03.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'04:00', 'rain\20200121_04.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'05:00', 'rain\20200121_05.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'06:00', 'rain\20200121_06.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'07:00', 'rain\20200121_07.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'08:00', 'rain\20200121_08.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'09:00', 'rain\20200121_09.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'10:00', 'rain\20200121_10.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'11:00', 'rain\20200121_11.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'12:00', 'rain\20200121_12.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'13:00', 'rain\20200121_13.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'14:00', 'rain\20200121_14.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'15:00', 'rain\20200121_15.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'16:00', 'rain\20200121_16.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'17:00', 'rain\20200121_17.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'18:00', 'rain\20200121_18.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'19:00', 'rain\20200121_19.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'20:00', 'rain\20200121_20.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'21:00', 'rain\20200121_21.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'22:00', 'rain\20200121_22.tif');
+insert into cat_raster_value (raster, time, fname) VALUES ('demo-rain' ,'23:00', 'rain\20200121_23.tif');
+
 PRAGMA foreign_keys = ON;

@@ -20,10 +20,10 @@ from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLaye
     QgsProject
 
 from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
-from ..utils import tools_gw
+from ..utils import tools_dr
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
-from .task import GwTask
+from .task import DrTask
 from .importinp_core import _tables
 
 _tables_dict = {}
@@ -48,22 +48,23 @@ for table_name, table_info in _tables_dict.items():
     }
 
 
-class GwEpaFileManager(GwTask):
+class DrEpaFileManager(DrTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()
+    progress_changed = pyqtSignal(int, str)
 
-    def __init__(self, description, go2epa, timer=None):
+    def __init__(self, description, params, timer=None):
 
         super().__init__(description)
-        self.go2epa = go2epa
+        self.params = params
         self.json_result = None
         self.rpt_result = None
         self.fid = 140
         self.function_name = None
         self.timer = timer
         self.initialize_variables()
-        self.set_variables_from_go2epa()
+        self.set_variables_from_params()
 
         # If enabled it will: add the output layers to your project, save the .xlsx files and the generated .inp file
         self.debug_mode = False
@@ -83,14 +84,12 @@ class GwEpaFileManager(GwTask):
         self.dao = global_vars.gpkg_dao_data.clone()
 
 
-    def set_variables_from_go2epa(self):
+    def set_variables_from_params(self):
         """ Set variables from object Go2Epa """
 
-        try:
-            self.dlg_go2epa = self.go2epa.dlg_go2epa
-        except:
-            self.dlg_go2epa = self.go2epa.execute_dlg
-        self.export_file_path = self.go2epa.export_file_path
+        self.dlg_go2epa = self.params.get("dialog")
+        self.export_file_path = self.params.get("export_file_path")
+        self.is_subtask = self.params.get("is_subtask", False)
 
 
     def run(self):
@@ -110,8 +109,9 @@ class GwEpaFileManager(GwTask):
 
         super().finished(result)
 
-        self.dlg_go2epa.btn_cancel.setEnabled(False)
-        self.dlg_go2epa.btn_accept.setEnabled(True)
+        if not self.is_subtask:
+            self.dlg_go2epa.btn_cancel.setEnabled(False)
+            self.dlg_go2epa.btn_accept.setEnabled(True)
 
         # self._close_file()
         if self.timer:
@@ -122,9 +122,10 @@ class GwEpaFileManager(GwTask):
         print("OUTPUT:")
         print(self.output)
 
-        # If Database exception, show dialog after task has finished
-        if global_vars.session_vars['last_error']:
-            tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
+        if not self.is_subtask:
+            # If Database exception, show dialog after task has finished
+            if global_vars.session_vars['last_error']:
+                tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
 
 
     def cancel(self):
@@ -180,12 +181,8 @@ class GwEpaFileManager(GwTask):
 
     def _progress_changed(self, progress):
 
-        text = self.feedback.textLog()
-        txt_infolog = self.dlg_go2epa.findChild(QTextEdit, 'txt_infolog')
-        # cur_text = tools_qt.get_text(self.dlg_go2epa, txt_infolog, return_string_null=False)
-        text = f"{text}"
-        txt_infolog.setText(text)
-        txt_infolog.show()
+        text = f"{self.feedback.textLog()}"
+        self.progress_changed.emit(progress, text)
 
 
     def _manage_params(self):

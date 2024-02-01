@@ -16,7 +16,7 @@ from qgis.gui import QgsMessageBar
 from ... import global_vars
 
 
-class GwMainWindow(QMainWindow):
+class DrMainWindow(QMainWindow):
 
     dlg_closed = QtCore.pyqtSignal()
     key_escape = QtCore.pyqtSignal()

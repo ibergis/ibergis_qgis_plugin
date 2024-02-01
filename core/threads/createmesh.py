@@ -20,7 +20,7 @@ from qgis.utils import iface
 
 from . import createmesh_core as core
 from .validatemesh import validate_input_layers, validate_inlets_in_triangles
-from .task import GwTask
+from .task import DrTask
 from ..utils import mesh_parser
 from ..utils.meshing_process import triangulate_custom
 from ... import global_vars
@@ -29,7 +29,7 @@ from ...lib import tools_qgis, tools_qt
 import time
 import numpy as np
 
-class GwCreateMeshTask(GwTask):
+class DrCreateMeshTask(DrTask):
     def __init__(
         self,
         description,
@@ -55,6 +55,8 @@ class GwCreateMeshTask(GwTask):
         self.losses_layer = losses_layer
         self.mesh_name = mesh_name
         self.feedback = feedback
+        self.error_layers = None
+        self.warning_layers = None
 
     def cancel(self):
         super().cancel()
@@ -179,24 +181,12 @@ class GwCreateMeshTask(GwTask):
                     self.message = "Task canceled."
                     return False
 
-                error_layers, warning_layers = validation_layers
+                self.error_layers, self.warning_layers = validation_layers
 
-                # Add errors to TOC
-                if error_layers or warning_layers:
-                    group_name = "Mesh inputs errors & warnings"
-                    for layer in error_layers:
-                        tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
-                    for layer in warning_layers:
-                        tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
-                    project.layerTreeRoot().removeChildrenGroupWithoutLayers()
-                    iface.layerTreeView().model().sourceModel().modelReset.emit()
-
-                    if error_layers:
-                        self.message = "There are errors in input data. Please, check the error layers."
-                        self.feedback.setProgress(100)
-                        return False
-                project.layerTreeRoot().removeChildrenGroupWithoutLayers()
-                iface.layerTreeView().model().sourceModel().modelReset.emit()
+                if self.error_layers:
+                    self.message = "There are errors in input data. Please, check the error layers."
+                    self.feedback.setProgress(100)
+                    return False
 
             # Create mesh
             triangulations = []

@@ -22,15 +22,15 @@ from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTableWidget, QTa
 from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
-from ..ui.ui_manager import GwNonVisualManagerUi, GwNonVisualControlsUi, GwNonVisualCurveUi, GwNonVisualPatternUDUi, \
-    GwNonVisualTimeseriesUi, GwNonVisualLidsUi, GwNonVisualPrint, GwNonVisualRasterUi
+from ..ui.ui_manager import DrNonVisualManagerUi, DrNonVisualControlsUi, DrNonVisualCurveUi, DrNonVisualPatternUDUi, \
+    DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualPrint, DrNonVisualRasterUi
 from ..utils.matplotlib_widget import MplCanvas
-from ..utils import tools_gw
+from ..utils import tools_dr
 from ...lib import tools_qgis, tools_qt, tools_db, tools_log
 from ... import global_vars
 
 
-class GwNonVisual:
+class DrNonVisual:
 
     def __init__(self):
         """ Class to control 'Add element' of toolbar 'edit' """
@@ -70,8 +70,8 @@ class GwNonVisual:
         """ Opens Non-Visual objects manager. Called from 'Non-Visual object manager' button. """
 
         # Get dialog
-        self.manager_dlg = GwNonVisualManagerUi()
-        tools_gw.load_settings(self.manager_dlg)
+        self.manager_dlg = DrNonVisualManagerUi()
+        tools_dr.load_settings(self.manager_dlg)
 
         # Make and populate tabs
         self._manage_tabs_manager()
@@ -83,10 +83,10 @@ class GwNonVisual:
         self.manager_dlg.btn_create.clicked.connect(partial(self._create_object, self.manager_dlg))
         self.manager_dlg.btn_delete.clicked.connect(partial(self._delete_object, self.manager_dlg))
         self.manager_dlg.btn_cancel.clicked.connect(self.manager_dlg.reject)
-        self.manager_dlg.finished.connect(partial(tools_gw.close_dialog, self.manager_dlg))
+        self.manager_dlg.finished.connect(partial(tools_dr.close_dialog, self.manager_dlg))
 
         # Open dialog
-        tools_gw.open_dialog(self.manager_dlg, dlg_name=f'dlg_nonvisual_manager')
+        tools_dr.open_dialog(self.manager_dlg, dlg_name=f'dlg_nonvisual_manager')
 
 
     def _manage_tabs_manager(self):
@@ -139,7 +139,7 @@ class GwNonVisual:
         # Set widget & model properties
         tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=set_edit_triggers,
                                       sectionResizeMode=2, stretchLastSection=True)
-        # tools_gw.set_tablemodel_config(self.manager_dlg, widget, table_name)
+        # tools_dr.set_tablemodel_config(self.manager_dlg, widget, table_name)
 
         # Sort the table by feature id
         model.sort(1, 0)
@@ -149,7 +149,8 @@ class GwNonVisual:
         """ Filters manager table by id """
 
         widget_table = dialog.main_tab.currentWidget()
-        id_field = 'idval'
+        tablename = widget_table.objectName()
+        id_field = self.dict_ids.get(tablename, 'idval')
 
         if text is None:
             text = tools_qt.get_text(dialog, dialog.txt_filter, return_string_null=False)
@@ -265,8 +266,8 @@ class GwNonVisual:
         """ Opens dialog for curve """
 
         # Get dialog
-        self.dialog = GwNonVisualCurveUi()
-        tools_gw.load_settings(self.dialog)
+        self.dialog = DrNonVisualCurveUi()
+        tools_dr.load_settings(self.dialog)
 
         # Create plot widget
         plot_widget = self._create_plot_widget(self.dialog)
@@ -274,6 +275,9 @@ class GwNonVisual:
         # Define variables
         tbl_curve_value = self.dialog.tbl_curve_value
         cmb_curve_type = self.dialog.cmb_curve_type
+
+        paste_shortcut = QShortcut(QKeySequence.Paste, tbl_curve_value)
+        paste_shortcut.activated.connect(partial(self._paste_curve_values, tbl_curve_value))
 
         # Create & fill cmb_curve_type
         curve_type_headers, curve_type_list = self._create_curve_type_lists()
@@ -306,7 +310,24 @@ class GwNonVisual:
         tools_qt.set_tableview_config(tbl_curve_value, sectionResizeMode=1, edit_triggers=QTableView.DoubleClicked)
 
         # Open dialog
-        tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_curve')
+        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_curve')
+
+
+    def _paste_curve_values(self, tbl_curve_value):
+        selected = tbl_curve_value.selectedRanges()
+        if not selected:
+            return
+
+        text = QApplication.clipboard().text()
+        rows = text.split("\n")
+
+        for r, row in enumerate(rows):
+            columns = row.split("\t")
+            for c, value in enumerate(columns):
+                item = QTableWidgetItem(value)
+                row_pos = selected[0].topRow() + r
+                col_pos = selected[0].leftColumn() + c
+                tbl_curve_value.setItem(row_pos, col_pos, item)
 
 
     def _create_curve_type_lists(self):
@@ -367,7 +388,7 @@ class GwNonVisual:
         cmb_curve_type = dialog.cmb_curve_type
 
         # Get values
-        curve_type = tools_gw.get_config_parser('nonvisual_curves', 'cmb_curve_type', "user", "session")
+        curve_type = tools_dr.get_config_parser('nonvisual_curves', 'cmb_curve_type', "user", "session")
 
         # Populate widgets
         tools_qt.set_widget_text(dialog, cmb_curve_type, curve_type)
@@ -383,7 +404,7 @@ class GwNonVisual:
         curve_type = tools_qt.get_combo_value(dialog, cmb_curve_type)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_curves', 'cmb_curve_type', curve_type)
+        tools_dr.set_config_parser('nonvisual_curves', 'cmb_curve_type', curve_type)
 
 
     def _manage_curve_type(self, dialog, curve_type_headers, table, index):
@@ -666,7 +687,7 @@ class GwNonVisual:
             self._reload_manager_table()
 
         self._save_curve_widgets(dialog)
-        tools_gw.close_dialog(dialog)
+        tools_dr.close_dialog(dialog)
 
 
     def _insert_curve_values(self, dialog, tbl_curve_value, curve_name):
@@ -709,8 +730,8 @@ class GwNonVisual:
         """ Opens dialog for patterns """
 
         # Get dialog
-        self.dialog = GwNonVisualPatternUDUi()
-        tools_gw.load_settings(self.dialog)
+        self.dialog = DrNonVisualPatternUDUi()
+        tools_dr.load_settings(self.dialog)
 
         # Manage widgets depending on the project_type
         #    calls -> def _manage_ud_patterns_dlg(self):
@@ -720,7 +741,7 @@ class GwNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_pattern_{global_vars.project_type}')
+        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_pattern_{global_vars.project_type}')
 
 
     def _manage_ud_patterns_dlg(self, pattern, duplicate=False):
@@ -732,6 +753,10 @@ class GwNonVisual:
 
         # Create plot widget
         plot_widget = self._create_plot_widget(self.dialog)
+
+        for table in [self.dialog.tbl_monthly, self.dialog.tbl_daily, self.dialog.tbl_hourly, self.dialog.tbl_weekend]:
+            paste_shortcut = QShortcut(QKeySequence.Paste, table)
+            paste_shortcut.activated.connect(partial(self._paste_patterns_values, table))
 
         sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
@@ -753,6 +778,21 @@ class GwNonVisual:
         # Connect OK button to insert all inp_pattern and inp_pattern_value data to database
         is_new = (pattern is None) or duplicate
         self.dialog.btn_accept.clicked.connect(partial(self._accept_pattern_ud, self.dialog, is_new))
+
+
+    def _paste_patterns_values(self, tbl_pattern_value):
+        selected = tbl_pattern_value.selectedRanges()
+        if not selected:
+            return
+
+        text = QApplication.clipboard().text()
+        rows = text.split("\n")
+        columns = rows[0].split("\t")
+        for c, value in enumerate(columns):
+            item = QTableWidgetItem(value)
+            row_pos = selected[0].topRow()
+            col_pos = selected[0].leftColumn() + c
+            tbl_pattern_value.setItem(row_pos, col_pos, item)
 
 
     def _scale_to_fit_pattern_tableviews(self, dialog):
@@ -810,7 +850,7 @@ class GwNonVisual:
         cmb_pattern_type = dialog.cmb_pattern_type
 
         # Get values
-        pattern_type = tools_gw.get_config_parser('nonvisual_patterns', 'cmb_pattern_type', "user", "session")
+        pattern_type = tools_dr.get_config_parser('nonvisual_patterns', 'cmb_pattern_type', "user", "session")
 
         # Populate widgets
         tools_qt.set_combo_value(cmb_pattern_type, str(pattern_type), 0)
@@ -826,7 +866,7 @@ class GwNonVisual:
         pattern_type = tools_qt.get_combo_value(dialog, cmb_pattern_type)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_patterns', 'cmb_pattern_type', pattern_type)
+        tools_dr.set_config_parser('nonvisual_patterns', 'cmb_pattern_type', pattern_type)
 
 
     def _manage_patterns_tableviews(self, dialog, cmb_pattern_type, plot_widget):
@@ -926,7 +966,7 @@ class GwNonVisual:
             self._reload_manager_table()
 
         self._save_ud_pattern_widgets(dialog)
-        tools_gw.close_dialog(dialog)
+        tools_dr.close_dialog(dialog)
 
 
     def _insert_ud_pattern_values(self, dialog, pattern_type, pattern_name):
@@ -1021,8 +1061,8 @@ class GwNonVisual:
         """ Opens dialog for controls """
 
         # Get dialog
-        self.dialog = GwNonVisualControlsUi()
-        tools_gw.load_settings(self.dialog)
+        self.dialog = DrNonVisualControlsUi()
+        tools_dr.load_settings(self.dialog)
 
         if control_id is not None:
             self._populate_controls_widgets(control_id)
@@ -1035,7 +1075,7 @@ class GwNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_controls')
+        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_controls')
 
 
     def _populate_controls_widgets(self, control_id):
@@ -1061,7 +1101,7 @@ class GwNonVisual:
         # chk_active = dialog.chk_active
         #
         # # Get values
-        # active = tools_gw.get_config_parser('nonvisual_controls', 'chk_active', "user", "session")
+        # active = tools_dr.get_config_parser('nonvisual_controls', 'chk_active', "user", "session")
         #
         # # Populate widgets
         # tools_qt.set_checked(dialog, chk_active, active)
@@ -1078,7 +1118,7 @@ class GwNonVisual:
         # active = tools_qt.is_checked(dialog, chk_active)
         #
         # # Populate widgets
-        # tools_gw.set_config_parser('nonvisual_controls', 'chk_active', active)
+        # tools_dr.set_config_parser('nonvisual_controls', 'chk_active', active)
 
 
     def _accept_controls(self, dialog, is_new, control_id):
@@ -1127,7 +1167,7 @@ class GwNonVisual:
             self._reload_manager_table()
 
         self._save_controls_widgets(dialog)
-        tools_gw.close_dialog(dialog)
+        tools_dr.close_dialog(dialog)
 
     # endregion
 
@@ -1136,8 +1176,8 @@ class GwNonVisual:
         """ Opens dialog for timeseries """
 
         # Get dialog
-        self.dialog = GwNonVisualTimeseriesUi()
-        tools_gw.load_settings(self.dialog)
+        self.dialog = DrNonVisualTimeseriesUi()
+        tools_dr.load_settings(self.dialog)
 
         # Variables
         cmb_timeser_type = self.dialog.cmb_timeser_type
@@ -1172,7 +1212,7 @@ class GwNonVisual:
         self._manage_times_type(tbl_timeseries_value, tools_qt.get_combo_value(self.dialog, cmb_times_type))
 
         # Open dialog
-        tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_timeseries')
+        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_timeseries')
 
 
     def _paste_timeseries_values(self, tbl_timeseries_value):
@@ -1314,8 +1354,8 @@ class GwNonVisual:
         cmb_times_type = dialog.cmb_times_type
 
         # Get values
-        timeser_type = tools_gw.get_config_parser('nonvisual_timeseries', 'cmb_timeser_type', "user", "session")
-        times_type = tools_gw.get_config_parser('nonvisual_timeseries', 'cmb_times_type', "user", "session")
+        timeser_type = tools_dr.get_config_parser('nonvisual_timeseries', 'cmb_timeser_type', "user", "session")
+        times_type = tools_dr.get_config_parser('nonvisual_timeseries', 'cmb_times_type', "user", "session")
 
         # Populate widgets
         tools_qt.set_combo_value(cmb_timeser_type, str(timeser_type), 0)
@@ -1334,8 +1374,8 @@ class GwNonVisual:
         times_type = tools_qt.get_combo_value(dialog, cmb_times_type)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_timeseries', 'cmb_timeser_type', timeser_type)
-        tools_gw.set_config_parser('nonvisual_timeseries', 'cmb_times_type', times_type)
+        tools_dr.set_config_parser('nonvisual_timeseries', 'cmb_timeser_type', timeser_type)
+        tools_dr.set_config_parser('nonvisual_timeseries', 'cmb_times_type', times_type)
 
 
     def _accept_timeseries(self, dialog, is_new):
@@ -1417,7 +1457,7 @@ class GwNonVisual:
             self._reload_manager_table()
 
         self._save_timeseries_widgets(dialog)
-        tools_gw.close_dialog(dialog)
+        tools_dr.close_dialog(dialog)
 
 
     def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, timeseries):
@@ -1499,12 +1539,12 @@ class GwNonVisual:
         """ Opens dialog for lids """
 
         # Get dialog
-        self.dialog = GwNonVisualLidsUi()
+        self.dialog = DrNonVisualLidsUi()
 
         # Set dialog not resizable
         self.dialog.setFixedSize(self.dialog.size())
 
-        tools_gw.load_settings(self.dialog)
+        tools_dr.load_settings(self.dialog)
 
         is_new = (lidco_id is None) or duplicate
 
@@ -1531,7 +1571,7 @@ class GwNonVisual:
         self.dialog.cmb_lidtype.currentIndexChanged.connect(partial(self._manage_lids_tabs, self.dialog))
         self.dialog.btn_ok.clicked.connect(partial(self._accept_lids, self.dialog, is_new, lidco_id))
         self.dialog.btn_cancel.clicked.connect(self.dialog.reject)
-        self.dialog.finished.connect(partial(tools_gw.close_dialog, self.dialog))
+        self.dialog.finished.connect(partial(tools_dr.close_dialog, self.dialog))
         self.dialog.btn_help.clicked.connect(partial(self._open_help))
 
         self._manage_lids_tabs(self.dialog)
@@ -1542,7 +1582,7 @@ class GwNonVisual:
             self._load_lids_widgets(self.dialog)
 
         # Open dialog
-        tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_lids')
+        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_lids')
 
 
     def _open_help(self):
@@ -1602,7 +1642,7 @@ class GwNonVisual:
         cmb_lidtype = dialog.cmb_lidtype
 
         # Get values
-        lidtype = tools_gw.get_config_parser('nonvisual_lids', 'cmb_lidtype', "user", "session")
+        lidtype = tools_dr.get_config_parser('nonvisual_lids', 'cmb_lidtype', "user", "session")
 
         # Populate widgets
         tools_qt.set_combo_value(cmb_lidtype, str(lidtype), 0)
@@ -1622,7 +1662,7 @@ class GwNonVisual:
                 visible_widgets = self._order_list(visible_widgets)
 
                 for y, widget in enumerate(visible_widgets):
-                    value = tools_gw.get_config_parser('nonvisual_lids', f"{widget.objectName()}", "user", "session")
+                    value = tools_dr.get_config_parser('nonvisual_lids', f"{widget.objectName()}", "user", "session")
 
                     if type(widget) == QLineEdit:
                         tools_qt.set_widget_text(dialog, widget, str(value))
@@ -1654,11 +1694,11 @@ class GwNonVisual:
                         value = tools_qt.get_text(dialog, widget)
                     else:
                         value = tools_qt.get_combo_value(dialog, widget)
-                    tools_gw.set_config_parser('nonvisual_lids', f"{widget.objectName()}", value)
+                    tools_dr.set_config_parser('nonvisual_lids', f"{widget.objectName()}", value)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_lids', 'cmb_lidtype', lidtype)
-        tools_gw.set_config_parser('nonvisual_lids', 'txt_name', name)
+        tools_dr.set_config_parser('nonvisual_lids', 'cmb_lidtype', lidtype)
+        tools_dr.set_config_parser('nonvisual_lids', 'txt_name', name)
 
 
 
@@ -1829,7 +1869,7 @@ class GwNonVisual:
             self._reload_manager_table()
 
         self._save_lids_widgets(dialog)
-        tools_gw.close_dialog(dialog)
+        tools_dr.close_dialog(dialog)
 
 
     def _insert_lids_values(self, dialog, lidco_id, lidco_type):
@@ -1888,8 +1928,8 @@ class GwNonVisual:
         """ Opens dialog for raster """
 
         # Get dialog
-        self.dialog = GwNonVisualRasterUi()
-        tools_gw.load_settings(self.dialog)
+        self.dialog = DrNonVisualRasterUi()
+        tools_dr.load_settings(self.dialog)
 
         # Define variables
         tbl_raster_value = self.dialog.tbl_raster_value
@@ -1917,7 +1957,7 @@ class GwNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_gw.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_raster')
+        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_raster')
 
     def _populate_raster_combo(self, cmb_raster_type):
         """ Populates raster dialog combos """
@@ -1946,7 +1986,6 @@ class GwNonVisual:
             return
         raster_name = row[1]
         raster_type = row[2]
-        active = row[3]
 
         # Populate text & combobox widgets
         if not duplicate:
@@ -1973,7 +2012,7 @@ class GwNonVisual:
         cmb_raster_type = dialog.cmb_raster_type
 
         # Get values
-        raster_type = tools_gw.get_config_parser('nonvisual_rasters', 'cmb_raster_type', "user", "session")
+        raster_type = tools_dr.get_config_parser('nonvisual_rasters', 'cmb_raster_type', "user", "session")
 
         # Populate widgets
         tools_qt.set_widget_text(dialog, cmb_raster_type, raster_type)
@@ -1988,7 +2027,7 @@ class GwNonVisual:
         raster_type = tools_qt.get_combo_value(dialog, cmb_raster_type)
 
         # Populate widgets
-        tools_gw.set_config_parser('nonvisual_rasters', 'cmb_raster_type', raster_type)
+        tools_dr.set_config_parser('nonvisual_rasters', 'cmb_raster_type', raster_type)
 
     def _accept_raster(self, dialog, is_new):
         """ Manage accept button (insert & update) """
@@ -2064,7 +2103,7 @@ class GwNonVisual:
             self._reload_manager_table()
 
         self._save_raster_widgets(dialog)
-        tools_gw.close_dialog(dialog)
+        tools_dr.close_dialog(dialog)
 
     def _insert_raster_values(self, dialog, tbl_raster_value, raster_id):
         """ Insert table values into cat_raster_values """
@@ -2105,9 +2144,9 @@ class GwNonVisual:
         feature = f'"id":"{id}", '
         feature += f'"tableName":"{table_name}" '
         extras = f'"fields":{fields}'
-        body = tools_gw.create_body(feature=feature, extras=extras)
+        body = tools_dr.create_body(feature=feature, extras=extras)
         print(f"body :>> {body}")
-        json_result = tools_gw.execute_procedure('setfields', body, commit=False)
+        json_result = tools_dr.execute_procedure('setfields', body, commit=False)
         print(f"json_result :>> {json_result}")
         if (not json_result) or (json_result.get('status') in (None, 'Failed')):
             global_vars.gpkg_dao_data.rollback()
@@ -2127,7 +2166,7 @@ class GwNonVisual:
     def _connect_dialog_signals(self):
 
         self.dialog.btn_cancel.clicked.connect(self.dialog.reject)
-        self.dialog.rejected.connect(partial(tools_gw.close_dialog, self.dialog))
+        self.dialog.rejected.connect(partial(tools_dr.close_dialog, self.dialog))
 
 
     def _onCellChanged(self, table, row, column):

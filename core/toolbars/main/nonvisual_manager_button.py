@@ -6,17 +6,17 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 
-from ..dialog import GwAction
-from ...shared.nonvisual import GwNonVisual
+from ..dialog import DrAction
+from ...shared.nonvisual import DrNonVisual
 
 
-class GwNonVisualManagerButton(GwAction):
+class DrNonVisualManagerButton(DrAction):
     """ Button 218: Non visual objects manager """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
-        self.nonvisual = GwNonVisual()
+        self.nonvisual = DrNonVisual()
 
 
     def clicked_event(self):

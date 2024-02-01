@@ -29,13 +29,13 @@ from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeatu
     QgsWkbTypes
 from qgis.gui import QgsDateTimeEdit, QgsRubberBand
 
-from ..ui.dialog import GwDialog
-from ..ui.main_window import GwMainWindow
-from ..ui.docker import GwDocker
+from ..ui.dialog import DrDialog
+from ..ui.main_window import DrMainWindow
+from ..ui.docker import DrDocker
 from . import tools_backend_calls, tools_fct
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt, tools_log, tools_os, tools_db
-from ...lib.tools_qt import GwHyperLinkLabel, GwHyperLinkLineEdit
+from ...lib.tools_qt import DrHyperLinkLabel, DrHyperLinkLineEdit
 
 
 def load_settings(dialog, plugin='core'):
@@ -254,9 +254,9 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_wi
         hide_widgets_form(dlg, dlg_name)
 
     # Open dialog
-    if issubclass(type(dlg), GwDialog):
+    if issubclass(type(dlg), DrDialog):
         dlg.open()
-    elif issubclass(type(dlg), GwMainWindow):
+    elif issubclass(type(dlg), DrMainWindow):
         dlg.show()
     else:
         dlg.show()
@@ -1225,7 +1225,7 @@ def get_values(dialog, widget, _json=None, ignore_editability=False):
 
     value = None
 
-    if type(widget) in (QDoubleSpinBox, QLineEdit, QSpinBox, QTextEdit, GwHyperLinkLineEdit):
+    if type(widget) in (QDoubleSpinBox, QLineEdit, QSpinBox, QTextEdit, DrHyperLinkLineEdit):
         if widget.isReadOnly() and not ignore_editability:
             return _json
         value = tools_qt.get_text(dialog, widget, return_string_null=False)
@@ -1365,9 +1365,9 @@ def add_hyperlink(field):
 
     is_editable = field.get('iseditable')
     if is_editable:
-        widget = GwHyperLinkLineEdit()
+        widget = DrHyperLinkLineEdit()
     else:
-        widget = GwHyperLinkLabel()
+        widget = DrHyperLinkLabel()
     widget.setObjectName(field['widgetname'])
     if 'widgetcontrols' in field and field['widgetcontrols']:
         widget.setProperty('widgetcontrols', field['widgetcontrols'])
@@ -2186,7 +2186,7 @@ def init_docker(docker_param='qgis_info_docker'):
     if value == 'true':
         close_docker()
         global_vars.session_vars['docker_type'] = docker_param
-        global_vars.session_vars['dialog_docker'] = GwDocker()
+        global_vars.session_vars['dialog_docker'] = DrDocker()
         global_vars.session_vars['dialog_docker'].dlg_closed.connect(partial(close_docker, option_name='position'))
         manage_docker_options()
     else:
@@ -2499,7 +2499,7 @@ def manage_current_selections_docker(result, open=False):
     if not result or 'body' not in result or 'data' not in result['body']:
         return
 
-    title = "Gw Selectors: "
+    title = "Dr Selectors: "
     if 'userValues' in result['body']['data']:
         for user_value in result['body']['data']['userValues']:
             if user_value['parameter'] == 'plan_psector_vdefault' and user_value['value']:
@@ -2847,7 +2847,7 @@ def set_widgets(dialog, complet_result, field, tablename, class_info):
                   "class": class_info}
         widget = globals()[f"_manage_{field['widgettype']}"](**kwargs)
     except Exception as e:
-        msg = (f"{type(e).__name__}: {e} Python function: tools_gw.set_widgets. WHERE columname='{field['columnname']}' "
+        msg = (f"{type(e).__name__}: {e} Python function: tools_dr.set_widgets. WHERE columname='{field['columnname']}' "
                f"AND widgetname='{field['widgetname']}' AND widgettype='{field['widgettype']}'")
         tools_qgis.show_message(msg, 2, dialog=dialog)
         return label, widget

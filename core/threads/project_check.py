@@ -15,14 +15,14 @@ from qgis.PyQt.QtWidgets import QCheckBox, QGridLayout, QLabel, QSizePolicy
 from qgis.PyQt.QtGui import QColor
 from qgis.core import Qgis, QgsWkbTypes, QgsSpatialIndex, QgsPointXY, QgsField, QgsProject, QgsVectorLayer, QgsFeature
 
-from .task import GwTask
-from ..utils import tools_gw
-from ..ui.ui_manager import GwProjectCheckUi
+from .task import DrTask
+from ..utils import tools_dr
+from ..ui.ui_manager import DrProjectCheckUi
 from ... import global_vars
 from ...lib import tools_qgis, tools_log, tools_qt, tools_os
 
 
-class GwProjectCheckTask(GwTask):
+class DrProjectCheckTask(DrTask):
 
     task_finished = pyqtSignal(list)
     progressUpdate = pyqtSignal(str)
@@ -225,11 +225,16 @@ class GwProjectCheckTask(GwTask):
         """ Create temporal layers with the conflicting features """
 
         # Create a group & add layers to the group
-        group_name = "Check Project Results"
+        group_name = "DRAIN TEMPORAL"
         root = QgsProject.instance().layerTreeRoot()
         my_group = root.findGroup(group_name)
         if my_group is None:
             my_group = root.insertGroup(0, group_name)
+        else:
+            # If the group already exists, remove existing layers with names "node" and "arc"
+            for child in my_group.children():
+                if child.name() in ["node", "arc"]:
+                    QgsProject.instance().removeMapLayer(child.layerId())
 
         if self.log_features_node:
             # Create in-memory layers

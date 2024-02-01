@@ -9,12 +9,12 @@ from qgis.PyQt.QtCore import Qt, pyqtSignal
 
 import os
 
-from .task import GwTask
-from ..utils import tools_gw
+from .task import DrTask
+from ..utils import tools_dr
 from ...lib import tools_qt, tools_log
 
 
-class GwGpkgCreateSchemaTask(GwTask):
+class DrGpkgCreateSchemaTask(DrTask):
 
     task_finished = pyqtSignal(list)
 
@@ -127,10 +127,10 @@ class GwGpkgCreateSchemaTask(GwTask):
         example_data = self.params['example_data']
         tools_log.log_info("Execute 'custom_execution'")
         if self.admin.rdb_sample.isChecked() and example_data:
-            tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
+            tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
             self.admin.load_sample_data()
         elif self.admin.rdb_data.isChecked():
-            tools_gw.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
+            tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
 
 
     def calculate_number_of_files(self):

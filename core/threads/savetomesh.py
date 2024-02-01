@@ -14,7 +14,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QVariant
 
-from .task import GwTask
+from .task import DrTask
 from ..utils import mesh_parser
 from ..utils.join_boundaries import SetBoundaryConditonsToMeshBoundaries
 from ... import global_vars
@@ -27,7 +27,7 @@ def pairwise(iterable):
     return zip(a, b)
 
 
-class GwSaveToMeshTask(GwTask):
+class DrSaveToMeshTask(DrTask):
     def __init__(
         self,
         description,

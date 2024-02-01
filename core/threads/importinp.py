@@ -1,12 +1,12 @@
 import traceback
 
 from . import importinp_core as core
-from .task import GwTask
+from .task import DrTask
 from ..utils.generate_swmm_inp import inp2dict
 from ... import global_vars
 
 
-class GwImportInpTask(GwTask):
+class DrImportInpTask(DrTask):
     def __init__(self, description, input_file, gpkg_path, feedback):
         super().__init__(description)
         self.input_file = input_file

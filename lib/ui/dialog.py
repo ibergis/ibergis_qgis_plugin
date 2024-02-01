@@ -8,7 +8,7 @@ or (at your option) any later version.
 from qgis.PyQt.QtWidgets import QDialog
 
 
-class GwDialog(QDialog):
+class DrDialog(QDialog):
 
     def __init__(self):
 

@@ -11,7 +11,7 @@ import sqlite3
 from qgis.PyQt.QtSql import QSqlDatabase
 
 
-class GwGpkgDao(object):
+class DrGpkgDao(object):
 
     def __init__(self):
 
@@ -198,7 +198,7 @@ class GwGpkgDao(object):
 
 
     def clone(self):
-        new_dao = GwGpkgDao()
+        new_dao = DrGpkgDao()
         if self.db_filepath:
             new_dao.init_db(self.db_filepath, enable_spatial=self.enable_spatial)
         return new_dao

@@ -6,33 +6,26 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-import shutil
-import sys
-import json
-from pathlib import Path
 
 from functools import partial
 from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.PyQt.QtCore import QStringListModel, Qt, QTimer
-from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGroupBox, QSpacerItem, QSizePolicy, \
-    QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout
+from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.PyQt.QtWidgets import QTextEdit, QLabel
 from qgis.core import QgsApplication
 
-import geopandas as gpd
-
-from ...threads.epa_file_manager import GwEpaFileManager
-from ...shared.options import GwOptions
-from ...utils import tools_gw
-from ...ui.ui_manager import GwExecuteModelUi
+from ...threads.execute_model import DrExecuteModel
+from ...shared.options import DrOptions
+from ...utils import tools_dr
+from ...ui.ui_manager import DrExecuteModelUi
 from .... import global_vars
 from ....lib import tools_qgis, tools_qt, tools_db, tools_os
-from ..dialog import GwAction
+from ..dialog import DrAction
 
 
-class GwExecuteModelButton(GwAction):
+class DrExecuteModelButton(DrAction):
     """ Button 38: Execute model """
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -41,6 +34,9 @@ class GwExecuteModelButton(GwAction):
         self.project_type = global_vars.project_type
         self.epa_options_list = []
         self.export_path = None
+        self.cur_process = None
+        self.cur_text = None
+        self.execute_model_task = None
 
 
     def clicked_event(self):
@@ -49,18 +45,25 @@ class GwExecuteModelButton(GwAction):
 
 
     def _open_execute_dlg(self):
-        self.execute_dlg = GwExecuteModelUi()
-        tools_gw.load_settings(self.execute_dlg)
+        self.execute_dlg = DrExecuteModelUi()
+        tools_dr.load_settings(self.execute_dlg)
 
         # Populate combobox
         self._populate_mesh_cmb()
+
+        # Fill widget values
+        self._load_user_values()
 
         # Signals
         self.execute_dlg.btn_options.clicked.connect(self._go2epa_options)
         self.execute_dlg.btn_folder_path.clicked.connect(partial(self._manage_btn_folder_path))
         self.execute_dlg.btn_accept.clicked.connect(partial(self._manage_btn_accept))
+        self.execute_dlg.btn_cancel.clicked.connect(partial(self._cancel_task))
+        self.execute_dlg.btn_close.clicked.connect(partial(tools_dr.close_dialog, self.execute_dlg))
 
-        tools_gw.open_dialog(self.execute_dlg, 'dlg_execute_model')
+        self.execute_dlg.btn_cancel.setVisible(False)
+
+        tools_dr.open_dialog(self.execute_dlg, 'dlg_execute_model')
 
 
     def _populate_mesh_cmb(self):
@@ -71,7 +74,7 @@ class GwExecuteModelButton(GwAction):
 
 
     def _go2epa_options(self):
-        self.go2epa_options = GwOptions()
+        self.go2epa_options = DrOptions()
         self.go2epa_options.open_options_dlg()
 
 
@@ -93,128 +96,14 @@ class GwExecuteModelButton(GwAction):
         # TODO: ask for import
         do_import = True
 
-        self.execute_model(folder_path=self.export_path, do_generate_inp=True, do_export=True, do_run=True,
-                           do_import=do_import)
+        self._save_user_values()
 
+        # Show tab log
+        tools_dr.set_tabs_enabled(self.execute_dlg)
+        self.execute_dlg.mainTab.setCurrentIndex(1)
 
-    def execute_model(self, folder_path: str = '', do_generate_inp: bool = True, do_export: bool = True, do_run: bool = True, do_import: bool = True):
-        # Mesh files
-        if do_export:
-            mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
-            self._copy_mesh_files(mesh_id, folder_path)
-            self._copy_static_files(folder_path)
-            self._create_hyetograph_file(folder_path)
-            self._create_rain_file(folder_path)
-            return
-
-        # INP file
-        if do_generate_inp:
-            self._generate_inp(folder_path)
-
-
-    def _copy_mesh_files(self, mesh_id, folder_path):
-
-        sql = f"SELECT iber2d, roof, losses FROM cat_file WHERE id = '{mesh_id}'"
-        row = tools_db.get_row(sql)
-        if row:
-            iber2d_content, roof_content, losses_content = row
-
-            # Write content to files
-            self._write_to_file(f'{folder_path}{os.sep}Iber2D.dat', iber2d_content)
-
-            if roof_content:
-                self._write_to_file(f'{folder_path}{os.sep}Iber_SWMM_roof.dat', roof_content)
-
-            if not losses_content:
-                losses_content = '0'
-            else:
-                # Losses method
-                sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_method'"
-                row = tools_db.get_row(sql, is_thread=True)
-                losses_method = row[0] if row and row[0] is not None else 2
-                # cn_multiplier
-                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_cn_multiplier'"
-                row = tools_db.get_row(sql, is_thread=True)
-                cn_multiplier = row[0] if row else 0
-                # ia_coeff
-                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_ia_coefficient'"
-                row = tools_db.get_row(sql, is_thread=True)
-                ia_coeff = row[0] if row else 0
-                # start_time
-                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_starttime'"
-                row = tools_db.get_row(sql, is_thread=True)
-                start_time = row[0] if row else 0
-                # Replace first line
-                new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
-                losses_content_lines = losses_content.split('\n')
-                losses_content_lines[0] = new_first_line
-                losses_content = '\n'.join(losses_content_lines)
-
-            self._write_to_file(f'{folder_path}{os.sep}Iber_Losses.dat', losses_content)
-
-
-    def _write_to_file(self, file_path, content):
-        with open(file_path, 'w') as file:
-            file.write(content)
-
-    def _copy_static_files(self, folder_path: str):
-        folder = Path(global_vars.plugin_dir) / "resources" / "drain"
-        file_names = ["Iber_Problemdata.dat", "Iber_SWMM.ini"]
-        for file_name in file_names:
-            shutil.copy(folder / file_name, folder_path)
-
-    def _create_hyetograph_file(self, folder_path):
-        file_name = Path(folder_path) / "Iber_Hyetograph.dat"
-
-        sql = "SELECT value FROM config_param_user WHERE parameter = 'options_rain_class'"
-        row = tools_db.get_row(sql)
-        rain_class = int(row[0]) if row else 0
-
-        if rain_class != 1:
-            file_name.write_text("Hyetographs\n0\nEnd\n")
-            return
-        
-        gdf = gpd.read_file(global_vars.gpkg_dao_data.db_filepath, layer="hyetograph")
-        gdf['x'] = gdf.geometry.x
-        gdf['y'] = gdf.geometry.y
-
-        with open(file_name, "w") as file:
-            file.write("Hyetographs\n")
-            file.write(f"{len(gdf)}\n")
-
-            for i, ht_row in enumerate(gdf.itertuples(), start=1):
-                file.write(f"{i}\n")
-                file.write(f"{ht_row.x} {ht_row.y}\n")
-                
-                sql = f"""
-                    SELECT time, value 
-                    FROM cat_timeseries_value 
-                    WHERE timeseries ='{ht_row.timeseries}'
-                """
-                ts_rows = tools_db.get_rows(sql)
-                if ts_rows:
-                    file.write(f"{len(ts_rows)}\n")
-                    for ts_row in ts_rows:
-                        hours, minutes = map(int, ts_row["time"].split(":"))
-                        seconds = hours * 3600 + minutes * 60
-                        file.write(f"{seconds} {ts_row['value']}\n")
-
-            file.write("End\n")
-
-    def _create_rain_file(self, folder_path):
-        file_name = Path(folder_path) / "Iber_Rain.dat"
-
-        sql = "SELECT value FROM config_param_user WHERE parameter = 'options_rain_class'"
-        row = tools_db.get_row(sql)
-        rain_class = int(row[0]) if row else 0
-
-        if rain_class != 2:
-            file_name.write_text(f"{rain_class} 0\n")
-            return
-
-    def _generate_inp(self, folder_path):
-        # INP file
-        self.export_file_path = f"{folder_path}{os.sep}Iber_SWMM.inp"
+        self.execute_dlg.btn_cancel.setVisible(True)
+        self.execute_dlg.btn_close.setVisible(False)
 
         # Create timer
         self.t0 = time()
@@ -222,11 +111,76 @@ class GwExecuteModelButton(GwAction):
         self.timer.timeout.connect(partial(self._calculate_elapsed_time, self.execute_dlg))
         self.timer.start(1000)
 
-        # Set background task 'Go2Epa'
-        description = f"Go2Epa"
-        self.go2epa_task = GwEpaFileManager(description, self, timer=self.timer)
-        QgsApplication.taskManager().addTask(self.go2epa_task)
-        QgsApplication.taskManager().triggerTask(self.go2epa_task)
+        # Set background task 'Execute model'
+        description = f"Execute model"
+        params = {"dialog": self.execute_dlg, "folder_path": self.export_path,
+                  "do_generate_inp": True, "do_export": True, "do_run": True, "do_import": do_import}
+        self.execute_model_task = DrExecuteModel(description, params, timer=self.timer)
+        self.execute_model_task.progress_changed.connect(self._progress_changed)
+        QgsApplication.taskManager().addTask(self.execute_model_task)
+        QgsApplication.taskManager().triggerTask(self.execute_model_task)
+
+
+    def _cancel_task(self):
+        if self.execute_model_task:
+            self.execute_model_task.cancel()
+
+
+    def _progress_changed(self, process, progress, text, new_line):
+        # Progress bar
+        if progress is not None:
+            self.execute_dlg.progress_bar.setValue(progress)
+
+        # TextEdit log
+        txt_infolog = self.execute_dlg.findChild(QTextEdit, 'txt_infolog')
+        cur_text = tools_qt.get_text(self.execute_dlg, txt_infolog, return_string_null=False)
+        if process and process not in (self.cur_process, "Generate INP algorithm"):
+            cur_text = f"{cur_text}\n" \
+                       f"--------------------\n" \
+                       f"{process}\n" \
+                       f"--------------------\n\n"
+            self.cur_process = process
+            self.cur_text = None
+
+        # Generate INP log is cumulative, so it's saved until the process ends
+        if process == "Generate INP algorithm" and not self.cur_text:
+            self.cur_text = cur_text
+
+        if self.cur_text:
+            cur_text = self.cur_text
+
+        end_line = '\n' if new_line else ''
+        txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
+
+    def _load_user_values(self):
+        """ Load QGIS settings related with file_manager """
+
+        # Mesh combo
+        value = tools_dr.get_config_parser('btn_execute_model', 'cmb_mesh', "user", "session")
+        if value:
+            tools_qt.set_combo_value(self.execute_dlg.cmb_mesh, value, 0)
+
+        # Export file path
+        value = tools_dr.get_config_parser('btn_execute_model', 'txt_folder_path', "user", "session")
+        if value:
+            tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', value)
+
+
+    def _save_user_values(self):
+        """ Save QGIS settings related with file_manager """
+
+        # Mesh combo
+        value = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
+        tools_dr.set_config_parser('btn_execute_model', 'cmb_mesh', value, "user", "session")
+
+        # Export file path
+        value = f"{tools_qt.get_text(self.execute_dlg, 'txt_folder_path', return_string_null=False)}"
+        tools_dr.set_config_parser('btn_execute_model', 'txt_folder_path', f"{value}")
 
 
     def _calculate_elapsed_time(self, dialog):

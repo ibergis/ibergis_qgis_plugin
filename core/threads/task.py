@@ -13,7 +13,7 @@ from ... import global_vars
 from ...lib import tools_log, tools_db
 
 
-class GwTask(QgsTask, QObject):
+class DrTask(QgsTask, QObject):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()

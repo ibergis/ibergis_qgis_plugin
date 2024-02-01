@@ -36,7 +36,7 @@ translator = QTranslator()
 dlg_text = DialogTextUi()
 
 
-class GwExtendedQLabel(QLabel):
+class DrExtendedQLabel(QLabel):
 
     clicked = pyqtSignal()
 
@@ -47,7 +47,7 @@ class GwExtendedQLabel(QLabel):
         self.clicked.emit()
 
 
-class GwHyperLinkLabel(QLabel):
+class DrHyperLinkLabel(QLabel):
 
     clicked = pyqtSignal()
 
@@ -60,7 +60,7 @@ class GwHyperLinkLabel(QLabel):
         self.setStyleSheet("QLabel{color:purple; text-decoration: underline;}")
 
 
-class GwHyperLinkLineEdit(QLineEdit):
+class DrHyperLinkLineEdit(QLineEdit):
 
     clicked = pyqtSignal()
 
@@ -200,7 +200,7 @@ def get_text(dialog, widget, add_quote=False, return_string_null=True):
         widget = dialog.findChild(QWidget, widget)
     text = None
     if widget:
-        if type(widget) in (QLineEdit, QPushButton, QLabel, GwHyperLinkLabel, GwHyperLinkLineEdit):
+        if type(widget) in (QLineEdit, QPushButton, QLabel, DrHyperLinkLabel, DrHyperLinkLineEdit):
             text = widget.text()
         elif type(widget) in (QDoubleSpinBox, QSpinBox):
             # When the QDoubleSpinbox contains decimals, for example 2,0001 when collecting the value,
@@ -710,9 +710,9 @@ def add_layer_to_toc(layer, group=None, sub_group=None, create_groups=False, sub
         return
 
     root = QgsProject.instance().layerTreeRoot()
-    my_group = root.findGroup("DRAIN Layers")
+    my_group = root.findGroup("DRAIN TEMPORAL")
     if my_group is None:
-        my_group = root.insertGroup(0, "DRAIN Layers")
+        my_group = root.insertGroup(0, "DRAIN TEMPORAL")
     my_group.insertLayer(0, layer)
 
 

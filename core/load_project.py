@@ -12,15 +12,15 @@ from qgis.core import QgsProject, QgsSnappingUtils
 from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtWidgets import QToolBar, QActionGroup, QDockWidget, QApplication, QDialog
 
-from .models.plugin_toolbar import GwPluginToolbar
+from .models.plugin_toolbar import DrPluginToolbar
 from .toolbars import buttons
-from .utils import tools_gw
+from .utils import tools_dr
 from .toolbars.utilities.bc_scenario_manager import set_bc_filter
 from .. import global_vars
 from ..lib import tools_qgis, tools_log, tools_qt, tools_os, tools_gpkgdao
 
 
-class GwLoadProject(QObject):
+class DrLoadProject(QObject):
 
     def __init__(self):
         """ Class to manage layers. Refactor code from main.py """
@@ -56,18 +56,18 @@ class GwLoadProject(QObject):
         global_vars.project_type = "ud"
 
         # Removes all deprecated variables defined at drain.config
-        #tools_gw.remove_deprecated_config_vars()
+        #tools_dr.remove_deprecated_config_vars()
 
         project_role = global_vars.project_vars.get('project_role')
         global_vars.project_vars['project_role'] = None
 
         # Check if user has config files 'init' and 'session' and its parameters
-        tools_gw.user_params_to_userconfig()
+        tools_dr.user_params_to_userconfig()
 
         # Check for developers options
-        value = tools_gw.get_config_parser('log', 'log_sql', "user", "init", False)
+        value = tools_dr.get_config_parser('log', 'log_sql', "user", "init", False)
         tools_qgis.user_parameters['log_sql'] = value
-        value = tools_gw.get_config_parser('system', 'show_message_durations', "user", "init", False)
+        value = tools_dr.get_config_parser('system', 'show_message_durations', "user", "init", False)
         tools_qgis.user_parameters['show_message_durations'] = value
 
         # Manage locale and corresponding 'i18n' file
@@ -81,13 +81,13 @@ class GwLoadProject(QObject):
         self._manage_attribute_table()
 
         # Check parameter 'force_tab_expl'
-        force_tab_expl = tools_gw.get_config_parser('system', 'force_tab_expl', 'user', 'init', prefix=False)
+        force_tab_expl = tools_dr.get_config_parser('system', 'force_tab_expl', 'user', 'init', prefix=False)
         if tools_os.set_boolean(force_tab_expl, False):
             self._force_tab_exploitation()
 
         # Set global_vars.project_epsg
         global_vars.project_epsg = tools_qgis.get_epsg()
-        tools_gw.connect_signal(QgsProject.instance().crsChanged, tools_gw.set_epsg,
+        tools_dr.connect_signal(QgsProject.instance().crsChanged, tools_dr.set_epsg,
                                 'load_project', 'project_read_crsChanged_set_epsg')
         global_vars.project_loaded = True
 
@@ -110,14 +110,14 @@ class GwLoadProject(QObject):
         set_bc_filter()
 
         # Connect signal for topocontrol
-        tools_gw.connect_signal(self.iface.layerTreeView().currentLayerChanged, tools_gw.current_layer_changed,
+        tools_dr.connect_signal(self.iface.layerTreeView().currentLayerChanged, tools_dr.current_layer_changed,
                                 'load_project', 'currentLayerChanged')
 
         message = f"Project read finished. Plugin version: {plugin_version}"
         tools_log.log_info(message)
 
         # Reset dialogs position
-        tools_gw.reset_position_dialog()
+        tools_dr.reset_position_dialog()
 
 
     # region private functions
@@ -137,12 +137,12 @@ class GwLoadProject(QObject):
     def _get_user_variables(self):
         """ Get config related with user variables """
 
-        global_vars.user_level['level'] = tools_gw.get_config_parser('user_level', 'level', "user", "init", False)
-        global_vars.user_level['showquestion'] = tools_gw.get_config_parser('user_level', 'showquestion', "user", "init", False)
-        global_vars.user_level['showsnapmessage'] = tools_gw.get_config_parser('user_level', 'showsnapmessage', "user", "init", False)
-        global_vars.user_level['showselectmessage'] = tools_gw.get_config_parser('user_level', 'showselectmessage', "user", "init", False)
-        global_vars.user_level['showadminadvanced'] = tools_gw.get_config_parser('user_level', 'showadminadvanced', "user", "init", False)
-        global_vars.date_format = tools_gw.get_config_parser('system', 'date_format', "user", "init", False)
+        global_vars.user_level['level'] = tools_dr.get_config_parser('user_level', 'level', "user", "init", False)
+        global_vars.user_level['showquestion'] = tools_dr.get_config_parser('user_level', 'showquestion', "user", "init", False)
+        global_vars.user_level['showsnapmessage'] = tools_dr.get_config_parser('user_level', 'showsnapmessage', "user", "init", False)
+        global_vars.user_level['showselectmessage'] = tools_dr.get_config_parser('user_level', 'showselectmessage', "user", "init", False)
+        global_vars.user_level['showadminadvanced'] = tools_dr.get_config_parser('user_level', 'showadminadvanced', "user", "init", False)
+        global_vars.date_format = tools_dr.get_config_parser('system', 'date_format', "user", "init", False)
 
 
     def _check_project(self, show_warning):
@@ -154,7 +154,7 @@ class GwLoadProject(QObject):
         """ Set database connection to Geopackage file """
 
         # Create object to manage GPKG database connection
-        gpkg_dao_config = tools_gpkgdao.GwGpkgDao()
+        gpkg_dao_config = tools_gpkgdao.DrGpkgDao()
         global_vars.gpkg_dao_config = gpkg_dao_config
         # Define filepath of configuration GPKG
         filename = "config.gpkg"
@@ -179,7 +179,7 @@ class GwLoadProject(QObject):
             return False
 
         # Create object to manage GPKG database connection
-        gpkg_dao_data = tools_gpkgdao.GwGpkgDao()
+        gpkg_dao_data = tools_gpkgdao.DrGpkgDao()
         global_vars.gpkg_dao_data = gpkg_dao_data
 
 
@@ -221,7 +221,7 @@ class GwLoadProject(QObject):
 
         buttons_to_hide = None
         try:
-            row = tools_gw.get_config_parser('toolbars_hidebuttons', 'buttons_to_hide', "user", "init")
+            row = tools_dr.get_config_parser('toolbars_hidebuttons', 'buttons_to_hide', "user", "init")
             if not row or row in (None, 'None'):
                 return None
 
@@ -237,12 +237,12 @@ class GwLoadProject(QObject):
         """ Manage actions of the custom plugin toolbars """
 
         # Dynamically get list of toolbars from config file
-        toolbar_names = tools_gw.get_config_parser('toolbars', 'list_toolbars', "project", "drain")
+        toolbar_names = tools_dr.get_config_parser('toolbars', 'list_toolbars', "project", "drain")
         if toolbar_names in (None, 'None'):
             tools_log.log_info("Parameter 'toolbar_names' is None")
             return
 
-        toolbars_order = tools_gw.get_config_parser('toolbars_position', 'toolbars_order', 'user', 'init')
+        toolbars_order = tools_dr.get_config_parser('toolbars_position', 'toolbars_order', 'user', 'init')
         if toolbars_order in (None, 'None'):
             tools_log.log_info("Parameter 'toolbars_order' is None")
             return
@@ -264,8 +264,8 @@ class GwLoadProject(QObject):
                 attempt = 0
 
                 while not successful and attempt < 10:
-                    button_def = tools_gw.get_config_parser('buttons_def', str(index_action), "project", "drain")
-                    button_tooltip = tools_gw.get_config_parser('buttons_tooltip', str(index_action), "project", "drain")
+                    button_def = tools_dr.get_config_parser('buttons_def', str(index_action), "project", "drain")
+                    button_tooltip = tools_dr.get_config_parser('buttons_tooltip', str(index_action), "project", "drain")
                     
                     if button_def not in (None, 'None'):
                         # Check if the class associated to the button definition exists
@@ -284,7 +284,7 @@ class GwLoadProject(QObject):
         successful = False
         attempt = 0
         while not successful and attempt < 10:
-            project_exclude = tools_gw.get_config_parser('project_exclude', global_vars.project_type, "project", "drain")
+            project_exclude = tools_dr.get_config_parser('project_exclude', global_vars.project_type, "project", "drain")
             if project_exclude not in (None, "None"):
                 successful = True
             attempt = attempt + 1
@@ -312,7 +312,7 @@ class GwLoadProject(QObject):
 
     def _create_toolbar(self, toolbar_id):
 
-        list_actions = tools_gw.get_config_parser('toolbars', str(toolbar_id), "project", "drain")
+        list_actions = tools_dr.get_config_parser('toolbars', str(toolbar_id), "project", "drain")
         if list_actions in (None, 'None'):
             return
 
@@ -321,7 +321,7 @@ class GwLoadProject(QObject):
             list_actions = [list_actions]
 
         toolbar_name = tools_qt.tr(f'toolbar_{toolbar_id}_name')
-        plugin_toolbar = GwPluginToolbar(toolbar_id, toolbar_name, True)
+        plugin_toolbar = DrPluginToolbar(toolbar_id, toolbar_name, True)
 
         # If the toolbar is ToC, add it to the Layers docker toolbar, if not, create a new toolbar
         if toolbar_id == "toc":
@@ -384,15 +384,15 @@ class GwLoadProject(QObject):
     def _force_tab_exploitation(self):
         """ Select tab 'tab_exploitation' in dialog 'dlg_selector_basic' """
 
-        tools_gw.set_config_parser("dialogs_tab", f"dlg_selector_basic", f"tab_exploitation", "user", "session")
+        tools_dr.set_config_parser("dialogs_tab", f"dlg_selector_basic", f"tab_exploitation", "user", "session")
 
 
     def _manage_attribute_table(self):
         """ If configured, disable button "Update all" from attribute table """
 
-        disable = tools_gw.get_config_parser('system', 'disable_updateall_attributetable', "user", "init", prefix=False)
+        disable = tools_dr.get_config_parser('system', 'disable_updateall_attributetable', "user", "init", prefix=False)
         if tools_os.set_boolean(disable, False):
-            tools_gw.connect_signal(QApplication.instance().focusChanged, self._manage_focus_changed,
+            tools_dr.connect_signal(QApplication.instance().focusChanged, self._manage_focus_changed,
                                     'load_project', 'manage_attribute_table_focusChanged')
 
 

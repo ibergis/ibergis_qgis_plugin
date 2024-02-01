@@ -9,7 +9,7 @@ import os
 
 from qgis.PyQt import uic
 
-from .dialog import GwDialog
+from .dialog import DrDialog
 
 
 def get_ui_class(ui_file_name):
@@ -21,6 +21,6 @@ def get_ui_class(ui_file_name):
 
 
 FORM_CLASS = get_ui_class('dialog_text.ui')
-class DialogTextUi(GwDialog, FORM_CLASS):
+class DialogTextUi(DrDialog, FORM_CLASS):
     pass
 

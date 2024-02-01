@@ -7,13 +7,13 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 from qgis.PyQt.QtCore import pyqtSignal
 
-from .task import GwTask
-from ..utils import tools_gw
+from .task import DrTask
+from ..utils import tools_dr
 from ... import global_vars
 from ...lib import tools_log, tools_qt
 
 
-class GwReportTask(GwTask):
+class DrReportTask(DrTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()
@@ -39,8 +39,8 @@ class GwReportTask(GwTask):
         extras = f'"filterText":null, "listId":"{self.function_selected}"'
         if self.queryAdd:
             extras += f', "queryAdd": "{self.queryAdd}"'
-        self.body = tools_gw.create_body(extras=extras)
-        self.json_result = tools_gw.execute_procedure('gw_fct_getreport', self.body, is_thread=True, aux_conn=self.aux_conn)
+        self.body = tools_dr.create_body(extras=extras)
+        self.json_result = tools_dr.execute_procedure('gw_fct_getreport', self.body, is_thread=True, aux_conn=self.aux_conn)
         if not self.json_result or self.json_result['status'] == 'Failed':
             self.finished_execute.emit(False, self.json_result)
             return False
@@ -65,7 +65,7 @@ class GwReportTask(GwTask):
             sql += f"{self.body}"
         sql += f");"
         tools_log.log_info(f"Task 'Toolbox report' manage json response with parameters: '{self.json_result}', '{sql}', 'None'")
-        tools_gw.manage_json_response(self.json_result, sql, None)
+        tools_dr.manage_json_response(self.json_result, sql, None)
 
         tools_qt.set_widget_enabled(self.dialog, 'btn_export', True)
         tools_qt.set_widget_enabled(self.dialog, 'btn_close', True)

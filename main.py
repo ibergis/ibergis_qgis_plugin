@@ -50,12 +50,12 @@ except ImportError:
                 "Restart QGIS to apply the changes."
             )
 
-from .core.admin.admin_btn import GwAdminButton
-from .core.load_project import GwLoadProject
-from .core.utils import tools_gw
-from .core.utils.signal_manager import GwSignalManager
-from .core.ui.dialog import GwDialog
-from .core.ui.main_window import GwMainWindow
+from .core.admin.admin_btn import DrAdminButton
+from .core.load_project import DrLoadProject
+from .core.utils import tools_dr
+from .core.utils.signal_manager import DrSignalManager
+from .core.ui.dialog import DrDialog
+from .core.ui.main_window import DrMainWindow
 
 
 class Drain(QObject):
@@ -133,22 +133,22 @@ class Drain(QObject):
 
         try:
             # Disconnect QgsProject.instance().crsChanged signal
-            tools_gw.disconnect_signal('load_project', 'project_read_crsChanged_set_epsg')
+            tools_dr.disconnect_signal('load_project', 'project_read_crsChanged_set_epsg')
         except Exception as e:
             tools_log.log_info(f"Exception in unload when disconnecting QgsProject.instance().crsChanged signal: {e}")
 
         try:
-            tools_gw.disconnect_signal('load_project', 'manage_attribute_table_focusChanged')
+            tools_dr.disconnect_signal('load_project', 'manage_attribute_table_focusChanged')
         except Exception as e:
             tools_log.log_info(f"Exception in unload when disconnecting focusChanged signal: {e}")
 
         try:
-            tools_gw.disconnect_signal('load_project', 'currentLayerChanged')
+            tools_dr.disconnect_signal('load_project', 'currentLayerChanged')
         except Exception as e:
             tools_log.log_info(f"Exception in unload when disconnecting currentLayerChanged signal: {e}")
 
         try:
-            tools_gw.disconnect_signal('layer_changed')
+            tools_dr.disconnect_signal('layer_changed')
         except Exception as e:
             tools_log.log_info(f"Exception in unload when disconnecting layer_changed signals: {e}")
 
@@ -240,23 +240,23 @@ class Drain(QObject):
         self._manage_user_config_folder(f"{global_vars.user_folder_dir}{os.sep}core")
 
         # Initialize parsers of configuration files: init, session, giswater, user_params
-        tools_gw.initialize_parsers()
+        tools_dr.initialize_parsers()
 
         # Load all the variables from user_params.config to their respective user config files
-        tools_gw.user_params_to_userconfig()
+        tools_dr.user_params_to_userconfig()
 
         # Set logger parameters min_log_level and log_limit_characters
-        min_log_level = tools_gw.get_config_parser('log', 'log_level', 'user', 'init', False)
-        log_limit_characters = tools_gw.get_config_parser('log', 'log_limit_characters', 'user', 'init', False)
-        log_db_limit_characters = tools_gw.get_config_parser('log', 'log_db_limit_characters', 'user', 'init', False)
+        min_log_level = tools_dr.get_config_parser('log', 'log_level', 'user', 'init', False)
+        log_limit_characters = tools_dr.get_config_parser('log', 'log_limit_characters', 'user', 'init', False)
+        log_db_limit_characters = tools_dr.get_config_parser('log', 'log_db_limit_characters', 'user', 'init', False)
         global_vars.logger.set_logger_parameters(min_log_level, log_limit_characters, log_db_limit_characters)
 
         # Enable Python console and Log Messages panel if parameter 'enable_python_console' = True
-        python_enable_console = tools_gw.get_config_parser('system', 'enable_python_console', 'project', 'drain')
+        python_enable_console = tools_dr.get_config_parser('system', 'enable_python_console', 'project', 'drain')
         if python_enable_console == 'TRUE':
             tools_qgis.enable_python_console()
 
-        # Create the GwSignalManager
+        # Create the DrSignalManager
         self._create_signal_manager()
 
         # Define signals
@@ -269,9 +269,9 @@ class Drain(QObject):
 
 
     def _create_signal_manager(self):
-        """ Creates an instance of GwSignalManager and connects all the signals """
+        """ Creates an instance of DrSignalManager and connects all the signals """
 
-        global_vars.signal_manager = GwSignalManager()
+        global_vars.signal_manager = DrSignalManager()
         global_vars.signal_manager.show_message.connect(tools_qgis.show_message)
 
 
@@ -300,11 +300,11 @@ class Drain(QObject):
         """ Define iface event signals on Project Read / New Project / Save Project """
 
         try:
-            tools_gw.connect_signal(self.iface.projectRead, self._project_read,
+            tools_dr.connect_signal(self.iface.projectRead, self._project_read,
                                     'main', 'projectRead')
-            tools_gw.connect_signal(self.iface.newProjectCreated, self._project_new,
+            tools_dr.connect_signal(self.iface.newProjectCreated, self._project_new,
                                     'main', 'newProjectCreated')
-            tools_gw.connect_signal(self.iface.actionSaveProject().triggered, self._save_toolbars_position,
+            tools_dr.connect_signal(self.iface.actionSaveProject().triggered, self._save_toolbars_position,
                                     'main', 'actionSaveProject_save_toolbars_position')
         except AttributeError:
             pass
@@ -314,15 +314,15 @@ class Drain(QObject):
         """ Disconnect iface event signals on Project Read / New Project / Save Project """
 
         try:
-            tools_gw.disconnect_signal('main', 'projectRead')
+            tools_dr.disconnect_signal('main', 'projectRead')
         except TypeError:
             pass
         try:
-            tools_gw.disconnect_signal('main', 'newProjectCreated')
+            tools_dr.disconnect_signal('main', 'newProjectCreated')
         except TypeError:
             pass
         try:
-            tools_gw.disconnect_signal('main', 'actionSaveProject_save_toolbars_position')
+            tools_dr.disconnect_signal('main', 'actionSaveProject_save_toolbars_position')
         except TypeError:
             pass
 
@@ -346,7 +346,7 @@ class Drain(QObject):
             self.action = QAction("Show info", self.iface.mainWindow())
 
         main_toolbutton.setDefaultAction(self.action)
-        admin_button = GwAdminButton()
+        admin_button = DrAdminButton()
         self.action.triggered.connect(partial(admin_button.init_sql))
 
 
@@ -371,7 +371,7 @@ class Drain(QObject):
 
         toolbar = self.iface.mainWindow().findChild(QDockWidget, 'Layers').findChildren(QToolBar)[-1]
         for action in toolbar.actions():
-            if action.objectName() not in ('GwAddChildLayerButton', 'GwEpaWorldButton'):
+            if action.objectName() not in ('DrAddChildLayerButton', 'DrEpaWorldButton'):
                 continue
             toolbar.removeAction(action)  # Remove from toolbar
             action.deleteLater()  # Schedule for deletion
@@ -395,7 +395,7 @@ class Drain(QObject):
             global_vars.logger.add_file_handler()
 
         # Create class to manage code that performs project configuration
-        self.load_project = GwLoadProject()
+        self.load_project = DrLoadProject()
         self.load_project.project_read(show_warning)
 
 
@@ -419,7 +419,7 @@ class Drain(QObject):
         # Set 'toolbars_order' parameter on 'toolbars_position' section on init.config user file (found in user path)
         sorted_toolbar_ids = [tb.property('gw_name') for tb in own_toolbars]
         sorted_toolbar_ids = ",".join(sorted_toolbar_ids)
-        tools_gw.set_config_parser('toolbars_position', 'toolbars_order', str(sorted_toolbar_ids), "user", "init")
+        tools_dr.set_config_parser('toolbars_position', 'toolbars_order', str(sorted_toolbar_ids), "user", "init")
 
 
     def save_project(self):
@@ -450,7 +450,7 @@ class Drain(QObject):
             global_vars.session_vars['current_selections'] = None
 
         # Manage 'dialog_docker' from global_vars.session_vars and remove it if exists
-        tools_gw.close_docker()
+        tools_dr.close_docker()
 
         # Get 'Layers' docker form and his actions from qgis iface and remove it if exists
         if self.btn_add_layers:
@@ -469,12 +469,12 @@ class Drain(QObject):
 
         # Only keep Giswater widgets that are currently open
         windows = [x for x in allwidgets if getattr(x, "isVisible", False)
-                   and (issubclass(type(x), GwMainWindow) or issubclass(type(x), GwDialog))]
+                   and (issubclass(type(x), DrMainWindow) or issubclass(type(x), DrDialog))]
 
         # Close them
         for window in windows:
             try:
-                tools_gw.close_dialog(window)
+                tools_dr.close_dialog(window)
             except Exception as e:
                 tools_log.log_info(f"Exception in _close_open_dialogs: {e}")
 

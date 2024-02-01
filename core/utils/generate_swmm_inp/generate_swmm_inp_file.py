@@ -227,6 +227,8 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
         """
         main process algorithm of this tool
         """
+        feedback.pushInfo(self.tr('\n'))
+        feedback.setProgress(0)
         # input file name and path"
         inp_file_path = self.parameterAsString(parameters, self.QGIS_OUT_INP_FILE, context)
         inp_file_name = os.path.basename(inp_file_path)
