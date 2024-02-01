@@ -6,6 +6,7 @@ from qgis.PyQt.QtCore import QVariant
 from .task import DrTask
 from ..utils import mesh_parser
 from ... import global_vars
+from ..utils.meshing_process import create_temp_mesh_layer
 
 
 class DrOpenMeshTask(DrTask):
@@ -29,11 +30,16 @@ class DrOpenMeshTask(DrTask):
         with open(mesh_path) as mesh_file:
             if roof_path.exists():
                 with open(roof_path) as roof_file:
-                    mesh = mesh_parser.load(mesh_file, roof_file)
+                    mesh = mesh_parser.load_new(mesh_file, roof_file)
             else:
-                mesh = mesh_parser.load(mesh_file)
+                mesh = mesh_parser.load_new(mesh_file)
 
         self.setProgress(self.POST_FILE_PROGRESS)
+        temp_layer = create_temp_mesh_layer(mesh)
+        self.setProgress(self.POST_LAYER_PROGRESS)
+
+        self.layer = temp_layer
+        return True
 
         temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
         temp_layer.setCrs(QgsProject.instance().crs())

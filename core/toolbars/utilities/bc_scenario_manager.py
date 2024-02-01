@@ -488,7 +488,8 @@ class DrBCScenarioManagerButton(DrAction):
         losses_str = None if row["losses"] is None else row["losses"]
 
         # Parse mesh and check for preexistent boundary conditions
-        mesh = mesh_parser.loads(mesh_str, roof_str, losses_str)
+        mesh = mesh_parser.loads_new(mesh_str, roof_str, losses_str)
+        # mesh = mesh_parser.loads(mesh_str, roof_str, losses_str)
 
         if mesh["boundary_conditions"]:
             message = "This process will override the boundary conditions of this mesh. Are you sure?"

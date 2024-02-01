@@ -62,11 +62,14 @@ class DrSaveToMeshTask(DrTask):
             bc_layer = QgsVectorLayer(bc_path, "boundary_conditions", "ogr")
 
             # Create a layer with mesh edges exclusive to only one polygon
+            poly_df = self.mesh["polygons"]
             boundary_edges = {}
-            for pol_id, pol in self.mesh["polygons"].items():
-                if pol["category"] != "ground":
-                    continue
-                vert = pol["vertice_ids"]
+            for pol in poly_df[poly_df["category"] == "ground"].itertuples():
+            # for pol_id, pol in self.mesh["polygons"].items():
+                # if pol["category"] != "ground":
+                #     continue
+                # vert = pol["vertice_ids"]
+                vert = [pol.v1, pol.v2, pol.v3, pol.v4]
                 # Add last and first vertices as a edge if they are distinct
                 last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
                 edges = chain(pairwise(vert), last_edge)
@@ -75,7 +78,8 @@ class DrSaveToMeshTask(DrTask):
                     if edge in boundary_edges:
                         del boundary_edges[edge]
                     else:
-                        boundary_edges[edge] = (pol_id, side)
+                        # boundary_edges[edge] = (pol_id, side)
+                        boundary_edges[edge] = (pol.Index, side)
 
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
@@ -93,7 +97,8 @@ class DrSaveToMeshTask(DrTask):
 
             features = []
             for edge, (pol_id, side) in boundary_edges.items():
-                coords = [self.mesh["vertices"][vert]["coordinates"] for vert in edge]
+                coords = [self.mesh["vertices"].loc[vert, ["x", "y"]].to_numpy() for vert in edge]
+                # coords = [self.mesh["vertices"][vert]["coordinates"] for vert in edge]
                 feature = QgsFeature()
                 feature.setGeometry(
                     QgsGeometry.fromPolyline([QgsPoint(*coord) for coord in coords])
@@ -217,7 +222,7 @@ class DrSaveToMeshTask(DrTask):
                     (feature["pol_id"], feature["side"])
                 ] = bc_dict[feature["bc_fid"]]
 
-            new_mesh_str, new_roof_str, new_losses_str = mesh_parser.dumps(self.mesh)
+            new_mesh_str, new_roof_str, new_losses_str = mesh_parser.dumps_new(self.mesh)
 
             if self.feedback.isCanceled():
                 self.message = "Task canceled."

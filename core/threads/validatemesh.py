@@ -109,14 +109,14 @@ def validate_vert_edge(
     provider = output_layer.dataProvider()
 
     # For each polygon
-    for i, row in data.iterrows():
+    for row in data.itertuples():
         if feedback.isCanceled():
             return
-        geom: shapely.Polygon = row["geometry"]
+        geom: shapely.Polygon = row.geometry
 
         # Get all neighbor polygons
         neighbors: gpd.GeoDataFrame = data[data.intersects(geom.buffer(1))]
-        neighbors = neighbors.drop(i, errors="ignore")  # Exclude the current polygon
+        neighbors = neighbors.drop(row.Index, errors="ignore")  # Exclude the current polygon
 
         # For each vertex in the current polygon
         for p in get_polygon_vertices(geom):
@@ -167,9 +167,8 @@ def validate_ground_layer(
         landuse = feature["landuse"]
         roughness = feature["custom_roughness"]
         if (
-            type(landuse) in [int, float]
-            or type(roughness) in [int, float]
-            and roughness > 0
+            landuse or 
+            (roughness and roughness > 0)
         ):
             continue
 
@@ -243,14 +242,14 @@ def validate_distance(
     data: gpd.GeoDataFrame = layer_to_gdf(layer, ["cellsize"])
     vertices = []
     cellsize = []
-    for i, row in data.iterrows():
+    for row in data.itertuples():
         if feedback.isCanceled():
             return
-        geom = row["geometry"]
+        geom = row.geometry
         assert type(geom) == shapely.Polygon, f"{type(geom)}"
         new_verts = list(map(shapely.Point, get_polygon_vertices(geom)))
         vertices += new_verts
-        cellsize += [row["cellsize"]] * len(new_verts)
+        cellsize += [row.cellsize] * len(new_verts)
 
     vertices_gdf = gpd.GeoDataFrame(geometry=vertices, data={"cellsize": cellsize})
     vertices_gdf = vertices_gdf.loc[

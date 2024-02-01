@@ -6,6 +6,9 @@ from qgis.core import (
     QgsFeature,
     QgsGeometry,
     QgsField,
+    QgsTriangle,
+    QgsProject,
+    QgsPoint
 )
 
 from qgis.PyQt.QtCore import QVariant
@@ -14,7 +17,10 @@ import shapely
 import numpy as np
 import time
 import geopandas as gpd
+import pandas as pd
 from typing import Dict
+from pathlib import Path
+from ... import global_vars
 
 try:
     import gmsh
@@ -369,6 +375,64 @@ except ImportError:
 
     def triangulate_custom(*args):
         pass
+
+
+def create_temp_mesh_layer(mesh: Dict[str, pd.DataFrame]):
+    layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
+    layer.setCrs(QgsProject.instance().crs())
+    provider = layer.dataProvider()
+    fields = [
+        QgsField("fid", QVariant.Int),
+        QgsField("category", QVariant.String),
+        QgsField("vertex_id1", QVariant.Int),
+        QgsField("vertex_id2", QVariant.Int),
+        QgsField("vertex_id3", QVariant.Int),
+        QgsField("vertex_id4", QVariant.Int),
+        QgsField("roughness", QVariant.Double),
+    ]
+    provider.addAttributes(fields)
+    layer.updateFields()
+
+    c1 = mesh["vertices"].loc[mesh["polygons"]["v1"], ['x', 'y', 'z']]
+    c2 = mesh["vertices"].loc[mesh["polygons"]["v2"], ['x', 'y', 'z']]
+    c3 = mesh["vertices"].loc[mesh["polygons"]["v3"], ['x', 'y', 'z']]
+
+    c1.columns = ["x1", "y1", "z1"]
+    c2.columns = ["x2", "y2", "z2"]
+    c3.columns = ["x3", "y3", "z3"]
+
+    c1.index = mesh["polygons"].index
+    c2.index = mesh["polygons"].index
+    c3.index = mesh["polygons"].index
+
+    opt_df = pd.concat([mesh["polygons"], c1, c2, c3], axis=1)
+
+    def get_feature(row):
+        geom = QgsTriangle(
+            QgsPoint(row.x1, row.y1, row.z1),
+            QgsPoint(row.x2, row.y2, row.z2),
+            QgsPoint(row.x3, row.y3, row.z3),
+        )
+        feature = QgsFeature()
+        feature.setGeometry(geom)
+        feature.setAttributes(
+            [row.Index, row.category, row.v1, row.v2, row.v3, row.roughness]
+        )
+        return feature
+    
+    features = map(get_feature, opt_df.itertuples())
+    provider.addFeatures(features)
+
+    layer.updateExtents()
+
+    # Set the style of the layer
+    relative_style_path = "resources/templates/mesh_temp_layer.qml"
+    style_path = Path(global_vars.plugin_dir) / relative_style_path
+    layer.loadNamedStyle(str(style_path))
+    layer.triggerRepaint()
+
+    return layer
+
 
 
 @alg(

@@ -3,6 +3,7 @@ from pathlib import Path
 from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QVariant
 
+from ..utils.meshing_process import create_temp_mesh_layer
 from .task import DrTask
 from ... import global_vars
 
@@ -19,6 +20,12 @@ class DrCreateTempMeshLayerTask(DrTask):
         super().run()
 
         self.setProgress(self.POST_FILE_PROGRESS)
+
+        temp_layer = create_temp_mesh_layer(self.mesh)
+
+        self.setProgress(self.POST_LAYER_PROGRESS)
+        self.layer = temp_layer
+        return True
 
         temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
         temp_layer.setCrs(QgsProject.instance().crs())
