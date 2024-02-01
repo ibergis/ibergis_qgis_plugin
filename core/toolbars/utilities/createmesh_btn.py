@@ -147,7 +147,7 @@ class DrCreateMeshButton(DrAction):
         # Check for existent meshes in file
         sql = "SELECT group_concat(name) as names FROM cat_file"
         retrieved_meshes = self.dao.get_row(sql)["names"]
-        if retrieved_meshes is not None and mesh_name in retrieved_meshes:
+        if retrieved_meshes is not None and mesh_name in retrieved_meshes.split(","):
             message = (
                 "A mesh with the same name already exists. Do you want to overwrite it?"
             )
