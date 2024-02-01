@@ -28,6 +28,7 @@ def getconfig(p_input: dict) -> dict:
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
                         'CASE WHEN isenabled = 1 THEN True ELSE False END AS isenabled',
+                        'vdefault AS value'
                         ]
         v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM sys_param_user " \
@@ -74,7 +75,14 @@ def getconfig(p_input: dict) -> dict:
                     widget['comboNames'] = cmb_names
 
                 if widget['id'] == parameter:
-                    widget['value'] = value
+                    if widget['value'] in (0, 1, '0', '1'):
+                        widget['value'] = str(widget['value'] == '1')
+
+                    if value is not None:
+                        if widget['widgettype'] == 'check' and value in ('0', '1'):
+                            value = str(value == '1')
+                        widget['value'] = value
+
                     break
 
         # return
