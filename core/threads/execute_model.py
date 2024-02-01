@@ -281,7 +281,7 @@ class DrExecuteModel(DrTask):
             # Write column headers
             header_str = f"{' '.join(column_names)}\n"
             dat_file.write(header_str)
-            transform_dict = {None: -9999, 'TO NETWORK': 'To_network'}
+            transform_dict = {None: -9999, 'TO NETWORK': 'To_network', 'SINK': 'Sink'}
             for row in rows:
                 values = []
                 for value in row:
