@@ -311,18 +311,6 @@ class DrCreateMeshTask(DrTask):
             triangles_df["v3"] += 1
             triangles_df["v4"] += 1
 
-            if False:
-                triangulations.append((triangles, vertices, {"category": "ground"}))
-
-                self.feedback.setProgressText("Creating roof mesh...")
-                self.feedback.setProgress(30)
-                triangulations += core.triangulate_roof(layers["roof"], self.feedback)
-                if self.feedback.isCanceled():
-                    self.message = "Task canceled."
-                    return False
-
-                self.mesh = core.create_mesh_dict(triangulations)
-
             # Get roofs
             self.feedback.setProgressText("Getting roof data...")
             sql = """
@@ -340,170 +328,6 @@ class DrCreateMeshTask(DrTask):
             roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
             roofs_df.index = roofs_df["fid"]
 
-            if False:
-                self.mesh["roofs"] = {}
-                if rows is not None:
-                    for row in rows:
-                        (
-                            code,
-                            fid,
-                            slope,
-                            width,
-                            roughness,
-                            isconnected,
-                            outlet_code,
-                            outlet_vol,
-                            street_vol,
-                            infiltr_vol,
-                        ) = row
-                        roof_name = code or fid
-                        self.mesh["roofs"][fid] = {
-                            "name": roof_name,
-                            "slope": slope,
-                            "width": width,
-                            "roughness": roughness,
-                            "isconnected": isconnected,
-                            "outlet_code": outlet_code,
-                            "outlet_vol": outlet_vol,
-                            "street_vol": street_vol,
-                            "infiltr_vol": infiltr_vol,
-                        }
-
-            if False:
-                # Get ground elevation
-                start = time.time()
-                print("Getting vertices elevation... ", end="")
-                self.feedback.setProgressText("Getting vertice elevations...")
-                # TODO: Fill roof elevations
-                self.feedback.setProgress(40)
-                if self.dem_layer is None:
-                    for vertice in self.mesh["vertices"].values():
-                        if vertice["category"] == "ground":
-                            vertice["elevation"] = 0
-                else:
-                    ground_crs = layers["ground"].crs()
-                    dem_crs = self.dem_layer.crs()
-                    qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
-                    for vertice in self.mesh["vertices"].values():
-                        if self.feedback.isCanceled():
-                            self.message = "Task canceled."
-                            return False
-                        if vertice["category"] == "ground":
-                            point = qct.transform(QgsPointXY(*vertice["coordinates"]))
-                            val, res = self.dem_layer.dataProvider().sample(point, 1)
-                            vertice["elevation"] = val if res else 0
-                print(f"Done! {time.time() - start}s")
-
-            if False:
-                # Get ground roughness
-                start = time.time()
-                print("Getting triangles roughness... ", end="")
-                if self.roughness_layer is None:
-                    for polygon_id, polygon in self.mesh["polygons"].items():
-                        if polygon["category"] == "ground":
-                            polygon["roughness"] = 0
-                else:
-                    sql = """
-                        SELECT parameter, value 
-                        FROM config_param_user 
-                        WHERE parameter IN [
-                            'options_losses_method',
-                            'options_losses_scs_cn_multiplier',
-                            'options_losses_scs_ia_coefficient',
-                            'options_losses_starttime'
-                        ]
-                    """
-                    rows = self.dao.get_rows(sql)
-                    params = {}
-                    if rows is not None:
-                        params = {row["parameter"]: row["value"] for row in rows}
-
-                    cn_mult = params.get("options_losses_scs_cn_multiplier") or -9999
-                    ia_coef = params.get("options_losses_scs_ia_coefficient") or -9999
-                    new_var = params.get("options_losses_starttime") or -9999
-                    self.mesh["losses"] = {
-                        "method": 2,
-                        "cn_multiplier": cn_mult,
-                        "ia_coefficient": ia_coef,
-                        "start_time": new_var,
-                    }
-
-                    self.feedback.setProgressText("Getting ground roughness...")
-                    self.feedback.setProgress(50)
-                    ggr_feedback = QgsProcessingFeedback()
-                    ggr_progress = lambda x: self.feedback.setProgress(
-                        x / 100 * (80 - 50) + 50
-                    )
-                    ggr_feedback.progressChanged.connect(ggr_progress)
-                    ggr_feedback.canceled.connect(self.feedback.cancel)
-                    if self.roughness_layer == "ground_layer":
-                        assert len(extra_data["custom_roughness"]) == len(triangles)
-                        index = 0
-                        for polygon in self.mesh["polygons"].values():
-                            if polygon["category"] == "ground":
-                                roughness = extra_data["custom_roughness"][index]
-                                if np.isnan(roughness):
-                                    roughness = landuses[int(extra_data["landuse"][index])]
-                                polygon["roughness"] = float(roughness)
-                                index += 1
-                    elif self.roughness_layer == "ground_layer" and False:
-                        roughness_dict = core.get_ground_roughness(
-                            self.mesh, layers["ground"], landuses, ggr_feedback
-                        )
-                        if self.feedback.isCanceled():
-                            self.message = "Task canceled."
-                            return False
-                        for polygon_id, roughness in roughness_dict.items():
-                            polygon = self.mesh["polygons"][polygon_id]
-                            polygon["roughness"] = roughness
-                    else:
-                        polygon_landuses = core.get_value_from_raster(
-                            self.roughness_layer,
-                            self.mesh,
-                            layers["ground"].crs(),
-                            ggr_feedback,
-                        )
-                        if self.feedback.isCanceled():
-                            self.message = "Task canceled."
-                            return False
-                        for polygon_id, landuse in polygon_landuses.items():
-                            polygon = self.mesh["polygons"][polygon_id]
-                            polygon["roughness"] = landuses[landuse]
-                    print(f"Done! {time.time() - start}s")
-
-            if False:
-                # Get ground losses
-                if self.losses_layer is None:
-                    self.mesh["losses"] = {"method": 0}
-                else:
-                    self.feedback.setProgressText("Getting ground losses...")
-                    self.feedback.setProgress(50)
-                    ggl_feedback = QgsProcessingFeedback()
-                    ggl_progress = lambda x: self.feedback.setProgress(
-                        x / 100 * (80 - 50) + 50
-                    )
-                    ggl_feedback.progressChanged.connect(ggl_progress)
-                    ggl_feedback.canceled.connect(self.feedback.cancel)
-
-                    if self.losses_layer == "ground_layer":
-                        losses_dict = core.get_ground_losses(
-                            self.mesh, layers["ground"], ggl_feedback
-                        )
-                    else:
-                        losses_dict = core.get_value_from_raster(
-                            self.losses_layer,
-                            self.mesh,
-                            layers["ground"].crs(),
-                            ggl_feedback,
-                        )
-
-                    if self.feedback.isCanceled():
-                        self.message = "Task canceled."
-                        return False
-                    for polygon_id, losses in losses_dict.items():
-                        polygon = self.mesh["polygons"][polygon_id]
-                        polygon["scs_cn"] = losses
-
             # Delete old mesh
             self.feedback.setProgressText("Saving mesh to GPKG file...")
             sql = f"""
@@ -512,25 +336,23 @@ class DrCreateMeshTask(DrTask):
             """
             self.dao.execute_sql(sql)
 
-            mesh_new = {}
-            mesh_new["vertices"] = vertices_df
-            mesh_new["polygons"] = triangles_df
-            mesh_new["roofs"] = roofs_df
-            mesh_new["losses"] = losses_data
-            mesh_new["boundary_conditions"] = {}
+            self.mesh = {}
+            self.mesh["vertices"] = vertices_df
+            self.mesh["polygons"] = triangles_df
+            self.mesh["roofs"] = roofs_df
+            self.mesh["losses"] = losses_data
+            self.mesh["boundary_conditions"] = {}
 
-            self.mesh = mesh_new
-
-            # Save mesh
-            if False:
-                print("Dumping (old)... ", end="")
-                start = time.time()
-                mesh_str, roof_str, losses_str = mesh_parser.dumps(self.mesh)
-                print(f"Done! {time.time() - start}s")
+            with (
+                open("C:/Users/elies/Desktop/idk/mesh.txt", "w") as mesh_buffer,
+                open("C:/Users/elies/Desktop/idk/roof.txt", "w") as roof_buffer,
+                open("C:/Users/elies/Desktop/idk/losses.txt", "w") as losses_buffer,
+            ):
+                mesh_parser.dump(self.mesh, mesh_buffer, roof_buffer, losses_buffer)
 
             print("Dumping (new)... ", end="")
             start = time.time()
-            mesh_str, roof_str, losses_str = mesh_parser.dumps_new(mesh_new)
+            mesh_str, roof_str, losses_str = mesh_parser.dumps(self.mesh)
             print(f"Done! {time.time() - start}s")
 
             # print(losses_str)
@@ -546,58 +368,9 @@ class DrCreateMeshTask(DrTask):
             )
             self.feedback.setProgress(80)
 
-            if False:
-                start = time.time()
-                print("Creating temp layer (old)... ", end="")
-
-                temp_layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
-                temp_layer.setCrs(layers["ground"].crs())
-                provider = temp_layer.dataProvider()
-                fields = [
-                    QgsField("fid", QVariant.Int),
-                    QgsField("category", QVariant.String),
-                    QgsField("vertex_id1", QVariant.Int),
-                    QgsField("vertex_id2", QVariant.Int),
-                    QgsField("vertex_id3", QVariant.Int),
-                    QgsField("vertex_id4", QVariant.Int),
-                    QgsField("roughness", QVariant.Double),
-                ]
-                provider.addAttributes(fields)
-                temp_layer.updateFields()
-
-                for i, tri in self.mesh["polygons"].items():
-                    if self.feedback.isCanceled():
-                        self.message = "Task canceled."
-                        return False
-
-                    vertices = [self.mesh["vertices"][vert] for vert in tri["vertice_ids"]]
-                    geom = QgsTriangle(
-                        QgsPoint(*vertices[0]["coordinates"], vertices[0]["elevation"]),
-                        QgsPoint(*vertices[1]["coordinates"], vertices[1]["elevation"]),
-                        QgsPoint(*vertices[2]["coordinates"], vertices[2]["elevation"]),
-                    )
-
-                    feature = QgsFeature()
-                    feature.setGeometry(geom)
-                    feature.setAttributes(
-                        [i, tri["category"], *tri["vertice_ids"], tri["roughness"]]
-                    )
-                    provider.addFeature(feature)
-                
-                temp_layer.updateExtents()
-
-                # Set the style of the layer
-                style_path = "resources/templates/mesh_temp_layer.qml"
-                style_path = Path(global_vars.plugin_dir) / style_path
-                style_path = str(style_path)
-                temp_layer.loadNamedStyle(style_path)
-                temp_layer.triggerRepaint()
-
-                print(f"Done! {time.time() - start}s")
-
             start = time.time()
             print("Creating temp layer (new)... ", end="")
-            temp_layer = create_temp_mesh_layer(mesh_new)
+            temp_layer = create_temp_mesh_layer(self.mesh)
             print(f"Done! {time.time() - start}s")
 
             # Add temp layer to TOC

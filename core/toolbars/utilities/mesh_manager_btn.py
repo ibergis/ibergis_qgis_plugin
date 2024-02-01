@@ -1,7 +1,5 @@
-import datetime
 from functools import partial
 from pathlib import Path
-from time import time
 
 from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
@@ -138,7 +136,7 @@ class DrMeshManagerButton(DrAction):
         if not row:
             return
         
-        mesh = mesh_parser.loads_new(row["iber2d"], row["roof"])
+        mesh = mesh_parser.loads(row["iber2d"], row["roof"])
 
         self.thread = DrCreateTempMeshLayerTask("Create Temp Mesh Layer", mesh)
         self.thread.taskCompleted.connect(self._load_layer)

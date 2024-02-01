@@ -65,10 +65,6 @@ class DrSaveToMeshTask(DrTask):
             poly_df = self.mesh["polygons"]
             boundary_edges = {}
             for pol in poly_df[poly_df["category"] == "ground"].itertuples():
-            # for pol_id, pol in self.mesh["polygons"].items():
-                # if pol["category"] != "ground":
-                #     continue
-                # vert = pol["vertice_ids"]
                 vert = [pol.v1, pol.v2, pol.v3, pol.v4]
                 # Add last and first vertices as a edge if they are distinct
                 last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
@@ -78,7 +74,6 @@ class DrSaveToMeshTask(DrTask):
                     if edge in boundary_edges:
                         del boundary_edges[edge]
                     else:
-                        # boundary_edges[edge] = (pol_id, side)
                         boundary_edges[edge] = (pol.Index, side)
 
                 if self.feedback.isCanceled():
@@ -222,7 +217,7 @@ class DrSaveToMeshTask(DrTask):
                     (feature["pol_id"], feature["side"])
                 ] = bc_dict[feature["bc_fid"]]
 
-            new_mesh_str, new_roof_str, new_losses_str = mesh_parser.dumps_new(self.mesh)
+            new_mesh_str, new_roof_str, new_losses_str = mesh_parser.dumps(self.mesh)
 
             if self.feedback.isCanceled():
                 self.message = "Task canceled."

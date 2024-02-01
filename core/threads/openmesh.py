@@ -30,9 +30,9 @@ class DrOpenMeshTask(DrTask):
         with open(mesh_path) as mesh_file:
             if roof_path.exists():
                 with open(roof_path) as roof_file:
-                    mesh = mesh_parser.load_new(mesh_file, roof_file)
+                    mesh = mesh_parser.load(mesh_file, roof_file)
             else:
-                mesh = mesh_parser.load_new(mesh_file)
+                mesh = mesh_parser.load(mesh_file)
 
         self.setProgress(self.POST_FILE_PROGRESS)
         temp_layer = create_temp_mesh_layer(mesh)
