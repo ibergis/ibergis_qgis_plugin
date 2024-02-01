@@ -262,6 +262,14 @@ class DrExecuteModel(DrTask):
             iber2d_content, roof_content, losses_content = row
 
             # Write content to files
+            project_name, iber2d_options = self._get_iber2d_options()
+            iber2d_lines = iber2d_content.split('\n')
+            if iber2d_lines[0] == "MATRIU":
+                iber2d_content = f"{project_name}\n{iber2d_options}\n{iber2d_content}"
+            else:
+                iber2d_lines[1] = f"{iber2d_options}"
+                iber2d_content = '\n'.join(iber2d_lines)
+
             self._write_to_file(f'{self.folder_path}{os.sep}Iber2D.dat', iber2d_content)
             self.progress_changed.emit("Export files", lerp_progress(30, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
@@ -301,6 +309,48 @@ class DrExecuteModel(DrTask):
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber_Losses.dat', losses_content)
             self.progress_changed.emit("Export files", lerp_progress(100, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+
+    def _get_iber2d_options(self):
+
+        sql = "SELECT parameter, value FROM config_param_user " \
+              "WHERE parameter IN ('project_name','options_delta_time','options_tmax','options_rank_results'," \
+              "'options_order','options_cfl','options_wetdry_edge','options_viscosity_coeff','options_t0'," \
+              "'options_simulation_details','options_simulation_new','options_plan_id','options_simulation_plan'," \
+              "'options_timeseries');"
+        rows = self.dao.get_rows(sql)
+        if not rows:
+            return 'OPTIONS_ERROR', "-9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999"
+
+        options = {}
+        for row in rows:
+            parameter = row['parameter']
+            value = row['value']
+            if value is None:
+                value = "0"
+            if parameter == 'options_simulation_plan':
+                value = "Enabled" if value == "True" else "Disabled"
+            elif parameter == 'options_plan_id':
+                value = "0"
+            options[parameter] = value
+
+        project_name = options.get('project_name', 'test')
+        options_delta_time = options.get('options_delta_time', '0')
+        options_tmax = options.get('options_tmax', '0')
+        options_rank_results = options.get('options_rank_results', '0')
+        options_order = options.get('options_order', '0')
+        options_cfl = options.get('options_cfl', '0')
+        options_wetdry_edge = options.get('options_wetdry_edge', '0')
+        options_viscosity_coeff = options.get('options_viscosity_coeff', '0')
+        options_t0 = options.get('options_t0', '0')
+        options_simulation_details = options.get('options_simulation_details', '0')
+        options_simulation_new = options.get('options_simulation_new', '0')
+        options_plan_id = options.get('options_plan_id', '0')
+        options_simulation_plan = options.get('options_simulation_plan', '0')
+        options_timeseries = options.get('options_timeseries', '0')
+
+        options_str = f"{options_delta_time} {options_tmax} {options_rank_results} {options_order} {options_cfl} {options_wetdry_edge} {options_viscosity_coeff} {options_t0} {options_simulation_details} {options_simulation_new} {options_plan_id} {options_simulation_plan} {options_timeseries}"
+        return project_name, options_str
+
 
     def _write_to_file(self, file_path, content):
         with open(file_path, 'w') as file:
