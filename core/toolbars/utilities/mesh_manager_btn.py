@@ -195,11 +195,14 @@ class DrMeshManagerButton(DrAction):
             with open(roof_path) as f:
                 content = f.read()
                 values += f", '{content}'"
+
+        columns += ", losses"
         if losses_path.exists():
-            columns += ", losses"
             with open(losses_path) as f:
                 content = f.read()
                 values += f", '{content}'"
+        else:
+            values += ", '0'"
 
         sql = f"INSERT INTO cat_file ({columns}) VALUES ({values});"
         status = self.dao.execute_sql(sql)
