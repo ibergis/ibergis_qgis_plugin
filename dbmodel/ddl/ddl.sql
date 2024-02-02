@@ -181,6 +181,7 @@ CREATE TABLE inlet (
     top_elev real check (typeof(top_elev) = 'real' or top_elev = null),
   	width real check (typeof(width) = 'real' or width = null),
     length real check (typeof(length) = 'real' or length = null),
+    depth real check (typeof(depth) = 'real' or depth = null),
     method text check (typeof(method) in ('text', null) and method in ('UPC', 'W_O')),
     weir_cd real check (typeof(weir_cd) = 'real' or weir_cd = null),
     orifice_cd real check (typeof(orifice_cd) = 'real' or orifice_cd = null),
