@@ -343,13 +343,6 @@ class DrCreateMeshTask(DrTask):
             self.mesh["losses"] = losses_data
             self.mesh["boundary_conditions"] = {}
 
-            with (
-                open("C:/Users/elies/Desktop/idk/mesh.txt", "w") as mesh_buffer,
-                open("C:/Users/elies/Desktop/idk/roof.txt", "w") as roof_buffer,
-                open("C:/Users/elies/Desktop/idk/losses.txt", "w") as losses_buffer,
-            ):
-                mesh_parser.dump(self.mesh, mesh_buffer, roof_buffer, losses_buffer)
-
             print("Dumping (new)... ", end="")
             start = time.time()
             mesh_str, roof_str, losses_str = mesh_parser.dumps(self.mesh)
