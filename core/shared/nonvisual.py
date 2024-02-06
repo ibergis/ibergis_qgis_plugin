@@ -1300,7 +1300,7 @@ class DrNonVisual:
         elif times_type == 'RELATIVE':
             row0, row1, row2 = None, 'time', 'value'
         elif times_type == 'ABSOLUTE':
-            row0, row1, row2 = 'date', None, 'value'
+            row0, row1, row2 = 'date', 'time', 'value'
 
         headers_rel_dict = {'date': 1, 'time': 2, 'value': 3}
 
@@ -1496,14 +1496,14 @@ class DrNonVisual:
             for row in values:
                 if row == (['null'] * tbl_timeseries_value.columnCount()):
                     continue
-                if 'null' in (row[0], row[2]):
+                if 'null' in (row[0], row[1], row[2]):
                     msg = "You have to fill in 'date', 'time' and 'value' fields!"
                     tools_qgis.show_warning(msg, dialog=dialog)
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (timeseries, date, value) "
-                sql += f"VALUES ('{timeseries}', {row[0]}, {row[2]})"
+                sql = f"INSERT INTO cat_timeseries_value (timeseries, date, time, value) "
+                sql += f"VALUES ('{timeseries}', {row[0]}, {row[1]}, {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
