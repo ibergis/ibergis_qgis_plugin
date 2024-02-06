@@ -310,7 +310,9 @@ def setfields(p_input: dict) -> dict:
         v_sql = f"UPDATE {v_table_name} SET "
         for field, value in v_fields.items():
             # TODO: check column type, if integer don't let it put a string
-            v_sql += f"{field} = '{value}', "
+            if value != 'null':
+                value = f"'{value}'"
+            v_sql += f"{field} = {value}, "
 
         v_sql = v_sql[:-2]
         v_sql += f" WHERE {v_idname} = '{v_id}'"
