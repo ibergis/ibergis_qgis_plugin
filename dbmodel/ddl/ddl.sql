@@ -802,7 +802,21 @@ a0 as Constant, ysur as SurDepth, fevap as Fevap, psi as Psi, ksat as Ksat, imd 
 create view if not exists vi_junctions as SELECT code as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation, 
 geom from inp_junction;
 
-create view if not exists vi_curves as select c.idval as Name, c.curve_type, cv.xcoord as Depth, cv.ycoord as Flow from cat_curve c JOIN cat_curve_value cv ON c.idval = cv.curve;
+CREATE VIEW vi_curves as
+    WITH qt AS (
+        SELECT 
+        ccv.id,
+        ccv.curve,
+        case when (ROW_NUMBER() OVER (PARTITION BY curve ORDER BY curve))=1 then c.curve_type end as curve_type,
+        ccv.xcoord,
+        ccv.ycoord
+        FROM cat_curve c
+        JOIN cat_curve_value ccv ON c.idval= ccv.curve
+    )
+    SELECT qt.curve as Name,
+    qt.curve_type as Type, 
+    qt.xcoord as "X-Value",
+    qt.ycoord as "Y-value" FROM qt ORDER BY qt.id;
 
 create view if not exists vi_timeseries as select timeseries as Name, "date" as "Date", "time" as "Time", value as Value, fname as File_Name from cat_timeseries c
 JOIN cat_timeseries_value cv ON c.idval = cv.timeseries;
