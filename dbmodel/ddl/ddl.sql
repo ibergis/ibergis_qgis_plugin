@@ -870,8 +870,9 @@ CREATE VIEW if not exists v_arc as
 CREATE VIEW if not exists v_ui_file AS SELECT name, ROUND(LENGTH(iber2d || COALESCE(roof, '') || losses) / 1024.0, 3) AS kilobytes FROM cat_file ORDER BY name ASC;
 
 
-create table tables_nogeom (table_name text primary key);
-create table tables_geom (table_name text primary key, isgeom text NOT NULL);
+
+create table tables_nogeom (table_name text primary key, index_col text);
+create table tables_geom (table_name text primary key, isgeom text NOT NULL, index_col text);
 
 
 create trigger "trigger_tables_nogeom" after insert on "tables_nogeom"
