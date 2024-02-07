@@ -62,8 +62,8 @@ CREATE TABLE cat_curve_value (
     id integer primary key,
     curve text NOT NULL,
     xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
-    ycoord real CHECK (typeof(ycoord)='real') NOT NULL
-    --FOREIGN KEY (curve) references cat_curve (idval) on update cascade
+    ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
+    FOREIGN KEY (curve) references cat_curve (idval) on update cascade restrict
 );
 
 CREATE TABLE cat_timeseries (
@@ -80,8 +80,8 @@ CREATE TABLE cat_timeseries_value (
     timeseries text NOT NULL,
     date datetime CHECK (typeof(date)='datetime' OR date=NULL),
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-    value real CHECK (typeof(value)='real' OR value=NULL)
-    --FOREIGN KEY (timeseries) references cat_timeseries(idval) on update cascade on delete cascade
+    value real CHECK (typeof(value)='real' OR value=NULL),
+    FOREIGN KEY (timeseries) references cat_timeseries(idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE cat_pattern (
@@ -95,8 +95,8 @@ CREATE TABLE cat_pattern_value (
     id integer primary key,
     pattern text NOT NULL,
     timestep datetime CHECK (typeof(timestep)='datetime' OR timestep=NULL),
-    value real CHECK (typeof(value)='real' OR value=NULL)
-    --FOREIGN KEY (pattern) references cat_pattern(id) on update cascade on delete cascade
+    value real CHECK (typeof(value)='real' OR value=NULL),
+    FOREIGN KEY (pattern) references cat_pattern(idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE cat_controls (
@@ -115,8 +115,8 @@ CREATE TABLE cat_raster_value (
     id integer primary key,
     raster text NOT NULL,
     time datetime CHECK (typeof(time)='datetime' OR time=NULL),
-	fname text check (typeof(fname)='text' or fname = null)
-    --FOREIGN KEY (raster) references cat_raster(idval) on update cascade on delete cascade
+	fname text check (typeof(fname)='text' or fname = null),
+    FOREIGN KEY (raster) references cat_raster(idval) on update cascade on delete cascade restrict
 );
 
 
@@ -134,8 +134,8 @@ CREATE TABLE ground (
 	landuse text CHECK (typeof(landuse)='text' OR landuse=NULL),
     custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness=NULL),
     scs_cn real CHECK (typeof(scs_cn)='real' OR scs_cn=NULL),
-	geom geometry
-    --FOREIGN KEY (landuse) REFERENCES cat_landuses(idval) on update cascade
+	geom geometry,
+    FOREIGN KEY (landuse) REFERENCES cat_landuses(idval) on update cascade restrict
 );
 
 CREATE TABLE roof (
@@ -157,8 +157,8 @@ CREATE TABLE roof (
     inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
     lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
-    --FOREIGN KEY (outlet_code) REFERENCES inp_junction(code) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (outlet_code) REFERENCES inp_junction(code) on update cascade on delete restrict
 );
 
 
@@ -189,8 +189,8 @@ CREATE TABLE inlet (
     b_param real check (typeof(b_param) = 'real' or b_param = null),
     efficiency real check (typeof(efficiency) = 'real' or efficiency = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
-    --FOREIGN KEY (outlet_node) references junction (code) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (outlet_node) references junction (code) on update cascade on delete restrict
 );
 
 
@@ -198,8 +198,8 @@ CREATE TABLE hyetograph (
     fid integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
     timeseries text CHECK (typeof(timeseries)='text' OR timeseries=NULL),
-	geom geometry
-    --FOREIGN KEY (timeseries) references cat_timeseries (idval) on update cascade on delete restrict
+	geom geometry,
+    FOREIGN KEY (timeseries) references cat_timeseries (idval) on update cascade on delete restrict
 );
 
 create table boundary_conditions (
@@ -213,18 +213,15 @@ create table boundary_conditions (
     timeseries text check (typeof(timeseries)='text' or timeseries=null),
     other1 real,
     other2 real,
-    geom geometry
-    --FOREIGN KEY (bscenario) REFERENCES cat_bscenario(idval) on update cascade on delete restrict,
-    --FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (bscenario) REFERENCES cat_bscenario(idval) on update cascade on delete restrict,
+    FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
-
 
 
 -- ----------
 -- INP TABLES
 -- ----------
-
-
 CREATE TABLE inp_conduit (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
@@ -252,9 +249,9 @@ CREATE TABLE inp_conduit (
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     seepage real check (typeof(seepage) = 'real' or seepage = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
-    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
-    --FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
+    geom geometry,
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
 );
 
 CREATE TABLE inp_outlet (
@@ -270,8 +267,8 @@ CREATE TABLE inp_outlet (
     cd2 real check (typeof(cd2)='real' or cd2= null),
     curve text check (typeof(curve)='text' or curve= null),
     annotation real check (typeof(annotation)='real' or annotation= null),
-    geom geometry
-    --FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict
 );
 
 
@@ -317,8 +314,8 @@ CREATE TABLE inp_weir (
     crest_height real check (typeof(crest_height)='real' or crest_height = null),
     end_coeff real check (typeof(end_coeff)='real' or end_coeff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
-    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_pump (
@@ -332,8 +329,8 @@ CREATE TABLE inp_pump (
     startup real check (typeof(startup) = 'real' or startup = null),
     shutoff real check (typeof(shutoff) = 'real' or shutoff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
-    --FOREIGN KEY (curve) references cat_curve(id) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_outfall (
@@ -347,9 +344,9 @@ CREATE TABLE inp_outfall (
     timeseries text check (typeof(timeseries) = 'text' or timeseries = null),
     routeto text check (typeof(routeto) = 'text' or routeto = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
-    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
-    --FOREIGN KEY (timeseries) references cat_timeseries(idval)
+    geom geometry,
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
+    FOREIGN KEY (timeseries) references cat_timeseries(idval)
 );
 
 CREATE TABLE inp_divider (
@@ -361,16 +358,16 @@ CREATE TABLE inp_divider (
     y0 real check (typeof(y0) = 'real' or y0 = null),
     ysur real check (typeof(ysur) = 'real' or ysur = null),
     apond real check (typeof(apond) = 'real' or apond = null),
-    divert_arc text check(typeof(divert_arc='text' or divert_arc=null)),
+    divert_arc text check(typeof(divert_arc)='text' or divert_arc=null),
     divider_type text check (typeof(divider_type) IN ('text', null) and divider_type in ('CUTOFF', 'OVERFLOW', 'TABULAR', 'WEIR')),
     qmin real check (typeof(qmin) = 'real' or qmin = null),
     curve integer check (typeof(curve) = 'integer' or curve = null),
     q0 real check (typeof(q0) = 'real' or q0 = null),
     qmax real check (typeof(qmax) = 'real' or qmax = null),
     annotation real check (typeof(annotation) = 'real' or annotation = null),
-    geom geometry
-    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
-    --FOREIGN KEY (divert_arc) references inp_conduit(code) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
+    FOREIGN KEY (divert_arc) references inp_conduit(code) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_storage (
@@ -391,8 +388,8 @@ CREATE TABLE inp_storage (
     ksat real check (typeof(ksat) = 'real' or ksat = null),
     imd real check (typeof(imd) = 'real' or imd = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
-    --FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_junction (
@@ -427,11 +424,11 @@ create table inp_dwf (
     pattern3 text check (typeof(pattern3) = 'text' or pattern3 = null),
     pattern4 text check (typeof(pattern4) = 'text' or pattern4 = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
-    --FOREIGN KEY (pattern1) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
-    --FOREIGN KEY (pattern2) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
-    --FOREIGN KEY (pattern3) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
-    --FOREIGN KEY (pattern4) REFERENCES cat_pattern(idval) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (pattern1) REFERENCES cat_pattern(idval) on update cascade on delete restrict
+    FOREIGN KEY (pattern2) REFERENCES cat_pattern(idval) on update cascade on delete restrict
+    FOREIGN KEY (pattern3) REFERENCES cat_pattern(idval) on update cascade on delete restrict
+    FOREIGN KEY (pattern4) REFERENCES cat_pattern(idval) on update cascade on delete restrict
 );
 
 create table inp_inflow (
@@ -446,9 +443,9 @@ create table inp_inflow (
     base real check (typeof(base)='real' or base=null) default 0,
     pattern text check (typeof(pattern) = 'integer' or pattern=null),
     type text check(typeof(type)='text' or type=null),
-    geom geometry
-    --FOREIGN KEY (pattern) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
-    --FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
+    geom geometry,
+    FOREIGN KEY (pattern) REFERENCES cat_pattern(idval) on update cascade on delete restrict,
+    FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
 
 
@@ -496,7 +493,7 @@ CREATE TABLE rpt_arc (
     flow real check (typeof(flow) = 'real' or flow = null),
     velocity real check (typeof(velocity) = 'real' or velocity = null),
     fullpercent real check (typeof(fullpercent) = 'real' or fullpercent = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_arcflow_sum (
@@ -517,7 +514,7 @@ CREATE TABLE rpt_arcflow_sum (
     min_shear real check (typeof(min_shear) = 'real' or min_shear = null),
     day_min text check (typeof(day_min) = 'text' or day_min = null),
     time_min text check (typeof(time_min) = 'text' or time_min = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 
@@ -529,28 +526,28 @@ CREATE TABLE rpt_condsurcharge_sum (
     dnstream real check (typeof(dnstream) = 'real' or dnstream = null),
     hour_nflow real check (typeof(hour_nflow) = 'real' or hour_nflow = null),
     hour_limit real check (typeof(hour_limit) = 'real' or hour_limit = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_continuity_errors (
     id integer primary key,
     result text check (typeof(result) = 'text' or result =null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_control_actions_taken (
     id integer primary key,
     result text check (typeof(result) = 'text' or result =null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_critical_elements (
     id integer primary key,
     result text check (typeof(result) = 'text' or result =null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_flowclass_sum (
@@ -566,7 +563,7 @@ CREATE TABLE rpt_flowclass_sum (
     down_crit real check (typeof(down_crit) = 'real' or down_crit = null),
     froud_numb real check (typeof(froud_numb) = 'real' or froud_numb = null),
     flow_chang real check (typeof(flow_chang) = 'real' or flow_chang = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_flowrouting_cont (
@@ -585,7 +582,7 @@ CREATE TABLE rpt_flowrouting_cont (
     cont_error real check (typeof(cont_error) = 'real' or cont_error = null),
     evap_losses real check (typeof(evap_losses) = 'real' or evap_losses = null),
     seepage_losses real check (typeof(seepage_losses) = 'real' or seepage_losses = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_groundwater_cont (
@@ -599,28 +596,28 @@ CREATE TABLE rpt_groundwater_cont (
     groundw_fl real check (typeof(groundw_fl) = 'real' or groundw_fl = null),
     final_stor real check (typeof(final_stor) = 'real' or final_stor = null),
     cont_error real check (typeof(cont_error) = 'real' or cont_error = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_high_conterrors (
     id integer primary key,
     result text check (typeof(result) = 'text' or result =null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_high_flowinest_ind (
     id integer primary key,
     result text check (typeof(result) = 'text' or result =null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_instability_index (
     id integer primary key,
     result text check (typeof(result) = 'text' or result =null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 
@@ -633,7 +630,7 @@ CREATE TABLE rpt_node (
     depth real check (typeof("depth") = 'real' or "depth" = null),
     head real check (typeof(head) = 'real' or head = null),
     inflow real check (typeof(inflow) = 'real' or inflow = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_nodedepth_sum (
@@ -645,7 +642,7 @@ CREATE TABLE rpt_nodedepth_sum (
     max_hgl real check (typeof(max_hgl) = 'real' or max_hgl = null),
     time_days text check (typeof(time_days) = 'text' or time_days = null),
     time_hour text check (typeof(time_hour) = 'text' or time_hour = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_nodeflooding_sum (
@@ -657,7 +654,7 @@ CREATE TABLE rpt_nodeflooding_sum (
     time_hour text check (typeof(time_hour) = 'text' or time_hour = null),
     tot_flood real check (typeof(tot_flood) = 'real' or tot_flood = null),
     max_ponded real check (typeof(max_ponded) = 'real' or max_ponded = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_nodeinflow_sum (
@@ -672,7 +669,7 @@ CREATE TABLE rpt_nodeinflow_sum (
     totinf_vol real check (typeof(totinf_vol) = 'real' or totinf_vol = null),
     flow_balance_error real check (typeof(flow_balance_error) = 'real' or flow_balance_error = null),
     other_info text check (typeof(other_info) = 'text' or other_info = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_nodesurcharge_sum (
@@ -682,7 +679,7 @@ CREATE TABLE rpt_nodesurcharge_sum (
     hour_surch real check (typeof(hour_surch) = 'real' or hour_surch = null),
     max_height real check (typeof(max_height) = 'real' or max_height = null),
     min_depth real check (typeof(min_depth) = 'real' or min_depth = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_outfallflow_sum (
@@ -692,7 +689,7 @@ CREATE TABLE rpt_outfallflow_sum (
     avg_flow real check (typeof(avg_flow) = 'real' or avg_flow = null),
     max_flow real check (typeof(max_flow) = 'real' or max_flow = null),
     total_vol real check (typeof(total_vol) = 'real' or total_vol = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_pumping_sum (
@@ -707,7 +704,7 @@ CREATE TABLE rpt_pumping_sum (
     powus_kwh real check (typeof(powus_kwh) = 'real' or powus_kwh = null),
     timoff_min real check (typeof(timoff_min) = 'real' or timoff_min = null),
     timoff_max real check (typeof(timoff_max) = 'real' or timoff_max = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_qualrouting_cont (
@@ -725,7 +722,7 @@ CREATE TABLE rpt_qualrouting_cont (
     initst_mas real check (typeof(initst_mas) = 'real' or initst_mas = null),
     finst_mas real check (typeof(finst_mas) = 'real' or finst_mas = null),
     cont_error real check (typeof(cont_error) = 'real' or cont_error = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 
@@ -733,7 +730,7 @@ CREATE TABLE rpt_routing_timestep (
     id integer primary key,
     result text check (typeof(result) = 'text' or result =null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 
@@ -748,7 +745,7 @@ CREATE TABLE rpt_storagevol_sum (
     time_days text check (typeof(time_days) = 'text' or time_days = null),
     time_hour text check (typeof(time_hour) = 'text' or time_hour = null),
     max_out real check (typeof(max_out) = 'real' or max_out = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 
@@ -756,7 +753,7 @@ CREATE TABLE rpt_timestep_critelem (
     id integer primary key,
     result text check (typeof(result) = 'text' or result =null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 CREATE TABLE rpt_warning_summary (
@@ -764,7 +761,7 @@ CREATE TABLE rpt_warning_summary (
     result text check (typeof(result) = 'text' or result =null),
     warning_number text check (typeof(warning_number) = 'text' or warning_number = null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade
+    FOREIGN KEY (result) REFERENCES cat_rpt_result (idval) on update cascade on delete cascade restrict
 );
 
 -- ------------
