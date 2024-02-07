@@ -818,8 +818,38 @@ CREATE VIEW vi_curves as
     qt.xcoord as "X-Value",
     qt.ycoord as "Y-value" FROM qt ORDER BY qt.id;
 
-create view if not exists vi_timeseries as select timeseries as Name, "date" as "Date", "time" as "Time", value as Value, fname as File_Name from cat_timeseries c
-JOIN cat_timeseries_value cv ON c.idval = cv.timeseries;
+create view if not exists vi_timeseries as 
+    SELECT t.idval as timser_id,
+    t.other1,
+    t.other2,
+    t.other3
+    FROM (
+        SELECT ctv.id,
+            c.idval,
+            ctv.date AS other1,
+            ctv.time AS other2,
+            ctv.value AS other3
+            FROM cat_timeseries_value ctv
+            JOIN cat_timeseries c ON ctv.timeseries = c.id
+            WHERE c.times_type = 'ABSOLUTE' UNION
+        SELECT ctv.id,
+            c.idval,
+            'FILE'||' '||c.fname AS other1,
+            time AS other2,
+            value AS other3
+            FROM cat_timeseries_value ctv
+            JOIN cat_timeseries c ON ctv.timeseries = c.id
+            WHERE c.times_type = 'FILE' UNION
+        SELECT ctv.id,
+            c.idval,
+            NULL AS other1,
+            ctv."time" AS other2,
+            ctv.value AS other3
+            FROM cat_timeseries_value ctv
+            JOIN cat_timeseries c ON ctv.timeseries = c.id
+            WHERE c.times_type = 'RELATIVE'
+        ) t
+    ORDER BY t.id;
 
 create view if not exists vi_patterns as select pattern as Name, "time" as "Time", value as Factor from cat_pattern_value;
 
