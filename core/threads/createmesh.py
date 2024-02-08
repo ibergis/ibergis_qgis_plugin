@@ -292,7 +292,7 @@ class DrCreateMeshTask(DrTask):
             
             self.feedback.setProgressText("Creating roof mesh...")
             self.feedback.setProgress(30)
-            roof_vertices_df, roof_triangles_df = core.triangulate_roof_new(layers["roof"], self.feedback)
+            roof_vertices_df, roof_triangles_df = core.triangulate_roof(layers["roof"], self.feedback)
             
             roof_triangles_df["v1"] += len(ground_vertices_df)
             roof_triangles_df["v2"] += len(ground_vertices_df)

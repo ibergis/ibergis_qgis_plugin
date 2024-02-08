@@ -172,32 +172,7 @@ def get_value_from_raster(raster_layer, mesh_dict, crs, feedback):
     return value_by_polygon
 
 
-def triangulate_roof(roof_layer, feedback):
-    params = {"INPUT": roof_layer, "OUTPUT": "TEMPORARY_OUTPUT"}
-    res = processing.run("3d:tessellate", params)
-    if feedback.isCanceled():
-        return
-
-    roof_meshes = []
-    for feature in res["OUTPUT"].getFeatures():
-        geom = feature.geometry()
-        vertices = [(v.x(), v.y()) for v in geom.vertices()]
-        polygons = [
-            [vertices.index((v.x(), v.y())) for v in polygon.vertices()]
-            for polygon in geom.asGeometryCollection()
-        ]
-        roof_metadata = {
-            "category": "roof",
-            "roof_id": feature["fid"],
-            "elevation": feature["elev"],
-            "roughness": feature["roughness"],
-        }
-        roof_meshes.append((polygons, vertices, roof_metadata))
-
-    return roof_meshes
-
-
-def triangulate_roof_new(roof_layer, feedback):
+def triangulate_roof(roof_layer: QgsVectorLayer, feedback):
     params = {"INPUT": roof_layer, "OUTPUT": "TEMPORARY_OUTPUT"}
     res = processing.run("3d:tessellate", params)
     if feedback.isCanceled():
