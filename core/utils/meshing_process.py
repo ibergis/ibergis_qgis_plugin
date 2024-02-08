@@ -378,6 +378,8 @@ except ImportError:
         pass
 
 
+import shapely
+
 def create_temp_mesh_layer(mesh: Dict[str, pd.DataFrame]):
     layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
     layer.setCrs(QgsProject.instance().crs())
@@ -390,6 +392,7 @@ def create_temp_mesh_layer(mesh: Dict[str, pd.DataFrame]):
         QgsField("vertex_id3", QVariant.Int),
         QgsField("vertex_id4", QVariant.Int),
         QgsField("roughness", QVariant.Double),
+        QgsField("is_ccw", QVariant.Bool),
     ]
     provider.addAttributes(fields)
     layer.updateFields()
@@ -408,6 +411,15 @@ def create_temp_mesh_layer(mesh: Dict[str, pd.DataFrame]):
 
     opt_df = pd.concat([mesh["polygons"], c1, c2, c3], axis=1)
 
+    def is_ccw(row):
+        r1 = shapely.LinearRing([(row.x1, row.y1), (row.x2, row.y2), (row.x3, row.y3)])
+        return r1.is_ccw
+
+    opt_df["is_ccw"] = opt_df.apply(is_ccw, axis=1)
+
+    wrong = opt_df[opt_df["is_ccw"] == False]
+    print(wrong["category"].value_counts())
+
     def get_feature(row):
         geom = QgsTriangle(
             QgsPoint(row.x1, row.y1, row.z1),
@@ -416,9 +428,13 @@ def create_temp_mesh_layer(mesh: Dict[str, pd.DataFrame]):
         )
         feature = QgsFeature()
         feature.setGeometry(geom)
-        feature.setAttributes(
-            [row.Index, row.category, row.v1, row.v2, row.v3, row.roughness]
-        )
+        feature.setAttributes([
+            row.Index, 
+            row.category, 
+            row.v1, row.v2, row.v3, row.v4,
+            row.roughness, 
+            row.is_ccw
+        ])
         return feature
     
     features = map(get_feature, opt_df.itertuples())
