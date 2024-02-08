@@ -182,7 +182,8 @@ def triangulate_roof(roof_layer: QgsVectorLayer, feedback):
     vertices_dfs = []
     triangles_dfs = []
     for feature in res["OUTPUT"].getFeatures():
-        geom = feature.geometry()
+        geom: QgsGeometry = feature.geometry()
+        geom.normalize()
 
         vertices = [(v.x(), v.y()) for v in geom.vertices()]
         triangles = [

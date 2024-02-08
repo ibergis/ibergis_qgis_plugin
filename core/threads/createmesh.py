@@ -311,6 +311,8 @@ class DrCreateMeshTask(DrTask):
             triangles_df["v3"] += 1
             triangles_df["v4"] += 1
 
+            triangles_df["v2"], triangles_df["v3"] = triangles_df["v3"], triangles_df["v2"]
+
             # Get roofs
             self.feedback.setProgressText("Getting roof data...")
             sql = """

@@ -173,6 +173,7 @@ try:
 
         gdf = gpd.GeoDataFrame(geometry=geoms, data=data)
         gdf = gdf.explode(ignore_index=True)
+        gdf["geometry"] = gdf["geometry"].normalize()
 
         return gdf
 
