@@ -40,6 +40,7 @@ class DrExecuteModel(DrTask):
 
     # Progress percentages
     PROGRESS_INIT = 0
+    PROGRESS_CONFIG = 5
     PROGRESS_MESH_FILES = 25
     PROGRESS_STATIC_FILES = 30
     PROGRESS_INLET = 35
@@ -137,8 +138,16 @@ class DrExecuteModel(DrTask):
                 return False
             # Mesh files
             if self.do_export:
+                # Export config
+                self.progress_changed.emit("Export files", self.PROGRESS_INIT, "Exporting config files...", False)
+                self._create_config_files()
+                self.progress_changed.emit("Export files", self.PROGRESS_CONFIG, "done!", True)
+
+                if self.isCanceled():
+                    return False
+
                 # Export mesh
-                self.progress_changed.emit("Export files", self.PROGRESS_INIT, "Exporting mesh files...", False)
+                self.progress_changed.emit("Export files", self.PROGRESS_CONFIG, "Exporting mesh files...", False)
                 mesh_id = tools_qt.get_combo_value(self.dialog, 'cmb_mesh')
                 self._copy_mesh_files(mesh_id)
                 self.progress_changed.emit("Export files", self.PROGRESS_MESH_FILES, "done!", True)
@@ -204,6 +213,46 @@ class DrExecuteModel(DrTask):
 
         return True
 
+    def _create_config_files(self):
+        # Iber_Results.dat
+        file_name = Path(self.folder_path) / "Iber_Results.dat"
+        mapper = {
+            "result_depth": "Depth",
+            "result_vel": "Velocity",
+            "result_specific_discharge": "Specific_Discharge",
+            "result_water_elevation": "Water_Elevation",
+            "result_fronde_number": "Froude_Number",
+            "result_localtime_step": "Local_Time_Step",
+            "result_manning_coefficient": "Manning_Coefficient",
+            "result_critical_diameter": "Critical_Diameter",
+            "result_max_depth": "Maximum_Depth",
+            "result_max_vel": "Maximum_Velocity",
+            "result_max_spec_discharge": "Maximum_Spec_Discharge",
+            "result_max_water_elev": "Maximum_Water_Elev",
+            "result_max_localtime_step": "Maximum_Local_Time_Step",
+            "result_max_critical_diameter": "Maximum_Critical_Diameter",
+            "result_hazard_rd9_2008": "Hazard RD9/2008",
+            "result_hazard_aca2003": "Hazard ACA2003",
+            "result_depth_vector": "Depth_vector",
+            "result_bed_shear_stress": "Bed_Shear_Stress",
+            "result_max_bed_shear_stress": "Maximum_Bed_Shear_Stress",
+            "result_energy": "Energy",
+            "result_steamlines": "Streamlines",
+        }
+        sql = "SELECT parameter, value FROM config_param_user WHERE parameter like 'result_%'"
+        rows = self.dao.get_rows(sql)
+        if rows:
+            with open(file_name, 'w', newline='') as dat_file:
+                for row in rows:
+                    value = row['value']
+                    if value in (None, "True", "False"):
+                        value = "1" if value == "True" else "0"
+                    parameter = mapper.get(row['parameter'], row['parameter'])
+                    line = f"{value}\t{parameter}\n"
+                    dat_file.write(line)
+
+        # Iber_SWMM.dat
+
     def _copy_mesh_files(self, mesh_id):
 
         sql = f"SELECT iber2d, roof, losses FROM cat_file WHERE id = '{mesh_id}'"
@@ -213,6 +262,14 @@ class DrExecuteModel(DrTask):
             iber2d_content, roof_content, losses_content = row
 
             # Write content to files
+            project_name, iber2d_options = self._get_iber2d_options()
+            iber2d_lines = iber2d_content.split('\n')
+            if iber2d_lines[0] == "MATRIU":
+                iber2d_content = f"{project_name}\n{iber2d_options}\n{iber2d_content}"
+            else:
+                iber2d_lines[1] = f"{iber2d_options}"
+                iber2d_content = '\n'.join(iber2d_lines)
+
             self._write_to_file(f'{self.folder_path}{os.sep}Iber2D.dat', iber2d_content)
             self.progress_changed.emit("Export files", lerp_progress(30, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
@@ -253,6 +310,48 @@ class DrExecuteModel(DrTask):
             self._write_to_file(f'{self.folder_path}{os.sep}Iber_Losses.dat', losses_content)
             self.progress_changed.emit("Export files", lerp_progress(100, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
+    def _get_iber2d_options(self):
+
+        sql = "SELECT parameter, value FROM config_param_user " \
+              "WHERE parameter IN ('project_name','options_delta_time','options_tmax','options_rank_results'," \
+              "'options_order','options_cfl','options_wetdry_edge','options_viscosity_coeff','options_t0'," \
+              "'options_simulation_details','options_simulation_new','options_plan_id','options_simulation_plan'," \
+              "'options_timeseries');"
+        rows = self.dao.get_rows(sql)
+        if not rows:
+            return 'OPTIONS_ERROR', "-9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999"
+
+        options = {}
+        for row in rows:
+            parameter = row['parameter']
+            value = row['value']
+            if value is None:
+                value = "0"
+            if parameter == 'options_simulation_plan':
+                value = "Enabled" if value == "True" else "Disabled"
+            elif parameter == 'options_plan_id':
+                value = "0"
+            options[parameter] = value
+
+        project_name = options.get('project_name', 'test')
+        options_delta_time = options.get('options_delta_time', '0')
+        options_tmax = options.get('options_tmax', '0')
+        options_rank_results = options.get('options_rank_results', '0')
+        options_order = options.get('options_order', '0')
+        options_cfl = options.get('options_cfl', '0')
+        options_wetdry_edge = options.get('options_wetdry_edge', '0')
+        options_viscosity_coeff = options.get('options_viscosity_coeff', '0')
+        options_t0 = options.get('options_t0', '0')
+        options_simulation_details = options.get('options_simulation_details', '0')
+        options_simulation_new = options.get('options_simulation_new', '0')
+        options_plan_id = options.get('options_plan_id', '0')
+        options_simulation_plan = options.get('options_simulation_plan', '0')
+        options_timeseries = options.get('options_timeseries', '0')
+
+        options_str = f"{options_delta_time} {options_tmax} {options_rank_results} {options_order} {options_cfl} {options_wetdry_edge} {options_viscosity_coeff} {options_t0} {options_simulation_details} {options_simulation_new} {options_plan_id} {options_simulation_plan} {options_timeseries}"
+        return project_name, options_str
+
+
     def _write_to_file(self, file_path, content):
         with open(file_path, 'w') as file:
             file.write(content)
@@ -281,7 +380,7 @@ class DrExecuteModel(DrTask):
             # Write column headers
             header_str = f"{' '.join(column_names)}\n"
             dat_file.write(header_str)
-            transform_dict = {None: -9999, 'TO NETWORK': 'To_network'}
+            transform_dict = {None: -9999, 'TO NETWORK': 'To_network', 'SINK': 'Sink'}
             for row in rows:
                 values = []
                 for value in row:

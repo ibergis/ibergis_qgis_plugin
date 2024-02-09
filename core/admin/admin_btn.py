@@ -681,11 +681,15 @@ class DrAdminButton:
     def _execute_trg_creation(self):
 
         # Geom tables
-        sql = "SELECT table_name FROM tables_geom;"
+        sql = "SELECT table_name, index_col FROM tables_geom;"
         rows = tools_db.get_rows(sql)
-        list_tbl_geom = [row[0] for row in rows]
+        list_tbl_geom = [(row[0], row[1]) for row in rows]
 
-        for tablename in list_tbl_geom:
+        for tablename, index_col in list_tbl_geom:
+            if index_col:
+                sql = f"""CREATE INDEX idx_{index_col}_{tablename} ON {tablename} ({index_col});"""
+                tools_db.execute_sql(sql, commit=False)
+
             aux_str = "AFTER"
             if 'v_' in tablename or 'vi_' in tablename:
                 aux_str = "INSTEAD OF"
@@ -711,11 +715,15 @@ class DrAdminButton:
             global_vars.gpkg_dao_data.commit()
 
         # No-geom tables
-        sql = "SELECT table_name FROM tables_nogeom;"
+        sql = "SELECT table_name, index_col FROM tables_nogeom;"
         rows = tools_db.get_rows(sql)
-        list_tbl_nogeom = [row[0] for row in rows]
+        list_tbl_nogeom = [(row[0], row[1]) for row in rows]
 
-        for tablename in list_tbl_nogeom:
+        for tablename, index_col in list_tbl_nogeom:
+            if index_col:
+                sql = f"""CREATE INDEX idx_{index_col}_{tablename} ON {tablename} ({index_col});"""
+                tools_db.execute_sql(sql, commit=False)
+
             aux_str = "AFTER"
             if 'v_' in tablename or 'vi_' in tablename:
                 aux_str = "INSTEAD OF"
