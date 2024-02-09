@@ -18,6 +18,29 @@ def feature_to_layer(feature, crs):
     return layer
 
 
+def execute_zonal_statistics(vector_layer: QgsVectorLayer, raster_layer: QgsVectorLayer) -> (np.ndarray, np.ndarray, QgsVectorLayer):
+    params = {
+        "COLUMN_PREFIX": "_",
+        "INPUT": vector_layer,
+        "INPUT_RASTER": raster_layer,
+        "OUTPUT": "TEMPORARY_OUTPUT",
+        "RASTER_BAND": 1,
+        "STATISTICS": [9],  # majority
+    }
+    res = processing.run("native:zonalstatisticsfb", params)
+    res_layer = res["OUTPUT"]
+
+    n_triangles = res_layer.featureCount()
+    fids = np.empty(n_triangles, dtype=np.uint32)
+    values = np.empty(n_triangles, dtype=np.float64)
+
+    for i, feature in enumerate(res_layer.getFeatures()):
+        fids[i] = feature["fid"]
+        values[i] = feature["_majority"]
+    
+    return fids, values, res_layer
+
+
 def triangulate_roof(roof_layer: QgsVectorLayer, feedback):
     params = {"INPUT": roof_layer, "OUTPUT": "TEMPORARY_OUTPUT"}
     res = processing.run("3d:tessellate", params)

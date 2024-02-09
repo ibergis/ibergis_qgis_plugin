@@ -380,23 +380,7 @@ except ImportError:
 
 import shapely
 
-def create_temp_mesh_layer(mesh: Dict[str, pd.DataFrame]):
-    layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
-    layer.setCrs(QgsProject.instance().crs())
-    provider = layer.dataProvider()
-    fields = [
-        QgsField("fid", QVariant.Int),
-        QgsField("category", QVariant.String),
-        QgsField("vertex_id1", QVariant.Int),
-        QgsField("vertex_id2", QVariant.Int),
-        QgsField("vertex_id3", QVariant.Int),
-        QgsField("vertex_id4", QVariant.Int),
-        QgsField("roughness", QVariant.Double),
-        QgsField("is_ccw", QVariant.Bool),
-    ]
-    provider.addAttributes(fields)
-    layer.updateFields()
-
+def create_temp_mesh_layer(mesh: Dict[str, pd.DataFrame]) -> QgsVectorLayer:
     c1 = mesh["vertices"].loc[mesh["polygons"]["v1"], ['x', 'y', 'z']]
     c2 = mesh["vertices"].loc[mesh["polygons"]["v2"], ['x', 'y', 'z']]
     c3 = mesh["vertices"].loc[mesh["polygons"]["v3"], ['x', 'y', 'z']]
@@ -411,14 +395,14 @@ def create_temp_mesh_layer(mesh: Dict[str, pd.DataFrame]):
 
     opt_df = pd.concat([mesh["polygons"], c1, c2, c3], axis=1)
 
-    def is_ccw(row):
-        r1 = shapely.LinearRing([(row.x1, row.y1), (row.x2, row.y2), (row.x3, row.y3)])
-        return r1.is_ccw
+    # def is_ccw(row):
+    #     r1 = shapely.LinearRing([(row.x1, row.y1), (row.x2, row.y2), (row.x3, row.y3)])
+    #     return r1.is_ccw
 
-    opt_df["is_ccw"] = opt_df.apply(is_ccw, axis=1)
+    # opt_df["is_ccw"] = opt_df.apply(is_ccw, axis=1)
 
-    wrong = opt_df[opt_df["is_ccw"] == False]
-    print(wrong["category"].value_counts())
+    # wrong = opt_df[opt_df["is_ccw"] == False]
+    # print(wrong["category"].value_counts())
 
     def get_feature(row):
         geom = QgsTriangle(
@@ -429,15 +413,32 @@ def create_temp_mesh_layer(mesh: Dict[str, pd.DataFrame]):
         feature = QgsFeature()
         feature.setGeometry(geom)
         feature.setAttributes([
-            row.Index, 
-            row.category, 
+            row.Index,
+            row.category,
             row.v1, row.v2, row.v3, row.v4,
-            row.roughness, 
-            row.is_ccw
+            row.roughness,
+            # row.is_ccw
         ])
         return feature
     
     features = map(get_feature, opt_df.itertuples())
+
+    layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
+    layer.setCrs(QgsProject.instance().crs())
+    provider = layer.dataProvider()
+    fields = [
+        QgsField("fid", QVariant.Int),
+        QgsField("category", QVariant.String),
+        QgsField("vertex_id1", QVariant.Int),
+        QgsField("vertex_id2", QVariant.Int),
+        QgsField("vertex_id3", QVariant.Int),
+        QgsField("vertex_id4", QVariant.Int),
+        QgsField("roughness", QVariant.Double),
+        # QgsField("is_ccw", QVariant.Bool),
+    ]
+    provider.addAttributes(fields)
+    layer.updateFields()
+
     provider.addFeatures(features)
 
     layer.updateExtents()

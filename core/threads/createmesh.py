@@ -118,9 +118,13 @@ class DrCreateMeshTask(DrTask):
 
             # Validate landuses roughness values
             if self.roughness_layer is not None:
+                print("Validating landuses... ", end="")
+                start = time.time()
+
                 sql = "SELECT id, manning FROM cat_landuses"
                 rows = self.dao.get_rows(sql)
                 landuses = {} if rows is None else dict(rows)
+                landuses_df = pd.DataFrame(rows, columns=["id", "manning"]).set_index("id")
 
                 if self.roughness_layer == "ground_layer":
                     sql = "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
@@ -143,6 +147,7 @@ class DrCreateMeshTask(DrTask):
                     for l in used_landuses
                     if l not in landuses or landuses[l] is None
                 ]
+                print(f"Done! {time.time() - start}s")
 
                 if missing_roughness:
                     self.message = "The following landuses are used, but don't have a value for roughness: "
@@ -221,21 +226,29 @@ class DrCreateMeshTask(DrTask):
 
 
             # Get ground roughness
+            roughness_from_raster = False
             if self.roughness_layer is None: # Fill with zeros
                 ground_triangles_df["roughness"] = 0
             elif self.roughness_layer == "ground_layer": # From ground layer
+                print("Getting roughness from ground layer... ", end="")
+                start = time.time()
                 def get_roughness(row):
                     if np.isnan(row["custom_roughness"]):
                         return landuses[int(row["landuse"])]
                     else:
                         return row["custom_roughness"]
                     
+                # ground_triangles_df["roughness"] = ground_triangles_df["custom_roughness"].fillna()
                 ground_triangles_df["roughness"] = ground_triangles_df.apply(get_roughness, axis=1)
+                print(f"Done! {time.time() - start}s")
             else: # From raster layer
-                assert False, "Not implemented yet"
+                ground_triangles_df["roughness"] = np.nan
+                roughness_from_raster = True
 
+            ground_triangles_df = ground_triangles_df.drop(columns=["landuse", "custom_roughness"])
 
             # Get ground losses
+            losses_from_raster = False
             losses_data = {}
             if self.losses_layer is None:
                 losses_data = {"method": 0}
@@ -268,10 +281,7 @@ class DrCreateMeshTask(DrTask):
                 if self.losses_layer == "ground_layer": # From ground layer
                     pass # already calculated
                 else: # From raster layer
-                    assert False, "Not implemented yet"
-            
-
-            ground_triangles_df = ground_triangles_df.drop(columns=["landuse", "custom_roughness"])
+                    losses_from_raster = True
 
             # Vertices
             ground_vertices_df = pd.DataFrame(vertices, columns=["x", "y"])
@@ -345,6 +355,46 @@ class DrCreateMeshTask(DrTask):
             self.mesh["losses"] = losses_data
             self.mesh["boundary_conditions"] = {}
 
+            start = time.time()
+            print("Creating temp layer... ", end="")
+            temp_layer = create_temp_mesh_layer(self.mesh)
+            print(f"Done! {time.time() - start}s")
+
+            if roughness_from_raster:
+                print("Getting roughness from raster (1/2)", end="")
+                start = time.time()
+                fids, landuses, res_layer = core.execute_zonal_statistics(temp_layer, self.roughness_layer)
+                print(f"Done! {time.time() - start}s")
+
+                print("Getting roughness from raster (2/2)... ", end="")
+                start = time.time()
+                roughness = landuses_df.loc[landuses, "manning"].values
+                triangles_df.loc[fids, "roughness_new"] = roughness
+                triangles_df["roughness"] = np.where(
+                    triangles_df["category"] == "ground",
+                    triangles_df["roughness_new"],
+                    triangles_df["roughness"]
+                )
+                triangles_df = triangles_df.drop(columns=["roughness_new"])
+
+                field_index = res_layer.dataProvider().fieldNameIndex("_majority")
+                res_layer.dataProvider().renameAttributes({field_index: "landuse"})
+                res_layer.updateFields()
+                format_layer(res_layer)
+                temp_layer = res_layer
+
+                print(f"Done! {time.time() - start}s")
+
+            if losses_from_raster:
+                print("Getting losses from raster... ", end="")
+
+                start = time.time()
+                fids, scs_cn, res_layer = core.execute_zonal_statistics(temp_layer, self.roughness_layer)
+                triangles_df.loc[fids, "scs_cn"] = scs_cn
+
+                print(f"Done! {time.time() - start}s")
+
+
             print("Dumping (new)... ", end="")
             start = time.time()
             mesh_str, roof_str, losses_str = mesh_parser.dumps(self.mesh)
@@ -362,11 +412,6 @@ class DrCreateMeshTask(DrTask):
                 "Mesh saved to GPKG file!!!\nCreating temp layer for visualization..."
             )
             self.feedback.setProgress(80)
-
-            start = time.time()
-            print("Creating temp layer (new)... ", end="")
-            temp_layer = create_temp_mesh_layer(self.mesh)
-            print(f"Done! {time.time() - start}s")
 
             # Add temp layer to TOC
             tools_qt.add_layer_to_toc(temp_layer)
@@ -391,3 +436,10 @@ class DrCreateMeshTask(DrTask):
                 "Task failed. See the Log Messages Panel for more information."
             )
             return False
+
+def format_layer(layer: QgsVectorLayer) -> None:
+    layer.setName('Mesh Temp Layer')
+    relative_style_path = "resources/templates/mesh_temp_layer.qml"
+    style_path = Path(global_vars.plugin_dir) / relative_style_path
+    layer.loadNamedStyle(str(style_path))
+    layer.triggerRepaint()
