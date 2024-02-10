@@ -339,14 +339,6 @@ class DrCreateMeshTask(DrTask):
             roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
             roofs_df.index = roofs_df["fid"]
 
-            # Delete old mesh
-            self.feedback.setProgressText("Saving mesh to GPKG file...")
-            sql = f"""
-                DELETE FROM cat_file
-                WHERE name = '{self.mesh_name}'
-            """
-            self.dao.execute_sql(sql)
-
             self.mesh = mesh_parser.Mesh(
                 polygons=triangles_df,
                 vertices=vertices_df,
@@ -355,66 +347,56 @@ class DrCreateMeshTask(DrTask):
                 boundary_conditions={}
             )
 
+            # Create temp layer
+            self.feedback.setProgressText(
+                "Mesh saved to GPKG file!!!\nCreating temp layer for visualization..."
+            )
             start = time.time()
             print("Creating temp layer... ", end="")
             temp_layer = create_temp_mesh_layer(self.mesh)
             print(f"Done! {time.time() - start}s")
 
+            # Add temp layer to TOC
+            tools_qt.add_layer_to_toc(temp_layer)
+
             if roughness_from_raster:
-                print("Getting roughness from raster (1/2)", end="")
+                print("Getting ground roughness from raster... ", end="")
                 start = time.time()
-                fids, landuses, res_layer = core.execute_zonal_statistics(temp_layer, self.roughness_layer)
-                print(f"Done! {time.time() - start}s")
 
-                print("Getting roughness from raster (2/2)... ", end="")
-                start = time.time()
+                fids, landuses = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
                 roughness = landuses_df.loc[landuses, "manning"].values
-                triangles_df.loc[fids, "roughness_new"] = roughness
-                triangles_df["roughness"] = np.where(
-                    triangles_df["category"] == "ground",
-                    triangles_df["roughness_new"],
-                    triangles_df["roughness"]
-                )
-                triangles_df = triangles_df.drop(columns=["roughness_new"])
-
-                field_index = res_layer.dataProvider().fieldNameIndex("_majority")
-                res_layer.dataProvider().renameAttributes({field_index: "landuse"})
-                res_layer.updateFields()
-                format_layer(res_layer)
-                temp_layer = res_layer
+                triangles_df.loc[fids, "roughness"] = roughness
 
                 print(f"Done! {time.time() - start}s")
 
             if losses_from_raster:
-                print("Getting losses from raster... ", end="")
-
+                print("Getting ground losses from raster... ", end="")
                 start = time.time()
-                fids, scs_cn, res_layer = core.execute_zonal_statistics(temp_layer, self.roughness_layer)
+                
+                fids, scs_cn = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
                 triangles_df.loc[fids, "scs_cn"] = scs_cn
 
                 print(f"Done! {time.time() - start}s")
 
 
-            print("Dumping... ", end="")
+            # Delete old mesh
+            self.feedback.setProgressText("Saving mesh to GPKG file...")
+            self.dao.execute_sql(f"""
+                DELETE FROM cat_file
+                WHERE name = '{self.mesh_name}'
+            """)
+
+            print("Dumping mesh data... ", end="")
             start = time.time()
             mesh_str, roof_str, losses_str = mesh_parser.dumps(self.mesh)
             print(f"Done! {time.time() - start}s")
 
-            # print(losses_str)
-            sql = f"""
+            self.dao.execute_sql(f"""
                 INSERT INTO cat_file (name, iber2d, roof, losses)
                 VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}')
-            """
-            self.dao.execute_sql(sql)
+            """)
 
-            # Create temp layer
-            self.feedback.setProgressText(
-                "Mesh saved to GPKG file!!!\nCreating temp layer for visualization..."
-            )
             self.feedback.setProgress(80)
-
-            # Add temp layer to TOC
-            tools_qt.add_layer_to_toc(temp_layer)
 
             # Check for triangles with more than one inlet
             inlet_warning = validate_inlets_in_triangles(temp_layer, layers["inlet"])
