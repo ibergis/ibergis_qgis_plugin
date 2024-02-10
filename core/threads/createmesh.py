@@ -100,8 +100,9 @@ class DrCreateMeshTask(DrTask):
 
             # Validate missing ground roughness values
             if self.roughness_layer == "ground_layer":
-                sql = "SELECT fid FROM ground WHERE landuse IS NULL AND custom_roughness IS NULL"
-                rows = self.dao.get_rows(sql)
+                rows = self.dao.get_rows(
+                    "SELECT fid FROM ground WHERE landuse IS NULL AND custom_roughness IS NULL"
+                )
                 if rows is not None and len(rows) > 0:
                     self.message = "Roughness information missing in following objects in Ground layer: "
                     self.message += ", ".join(str(row["fid"]) for row in rows)
@@ -121,14 +122,14 @@ class DrCreateMeshTask(DrTask):
                 print("Validating landuses... ", end="")
                 start = time.time()
 
-                sql = "SELECT id, manning FROM cat_landuses"
-                rows = self.dao.get_rows(sql)
+                rows = self.dao.get_rows("SELECT id, manning FROM cat_landuses")
                 landuses = {} if rows is None else dict(rows)
                 landuses_df = pd.DataFrame(rows, columns=["id", "manning"]).set_index("id")
 
                 if self.roughness_layer == "ground_layer":
-                    sql = "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
-                    rows = self.dao.get_rows(sql)
+                    rows = self.dao.get_rows(
+                        "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
+                    )
                     used_landuses = (
                         [] if rows is None else [int(row[0]) for row in rows]
                     )
@@ -159,8 +160,9 @@ class DrCreateMeshTask(DrTask):
 
             # Validate missing ground losses values
             if self.losses_layer == "ground_layer":
-                sql = "SELECT fid FROM ground WHERE scs_cn IS NULL"
-                rows = self.dao.get_rows(sql)
+                rows = self.dao.get_rows(
+                    "SELECT fid FROM ground WHERE scs_cn IS NULL"
+                )
                 if len(rows):
                     self.message = "Losses information ('scs_cn' column) missing in following objects in Ground layer: "
                     self.message += ", ".join(str(row["fid"]) for row in rows)
@@ -195,8 +197,6 @@ class DrCreateMeshTask(DrTask):
                     return False
 
             # Create mesh
-            triangulations = []
-
             self.feedback.setProgressText("Creating ground mesh...")
             self.feedback.setProgress(15)
             gt_feedback = QgsFeedback()
@@ -237,7 +237,8 @@ class DrCreateMeshTask(DrTask):
                         return landuses[int(row["landuse"])]
                     else:
                         return row["custom_roughness"]
-                    
+                
+                # TODO: Try to not use apply
                 # ground_triangles_df["roughness"] = ground_triangles_df["custom_roughness"].fillna()
                 ground_triangles_df["roughness"] = ground_triangles_df.apply(get_roughness, axis=1)
                 print(f"Done! {time.time() - start}s")
@@ -253,7 +254,7 @@ class DrCreateMeshTask(DrTask):
             if self.losses_layer is None:
                 losses_data = {"method": 0}
             else:
-                sql = """
+                rows = self.dao.get_rows("""
                     SELECT parameter, value 
                     FROM config_param_user 
                     WHERE parameter IN [
@@ -262,8 +263,7 @@ class DrCreateMeshTask(DrTask):
                         'options_losses_scs_ia_coefficient',
                         'options_losses_starttime'
                     ]
-                """
-                rows = self.dao.get_rows(sql)
+                """)
                 params = {}
                 if rows is not None:
                     params = {row["parameter"]: row["value"] for row in rows}
@@ -325,13 +325,12 @@ class DrCreateMeshTask(DrTask):
 
             # Get roofs
             self.feedback.setProgressText("Getting roof data...")
-            sql = """
+            rows = self.dao.get_rows("""
                 SELECT 
                     code, fid, slope, width, roughness, isconnected,
                     outlet_code, outlet_vol, street_vol, infiltr_vol
                 FROM roof
-            """
-            rows = self.dao.get_rows(sql)
+            """)
 
             roofs_df = pd.DataFrame(rows, columns=[
                 "code", "fid", "slope", "width", "roughness", "isconnected",

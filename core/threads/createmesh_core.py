@@ -18,7 +18,7 @@ def feature_to_layer(feature, crs):
     return layer
 
 
-def execute_zonal_statistics(vector_layer: QgsVectorLayer, raster_layer: QgsVectorLayer) -> (np.ndarray, np.ndarray, QgsVectorLayer):
+def execute_zonal_statistics(vector_layer: QgsVectorLayer, raster_layer: QgsVectorLayer) -> tuple[np.ndarray, np.ndarray, QgsVectorLayer]:
     params = {
         "COLUMN_PREFIX": "_",
         "INPUT": vector_layer,
