@@ -13,12 +13,13 @@ from qgis.core import (
 
 from qgis.PyQt.QtCore import QVariant
 
+from ..utils import Feedback, mesh_parser
 import shapely
 import numpy as np
 import time
 import geopandas as gpd
 import pandas as pd
-from typing import Dict
+from typing import Dict, Optional
 from pathlib import Path
 from ... import global_vars
 
