@@ -33,7 +33,7 @@ class DrSaveToMeshTask(DrTask):
         description,
         bc_scenario,
         mesh_name,
-        mesh,
+        mesh: mesh_parser.Mesh,
         feedback=None,
     ):
         super().__init__(description)
@@ -62,7 +62,7 @@ class DrSaveToMeshTask(DrTask):
             bc_layer = QgsVectorLayer(bc_path, "boundary_conditions", "ogr")
 
             # Create a layer with mesh edges exclusive to only one polygon
-            poly_df = self.mesh["polygons"]
+            poly_df = self.mesh.polygons
             boundary_edges = {}
             for pol in poly_df[poly_df["category"] == "ground"].itertuples():
                 vert = [pol.v1, pol.v2, pol.v3, pol.v4]
@@ -92,7 +92,7 @@ class DrSaveToMeshTask(DrTask):
 
             features = []
             for edge, (pol_id, side) in boundary_edges.items():
-                coords = [self.mesh["vertices"].loc[vert, ["x", "y"]].to_numpy() for vert in edge]
+                coords = [self.mesh.vertices.loc[vert, ["x", "y"]].to_numpy() for vert in edge]
                 # coords = [self.mesh["vertices"][vert]["coordinates"] for vert in edge]
                 feature = QgsFeature()
                 feature.setGeometry(
@@ -210,10 +210,10 @@ class DrSaveToMeshTask(DrTask):
                     }
 
             # Save boundary conditions to mesh dict
-            self.mesh["boundary_conditions"] = {}
+            self.mesh.boundary_conditions = {}
             for feature in result_layer.getFeatures():
                 # TODO handle bc cases
-                self.mesh["boundary_conditions"][
+                self.mesh.boundary_conditions[
                     (feature["pol_id"], feature["side"])
                 ] = bc_dict[feature["bc_fid"]]
 

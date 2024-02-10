@@ -490,7 +490,7 @@ class DrBCScenarioManagerButton(DrAction):
         # Parse mesh and check for preexistent boundary conditions
         mesh = mesh_parser.loads(mesh_str, roof_str, losses_str)
 
-        if mesh["boundary_conditions"]:
+        if mesh.boundary_conditions:
             message = "This process will override the boundary conditions of this mesh. Are you sure?"
             answer = tools_qt.show_question(message, "Override boundary conditions")
             if not answer:

@@ -1,23 +1,33 @@
 import io
 import pandas as pd
 import numpy as np
+from typing import Optional
+from dataclasses import dataclass
 
-def dump(mesh, mesh_fp, roof_fp, losses_fp):
+@dataclass
+class Mesh:
+    polygons: pd.DataFrame
+    vertices: pd.DataFrame
+    roofs: pd.DataFrame
+    losses: Optional[dict]
+    boundary_conditions: dict
+
+def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losses_fp: io.TextIOWrapper):
     mesh_fp.write("MATRIU\n")
-    mesh_fp.write(f"  {len(mesh['polygons'])}\n")
-    for tri in mesh["polygons"].itertuples():
+    mesh_fp.write(f"  {len(mesh.polygons)}\n")
+    for tri in mesh.polygons.itertuples():
         try:
             manning_number = tri.roughness
         except KeyError:
             print(f"{tri=}")
         mesh_fp.write(f"    {tri.v1} {tri.v2} {tri.v3} {tri.v4} {manning_number} {tri.Index}\n")
     mesh_fp.write("VERTEXS\n")
-    mesh_fp.write(f"  {len(mesh['vertices'])}\n")
-    for v in mesh["vertices"].itertuples():
+    mesh_fp.write(f"  {len(mesh.vertices)}\n")
+    for v in mesh.vertices.itertuples():
         mesh_fp.write(f"    {v.x} {v.y} {v.z} {v.Index}\n")
     mesh_fp.write("CONDICIONS INICIALS\n")
     mesh_fp.write("CC: CONDICIONS CONTORN\n")
-    for (pol_id, side), value in mesh["boundary_conditions"].items():
+    for (pol_id, side), value in mesh.boundary_conditions.items():
         bt = value["type"]
 
         if bt == "INLET TOTAL DISCHARGE (SUB)CRITICAL":
@@ -49,22 +59,22 @@ def dump(mesh, mesh_fp, roof_fp, losses_fp):
                 )
     mesh_fp.write("123456789\n")
 
-    if len(mesh["roofs"]):
+    if len(mesh.roofs):
         roof_fp.write("Number of roofs\n")
-        roof_fp.write(str(len(mesh["roofs"])) + "\n")
+        roof_fp.write(str(len(mesh.roofs)) + "\n")
         roof_fp.write("Roofs properties\n")
-        for roof in mesh["roofs"].itertuples():
+        for roof in mesh.roofs.itertuples():
             roof_fp.write(
                 f"{roof.name} {roof.fid} {roof.slope or -9999} {roof.width or -9999} "
                 f"{roof.roughness or -9999} {roof.isconnected or -9999} {roof.outlet_code or -9999} "
                 f"{roof.outlet_vol or -9999} {roof.street_vol or -9999} {roof.infiltr_vol or -9999}\n"
             )
         roof_fp.write("\nRoof elements\n")
-        for pol in mesh["polygons"][mesh["polygons"]["category"] == "roof"].itertuples():
+        for pol in mesh.polygons[mesh.polygons["category"] == "roof"].itertuples():
             roof_fp.write(f"{pol.Index} {pol.roof_id}\n")
 
-    if "losses" in mesh:
-        losses_config = mesh["losses"]
+    if mesh.losses is not None:
+        losses_config = mesh.losses
 
         # Infiltration losses OFF
         if losses_config["method"] == 0:
@@ -76,7 +86,7 @@ def dump(mesh, mesh_fp, roof_fp, losses_fp):
                 f"2 {losses_config['cn_multiplier']} {losses_config['ia_coefficient']} {losses_config['start_time']}\n"
             )
             
-            for index, scs_cn in mesh["polygons"]["scs_cn"].dropna().items():
+            for index, scs_cn in mesh.polygons["scs_cn"].dropna().items():
                 losses_fp.write(f"{index} {scs_cn}\n")
 
 def dumps(mesh):
@@ -91,10 +101,9 @@ def dumps(mesh):
 
 def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None):
 
-    mesh = {"boundary_conditions": {}}
-
     polygon_rows = []
     vertices_rows = []
+    boundary_conditions = {}
 
     section = ""
     for line in mesh_fp:
@@ -150,7 +159,7 @@ def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None):
             # TODO: handle all boundary conditions parameters
             polygon, edge, *parameters = tokens
             edge = int(edge)
-            mesh["boundary_conditions"][(polygon, edge)] = parameters
+            boundary_conditions[(polygon, edge)] = parameters
             continue
 
     polygons_df = pd.DataFrame(polygon_rows, columns=['v1', 'v2', 'v3', 'v4', 'roughness', 'fid'])
@@ -240,8 +249,9 @@ def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None):
     roofs_df['isconnected'] = roofs_df['isconnected'].astype(np.int32)
     # roofs_df['outlet_code'] = roofs_df['outlet_code'].astype(???)
     roofs_df['fid'] = roofs_df['fid'].astype(np.uint32)
-    roofs_df.index = roofs_df['fid']
+    roofs_df.index = roofs_df['fid'] # type: ignore
 
+    losses = None
     if losses_fp:
         first_line = True
         for line in losses_fp:
@@ -251,12 +261,12 @@ def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None):
 
                 # Infiltration losses OFF
                 if configuration[0] == "0":
-                    mesh["losses"] = {"method": 0}
+                    losses = {"method": 0}
                     break
 
                 # Infiltration losses - Manual / By Parameters - SCS
                 elif configuration[0] == "2":
-                    mesh["losses"] = {
+                    losses = {
                         "method": 2,
                         "cn_multiplier": float(configuration[1]),
                         "ia_coefficient": float(configuration[2]),
@@ -267,9 +277,13 @@ def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None):
                 polygon_id, cn_value = line.split()
                 polygons_df.loc[int(polygon_id), "scs_cn"] = float(cn_value)
 
-    mesh["polygons"] = polygons_df
-    mesh["vertices"] = vertices_df
-    mesh["roofs"] = roofs_df
+    mesh = Mesh(
+        polygons=polygons_df,
+        vertices=vertices_df,
+        boundary_conditions=boundary_conditions,
+        roofs=roofs_df,
+        losses=losses
+    )
 
     return mesh
 

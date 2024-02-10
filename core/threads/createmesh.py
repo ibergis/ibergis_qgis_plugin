@@ -348,12 +348,13 @@ class DrCreateMeshTask(DrTask):
             """
             self.dao.execute_sql(sql)
 
-            self.mesh = {}
-            self.mesh["vertices"] = vertices_df
-            self.mesh["polygons"] = triangles_df
-            self.mesh["roofs"] = roofs_df
-            self.mesh["losses"] = losses_data
-            self.mesh["boundary_conditions"] = {}
+            self.mesh = mesh_parser.Mesh(
+                polygons=triangles_df,
+                vertices=vertices_df,
+                roofs=roofs_df,
+                losses=losses_data,
+                boundary_conditions={}
+            )
 
             start = time.time()
             print("Creating temp layer... ", end="")
@@ -395,7 +396,7 @@ class DrCreateMeshTask(DrTask):
                 print(f"Done! {time.time() - start}s")
 
 
-            print("Dumping (new)... ", end="")
+            print("Dumping... ", end="")
             start = time.time()
             mesh_str, roof_str, losses_str = mesh_parser.dumps(self.mesh)
             print(f"Done! {time.time() - start}s")
