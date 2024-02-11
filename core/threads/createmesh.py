@@ -348,9 +348,7 @@ class DrCreateMeshTask(DrTask):
             )
 
             # Create temp layer
-            self.feedback.setProgressText(
-                "Mesh saved to GPKG file!!!\nCreating temp layer for visualization..."
-            )
+            self.feedback.setProgressText("Creating temp layer for visualization...")
             start = time.time()
             print("Creating temp layer... ", end="")
             temp_layer = create_temp_mesh_layer(self.mesh)
@@ -360,6 +358,7 @@ class DrCreateMeshTask(DrTask):
             tools_qt.add_layer_to_toc(temp_layer)
 
             if roughness_from_raster:
+                self.feedback.setProgressText("Getting ground roughness from raster...")
                 print("Getting ground roughness from raster... ", end="")
                 start = time.time()
 
@@ -370,6 +369,7 @@ class DrCreateMeshTask(DrTask):
                 print(f"Done! {time.time() - start}s")
 
             if losses_from_raster:
+                self.feedback.setProgressText("Getting ground losses from raster...")
                 print("Getting ground losses from raster... ", end="")
                 start = time.time()
                 
