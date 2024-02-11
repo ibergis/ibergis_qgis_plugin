@@ -300,6 +300,8 @@ class DrCreateMeshTask(DrTask):
 
                 ground_vertices_df["z"] = ground_vertices_df.apply(lambda row: get_z(row["x"], row["y"]), axis=1)
             
+            print("Validating landuses... ", end="")
+            start = time.time()
             self.feedback.setProgressText("Creating roof mesh...")
             self.feedback.setProgress(30)
             roof_vertices_df, roof_triangles_df = core.triangulate_roof(layers["roof"], self.feedback)
@@ -310,6 +312,8 @@ class DrCreateMeshTask(DrTask):
             roof_triangles_df["v4"] += len(ground_vertices_df)
 
             ground_triangles_df["roof_id"] = -1 # To avoid changing the type of the column when concatenating
+
+            print(f"Done! {time.time() - start}s")
 
             vertices_df = pd.concat([ground_vertices_df, roof_vertices_df], ignore_index=True)
             triangles_df = pd.concat([ground_triangles_df, roof_triangles_df], ignore_index=True)
@@ -354,9 +358,6 @@ class DrCreateMeshTask(DrTask):
             temp_layer = create_temp_mesh_layer(self.mesh)
             print(f"Done! {time.time() - start}s")
 
-            # Add temp layer to TOC
-            tools_qt.add_layer_to_toc(temp_layer)
-
             if roughness_from_raster:
                 self.feedback.setProgressText("Getting ground roughness from raster...")
                 print("Getting ground roughness from raster... ", end="")
@@ -378,6 +379,12 @@ class DrCreateMeshTask(DrTask):
 
                 print(f"Done! {time.time() - start}s")
 
+            if losses_from_raster or roughness_from_raster:
+                self.feedback.setProgressText("Refreshing temp layer...")
+                start = time.time()
+                print("Recreating temp layer... ", end="")
+                temp_layer = create_temp_mesh_layer(self.mesh)
+                print(f"Done! {time.time() - start}s")
 
             # Delete old mesh
             self.feedback.setProgressText("Saving mesh to GPKG file...")
@@ -397,6 +404,9 @@ class DrCreateMeshTask(DrTask):
             """)
 
             self.feedback.setProgress(80)
+
+            # Add temp layer to TOC
+            tools_qt.add_layer_to_toc(temp_layer)
 
             # Check for triangles with more than one inlet
             inlet_warning = validate_inlets_in_triangles(temp_layer, layers["inlet"])

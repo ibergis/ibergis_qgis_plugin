@@ -9,7 +9,6 @@ from ... import global_vars
 
 
 class DrCreateTempMeshLayerTask(DrTask):
-    # TODO: includes losses_str
     def __init__(self, description, mesh):
         super().__init__(description)
         self.mesh = mesh

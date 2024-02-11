@@ -418,6 +418,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
             row.category,
             row.v1, row.v2, row.v3, row.v4,
             row.roughness,
+            row.scs_cn,
             # row.is_ccw
         ])
         return feature
@@ -435,6 +436,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
         QgsField("vertex_id3", QVariant.Int),
         QgsField("vertex_id4", QVariant.Int),
         QgsField("roughness", QVariant.Double),
+        QgsField("scs_cn", QVariant.Double),
         # QgsField("is_ccw", QVariant.Bool),
     ]
     provider.addAttributes(fields)
