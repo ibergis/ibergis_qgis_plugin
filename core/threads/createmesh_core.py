@@ -1,7 +1,7 @@
-from qgis import processing
-from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsPointXY, QgsVectorLayer
-from qgis.PyQt.QtCore import QVariant
+import processing
+from qgis.core import QgsField, QgsGeometry, QgsVectorLayer, QgsRasterLayer, QgsFeedback
 
+from typing import Optional
 import numpy as np
 import pandas as pd
 
@@ -18,7 +18,7 @@ def feature_to_layer(feature, crs):
     return layer
 
 
-def execute_ground_zonal_statistics(vector_layer: QgsVectorLayer, raster_layer: QgsVectorLayer) -> tuple[np.ndarray, np.ndarray]:
+def execute_ground_zonal_statistics(vector_layer: QgsVectorLayer, raster_layer: QgsRasterLayer) -> tuple[np.ndarray, np.ndarray]:
     ground_triangles = processing.run("native:extractbyattribute", {
         'INPUT': vector_layer,
         'FIELD': 'category',
@@ -47,11 +47,17 @@ def execute_ground_zonal_statistics(vector_layer: QgsVectorLayer, raster_layer: 
     return fids, values
 
 
-def triangulate_roof(roof_layer: QgsVectorLayer, feedback):
-    params = {"INPUT": roof_layer, "OUTPUT": "TEMPORARY_OUTPUT"}
-    res = processing.run("3d:tessellate", params)
+def triangulate_roof(
+    roof_layer: QgsVectorLayer, 
+    feedback: QgsFeedback
+) -> Optional[tuple[pd.DataFrame, pd.DataFrame]]:
+    
+    res = processing.run("3d:tessellate", {
+        "INPUT": roof_layer,
+        "OUTPUT": "TEMPORARY_OUTPUT"
+    })
     if feedback.isCanceled():
-        return
+        return None
 
     start_vertex_id = 0
     vertices_dfs = []

@@ -27,7 +27,7 @@ class DrTask(QgsTask, QObject):
         self.aux_conn = None
 
 
-    def run(self):
+    def run(self) -> bool:
 
         global_vars.session_vars['threads'].append(self)
         # self.aux_conn = global_vars.dao.get_aux_conn()

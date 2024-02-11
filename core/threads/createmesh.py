@@ -3,19 +3,12 @@ from pathlib import Path
 
 from qgis.core import (
     QgsCoordinateTransform,
-    QgsFeature,
     QgsFeedback,
-    QgsField,
-    QgsGeometry,
-    QgsTriangle,
     QgsPointXY,
-    QgsPoint,
-    QgsProcessingFeedback,
     QgsProject,
     QgsRasterLayer,
     QgsVectorLayer,
 )
-from qgis.PyQt.QtCore import QVariant
 from qgis.utils import iface
 
 from . import createmesh_core as core
@@ -26,6 +19,7 @@ from ..utils.meshing_process import triangulate_custom, create_temp_mesh_layer
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt
 
+from typing import Union, Optional, Literal
 import time
 import numpy as np
 import pandas as pd
@@ -34,16 +28,16 @@ class DrCreateMeshTask(DrTask):
     def __init__(
         self,
         description,
-        execute_validations,
-        enable_transition,
-        transition_slope,
-        transition_start,
-        transition_extent,
-        dem_layer,
-        roughness_layer,
-        losses_layer,
-        mesh_name,
-        feedback=None,
+        execute_validations: list[str],
+        enable_transition: bool,
+        transition_slope: float,
+        transition_start: float,
+        transition_extent: float,
+        dem_layer: Union[QgsRasterLayer, None],
+        roughness_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
+        losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
+        mesh_name: str,
+        feedback: QgsFeedback,
     ):
         super().__init__(description)
         self.execute_validations = execute_validations
@@ -52,8 +46,8 @@ class DrCreateMeshTask(DrTask):
         self.transition_start = transition_start
         self.transition_extent = transition_extent
         self.dem_layer = dem_layer
-        self.roughness_layer = roughness_layer
-        self.losses_layer = losses_layer
+        self.roughness_layer: Union[QgsRasterLayer, Literal["ground_layer"], None] = roughness_layer
+        self.losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None] = losses_layer
         self.mesh_name = mesh_name
         self.feedback = feedback
         self.error_layers = None
@@ -63,7 +57,7 @@ class DrCreateMeshTask(DrTask):
         super().cancel()
         self.feedback.cancel()
 
-    def run(self):
+    def run(self) -> bool:
         super().run()
         try:
             self.feedback.setProgressText("Starting process!")
@@ -80,13 +74,11 @@ class DrCreateMeshTask(DrTask):
             # Load input layers
             self.dao = global_vars.gpkg_dao_data.clone()
             path = f"{self.dao.db_filepath}|layername="
-            layers = {
-                "ground": None,
-                "roof": None,
-                "mesh_anchor_points": None,
-                "inlet": None,
-            }
-            for layer in layers:
+
+            layers_to_select = ["ground", "roof", "mesh_anchor_points", "inlet"]
+
+            layers: dict[str, Union[QgsVectorLayer, QgsRasterLayer]] = {}
+            for layer in layers_to_select:
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
                     return False
@@ -185,7 +177,7 @@ class DrCreateMeshTask(DrTask):
                 validation_layers = validate_input_layers(
                     layers, self.execute_validations, self.feedback
                 )
-                if self.feedback.isCanceled():
+                if self.feedback.isCanceled() or validation_layers is None:
                     self.message = "Task canceled."
                     return False
 
@@ -202,7 +194,7 @@ class DrCreateMeshTask(DrTask):
             gt_feedback = QgsFeedback()
             gt_progress = lambda x: self.feedback.setProgress(x / 100 * (30 - 15) + 15)
             gt_feedback.progressChanged.connect(gt_progress)
-            triangles, vertices, extra_data = triangulate_custom(
+            ground_triangulation_result = triangulate_custom(
                 layers["ground"],
                 ["custom_roughness", "landuse", "scs_cn"],
                 point_anchor_layer=layers["mesh_anchor_points"],
@@ -212,9 +204,11 @@ class DrCreateMeshTask(DrTask):
                 transition_extent=self.transition_extent,
                 feedback=gt_feedback,
             )
-            if self.feedback.isCanceled():
+            if self.feedback.isCanceled() or ground_triangulation_result is None:
                 self.message = "Task canceled."
                 return False
+
+            triangles, vertices, extra_data = ground_triangulation_result
 
             # Triangles
             ground_triangles_df = pd.DataFrame(triangles, columns=["v1", "v2", "v3"], dtype=np.uint32)
@@ -304,8 +298,14 @@ class DrCreateMeshTask(DrTask):
             start = time.time()
             self.feedback.setProgressText("Creating roof mesh...")
             self.feedback.setProgress(30)
-            roof_vertices_df, roof_triangles_df = core.triangulate_roof(layers["roof"], self.feedback)
+            roof_triangulation_result = core.triangulate_roof(layers["roof"], self.feedback)
+
+            if self.feedback.isCanceled() or roof_triangulation_result is None:
+                self.message = "Task canceled."
+                return False
             
+            roof_vertices_df, roof_triangles_df = roof_triangulation_result
+
             roof_triangles_df["v1"] += len(ground_vertices_df)
             roof_triangles_df["v2"] += len(ground_vertices_df)
             roof_triangles_df["v3"] += len(ground_vertices_df)
@@ -341,7 +341,7 @@ class DrCreateMeshTask(DrTask):
                 "outlet_code", "outlet_vol", "street_vol", "infiltr_vol"
             ])
             roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
-            roofs_df.index = roofs_df["fid"]
+            roofs_df.index = roofs_df["fid"] # type: ignore
 
             self.mesh = mesh_parser.Mesh(
                 polygons=triangles_df,
@@ -428,10 +428,3 @@ class DrCreateMeshTask(DrTask):
                 "Task failed. See the Log Messages Panel for more information."
             )
             return False
-
-def format_layer(layer: QgsVectorLayer) -> None:
-    layer.setName('Mesh Temp Layer')
-    relative_style_path = "resources/templates/mesh_temp_layer.qml"
-    style_path = Path(global_vars.plugin_dir) / relative_style_path
-    layer.loadNamedStyle(str(style_path))
-    layer.triggerRepaint()

@@ -2,41 +2,45 @@ from qgis.processing import alg
 from qgis.core import (
     QgsVectorLayer,
     QgsProcessingContext,
-    QgsPointXY,
     QgsFeature,
-    QgsGeometry,
     QgsField,
     QgsTriangle,
     QgsProject,
-    QgsPoint
+    QgsPoint,
+    QgsFeedback
 )
 
 from qgis.PyQt.QtCore import QVariant
 
 from ..utils import Feedback, mesh_parser
 import shapely
+import shapely.wkt
 import numpy as np
 import time
 import geopandas as gpd
 import pandas as pd
-from typing import Dict, Optional
+from typing import Optional, Iterable
 from pathlib import Path
 from ... import global_vars
 
 try:
     import gmsh
-    import pandamesh as pm
+    import pandamesh.common
+    import pandamesh.gmsh_geometry
 
     # From pandamesh
     def get_vertices():
         # getNodes returns: node_tags, coord, parametric_coord
-        _, vertices, _ = gmsh.model.mesh.getNodes()
+        vertices: np.ndarray
+        _, vertices, _ = gmsh.model.mesh.getNodes() # type: ignore
         # Return x and y
         return vertices.reshape((-1, 3))[:, :2]
 
     # From pandamesh
     def get_faces():
-        element_types, _, node_tags = gmsh.model.mesh.getElements()
+        element_types: np.ndarray
+        node_tags: np.ndarray
+        element_types, _, node_tags = gmsh.model.mesh.getElements() # type: ignore
         tags = {etype: tags for etype, tags in zip(element_types, node_tags)}
         _TRIANGLE = 2
         _QUAD = 3
@@ -59,17 +63,16 @@ try:
         # convert to 0-based index
         return faces - 1
 
-    def clean_geometries(gdf: gpd.GeoDataFrame, feedback):
-        data = gdf.copy()
+    def clean_geometries(gdf: gpd.GeoDataFrame, feedback: QgsFeedback) -> Optional[gpd.GeoDataFrame]:
+        data: gpd.GeoDataFrame = gdf.copy() # type: ignore
 
         # Extract vertices from polygons. Keep information on how to reconstruct the polygon
         points = []
         polygon_index = []
         ring = []
-        # for i in tqdm(range(len(data)), desc="Polygon -> Vertex"):
         for i in range(len(data)):
             if feedback.isCanceled():
-                return {}
+                return None
             geom: shapely.Polygon = data.geometry.iloc[i]
             for p in geom.exterior.coords:
                 points.append(shapely.Point(p))
@@ -77,13 +80,10 @@ try:
                 ring.append(-1)
 
             for n, interior in enumerate(geom.interiors):
-                # print(i, interior)
                 for p in interior.coords:
                     points.append(shapely.Point(p))
                     polygon_index.append(data.index[i])
                     ring.append(n)
-
-            # exit()
 
         vertices = gpd.GeoDataFrame(
             geometry=points,
@@ -93,12 +93,12 @@ try:
                 "moved": False,
                 "anchor": False,
             },
-        )
+        ) # type: ignore
 
-        join = vertices.sjoin_nearest(
+        join: gpd.GeoDataFrame = vertices.sjoin_nearest(
             vertices, max_distance=0.5, distance_col="dist", exclusive=True
         )
-        join = join[join["dist"] > 1e-5]
+        join = join[join["dist"] > 1e-5] # type: ignore
 
         indices, counts = np.unique(join.index, return_counts=True)
         for i, count in zip(indices, counts):
@@ -127,30 +127,29 @@ try:
                     vertices.loc[other_i, "anchor"] = True
 
         # Reconstruct the polygons from the modified vertices
-        # for polygon_id, group in tqdm(vertices.groupby("polygon"), desc="Vertex -> Polygon"):
         for polygon_id, group in vertices.groupby("polygon"):
             exterior = group[group["ring"] == -1].geometry
             exterior = [(np.round(p.x, 5), np.round(p.y, 5)) for p in exterior]
 
             rings = group[group["ring"] != -1].groupby("ring")
-            interiors = [group.geometry for interior_id, group in rings]
+            interiors: list[Iterable] = [group.geometry for interior_id, group in rings]
             for i in range(len(interiors)):
                 interiors[i] = [
                     (np.round(p.x, 5), np.round(p.y, 5)) for p in interiors[i]
                 ]
                 if feedback.isCanceled():
-                    return {}
+                    return None
 
             data.loc[polygon_id, "geometry"] = shapely.Polygon(exterior, interiors)
 
         data.geometry = data.geometry.buffer(0)
-        data = data[~data.is_empty]
+        data = data[~data.is_empty] # type: ignore
         return data
 
-    def layer_to_gdf(layer: QgsVectorLayer, fields: list = [], feedback=None) -> gpd.GeoDataFrame:
+    def layer_to_gdf(layer: QgsVectorLayer, fields: list = []) -> gpd.GeoDataFrame:
         geoms = []
 
-        data: Dict[str, list] = {}
+        data: dict[str, list] = {}
         for field in fields:
             field_index = layer.fields().indexFromName(field)
             if field_index == -1:
@@ -168,13 +167,9 @@ try:
                 val = feature[field]
                 data[field].append(val if val else None)
 
-            if feedback:
-                if feedback.isCanceled():
-                    return {}
-
-        gdf = gpd.GeoDataFrame(geometry=geoms, data=data)
-        gdf = gdf.explode(ignore_index=True)
-        gdf["geometry"] = gdf["geometry"].normalize()
+        gdf = gpd.GeoDataFrame(geometry=geoms, data=data) # type: ignore
+        gdf: gpd.GeoDataFrame = gdf.explode(ignore_index=True) # type: ignore
+        gdf["geometry"] = gdf["geometry"].normalize() # type: ignore
 
         return gdf
 
@@ -193,15 +188,15 @@ try:
 
     def triangulate_custom(
         source_layer: QgsVectorLayer,
-        extra_fields = [],
-        line_anchor_layer=None,
-        point_anchor_layer=None,
-        algorithm=ALGORITHMS["Frontal-Delaunay"],
-        enable_transition=True,
-        transition_slope=0.5,
-        transition_start=0,
-        transition_extent=20,
-        feedback=None,
+        extra_fields: list[str] = [],
+        line_anchor_layer: Optional[QgsVectorLayer] = None,
+        point_anchor_layer: Optional[QgsVectorLayer] = None,
+        algorithm: int = ALGORITHMS["Frontal-Delaunay"],
+        enable_transition: bool = True,
+        transition_slope: float = 0.5,
+        transition_start: float = 0,
+        transition_extent: float = 20,
+        feedback: Optional[QgsFeedback] = None,
     ):
         """
         Create the mesh for Iber.
@@ -211,23 +206,23 @@ try:
         print("Getting data... ", end="")
 
         fields = ["cellsize"]
-        data = layer_to_gdf(source_layer, fields + extra_fields, feedback=feedback)
+        data = layer_to_gdf(source_layer, fields + extra_fields)
 
         line_anchors = None
         if line_anchor_layer is not None:
-            line_anchors = layer_to_gdf(line_anchor_layer, fields, feedback=feedback)
+            line_anchors = layer_to_gdf(line_anchor_layer, fields)
         else:
             line_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": []}, crs=data.crs
-            )
+            ) # type: ignore
 
         point_anchors = None
         if point_anchor_layer is not None:
-            point_anchors = layer_to_gdf(point_anchor_layer, fields, feedback=feedback)
+            point_anchors = layer_to_gdf(point_anchor_layer, fields)
         else:
             point_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": []}, crs=data.crs
-            )
+            ) # type: ignore
         print(f"Done! {time.time() - start}s")
 
         start = time.time()
@@ -235,8 +230,12 @@ try:
         data = clean_geometries(data, feedback)
         print(f"Done! {time.time() - start}s")
 
-        # start = time.time()
-        # print("Initializing messher... ", end='')
+        if (
+            (feedback is not None and feedback.isCanceled()) or
+            data is None
+        ):
+            return None
+
         try:
             gmsh.finalize()
         except Exception:
@@ -246,8 +245,8 @@ try:
         gmsh.option.setNumber("General.Terminal", 0)
         gmsh.option.setNumber("General.NumThreads", 0)
 
-        pm.common.check_geodataframe(data)
-        pm.gmsh_geometry.add_geometry(
+        pandamesh.common.check_geodataframe(data)
+        pandamesh.gmsh_geometry.add_geometry(
             data,
             line_anchors,
             point_anchors,
@@ -256,14 +255,16 @@ try:
         gmsh.option.setNumber("Mesh.MeshSizeFromPoints", True)
         gmsh.option.setNumber("Mesh.Algorithm", algorithm)
 
-        feedback.setProgress(10)
+        if feedback is not None:
+            feedback.setProgress(10)
 
         start = time.time()
         print("Generating Mesh (1/2)... ", end="")
         gmsh.model.mesh.generate(dim=2)
         print(f"Done! {time.time() - start}s")
 
-        feedback.setProgress(50)
+        if feedback is not None:
+            feedback.setProgress(50)
 
         if enable_transition:
             start = time.time()
@@ -327,7 +328,8 @@ try:
         else:
             print("Skipping step (2/2)")
 
-        feedback.setProgress(95)
+        if feedback is not None:
+            feedback.setProgress(95)
 
         start = time.time()
         print("Cleaning up... ", end="")
@@ -356,7 +358,8 @@ try:
                 extra_data[field][start : start + len(tri)] = feature[field]
             start += len(tri)
 
-        feedback.setProgress(100)
+        if feedback is not None:
+            feedback.setProgress(100)
 
         return triangles, vertices, extra_data
 
