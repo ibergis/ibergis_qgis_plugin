@@ -398,7 +398,6 @@ INSERT INTO ground (fid, geom, fid, code, descript, cellsize, annotation, landus
 INSERT INTO ground (fid, geom, fid, code, descript, cellsize, annotation, landuse, custom_roughness, scs_cn) VALUES(26, ST_GeomFromText('MULTIPOLYGON (((418351.857102 4577660.904325, 418348.147 4577680.563, 418361.991943 4577686.707447, 418363.584 4577687.414, 418363.934 4577679.086, 418377.181661 4577679.534251, 418377.192 4577684.051, 418381.652 4577686.677, 418384.550347 4577683.240375, 418351.857102 4577660.904325)))', <SRID_VALUE>), 29, NULL, NULL, 10.0, NULL, '3', 0.02, 65.0);
 
 
-INSERT INTO inp_storage (fid, geom, fid, code, descript, elev, ymax, y0, ysur, storage_type, curve, a1, a2, a0, fevap, psi, ksat, imd, annotation) VALUES(1, ST_GeomFromText('POINT (418716.0233455198 4577601.812087212)', <SRID_VALUE>), 1, 'S1', NULL, NULL, NULL, NULL, NULL, 'TABULAR', '1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO inp_outfall (fid, code, elev, gate, outfall_type, stage, curve, timeseries, routeto, annotation, geom) VALUES(1, 'O1', 27.830, 'NO', 'FREE', NULL, NULL, '1', NULL, NULL, ST_GeomFromText('POINT (418670.68587686174 4578106.617988236)', <SRID_VALUE>));
 INSERT INTO inp_outfall (fid, code, elev, gate, outfall_type, stage, curve, timeseries, routeto, annotation, geom) VALUES(2, 'O2', 25.680, 'NO', 'NORMAL', NULL, NULL, '1', NULL, NULL, ST_GeomFromText('POINT (418723.93759786186 4577570.231249673)', <SRID_VALUE>));
@@ -581,6 +580,9 @@ INSERT INTO inlet (fid, code, descript, outlet_node, outlet_type, top_elev, widt
 
 INSERT INTO inp_weir (fid, code, node_1, node_2, weir_type, shape, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES(1, 'W1', 'S1', 'J62', 'TRANSVERSE', 'CIRCULAR', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418716.4602315871 4577600.00343433)', <SRID_VALUE>));
 
+INSERT INTO inp_inflow (fid, code, timeseries, format, mfactor, sfactor, ufactor, base, geom) VALUES(1, 'F1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0, ST_GeomFromText('POINT (418429.20136298996 4577869.807084058)', <SRID_VALUE>));
+
+INSERT INTO inp_storage (fid, geom, fid, code, descript, elev, ymax, y0, ysur, storage_type, curve, a1, a2, a0, fevap, psi, ksat, imd, annotation) VALUES(1, ST_GeomFromText('POINT (418716.0233455198 4577601.812087212)', <SRID_VALUE>), 1, 'S1', NULL, NULL, NULL, NULL, NULL, 'TABULAR', '1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO inp_pump (fid, code, node_1, node_2, curve, state, startup, shutoff, geom) VALUES(1, 'P1', 'S1', 'J61', 'PUMP-02', 'ON', 2.0, 0.4, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418717.9662245355 4577602.212748872)', <SRID_VALUE>));
 
