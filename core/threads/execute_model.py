@@ -252,6 +252,43 @@ class DrExecuteModel(DrTask):
                     dat_file.write(line)
 
         # Iber_SWMM.dat
+        file_name = Path(self.folder_path) / "Iber_SWMM.dat"
+        general_options_1 = "1"
+        general_options_2 = "1"
+        report_continuity = "1"
+        report_flowstats = "1"
+        report_controls = "1"
+        report_input = "1"
+        sql = "SELECT parameter, value FROM config_param_user " \
+              "WHERE parameter IN ('plg_swmm_options', 'plg_swmm_outlet', " \
+              "'inp_report_continuity', 'inp_report_flowstats', 'inp_report_controls', 'inp_report_input')"
+        rows = self.dao.get_rows(sql)
+        if rows:
+            for row in rows:
+                parameter = row['parameter']
+                value = row['value']
+                if parameter == 'plg_swmm_options':
+                    general_options_1 = value
+                elif parameter == 'plg_swmm_outlet':
+                    general_options_2 = "1" if value == "True" else "0"
+                elif parameter == 'inp_report_continuity':
+                    report_continuity = "1" if value == "YES" else "0"
+                elif parameter == 'inp_report_flowstats':
+                    report_flowstats = "1" if value == "YES" else "0"
+                elif parameter == 'inp_report_controls':
+                    report_controls = "1" if value == "YES" else "0"
+                elif parameter == 'inp_report_input':
+                    report_input = "1" if value == "YES" else "0"
+
+        with open(file_name, 'w', newline='') as dat_file:
+            line = f"Iber-SWMM Version 1.0\n" \
+                   f"1\n" \
+                   f"General options:\n" \
+                   f"{general_options_1}\n" \
+                   f"{general_options_2}\n" \
+                   f"Discharge results\n" \
+                   f"{report_continuity} {report_flowstats} {report_controls} {report_input}\n"
+            dat_file.write(line)
 
     def _copy_mesh_files(self, mesh_id):
 
