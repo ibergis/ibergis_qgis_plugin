@@ -775,34 +775,162 @@ create view if not exists vi_files as select fname as Name from inp_files;
 
 create view if not exists vi_options as select parameter as Option, value as Value from config_param_user where parameter like 'inp_options%';
 
-create view if not exists vi_conduits as select code as Name, node_1 as FromNode, node_2 as ToNode, length as Length, roughness as Roughness, z1 as InOffset, 
-z2 as OutOffset, q0 as InitFlow, qmax as MaxFlow, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3, geom4 as Geom4, barrels as Barrels, culvert as Culvert, 
-transect as Shp_Trnsct, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage, annotation as Annotation, geom from inp_conduit;
+create view if not exists vi_conduits as 
+    select 
+    code as Name, 
+    node_1 as FromNode, 
+    node_2 as ToNode, 
+    length as Length, 
+    roughness as Roughness, 
+    z1 as InOffset, 
+    z2 as OutOffset, 
+    q0 as InitFlow, 
+    qmax as MaxFlow, 
+    shape as Shape, 
+    geom1 as Geom1, 
+    geom2 as Geom2, 
+    geom3 as Geom3, 
+    geom4 as Geom4, 
+    barrels as Barrels, 
+    culvert as Culvert, 
+    transect as Shp_Trnsct, 
+    kentry as Kentry, 
+    kexit as Kexit, 
+    kavg as Kavg, 
+    flap as FlapGate, 
+    seepage as Seepage, 
+    annotation as Annotation, 
+    geom 
+    from inp_conduit;
 
-create view if not exists vi_outlets as select code as Name, node_1 as FromNode, node_2 as ToNode, offsetval as InOffset, outlet_type as RateCurve, cd1 as Qcoeff, cd2 as Qexpon, 
-flap as FlapGate, curve as CurveName, annotation as Annotation, geom from inp_outlet;
+create view if not exists vi_outlets as 
+    select 
+    code as Name, 
+    node_1 as FromNode, 
+    node_2 as ToNode, 
+    offsetval as InOffset, 
+    outlet_type as RateCurve, 
+    cd1 as Qcoeff, 
+    cd2 as Qexpon, 
+    flap as FlapGate, 
+    curve as CurveName, 
+    annotation as Annotation, 
+    geom 
+    from inp_outlet;
 
-create view if not exists vi_orifices as select code as Name, node_1 as FromNode, node_2 as ToNode, ori_type as Type, offsetval as InOffset, cd1 as Qcoeff, flap as FlapGate, 
-close_time as CloseTime, annotation as Annotation, shape as Shape, geom1 as Height, geom2 as Width, geom from inp_orifice;
+create view if not exists vi_orifices as 
+    select code as Name, 
+    node_1 as FromNode, 
+    node_2 as ToNode, 
+    ori_type as Type, 
+    offsetval as InOffset, 
+    cd1 as Qcoeff, 
+    flap as FlapGate, 
+    close_time as CloseTime, 
+    annotation as Annotation, 
+    shape as Shape, 
+    geom1 as Height, 
+    geom2 as Width, 
+    geom 
+    from inp_orifice;
 
-create view if not exists vi_weirs as select code as Name, node_1 as FromNode, node_2 as ToNode, weir_type as Type, offsetval as CrestHeigh, cd2 as Qcoeff, flap as FlapGate, 
-ec as EndContrac, surcharge as Surcharge, road_width as RoadWidth, road_surf as RoadSurf, curve as CoeffCurve, annotation as Annotation, geom1 as Height, geom2 as Length,
-geom3 as SideSlope, end_coeff as EndCoeff, geom from inp_weir;
+create view if not exists vi_weirs as 
+    select 
+    code as Name, 
+    node_1 as FromNode, 
+    node_2 as ToNode, 
+    weir_type as Type, 
+    crest_height as CrestHeigh, 
+    cd2 as Qcoeff, 
+    flap as FlapGate, 
+    ec as EndContrac, 
+    surcharge as Surcharge, 
+    road_width as RoadWidth, 
+    road_surf as RoadSurf, 
+    curve as CoeffCurve, 
+    annotation as Annotation, 
+    geom1 as Height, 
+    geom2 as Length,
+    geom3 as SideSlope, 
+    end_coeff as EndCoeff, 
+    geom 
+    from inp_weir;
 
-create view if not exists vi_pumps as select code as Name, node_1 as FromNode, node_2 as ToNode, curve as PumpCurve, state as Status, startup as Startup, shutoff as Shutoff, 
-annotation as Annotation, geom from inp_pump;
+create view if not exists vi_pumps as 
+    select 
+    code as Name, 
+    node_1 as FromNode, 
+    node_2 as ToNode, 
+    curve as PumpCurve, 
+    state as Status, 
+    startup as Startup, 
+    shutoff as Shutoff, 
+    annotation as Annotation, 
+    geom 
+    from inp_pump;
 
-create view if not exists vi_outfalls as select code as Name, elev as Elevation, routeto as RouteTo, outfall_type as Type, stage as FixedStage, curve as Curve_TS, gate as FlapGate, 
-annotation as Annotation, geom from inp_outfall;
+create view if not exists vi_outfalls as 
+    select 
+    code as Name, 
+    elev as Elevation, 
+    routeto as RouteTo, 
+    outfall_type as Type, 
+    stage as FixedStage, 
+    curve as Curve_TS, 
+    gate as FlapGate, 
+    annotation as Annotation, 
+    geom 
+    from inp_outfall;
 
-create view if not exists vi_dividers as select code as Name, elev as Elevation, divert_arc as DivertLink, divider_type as Type, curve as Curve, qmin as WeirMinFlo, 
-qmax as WeirMaxDep, q0 as WeirCoeff, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation, geom from inp_divider;
+create view if not exists vi_dividers as 
+    select 
+    code as Name, 
+    elev as Elevation, 
+    divert_arc as DivertLink, 
+    divider_type as Type, 
+    curve as Curve, 
+    qmin as WeirMinFlo, 
+    qmax as WeirMaxDep, 
+    q0 as WeirCoeff, 
+    ymax as MaxDepth, 
+    y0 as InitDepth, 
+    ysur as SurDepth, 
+    apond as Aponded, 
+    annotation as Annotation, 
+    geom 
+    from inp_divider;
 
-create view if not exists vi_storage as select code as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, storage_type as Type, curve as Curve, a1 as Coeff, a2 as Exponent,
-a0 as Constant, ysur as SurDepth, fevap as Fevap, psi as Psi, ksat as Ksat, imd as IMD, annotation as Annotation, geom from inp_storage;
+create view if not exists vi_storage as 
+    select 
+    code as Name, 
+    elev as Elevation, 
+    ymax as MaxDepth, 
+    y0 as InitDepth,
+    storage_type as Type, 
+    curve as Curve, 
+    a1 as Coeff, 
+    a2 as Exponent,
+    a0 as Constant, 
+    ysur as SurDepth, 
+    fevap as Fevap, 
+    psi as Psi, 
+    ksat as Ksat, 
+    imd as IMD, 
+    annotation as Annotation, 
+    geom 
+    from inp_storage;
 
-create view if not exists vi_junctions as SELECT code as Name, elev as Elevation, ymax as MaxDepth, y0 as InitDepth, ysur as SurDepth, apond as Aponded, annotation as Annotation, 
-geom from inp_junction;
+create view if not exists vi_junctions as 
+    SELECT 
+    code as Name, 
+    elev as Elevation,
+    ymax as MaxDepth, 
+    y0 as InitDepth, 
+    ysur as SurDepth, 
+    apond as Aponded, 
+    annotation as Annotation, 
+    geom 
+    from inp_junction;
 
 CREATE VIEW vi_curves as
     WITH qt AS (
@@ -853,21 +981,54 @@ create view if not exists vi_timeseries as
         ) t
     ORDER BY t.id;
 
-create view if not exists vi_patterns as select pattern as Name, "time" as "Time", value as Factor from cat_pattern_value;
+create view if not exists vi_patterns as 
+    select 
+    pattern as Name, 
+    "time" as "Time", 
+    value as Factor 
+    from cat_pattern_value;
 
-create view if not exists vi_losses as select code as Name, kentry as Kentry, kexit as Kexit, kavg as Kavg, flap as FlapGate, seepage as Seepage from inp_conduit;
+create view if not exists vi_losses as 
+    select 
+    code as Name, 
+    kentry as Kentry, 
+    kexit as Kexit, 
+    kavg as Kavg, 
+    flap as FlapGate, 
+    seepage as Seepage 
+    from inp_conduit;
 
-create view if not exists vi_dwf as select code as Name, 'FLOW' as Constituent, avg_value as Average_Value, pattern1 as Time_Pattern1, pattern2 as Time_Pattern2, 
-pattern3 as Time_Pattern3, pattern4 as Time_Pattern4 from inp_dwf;
+create view if not exists vi_dwf as 
+    select 
+    code as Name, 
+    'FLOW' as Constituent, 
+    avg_value as Average_Value, 
+    pattern1 as Time_Pattern1, 
+    pattern2 as Time_Pattern2, 
+    pattern3 as Time_Pattern3, 
+    pattern4 as Time_Pattern4 
+    from inp_dwf;
 
-create view if not exists vi_controls as select descript from cat_controls;
+create view if not exists vi_controls as 
+    select descript from cat_controls;
 
-create view if not exists vi_transects as select descript from cat_transects;
+create view if not exists vi_transects as 
+    select idval, descript from cat_transects;
 
-create view if not exists vi_report as select parameter, value from config_param_user where parameter like '%inp_report_%';
+create view if not exists vi_report as 
+    select parameter, value from config_param_user where parameter like '%inp_report_%';
 
-create view if not exists vi_inflows as select code as Name, format as Constituent, base as Baseline, pattern as Baseline_Pattern, timeseries as Time_Series, 
-mfactor as Units_Factor, sfactor as Scale_Factor, type as Type from inp_inflow;
+create view if not exists vi_inflows as 
+    select 
+    code as Node, 
+    format as Constituent, 
+    base as Baseline, 
+    pattern as Baseline_Pattern, 
+    timeseries as Time_Series, 
+    mfactor as Units_Factor, 
+    sfactor as Scale_Factor, 
+    type as Type 
+    from inp_inflow;
 
 create view if not exists vi_xsections as
     select code as Link, shape as Shape, geom1, curve as geom2, 0 as geom3, 0 as geom4, barrels, culvert from inp_conduit where shape ='CUSTOM' union
@@ -875,7 +1036,6 @@ create view if not exists vi_xsections as
     select code as Link, shape as Shape, geom1, geom2 , geom3 , geom4 , barrels, culvert from inp_conduit where shape not in ('CUSTOM', 'IRREGULAR') union
     select code as Link, shape as Shape, geom1, geom2, null , null , null, null from inp_orifice union
     select code as Link, shape as Shape, geom1, geom2, null , null , null, null from inp_weir;
-
 
 CREATE VIEW IF NOT EXISTS vi_inlet AS 
 SELECT code AS gully_id,
@@ -896,7 +1056,6 @@ SELECT code AS gully_id,
     geom 
 FROM inlet;
 
-   
 CREATE VIEW if not exists v_node as
     select code, geom from inp_storage union
     select code, geom from inp_outfall union
@@ -909,11 +1068,18 @@ CREATE VIEW if not exists v_arc as
     select code, geom from inp_pump union
     select code, geom from inp_conduit;
 
+CREATE VIEW if not exists v_ui_file AS 
+    SELECT name, ROUND(LENGTH(iber2d || COALESCE(roof, '') || losses) / 1024.0, 3) AS kilobytes FROM cat_file ORDER BY name ASC;
 
-CREATE VIEW if not exists v_ui_file AS SELECT name, ROUND(LENGTH(iber2d || COALESCE(roof, '') || losses) / 1024.0, 3) AS kilobytes FROM cat_file ORDER BY name ASC;
+create view v_subc2outlet as 
+    select 'R'||r.code as subc_id, j.code as outlet_id, 'JUNCTION' as outlet_type, ST_makeline(st_centroid(r.geom), j.geom) as geom from roof r join inp_junction j on r.outlet_code=j.code
+    union
+    select 'INL'||i.code as subc_id, j.code as outlet_id, 'JUNCTION' as outlet_type, ST_makeline(i.geom, j.geom) as geom from inlet i join inp_junction j on i.outlet_node=j.code;
 
 
-
+-- ----------------------------------------
+-- CREATE SYS GPKG REQUIREMENTS DYNAMICALLY
+-- ----------------------------------------
 create table tables_nogeom (table_name text primary key, index_col text);
 create table tables_geom (table_name text primary key, isgeom text NOT NULL, index_col text);
 
@@ -928,7 +1094,6 @@ BEGIN
     insert into gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id)
     values (new.table_name, 'attributes', new.table_name, '', 0, 0, 0, 0, 0, 0);
 END;
-
 
 
 create trigger trigger_tables_geom after insert on "tables_geom"
