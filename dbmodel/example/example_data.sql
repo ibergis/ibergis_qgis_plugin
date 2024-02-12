@@ -579,10 +579,10 @@ INSERT INTO inlet (fid, code, descript, outlet_node, outlet_type, top_elev, widt
 INSERT INTO inlet (fid, code, descript, outlet_node, outlet_type, top_elev, width, "length", "depth", "method", weir_cd, orifice_cd, a_param, b_param, efficiency, annotation, geom) VALUES(103, '1103', NULL, 'J5', 'TO NETWORK', 40.1, 1.0, 0.2, NULL, 'UPC', NULL, NULL, 0.496, 0.712, 90.0, NULL, ST_GeomFromText('POINT (418584.066459 4577703.285258)', <SRID_VALUE>));
 
 
-INSERT INTO inp_weir (fid, geom, fid, code, descript, node_1, node_2, weir_type, offsetval, shape, geom1, geom2, geom3, geom4, elev, cd2, flap, ec, surcharge, road_width, road_surf, curve, crest_height, end_coeff, annotation) VALUES(1, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418716.4602315871 4577600.00343433)', <SRID_VALUE>), 1, 'W1', NULL, 'S1', 'J62', 'TRAPEZOIDAL', NULL, 'CIRCULAR', NULL, 0.0, 0.0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO inp_weir (fid, code, node_1, node_2, weir_type, shape, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES(1, 'W1', 'S1', 'J62', 'TRANSVERSE', 'CIRCULAR', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418716.4602315871 4577600.00343433)', <SRID_VALUE>));
 
 
-INSERT INTO inp_pump (fid, geom, fid, code, descript, node_1, node_2, curve, state, startup, shutoff, annotation) VALUES(1, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418717.9662245355 4577602.212748872)', <SRID_VALUE>), 1, 'P1', NULL, 'S1', 'J61', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO inp_pump (fid, code, node_1, node_2, curve, state, startup, shutoff, geom) VALUES(1, 'P1', 'S1', 'J61', 'PUMP-02', 'ON', 2.0, 0.4, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418717.9662245355 4577602.212748872)', <SRID_VALUE>));
 
 
 INSERT INTO inp_conduit (fid, code, node_1, node_2, shape, geom1, geom2, geom3, geom4, roughness, length, z1, z2, q0, qmax, geom) VALUES(1, 'C1', 'J35', 'J36', 'CIRCULAR', 0.315, 0.0, 0.0, 0.0, 0.014, 56.872, 1.6, 1.61, 0.0, 0.0, ST_GeomFromText('LINESTRING (418334.311109 4577796.568203, 418320.173619 4577851.655664)', <SRID_VALUE>));
