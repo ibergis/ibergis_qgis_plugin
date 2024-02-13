@@ -115,7 +115,7 @@ INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(72, 
 
 INSERT INTO cat_transects (id, idval, descript) VALUES(1, 'IRR_1', 'text to test');
 INSERT INTO cat_transects (id, idval, descript) VALUES(2, 'NC', '0.01 0.01 0.01');
-INSERT INTO cat_transects (id, idval, descript) VALUES(3, 'TRANSECT_DEMO', 'TRANSECT-DEMO 4 0 0 0 0 0 0 0 ');
+INSERT INTO cat_transects (id, idval, descript) VALUES(3, 'X1', 'TRANSECT-DEMO 4 0 0 0 0 0 0 0 ');
 INSERT INTO cat_transects (id, idval, descript) VALUES(4, 'GR', '0.8 0 0.02 2 0.02 6 0.8 8');
 
 INSERT INTO cat_controls (id, descript) VALUES(1, 'RULE EXAMPLE
@@ -582,7 +582,7 @@ INSERT INTO inp_weir (fid, code, node_1, node_2, weir_type, shape, geom1, geom2,
 
 INSERT INTO inp_inflow (fid, code, timeseries, format, mfactor, sfactor, ufactor, base, geom) VALUES(1, 'F1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0, ST_GeomFromText('POINT (418429.20136298996 4577869.807084058)', <SRID_VALUE>));
 
-INSERT INTO inp_storage (fid, geom, fid, code, descript, elev, ymax, y0, ysur, storage_type, curve, a1, a2, a0, fevap, psi, ksat, imd, annotation) VALUES(1, ST_GeomFromText('POINT (418716.0233455198 4577601.812087212)', <SRID_VALUE>), 1, 'S1', NULL, NULL, NULL, NULL, NULL, 'TABULAR', '1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO inp_storage (fid, code, descript, elev, ymax, y0, ysur, storage_type, curve, geom) VALUES(1,'S1', NULL, 26.470, 3.500, 0.0, 0.0, 'TABULAR', 'EBAR-02', ST_GeomFromText('POINT (418716.0233455198 4577601.812087212)', <SRID_VALUE>));
 
 INSERT INTO inp_pump (fid, code, node_1, node_2, curve, state, startup, shutoff, geom) VALUES(1, 'P1', 'S1', 'J61', 'PUMP-02', 'ON', 2.0, 0.4, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418717.9662245355 4577602.212748872)', <SRID_VALUE>));
 
