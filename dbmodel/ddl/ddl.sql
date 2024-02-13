@@ -243,7 +243,7 @@ CREATE TABLE inp_conduit (
     z2 real check (typeof(z2) = 'real' or z2 = null),
     q0 real check (typeof(q0) = 'real' or q0 = null),
     qmax real check (typeof(qmax) = 'real' or qmax = null),
-    barrels real check (typeof(barrels) = 'real' or barrels = null),
+    barrels real check (typeof(barrels) = 'real' or barrels = null) DEFAULT 1,
     culvert text check (typeof(culvert) = 'text' or culvert = null),
     kentry real check (typeof(kentry) = 'real' or kentry = null),
     kexit real check (typeof(kexit) = 'real' or kexit = null),
@@ -362,6 +362,7 @@ CREATE TABLE inp_divider (
     apond real check (typeof(apond) = 'real' or apond = null),
     divert_arc text check(typeof(divert_arc)='text' or divert_arc=null),
     divider_type text check (typeof(divider_type) IN ('text', null) and divider_type in ('CUTOFF', 'OVERFLOW', 'TABULAR', 'WEIR')),
+    cutoff_flow real check (typeof(cutoff_flow) = 'real' or cutoff_flow = null),
     qmin real check (typeof(qmin) = 'real' or qmin = null),
     curve integer check (typeof(curve) = 'integer' or curve = null),
     q0 real check (typeof(q0) = 'real' or q0 = null),
@@ -888,6 +889,7 @@ create view if not exists vi_dividers as
     elev as Elevation, 
     divert_arc as DivertLink, 
     divider_type as Type, 
+    cutoff_flow as CutoffFlow,
     curve as Curve, 
     qmin as WeirMinFlo, 
     qmax as WeirMaxDep, 
@@ -906,7 +908,7 @@ create view if not exists vi_storage as
     elev as Elevation, 
     ymax as MaxDepth, 
     y0 as InitDepth,
-    storage_type as Type, 
+    storage_type as Type,
     curve as Curve, 
     a1 as Coeff, 
     a2 as Exponent,
@@ -1020,7 +1022,7 @@ create view if not exists vi_report as
 
 create view if not exists vi_inflows as 
     select 
-    code as Node, 
+    code as Name, 
     format as Constituent, 
     base as Baseline, 
     pattern as Baseline_Pattern, 
@@ -1031,11 +1033,11 @@ create view if not exists vi_inflows as
     from inp_inflow;
 
 create view if not exists vi_xsections as
-    select code as Link, shape as Shape, geom1, curve as geom2, 0 as geom3, 0 as geom4, barrels, culvert from inp_conduit where shape ='CUSTOM' union
-    select code as Link, shape as Shape, transect, 0 , 0 , 0 , barrels, culvert from inp_conduit where shape='IRREGULAR'union
-    select code as Link, shape as Shape, geom1, geom2 , geom3 , geom4 , barrels, culvert from inp_conduit where shape not in ('CUSTOM', 'IRREGULAR') union
-    select code as Link, shape as Shape, geom1, geom2, null , null , null, null from inp_orifice union
-    select code as Link, shape as Shape, geom1, geom2, null , null , null, null from inp_weir;
+    select code as Link, shape as Shape, geom1 as Geom1, curve as Geom2, 0 as Geom3, 0 as Geom4, barrels, culvert from inp_conduit where shape ='CUSTOM' union
+    select code as Link, shape as Shape, transect as Geom1, 0 as Geom2, 0 as Geom3, 0 as Geom4 , barrels, culvert from inp_conduit where shape='IRREGULAR'union
+    select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3 , geom4 as Geom4, barrels, culvert from inp_conduit where shape not in ('CUSTOM', 'IRREGULAR') union
+    select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, null as Geom3, null as Geom4, null as barrels, null as culvert from inp_orifice union
+    select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, null as Geom3, null as Geom4, null as barrels, null as culvert from inp_weir;
 
 CREATE VIEW IF NOT EXISTS vi_inlet AS 
 SELECT code AS gully_id,
