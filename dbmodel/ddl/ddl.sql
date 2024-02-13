@@ -1009,7 +1009,7 @@ create view if not exists vi_dwf as
     from inp_dwf;
 
 create view if not exists vi_controls as 
-    select descript from cat_controls;
+    select descript AS "text" from cat_controls;
 
 create view if not exists vi_transects as 
     select idval, descript from cat_transects;
@@ -1019,14 +1019,14 @@ create view if not exists vi_report as
 
 create view if not exists vi_inflows as 
     select 
-    code as Name, 
+    code as Node, 
     format as Constituent, 
-    base as Baseline, 
-    pattern as Baseline_Pattern, 
     timeseries as Time_Series, 
-    mfactor as Units_Factor, 
-    sfactor as Scale_Factor, 
-    type as Type 
+    type as Type,
+    mfactor as MFactor, 
+    sfactor as SFactor, 
+    base as Baseline, 
+    pattern as Baseline_Pattern
     from inp_inflow;
 
 create view if not exists vi_xsections as
