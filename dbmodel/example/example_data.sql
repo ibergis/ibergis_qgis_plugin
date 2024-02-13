@@ -698,6 +698,14 @@ INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(23, 'demo-rain', '
 INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(24, 'demo-rain', '23:00', 'rain\20200121_23.tif');
 
 
+INSERT INTO inp_dwf (code) select code from v_node;
+UPDATE inp_dwf set pattern1='DAILY_PATTERN', baseline= 0.0001 where fid<25;
+UPDATE inp_dwf set pattern2='MONTHLY_PATTERN', baseline=0.0001 where fid between 25 and 30;
+UPDATE inp_dwf set pattern3='HOURLY_PATTERN', baseline=0.0002 where fid between 31 and 45;
+UPDATE inp_dwf set pattern4='WEEKEND_PATTERN', baseline=0.0003 where fid>45;
+
+
+
 UPDATE roof SET code=1000+fid, slope = 1.5, width = 30, outlet_type = 1, outlet_vol =100, street_vol=0, infiltr_vol=0;
 
 UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', weir_cd = 1.6 , orifice_cd = 0.7, efficiency = 90 , width = 1, length = 0.2 where fid < 99;
