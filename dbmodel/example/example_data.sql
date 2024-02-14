@@ -592,7 +592,7 @@ INSERT INTO inp_pump (fid, code, node_1, node_2, curve, state, startup, shutoff,
 
 INSERT INTO inp_divider (fid, code, elev, y0, ysur, apond, divert_arc, divider_type, qmin, geom) VALUES(1, 'D1', 28.0, 0.0, 0.0, 0.0, 'C55', 'CUTOFF', 0.0, ST_GeomFromText('POINT (418532.967222 4578069.811764)', <SRID_VALUE>));
 
-INSERT INTO inp_outlet (fid, code, descript, node_1, node_2, flap, outlet_type, offsetval, cd1, cd2, curve, annotation, geom) VALUES(1, 'T1', NULL, 'J41', NULL, 'NO', 'TABULAR/DEPTH', NULL, 10.0, 0.5, 'OULET_DEMO', NULL, ST_GeomFromText('LINESTRING (418439.367287 4578023.011796, 418438.58008409 4578027.703742279)', <SRID_VALUE>));
+INSERT INTO inp_outlet (fid, code, descript, node_1, node_2, flap, outlet_type, offsetval, cd1, cd2, curve, geom) VALUES(1, 'T1', '', 'J41', '', 'NO', 'TABULAR/DEPTH', 1.0, 1.0, 1.0, 'OUTLET_DEMO', ST_GeomFromText('LINESTRING (418439.367287 4578023.011796, 418438.58008409 4578027.703742279)', <SRID_VALUE>));
 
 INSERT INTO inp_orifice (fid, code, descript, node_1, node_2, ori_type, shape, geom1, geom2, offsetval, cd1, flap, close_time, annotation, geom) VALUES(1, 'R1', NULL, 'J17', 'J65', 'SIDE', 'RECT_CLOSED', 2.0, 2.0, 37.0, 1.5, 'NO', 0.0, '', ST_GeomFromText('LINESTRING (418495.673498 4577564.274613, 418493.46591867064 4577561.1257339055)', <SRID_VALUE>));
 
@@ -718,6 +718,9 @@ UPDATE inlet SET outlet_type = 'SINK', method = 'UPC', a_param = 0.496 , b_param
 UPDATE inlet SET code = 1000+fid;
 
 UPDATE inp_weir set node_1 = 'S1' where code = 'W1';
+
+
+UPDATE inp_conduit set geom1=1, geom2=1 where shape='RECT_OPEN';
 
 
 PRAGMA foreign_keys = ON;
