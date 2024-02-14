@@ -1019,14 +1019,14 @@ create view if not exists vi_report as
 
 create view if not exists vi_inflows as 
     select 
-    code as Node, 
+    code as Name, 
     format as Constituent, 
-    timeseries as Time_Series, 
-    type as Type,
-    mfactor as MFactor, 
-    sfactor as SFactor, 
     base as Baseline, 
-    pattern as Baseline_Pattern
+    pattern as Baseline_Pattern, 
+    timeseries as Time_Series, 
+    mfactor as Units_Factor, 
+    sfactor as Scale_Factor, 
+    type as Type 
     from inp_inflow;
 
 create view if not exists vi_xsections as
