@@ -1002,10 +1002,14 @@ create view if not exists vi_losses as
 
 create view if not exists vi_dwf as 
     select 
-    code as Node, 
+    code as Name, 
     'FLOW' as Constituent, 
-    baseline as Baseline,
-    COALESCE(pattern1, '') || COALESCE(pattern2, '') || COALESCE(pattern3, '') || COALESCE(pattern4, '') AS Patterns 
+    avg_value as Average_Value, 
+    pattern1 as Time_Pattern1, 
+    pattern2 as Time_Pattern2, 
+    pattern3 as Time_Pattern3, 
+    pattern4 as Time_Pattern4,
+    baseline as Baseline
     from inp_dwf;
 
 create view if not exists vi_controls as 
