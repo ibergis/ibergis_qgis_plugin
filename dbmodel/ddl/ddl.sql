@@ -51,6 +51,14 @@ CREATE TABLE cat_transects (
     descript text check (typeof(descript = 'text') or descript = null)
 );
 
+CREATE TABLE cat_transects_value (
+    id integer primary key,
+    transect text,
+    data_group text,
+    value text,
+    FOREIGN KEY (transect) references cat_transects (idval) on update cascade on delete restrict
+);
+
 CREATE TABLE cat_curve (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
@@ -1016,8 +1024,7 @@ create view if not exists vi_controls as
     select descript AS "text" from cat_controls;
 
 create view if not exists vi_transects as 
-    select idval, descript from cat_transects;
-
+    select data_group, value from cat_transects_value order by id;
 create view if not exists vi_report as 
     select parameter, value from config_param_user where parameter like '%inp_report_%';
 

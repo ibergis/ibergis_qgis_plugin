@@ -56,6 +56,7 @@ insert into tables_nogeom (table_name, index_col) values
 ('cat_file', null),
 ('cat_landuses', 'idval'),
 ('cat_transects', 'idval'),
+('cat_transects_value', 'id'),
 ('cat_curve', 'idval'),
 ('cat_curve_value', null),
 ('cat_timeseries', 'idval'),

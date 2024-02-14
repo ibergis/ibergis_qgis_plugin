@@ -112,11 +112,15 @@ INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(71, 
 INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(72, 'T10-5m-e2', NULL, '0:55', 1.66);
 
 
+INSERT INTO cat_transects (id, idval, descript) VALUES(1, 'TRANSECT-DEMO', 'text to test');
 
-INSERT INTO cat_transects (id, idval, descript) VALUES(1, 'IRR_1', 'text to test');
-INSERT INTO cat_transects (id, idval, descript) VALUES(2, 'NC', '0.01 0.01 0.01');
-INSERT INTO cat_transects (id, idval, descript) VALUES(3, 'X1', 'TRANSECT-DEMO 4 0 0 0 0 0 0 0 ');
-INSERT INTO cat_transects (id, idval, descript) VALUES(4, 'GR', '0.8 0 0.02 2 0.02 6 0.8 8');
+INSERT INTO cat_transects_value (id, transect, data_group, value) VALUES
+(1, 'TRANSECT-DEMO', ';This is a demo', null),
+(2, 'TRANSECT-DEMO', 'NC', '0.01 0.01 0.01'),
+(3, 'TRANSECT-DEMO', 'X1', 'TRANSECT-DEMO 4 0 0 0 0 0 0 0'),
+(4, 'TRANSECT-DEMO', 'GR', '0.8 0 0.02 2 0.02 6 0.8 8');
+
+
 
 INSERT INTO cat_controls (id, descript) VALUES(1, 'RULE EXAMPLE
 IF NODE J3 DEPTH >1
