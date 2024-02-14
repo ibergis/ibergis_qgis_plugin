@@ -794,7 +794,7 @@ create view if not exists vi_conduits as
     geom4 as Geom4, 
     barrels as Barrels, 
     culvert as Culvert, 
-    transect as Shp_Trnsct, 
+    COALESCE(curve, '') || COALESCE(transect, '') as Shp_Trnsct,
     kentry as Kentry, 
     kexit as Kexit, 
     kavg as Kavg, 
