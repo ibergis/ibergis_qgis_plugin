@@ -19,7 +19,6 @@ create trigger "trg_ins_code_inp_storage" after insert on "inp_storage" BEGIN up
 create trigger "trg_ins_code_inp_junction" after insert on "inp_junction" BEGIN update inp_junction set code = 'J'||fid; END;
 create trigger "trg_ins_code_inp_outfall" after insert on "inp_outfall" BEGIN update inp_outfall set code = 'O'||fid; END;
 create trigger "trg_ins_code_inp_divider" after insert on "inp_divider" BEGIN update inp_divider set code = 'D'||fid; END;
-create trigger "trg_ins_code_inp_inflow" after insert on "inp_inflow" BEGIN update inp_inflow set code = 'F'||fid; END;
 
 
 ----------------------------------------------------------------------------------------

@@ -584,7 +584,7 @@ INSERT INTO inlet (fid, code, descript, outlet_node, outlet_type, top_elev, widt
 
 INSERT INTO inp_weir (fid, code, node_1, node_2, weir_type, shape, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES(1, 'W1', 'S1', 'J62', 'TRANSVERSE', 'CIRCULAR', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418716.4602315871 4577600.00343433)', <SRID_VALUE>));
 
-INSERT INTO inp_inflow (fid, code, timeseries, format, mfactor, sfactor, ufactor, base, geom) VALUES(1, 'F1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0, ST_GeomFromText('POINT (418429.20136298996 4577869.807084058)', <SRID_VALUE>));
+INSERT INTO inp_inflow (fid, code, timeseries, format, mfactor, sfactor, ufactor, base, geom) SELECT 1, 'J1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0, geom FROM v_node WHERE code='J1';
 
 INSERT INTO inp_storage (fid, code, descript, elev, ymax, y0, ysur, storage_type, curve, geom) VALUES(1,'S1', NULL, 26.470, 3.500, 0.0, 0.0, 'TABULAR', 'EBAR-02', ST_GeomFromText('POINT (418716.0233455198 4577601.812087212)', <SRID_VALUE>));
 
@@ -721,6 +721,6 @@ UPDATE inp_weir set node_1 = 'S1' where code = 'W1';
 
 
 UPDATE inp_conduit set geom1=1, geom2=1 where shape='RECT_OPEN';
-
+ 
 
 PRAGMA foreign_keys = ON;
