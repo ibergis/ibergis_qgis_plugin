@@ -166,6 +166,8 @@ class DrEpaFileManager(DrTask):
         self.output = self.process.processAlgorithm(params, context, self.feedback)
 
         if self.output is not None:
+            # Add transects
+            self._write_transects()
             if self.export_file_path:
                 try:
                     shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.export_file_path}")
@@ -496,5 +498,21 @@ class DrEpaFileManager(DrTask):
             df_dwf.to_excel(writer, sheet_name="Dry_Weather", index=False)
 
         return file_path
+
+
+    def _write_transects(self):
+
+        sql = """SELECT data_group, value FROM vi_transects;"""
+        rows = self.dao.get_rows(sql)
+        if not rows:
+            return False
+
+        with open(self.QGIS_OUT_INP_FILE, 'a') as file:
+            file.write("[TRANSECTS]\n")
+            for row in rows:
+                # Manage nulls
+                row = tuple('' if val is None else val for val in row)
+                # Write lines
+                file.write('  '.join(row) + "\n")
 
     # endregion
