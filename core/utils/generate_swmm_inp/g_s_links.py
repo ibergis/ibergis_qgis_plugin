@@ -270,6 +270,12 @@ def get_outlets_from_shapefile(outlets_raw):
             return outl_row['Qcoeff']
         else:
             return outl_row['CurveName']
+    def get_outl_expon(outl_row):
+        """selects curve data according to rating curve type"""
+        if outl_row['RateCurve'] in ['FUNCTIONAL/DEPTH', 'FUNCTIONAL/HEAD']:
+            return outl_row['Qexpon']
+        else:
+            return ''
     # check columns
     outlets_cols = list(def_qgis_fields_dict['OUTLETS'].keys())
     outlets_layer_name = 'Outlets Layer'
@@ -281,6 +287,7 @@ def get_outlets_from_shapefile(outlets_raw):
     outlets_raw['CurveName'] = outlets_raw['CurveName'].fillna('*')
     outlets_raw['FlapGate'] = outlets_raw['FlapGate'].fillna('NO')
     outlets_raw['QCurve'] = [get_outl_curve(outlets_raw.loc[i]) for i in outlets_raw.index]
+    outlets_raw['Qexpon'] = [get_outl_expon(outlets_raw.loc[i]) for i in outlets_raw.index]
     outlets_df = outlets_raw[[
         'Name',
         'FromNode',
