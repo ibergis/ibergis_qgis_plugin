@@ -112,13 +112,13 @@ INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(71, 
 INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(72, 'T10-5m-e2', NULL, '0:55', 1.66);
 
 
-INSERT INTO cat_transects (id, idval, descript) VALUES(1, 'TRANSECT-DEMO', 'text to test');
+INSERT INTO cat_transects (id, idval, descript) VALUES(1, 'TRANSECT_DEMO', 'text to test');
 
 INSERT INTO cat_transects_value (id, transect, data_group, value) VALUES
-(1, 'TRANSECT-DEMO', ';This is a demo', null),
-(2, 'TRANSECT-DEMO', 'NC', '0.01 0.01 0.01'),
-(3, 'TRANSECT-DEMO', 'X1', 'TRANSECT-DEMO 4 0 0 0 0 0 0 0'),
-(4, 'TRANSECT-DEMO', 'GR', '0.8 0 0.02 2 0.02 6 0.8 8');
+(1, 'TRANSECT_DEMO', ';This is a demo', null),
+(2, 'TRANSECT_DEMO', 'NC', '0.01 0.01 0.01'),
+(3, 'TRANSECT_DEMO', 'X1', 'TRANSECT_DEMO 4 0 0 0 0 0 0 0'),
+(4, 'TRANSECT_DEMO', 'GR', '0.8 0 0.02 2 0.02 6 0.8 8');
 
 
 
@@ -600,7 +600,7 @@ INSERT INTO inp_orifice (fid, code, descript, node_1, node_2, ori_type, shape, g
 
 
 INSERT INTO inp_conduit (fid, code, node_1, node_2, shape, curve, transect, geom1, geom2, geom3, geom4, roughness, length, z1, z2, q0, qmax, geom) VALUES(1, 'C1', 'J35', 'J36', 'CIRCULAR', NULL, NULL, 0.315, 0.0, 0.0, 0.0, 0.014, 56.872, 1.6, 1.61, 0.0, 0.0, ST_GeomFromText('LINESTRING (418334.311109 4577796.568203, 418320.173619 4577851.655664)', <SRID_VALUE>));
-INSERT INTO inp_conduit (fid, code, node_1, node_2, shape, curve, transect, geom1, geom2, geom3, geom4, roughness, length, z1, z2, q0, qmax, geom) VALUES(2, 'C2', 'J42', 'J43', 'CUSTOM', 'SHAPE_TRANSECT', NULL, 0.315, 0.0, 0.0, 0.0, 0.014, 68.461, 1.5, 1.7, 0.0, 0.0, ST_GeomFromText('LINESTRING (418458.342044 4577907.654041, 418447.411031 4577975.236829)', <SRID_VALUE>));
+INSERT INTO inp_conduit (fid, code, node_1, node_2, shape, curve, transect, geom1, geom2, geom3, geom4, roughness, length, z1, z2, q0, qmax, geom) VALUES(2, 'C2', 'J42', 'J43', 'CUSTOM', 'SHAPE_DEMO', NULL, 0.315, 0.0, 0.0, 0.0, 0.014, 68.461, 1.5, 1.7, 0.0, 0.0, ST_GeomFromText('LINESTRING (418458.342044 4577907.654041, 418447.411031 4577975.236829)', <SRID_VALUE>));
 INSERT INTO inp_conduit (fid, code, node_1, node_2, shape, curve, transect, geom1, geom2, geom3, geom4, roughness, length, z1, z2, q0, qmax, geom) VALUES(3, 'C3', 'J33', 'J44', 'CIRCULAR', NULL, NULL, 0.6, 0.0, 0.0, 0.0, 0.014, 49.524, 1.65, 1.6, 0.0, 0.0, ST_GeomFromText('LINESTRING (418463.98602 4577875.299398, 418513.424117 4577878.219605)', <SRID_VALUE>));
 INSERT INTO inp_conduit (fid, code, node_1, node_2, shape, curve, transect, geom1, geom2, geom3, geom4, roughness, length, z1, z2, q0, qmax, geom) VALUES(4, 'C4', 'J34', 'J33', 'CIRCULAR', NULL, NULL, 0.6, 0.0, 0.0, 0.0, 0.014, 51.574, 1.61, 1.65, 0.0, 0.0, ST_GeomFromText('LINESTRING (418413.042305 4577867.255654, 418463.98602 4577875.299398)', <SRID_VALUE>));
 INSERT INTO inp_conduit (fid, code, node_1, node_2, shape, curve, transect, geom1, geom2, geom3, geom4, roughness, length, z1, z2, q0, qmax, geom) VALUES(5, 'C5', 'J31', 'J33', 'CIRCULAR', NULL, NULL, 0.6, 0.0, 0.0, 0.0, 0.014, 53.539, 1.83, 1.65, 0.0, 0.0, ST_GeomFromText('LINESTRING (418472.273514 4577822.405685, 418463.98602 4577875.299398)', <SRID_VALUE>));
