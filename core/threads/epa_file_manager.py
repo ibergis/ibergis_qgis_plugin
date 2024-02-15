@@ -204,7 +204,7 @@ class DrEpaFileManager(DrTask):
         FILE_PATTERNS = self._create_patterns_file()
         FILE_OPTIONS = self._create_options_file()
         # TODO: FILE_REPORT
-        # TODO: FILE_CONTROLS
+        FILE_CONTROLS = self._create_controls_file()
         FILE_TIMESERIES = self._create_timeseries_file()
         FILE_INFLOWS = self._create_inflows_file()
         FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'vi_transects'
@@ -223,6 +223,7 @@ class DrEpaFileManager(DrTask):
             'FILE_CURVES': FILE_CURVES,
             'FILE_PATTERNS': FILE_PATTERNS,
             'FILE_OPTIONS': FILE_OPTIONS,
+            'FILE_CONTROLS': FILE_CONTROLS,
             'FILE_TIMESERIES': FILE_TIMESERIES,
             'FILE_INFLOWS': FILE_INFLOWS,
             'FILE_TRANSECTS': FILE_TRANSECTS
@@ -417,6 +418,42 @@ class DrEpaFileManager(DrTask):
         with pd.ExcelWriter(file_path) as writer:
             sheet_name = "OPTIONS"
             df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+        return file_path
+
+
+    def _create_controls_file(self):
+        query = """SELECT
+                    text
+                FROM
+                    vi_controls;"""
+        conn = self.dao.conn
+        df = pd.read_sql_query(query, conn)
+
+        # pd.set_option("colheader_justify", "left")
+        df.style.set_properties(**{'text-align': 'left'})
+        # Split the text into separate lines
+        print(df)
+        df['text'] = df['text'].str.split('\n')
+
+        # Explode the DataFrame to create a new row for each line
+        df = df.explode('text')
+        print(df)
+
+        temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+        file_path = temp_file.name
+        # Create a new Excel writer
+        with pd.ExcelWriter(file_path) as writer:
+            sheet_name = "CONTROLS"
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+            # Get the xlsxwriter workbook and worksheet objects
+            workbook = writer.book
+            worksheet = writer.sheets[sheet_name]
+
+            # Set the column alignment to the left for all columns
+            for i, col in enumerate(df.columns):
+                max_len = df[col].astype(str).apply(len).max()
+                worksheet.set_column(i, i, max_len, None, {'align': 'left'})
 
         return file_path
 

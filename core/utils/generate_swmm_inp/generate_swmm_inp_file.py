@@ -45,6 +45,7 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
     FILE_CURVES = 'FILE_CURVES'
     FILE_PATTERNS = 'FILE_PATTERNS'
     FILE_OPTIONS = 'FILE_OPTIONS'
+    FILE_CONTROLS = 'FILE_CONTROLS'
     FILE_TIMESERIES = 'FILE_TIMESERIES'
     FILE_INFLOWS = 'FILE_INFLOWS'
     FILE_QUALITY = 'FILE_QUALITY'
@@ -154,6 +155,15 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
             QgsProcessingParameterFile(
                 self.FILE_OPTIONS,
                 self.tr('Options table file'),
+                QgsProcessingParameterFile.File,
+                optional=True,
+                fileFilter='Tables (*.xlsx *.xls *.odf)'
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterFile(
+                self.FILE_CONTROLS,
+                self.tr('Controls table file'),
                 QgsProcessingParameterFile.File,
                 optional=True,
                 fileFilter='Tables (*.xlsx *.xls *.odf)'
@@ -301,6 +311,7 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
         file_curves = self.parameterAsString(parameters, self.FILE_CURVES, context)
         file_patterns = self.parameterAsString(parameters, self.FILE_PATTERNS, context)
         file_options = self.parameterAsString(parameters, self.FILE_OPTIONS, context)
+        file_controls = self.parameterAsString(parameters, self.FILE_CONTROLS, context)
         file_timeseries = self.parameterAsString(parameters, self.FILE_TIMESERIES, context)
         file_inflows = self.parameterAsString(parameters, self.FILE_INFLOWS, context)
         file_quality = self.parameterAsString(parameters, self.FILE_QUALITY, context)
@@ -312,6 +323,11 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
             raw_data_dict['options_df'] = read_data_from_table_direct(
                 file_options,
                 sheet='OPTIONS'
+            )
+        # controls table
+        if file_controls != '':
+            raw_data_dict['controls_df'] = read_data_from_table_direct(
+                file_controls
             )
         # curves table
         if file_curves != '':
@@ -397,6 +413,19 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
             )
             options_df, main_infiltration_method = get_options_from_table(raw_data_dict['options_df'].copy())
             inp_dict['OPTIONS'] = {'data': options_df}
+
+        # controls
+        if 'controls_df' in raw_data_dict.keys():
+            feedback.setProgressText(self.tr('[CONTROLS] section'))
+            feedback.pushInfo(self.tr('[CONTROLS] section'))
+            from .g_s_controls import get_controls_from_table
+            # check_columns(
+            #     'CONTROLS file',
+            #     list(def_tables_dict['CONTROLS']['tables']['OPTIONS'].keys()),
+            #     raw_data_dict['options_df'].keys()
+            # )
+            controls_df = get_controls_from_table(raw_data_dict['controls_df'].copy())
+            inp_dict['CONTROLS'] = {'data': controls_df}
 
         # subcatchments
         if 'subcatchments_raw' in raw_data_dict.keys():

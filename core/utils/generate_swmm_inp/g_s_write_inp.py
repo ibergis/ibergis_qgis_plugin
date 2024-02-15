@@ -324,6 +324,10 @@ def write_inp(
             file1.write(';\n')
         file1.write('\n')
 
+    # controls
+    if 'CONTROLS' in inp_dict.keys():
+        df_to_inp_section('CONTROLS')
+
     # report options
     feedback.setProgressText('writing [REPORT options]...')
     file1.write('[REPORT]\n')
