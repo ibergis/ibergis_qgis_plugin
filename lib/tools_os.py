@@ -10,7 +10,6 @@ import os
 import pathlib
 import sys
 import subprocess
-import urllib.parse as parse
 import webbrowser
 import re
 from chardet import detect
@@ -111,6 +110,18 @@ def open_file_path(msg="Select file", filter_="All (*.*)"):
     return path, filter_
 
 
+def open_folder_path(msg="Select folder"):
+    """ Open QFileDialog """
+
+    path = QFileDialog.getExistingDirectory(None, msg)
+    return path
+
+
+def open_save_file_path(msg="Save file", extension="*.txt"):
+    path, filter_ = QFileDialog.getSaveFileName(None, msg, "", extension)
+    return path
+
+
 def check_python_function(module, function_name):
     """ Check if function exist in @module """
 
@@ -159,7 +170,7 @@ def manage_pg_service(section):
         tools_log.log_warning(f"File defined in environment variable 'PGSERVICEFILE' not found: {service_file}")
         return None
 
-    config_parser = configparser.ConfigParser()
+    config_parser = configparser.ConfigParser(strict=False)
     credentials = {'host': None, 'port': None, 'dbname': None, 'user': None, 'password': None, 'sslmode': None}
     try:
         config_parser.read(service_file)

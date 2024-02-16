@@ -17,14 +17,14 @@ from encodings.aliases import aliases
 from warnings import warn
 
 from qgis.PyQt.QtCore import QDate, QDateTime, QSortFilterProxyModel, QStringListModel, QTime, Qt, QRegExp, pyqtSignal,\
-    QPersistentModelIndex, QCoreApplication, QTranslator, QEvent
-from qgis.PyQt.QtGui import QPixmap, QDoubleValidator, QTextCharFormat, QFont, QIcon
+    QPersistentModelIndex, QCoreApplication, QTranslator
+from qgis.PyQt.QtGui import QPixmap, QDoubleValidator, QTextCharFormat, QFont
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.PyQt.QtWidgets import QAction, QLineEdit, QComboBox, QWidget, QDoubleSpinBox, QCheckBox, QLabel, QTextEdit, \
     QDateEdit, QAbstractItemView, QCompleter, QDateTimeEdit, QTableView, QSpinBox, QTimeEdit, QPushButton, \
     QPlainTextEdit, QRadioButton, QSizePolicy, QSpacerItem, QFileDialog, QGroupBox, QMessageBox, QTabWidget, QToolBox, \
     QToolButton
-from qgis.core import QgsExpression, QgsProject, QgsLayerTreeLayer
+from qgis.core import QgsExpression, QgsProject
 from qgis.gui import QgsDateTimeEdit
 from qgis.utils import iface
 
@@ -36,7 +36,7 @@ translator = QTranslator()
 dlg_text = DialogTextUi()
 
 
-class GwExtendedQLabel(QLabel):
+class DrExtendedQLabel(QLabel):
 
     clicked = pyqtSignal()
 
@@ -47,7 +47,7 @@ class GwExtendedQLabel(QLabel):
         self.clicked.emit()
 
 
-class GwHyperLinkLabel(QLabel):
+class DrHyperLinkLabel(QLabel):
 
     clicked = pyqtSignal()
 
@@ -60,7 +60,7 @@ class GwHyperLinkLabel(QLabel):
         self.setStyleSheet("QLabel{color:purple; text-decoration: underline;}")
 
 
-class GwHyperLinkLineEdit(QLineEdit):
+class DrHyperLinkLineEdit(QLineEdit):
 
     clicked = pyqtSignal()
 
@@ -200,7 +200,7 @@ def get_text(dialog, widget, add_quote=False, return_string_null=True):
         widget = dialog.findChild(QWidget, widget)
     text = None
     if widget:
-        if type(widget) in (QLineEdit, QPushButton, QLabel, GwHyperLinkLabel, GwHyperLinkLineEdit):
+        if type(widget) in (QLineEdit, QPushButton, QLabel, DrHyperLinkLabel, DrHyperLinkLineEdit):
             text = widget.text()
         elif type(widget) in (QDoubleSpinBox, QSpinBox):
             # When the QDoubleSpinbox contains decimals, for example 2,0001 when collecting the value,
@@ -214,13 +214,13 @@ def get_text(dialog, widget, add_quote=False, return_string_null=True):
         elif type(widget) is QCheckBox:
             value = is_checked(dialog, widget)
             if type(value) is bool:
-                text = str(text)
+                text = str(value)
             else:
                 text = None
 
-        if not text and return_string_null:
+        if text in (None, '') and return_string_null:
             text = "null"
-        elif not text:
+        elif text in (None, ''):
             text = ""
         if add_quote and text != "null":
             text = "'" + text + "'"
@@ -429,7 +429,7 @@ def set_combo_value(combo, value, item1, add_new=True):
     return False
 
 
-def fill_combo_values(combo, rows, index_to_show=0, combo_clear=True, sort_combo=True, sort_by=1, add_empty=False):
+def fill_combo_values(combo, rows, index_to_show=1, combo_clear=True, sort_combo=True, sort_by=1, add_empty=False):
     """
     Populate @combo with list @rows and show field @index_to_show
         :param combo: QComboBox widget to fill (QComboBox)
@@ -469,7 +469,7 @@ def fill_combo_values(combo, rows, index_to_show=0, combo_clear=True, sort_combo
             records_sorted.insert(0, ['', ''])
 
         for record in records_sorted:
-            combo.addItem(record[index_to_show], record)
+            combo.addItem(str(record[index_to_show]), record)
             combo.blockSignals(False)
 
 
@@ -570,8 +570,16 @@ def set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_tr
 def get_col_index_by_col_name(qtable, column_name):
     """ Return column index searching by column name """
 
-    record = qtable.model().record(0)
-    column_index = record.indexOf(column_name)
+    model = qtable.model()
+    column_index = -1
+    try:
+        record = model.record(0)
+        column_index = record.indexOf(column_name)
+    except AttributeError:
+        for x in range(0, model.columnCount()):
+            if model.headerData(x, Qt.Horizontal) == column_name:
+                column_index = x
+                break
 
     if column_index == -1:
         column_index = None
@@ -611,7 +619,7 @@ def set_calendar_empty(widget):
 
 def add_horizontal_spacer():
 
-    widget = QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum)
+    widget = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
     return widget
 
 
@@ -636,7 +644,7 @@ def check_expression_filter(expr_filter, log_info=False):
 
 
 def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableModel.OnManualSubmit,
-               sort_order=Qt.AscendingOrder):
+               sort_order=Qt.AscendingOrder, db=global_vars.db_qsql_data):
     """ Set a model with selected filter. Attach that model to selected table
     :param qtable: tableview where set the model (QTableView)
     :param table_name: database table name or view name (String)
@@ -646,11 +654,9 @@ def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableMode
     :return:
     """
 
-    if global_vars.schema_name and global_vars.schema_name not in table_name:
-        table_name = f"{global_vars.schema_name}.{table_name}"
 
     # Set model
-    model = QSqlTableModel(db=global_vars.qgis_db_credentials)
+    model = QSqlTableModel(db=global_vars.db_qsql_data)
     model.setTable(table_name)
     model.setEditStrategy(edit_strategy)
     model.setSort(0, sort_order)
@@ -683,12 +689,12 @@ def add_layer_to_toc(layer, group=None, sub_group=None, create_groups=False, sub
     if create_groups:
         if not first_group:
             first_group = root.insertGroup(0, group)
-        if not tools_qgis.find_toc_group(first_group, sub_group):
+        if sub_group is not None and not tools_qgis.find_toc_group(first_group, sub_group):
             second_group = first_group.insertGroup(0, sub_group)
             if sub_sub_group and not tools_qgis.find_toc_group(second_group, sub_sub_group):
                 second_group.insertGroup(0, sub_sub_group)
 
-    if first_group and sub_group:
+    if first_group:
         second_group = tools_qgis.find_toc_group(first_group, sub_group)
         if second_group:
             third_group = tools_qgis.find_toc_group(second_group, sub_sub_group)
@@ -704,9 +710,9 @@ def add_layer_to_toc(layer, group=None, sub_group=None, create_groups=False, sub
         return
 
     root = QgsProject.instance().layerTreeRoot()
-    my_group = root.findGroup("GW Layers")
+    my_group = root.findGroup("DRAIN TEMPORAL")
     if my_group is None:
-        my_group = root.insertGroup(0, "GW Layers")
+        my_group = root.insertGroup(0, "DRAIN TEMPORAL")
     my_group.insertLayer(0, layer)
 
 
@@ -980,7 +986,7 @@ def show_warning_open_file(text, inf_text, file_path, context_name=None):
     iface.messageBar().pushWidget(widget, 1)
 
 
-def show_question(text, title="Info", inf_text=None, context_name=None, parameter=None, force_action=False):
+def show_question(text, title=None, inf_text=None, context_name=None, parameter=None, force_action=False):
     """ Ask question to the user """
 
     # Expert mode does not ask and accept all actions
@@ -1006,13 +1012,6 @@ def show_question(text, title="Info", inf_text=None, context_name=None, paramete
     msg_box.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
     msg_box.setDefaultButton(QMessageBox.Ok)
     msg_box.setWindowFlags(Qt.WindowStaysOnTopHint)
-
-    # Set window icon
-    icon_folder = f"{global_vars.plugin_dir}{os.sep}icons"
-    icon_path = f"{icon_folder}{os.sep}dialogs{os.sep}20x20{os.sep}giswater.png"
-    giswater_icon = QIcon(icon_path)
-    msg_box.setWindowIcon(giswater_icon)
-
     ret = msg_box.exec_()
     if ret == QMessageBox.Ok:
         return True
@@ -1094,18 +1093,13 @@ def tr(message, context_name=None, aux_context='ui_message'):
     return value
 
 
-def manage_translation(context_name, dialog=None, log_info=False, plugin_dir=None, plugin_name=None):
+def manage_translation(context_name, dialog=None, log_info=False):
     """ Manage locale and corresponding 'i18n' file """
 
     # Get locale of QGIS application
     locale = tools_qgis.get_locale()
 
-    if plugin_dir is None:
-        plugin_dir = global_vars.plugin_dir
-    if plugin_name is None:
-        plugin_name = global_vars.plugin_name
-
-    locale_path = os.path.join(plugin_dir, 'i18n', f'{plugin_name}_{locale}.qm')
+    locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_{locale}.qm')
     if not os.path.exists(locale_path):
         if log_info:
             tools_log.log_info("Locale not found", parameter=locale_path)
@@ -1268,7 +1262,7 @@ def set_table_model(dialog, table_object, table_name, expr_filter):
         table_name = f"{global_vars.schema_name}.{table_name}"
 
     # Set a model with selected filter expression
-    model = QSqlTableModel(db=global_vars.qgis_db_credentials)
+    model = QSqlTableModel(db=global_vars.db_qsql_data)
     model.setTable(table_name)
     model.setEditStrategy(QSqlTableModel.OnManualSubmit)
     model.select()

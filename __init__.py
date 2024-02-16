@@ -29,5 +29,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    from .main import Giswater
-    return Giswater(iface)
+    from .main import Drain
+    return Drain(iface)
