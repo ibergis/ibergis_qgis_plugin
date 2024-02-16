@@ -25,6 +25,7 @@ __author__ = 'Jannik Schilling'
 __date__ = '2023-05-09'
 __copyright__ = '(C) 2023 by Jannik Schilling'
 
+import csv
 import os
 import pandas as pd
 
@@ -73,7 +74,7 @@ def write_inp(
                 annotations_dict = inp_dict[section_name]['annotations']
                 if len(annotations_dict) > 0:
                     annotations_df = pd.DataFrame.from_dict(
-                        annotations_dict, 
+                        annotations_dict,
                         orient='index',
                         columns=['Name']
                     )
@@ -90,9 +91,13 @@ def write_inp(
             if only_cols is not None:
                 print_df = print_df[only_cols]
             file1.write('['+section_name+']\n')
-            file1.write(print_df.to_string(header=False, index=False))
+
+            def ljust(s):
+                s = s.astype(str).str.strip()
+                return s.str.ljust(s.str.len().max())
+            file1.write(print_df.apply(ljust).to_string(header=False, index=False))
             file1.write('\n')
-            file1.write('\n')   
+            file1.write('\n')
 
     # header
     df_to_inp_section('TITLE')
