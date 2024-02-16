@@ -722,5 +722,6 @@ UPDATE inp_weir set node_1 = 'S1' where code = 'W1';
 
 UPDATE inp_conduit set geom1=1, geom2=1 where shape='RECT_OPEN';
  
+UPDATE roof SET isconnected=1;
 
 PRAGMA foreign_keys = ON;
