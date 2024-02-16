@@ -419,11 +419,6 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
             feedback.setProgressText(self.tr('[CONTROLS] section'))
             feedback.pushInfo(self.tr('[CONTROLS] section'))
             from .g_s_controls import get_controls_from_table
-            # check_columns(
-            #     'CONTROLS file',
-            #     list(def_tables_dict['CONTROLS']['tables']['OPTIONS'].keys()),
-            #     raw_data_dict['options_df'].keys()
-            # )
             controls_df = get_controls_from_table(raw_data_dict['controls_df'].copy())
             inp_dict['CONTROLS'] = {'data': controls_df}
 

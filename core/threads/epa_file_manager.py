@@ -119,9 +119,6 @@ class DrEpaFileManager(DrTask):
         if self.isCanceled():
             return
 
-        print("OUTPUT:")
-        print(self.output)
-
         if not self.is_subtask:
             # If Database exception, show dialog after task has finished
             if global_vars.session_vars['last_error']:
@@ -430,15 +427,11 @@ class DrEpaFileManager(DrTask):
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
 
-        # pd.set_option("colheader_justify", "left")
-        df.style.set_properties(**{'text-align': 'left'})
         # Split the text into separate lines
-        print(df)
         df['text'] = df['text'].str.split('\n')
 
         # Explode the DataFrame to create a new row for each line
         df = df.explode('text')
-        print(df)
 
         temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
         file_path = temp_file.name
