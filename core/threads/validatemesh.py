@@ -217,7 +217,6 @@ def validate_roof_layer(
             and type(slope) in [int, float]
             and type(width) in [int, float]
             and type(isconnected) == int
-            and type(outlet_code) == int
             and type(outlet_vol) in [int, float]
             and type(street_vol) in [int, float]
             and type(infiltr_vol) in [int, float]
