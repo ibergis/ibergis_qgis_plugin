@@ -123,7 +123,7 @@ INSERT INTO cat_transects_value (id, transect, data_group, value) VALUES
 
 
 INSERT INTO cat_controls (id, descript) VALUES(1, 'RULE EXAMPLE
-IF NODE J3 DEPTH >1
+IF NODE J3 DEPTH > 1
 THEN PUMP P1 STATUS = ON
 ELSE PUMP P1 STATUS = OFF');
 
