@@ -368,6 +368,8 @@ class DrExecuteModel(DrTask):
                 value = "Enabled" if value == "True" else "Disabled"
             elif parameter == 'options_plan_id':
                 value = "0"
+            elif parameter == 'options_simulation_details':
+                value = "1" if value == "True" else "0"
             options[parameter] = value
 
         project_name = options.get('project_name', 'test')
