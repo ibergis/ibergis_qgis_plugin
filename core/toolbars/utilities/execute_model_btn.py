@@ -87,6 +87,14 @@ class DrExecuteModelButton(DrAction):
     def _manage_btn_accept(self):
         # Check if results exist on folder
         self.export_path = tools_qt.get_text(self.execute_dlg, 'txt_folder_path')
+        if not os.path.exists(self.export_path):
+            try:
+                os.mkdir(self.export_path)
+            except:
+                message = "The specified folder doesn't exist and it couldn't be created. Make sure the specified folder exists."
+                tools_qt.show_info_box(message)
+                return False
+
         if os.path.exists(f"{self.export_path}{os.sep}Iber2D.dat"):
             message = "Results files already exist in this path. Do you want to overwrite them?"
             answer = tools_qt.show_question(message, "overwrite file", force_action=True)
