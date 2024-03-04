@@ -47,7 +47,7 @@ class DrExecuteModel(DrTask):
     PROGRESS_HYETOGRAPHS = 40
     PROGRESS_RAIN = 50
     PROGRESS_INP = 70
-    PROGRESS_IBER = 90
+    PROGRESS_IBER = 97
     PROGRESS_END = 100
 
     def __init__(self, description: str, params: dict, timer=None):
@@ -515,7 +515,8 @@ class DrExecuteModel(DrTask):
             destination_path = os.path.join(destination_folder, file)
             shutil.copy2(source_path, destination_path)  # shutil.copy2 preserves metadata
 
-        self.progress_changed.emit("Run Iber", lerp_progress(20, self.PROGRESS_INP, self.PROGRESS_IBER), '', False)
+        init_progress = lerp_progress(10, self.PROGRESS_INP, self.PROGRESS_IBER)
+        self.progress_changed.emit("Run Iber", init_progress, '', False)
 
         process = subprocess.Popen([iber_exe_path],
                                    stdout=subprocess.PIPE,
@@ -531,7 +532,14 @@ class DrExecuteModel(DrTask):
             if output == '' and process.poll() is not None:
                 break
             if output:
-                self.progress_changed.emit("Run Iber", None, f'{output.strip()}', True)
+                try:
+                    # 0.000        1.00000    13:58:47:68       0.000       0.000     0.00%        --
+                    output_parts = [x for x in output.strip().split(' ') if x != '']
+                    output_percentage = output_parts[5].replace('%', '')
+                    iber_percentage = lerp_progress(int(float(output_percentage)), init_progress, self.PROGRESS_IBER)
+                except:
+                    iber_percentage = None
+                self.progress_changed.emit("Run Iber", iber_percentage, f'{output.strip()}', True)
 
         if process.poll() is None:
             process.terminate()
