@@ -321,27 +321,30 @@ class DrExecuteModel(DrTask):
                 sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_method'"
                 row = self.dao.get_row(sql)
                 losses_method = row[0] if row and row[0] is not None else 2
-                self.progress_changed.emit("Export files", lerp_progress(50, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
-                # cn_multiplier
-                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_cn_multiplier'"
-                row = self.dao.get_row(sql)
-                cn_multiplier = row[0] if row else 0
-                self.progress_changed.emit("Export files", lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
-                # ia_coeff
-                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_ia_coefficient'"
-                row = self.dao.get_row(sql)
-                ia_coeff = row[0] if row else 0
-                self.progress_changed.emit("Export files", lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
-                # start_time
-                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_starttime'"
-                row = self.dao.get_row(sql)
-                start_time = row[0] if row else 0
-                self.progress_changed.emit("Export files", lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
-                # Replace first line
-                new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
-                losses_content_lines = losses_content.split('\n')
-                losses_content_lines[0] = new_first_line
-                losses_content = '\n'.join(losses_content_lines)
+                if losses_method == '0':
+                    losses_content = '0'
+                else:
+                    self.progress_changed.emit("Export files", lerp_progress(50, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    # cn_multiplier
+                    sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_cn_multiplier'"
+                    row = self.dao.get_row(sql)
+                    cn_multiplier = row[0] if row else 0
+                    self.progress_changed.emit("Export files", lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    # ia_coeff
+                    sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_ia_coefficient'"
+                    row = self.dao.get_row(sql)
+                    ia_coeff = row[0] if row else 0
+                    self.progress_changed.emit("Export files", lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    # start_time
+                    sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_starttime'"
+                    row = self.dao.get_row(sql)
+                    start_time = row[0] if row else 0
+                    self.progress_changed.emit("Export files", lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    # Replace first line
+                    new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
+                    losses_content_lines = losses_content.split('\n')
+                    losses_content_lines[0] = new_first_line
+                    losses_content = '\n'.join(losses_content_lines)
             self.progress_changed.emit("Export files", lerp_progress(90, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber_Losses.dat', losses_content)
