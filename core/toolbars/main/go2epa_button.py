@@ -188,6 +188,14 @@ class DrGo2IberButton(DrAction):
 
         # Get widgets values
         self.export_file_path = tools_qt.get_text(self.dlg_go2epa, 'txt_file_path')
+        if not os.path.exists(self.export_file_path):
+            try:
+                os.mkdir(self.export_file_path)
+            except:
+                message = "The specified folder doesn't exist and it couldn't be created. Make sure the specified folder exists."
+                tools_qt.show_info_box(message)
+                return False
+
 
         tools_dr.set_tabs_enabled(self.dlg_go2epa)
         self.dlg_go2epa.mainTab.setCurrentIndex(1)
