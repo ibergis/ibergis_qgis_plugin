@@ -200,7 +200,7 @@ CREATE TABLE inlet (
     efficiency real check (typeof(efficiency) = 'real' or efficiency = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (outlet_node) references junction (code) on update cascade on delete restrict
+    FOREIGN KEY (outlet_node) references inp_junction (code) on update cascade on delete restrict
 );
 
 
@@ -372,7 +372,7 @@ CREATE TABLE inp_divider (
     divider_type text check (typeof(divider_type) IN ('text', null) and divider_type in ('CUTOFF', 'OVERFLOW', 'TABULAR', 'WEIR')),
     cutoff_flow real check (typeof(cutoff_flow) = 'real' or cutoff_flow = null),
     qmin real check (typeof(qmin) = 'real' or qmin = null),
-    curve integer check (typeof(curve) = 'integer' or curve = null),
+    curve text check (typeof(curve) = 'text' or curve = null),
     q0 real check (typeof(q0) = 'real' or q0 = null),
     qmax real check (typeof(qmax) = 'real' or qmax = null),
     annotation real check (typeof(annotation) = 'real' or annotation = null),
