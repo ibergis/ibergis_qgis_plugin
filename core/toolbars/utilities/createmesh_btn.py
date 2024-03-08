@@ -5,7 +5,7 @@ from time import time
 
 from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt, QTimer
-from qgis.PyQt.QtWidgets import QListWidgetItem
+from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox
 
 from ..dialog import DrAction
 from ...threads.createmesh import DrCreateMeshTask
@@ -64,6 +64,9 @@ class DrCreateMeshButton(DrAction):
         ]
         tools_qt.fill_combo_values(dlg.cmb_losses_layer, rows, add_empty=True)
 
+        # Load user's last values
+        self._load_widget_values()
+
         # Set initial signals
         dlg.chk_validation.clicked.connect(dlg.btn_config.setEnabled)
         dlg.btn_config.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 1))
@@ -77,6 +80,7 @@ class DrCreateMeshButton(DrAction):
         dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
+        dlg.rejected.connect(self._save_widget_values)
         dlg.rejected.connect(partial(tools_dr.close_dialog, dlg))
 
         # Create List Items
@@ -188,6 +192,82 @@ class DrCreateMeshButton(DrAction):
         dlg.rejected.connect(self.timer.stop)
 
         QgsApplication.taskManager().addTask(thread)
+
+    def _load_widget_values(self):
+        dlg = self.dlg_mesh
+        # TODO: Set all validation checks
+
+        # chk_transition
+        chk_transition = tools_dr.get_config_parser('dlg_create_mesh', 'chk_transition', "user", "session")
+        if chk_transition not in (None, 'null'):
+            tools_qt.set_checked(dlg, 'chk_transition', chk_transition)
+        # txt_slope
+        txt_slope = tools_dr.get_config_parser('dlg_create_mesh', 'txt_slope', "user", "session")
+        if txt_slope not in (None, 'null'):
+            tools_qt.set_widget_text(dlg, 'txt_slope', txt_slope)
+        # txt_start
+        txt_start = tools_dr.get_config_parser('dlg_create_mesh', 'txt_start', "user", "session")
+        if txt_start not in (None, 'null'):
+            tools_qt.set_widget_text(dlg, 'txt_start', txt_start)
+        # txt_extent
+        txt_extent = tools_dr.get_config_parser('dlg_create_mesh', 'txt_extent', "user", "session")
+        if txt_extent not in (None, 'null'):
+            tools_qt.set_widget_text(dlg, 'txt_extent', txt_extent)
+
+        # cmb_dem_layer
+        cmb_dem_layer = tools_dr.get_config_parser('dlg_create_mesh', 'cmb_dem_layer', "user", "session")
+        print(f"{cmb_dem_layer=}")
+        if cmb_dem_layer not in (None, 'null'):
+            tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_dem_layer'), cmb_dem_layer, 1, add_new=False)
+        # cmb_roughness_layer
+        cmb_roughness_layer = tools_dr.get_config_parser('dlg_create_mesh', 'cmb_roughness_layer', "user", "session")
+        print(f"{cmb_roughness_layer=}")
+        if cmb_roughness_layer not in (None, 'null'):
+            tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_roughness_layer'), cmb_roughness_layer, 1, add_new=False)
+        # cmb_losses_layer
+        cmb_losses_layer = tools_dr.get_config_parser('dlg_create_mesh', 'cmb_losses_layer', "user", "session")
+        print(f"{cmb_losses_layer=}")
+        if cmb_losses_layer not in (None, 'null'):
+            tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_losses_layer'), cmb_losses_layer, 1, add_new=False)
+
+        # txt_name
+        txt_name = tools_dr.get_config_parser('dlg_create_mesh', 'txt_name', "user", "session")
+        if txt_name not in (None, 'null'):
+            tools_qt.set_widget_text(dlg, 'txt_name', txt_name)
+
+    def _save_widget_values(self):
+        dlg = self.dlg_mesh
+        # TODO: Get all validation checks
+
+        # chk_transition
+        chk_transition = tools_qt.is_checked(dlg, 'chk_transition')
+        tools_dr.set_config_parser('dlg_create_mesh', 'chk_transition', chk_transition, "user", "session")
+        # txt_slope
+        txt_slope = tools_qt.get_text(dlg, 'txt_slope')
+        tools_dr.set_config_parser('dlg_create_mesh', 'txt_slope', txt_slope, "user", "session")
+        # txt_start
+        txt_start = tools_qt.get_text(dlg, 'txt_start')
+        tools_dr.set_config_parser('dlg_create_mesh', 'txt_start', txt_start, "user", "session")
+        # txt_extent
+        txt_extent = tools_qt.get_text(dlg, 'txt_extent')
+        tools_dr.set_config_parser('dlg_create_mesh', 'txt_extent', txt_extent, "user", "session")
+
+        # cmb_dem_layer
+        cmb_dem_layer = tools_qt.get_combo_value(dlg, 'cmb_dem_layer', 1)
+        print(f"{cmb_dem_layer=}")
+        tools_dr.set_config_parser('dlg_create_mesh', 'cmb_dem_layer', cmb_dem_layer, "user", "session")
+        # cmb_roughness_layer
+        cmb_roughness_layer = tools_qt.get_combo_value(dlg, 'cmb_roughness_layer', 1)
+        print(f"{cmb_roughness_layer=}")
+        tools_dr.set_config_parser('dlg_create_mesh', 'cmb_roughness_layer', cmb_roughness_layer, "user", "session")
+        # cmb_losses_layer
+        cmb_losses_layer = tools_qt.get_combo_value(dlg, 'cmb_losses_layer', 1)
+        print(f"{cmb_losses_layer=}")
+        tools_dr.set_config_parser('dlg_create_mesh', 'cmb_losses_layer', cmb_losses_layer, "user", "session")
+
+        # txt_name
+        txt_name = tools_qt.get_text(dlg, 'txt_name')
+        tools_dr.set_config_parser('dlg_create_mesh', 'txt_name', txt_name, "user", "session")
 
     def _get_layer(self, dao, layer_name):
         path = f"{dao.db_filepath}|layername={layer_name}"
