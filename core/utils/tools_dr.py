@@ -1666,9 +1666,9 @@ def fill_combo(widget, field):
             elem = [comboIds[i], comboNames[i]]
             combolist.append(elem)
     else:
-        msg = f"key 'comboIds' or/and comboNames not found WHERE widgetname='{field['widgetname']}' " \
+        msg = f"Found combobox that has no values. HINT: WHERE widgetname='{field['widgetname']}' " \
               f"AND widgettype='{field['widgettype']}'"
-        tools_qgis.show_message(msg, 2)
+        tools_log.log_warning(msg)
     # Populate combo
     for record in combolist:
         widget.addItem(record[1], record)

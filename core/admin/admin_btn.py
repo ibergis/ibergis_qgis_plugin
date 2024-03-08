@@ -522,7 +522,7 @@ class DrAdminButton:
         elif self.rdb_data.isChecked():
             tools_log.log_info("Execute 'custom_execution' (empty data)")
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
-            return True
+            return self.populate_config_params()
 
     def populate_config_params(self):
         """Populate table config_param_user"""
