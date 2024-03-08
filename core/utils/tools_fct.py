@@ -24,7 +24,7 @@ def getconfig(p_input: dict) -> dict:
         # get widgets from sys_param_user
         column_names = ['id', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
                         'placeholder', 'id AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
-                        'dv_orderby_id', 'dv_isnullvalue',
+                        'dv_orderby_id', 'dv_isnullvalue AS isNullValue',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
                         'CASE WHEN isenabled = 1 THEN True ELSE False END AS isenabled',
