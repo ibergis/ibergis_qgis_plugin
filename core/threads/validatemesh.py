@@ -53,8 +53,7 @@ def validate_cellsize(
 def validate_intersect(
     layers_dict: dict, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
-    # Combine ground and roofs layers
-    layers = [layers_dict["ground"], layers_dict["roof"]]
+    layers = [layers_dict["ground"]]
     data = pd.concat(map(layer_to_gdf, layers))
 
     # Get overlap
@@ -101,7 +100,7 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
 def validate_vert_edge(
     layers_dict: dict, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
-    layers = [layers_dict["ground"], layers_dict["roof"]]
+    layers = [layers_dict["ground"]]
     data = pd.concat(map(layer_to_gdf, layers))
 
     output_layer = QgsVectorLayer("Point", "Vertex-Edge Errors", "memory")
