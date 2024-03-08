@@ -9,7 +9,7 @@ from qgis.PyQt.QtSql import QSqlTableModel
 
 from ..dialog import DrAction
 from ...ui.ui_manager import DrBCScenarioManagerUi, DrBCScenarioUi, DrMeshSelectorUi
-from ....lib import tools_qgis, tools_qt, tools_db
+from ....lib import tools_qgis, tools_qt, tools_db, tools_log
 from ...threads.savetomesh import DrSaveToMeshTask
 from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
@@ -21,7 +21,7 @@ def set_bc_filter():
     row = tools_db.get_row(sql)
     if not row:
         msg = "No current bcscenario found"
-        tools_qgis.show_warning(msg)
+        tools_log.log_warning(msg)
         return
     cur_scenario = row['idval']
 

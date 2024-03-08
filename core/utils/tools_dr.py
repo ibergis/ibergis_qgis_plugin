@@ -1666,7 +1666,7 @@ def fill_combo(widget, field):
             elem = [comboIds[i], comboNames[i]]
             combolist.append(elem)
     else:
-        msg = f"Found combobox that has no values. HINT: WHERE widgetname='{field['widgetname']}' " \
+        msg = f"Found combobox that has no values. HINT: WHERE id='{field['widgetname']}' " \
               f"AND widgettype='{field['widgettype']}'"
         tools_log.log_warning(msg)
     # Populate combo
