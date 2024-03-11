@@ -75,9 +75,6 @@ _tables = (
             "FlapGate": "flap",
             "CloseTime": "close_time",
             "Annotation": "annotation",
-            "Shape": "shape",
-            "Height": "geom1",
-            "Width": "geom2",
         },
     },
     {
@@ -99,8 +96,6 @@ _tables = (
             "CoeffCurve": "curve",
             "Annotation": "annotation",
             "Height": "elev",
-            "Length": "geom1",
-            "SideSlope": "geom2",
         },
     },
     {
@@ -323,6 +318,21 @@ def get_dataframes(inp_dict, epsg):
 
     for table, sections in tables_to_merge.items():
         df = get_merged_df(inp_dict, sections, epsg)
+
+        if table in ("inp_weir", "inp_orifice"):
+            # Drop columns 'barrels' and 'culvert' of df if they exist
+            if "barrels" in df.columns:
+                df.drop("barrels", axis=1, inplace=True)
+            if "culvert" in df.columns:
+                df.drop("culvert", axis=1, inplace=True)
+
+        if table == "inp_orifice":
+            # Drop columns 'geom3' and 'geom4' of df if they exist
+            if "geom3" in df.columns:
+                df.drop("geom3", axis=1, inplace=True)
+            if "geom4" in df.columns:
+                df.drop("geom4", axis=1, inplace=True)
+
         if not df.empty:
             dataframes.append({"table": table, "df": df})
 
