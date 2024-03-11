@@ -326,17 +326,17 @@ class DrExecuteModel(DrTask):
                 else:
                     self.progress_changed.emit("Export files", lerp_progress(50, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # cn_multiplier
-                    sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_cn_multiplier'"
+                    sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_cn_multiplier'"
                     row = self.dao.get_row(sql)
-                    cn_multiplier = row[0] if row else 0
+                    cn_multiplier = row[0] if row else 1
                     self.progress_changed.emit("Export files", lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # ia_coeff
-                    sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_ia_coefficient'"
+                    sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_ia_coefficient'"
                     row = self.dao.get_row(sql)
-                    ia_coeff = row[0] if row else 0
+                    ia_coeff = row[0] if row else 0.2
                     self.progress_changed.emit("Export files", lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # start_time
-                    sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_starttime'"
+                    sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_starttime'"
                     row = self.dao.get_row(sql)
                     start_time = row[0] if row else 0
                     self.progress_changed.emit("Export files", lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
