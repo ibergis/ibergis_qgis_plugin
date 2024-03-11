@@ -61,6 +61,12 @@ class DrOptions:
                 f"WHERE formname = 'dlg_options' AND layoutname IS NOT NULL"
         lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
 
+        v_sql = f"SELECT id, idval " \
+                f"FROM edit_typevalue " \
+                f"WHERE typevalue = 'dlg_options_layout'"
+        titles_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        titles_dict = {row[0]: row[1] for row in titles_list}
+
         main_tab = self.dlg_go2epa_options.findChild(QTabWidget, 'main_tab')
 
         # Mount form tabs
@@ -80,6 +86,9 @@ class DrOptions:
                 if lyt[1] == tab_name:
 
                     groupBox = QGroupBox()
+                    lyt_title = titles_dict.get(lyt[0])
+                    if lyt_title:
+                        groupBox.setTitle(f"{lyt_title}")
                     gridlayout = QGridLayout()
                     gridlayout.setObjectName(f"{lyt[0]}")
 
