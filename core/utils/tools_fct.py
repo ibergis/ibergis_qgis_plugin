@@ -22,17 +22,17 @@ def getconfig(p_input: dict) -> dict:
     try:
 
         # get widgets from sys_param_user
-        column_names = ['id', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
-                        'placeholder', 'id AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
+        column_names = ['columnname', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
+                        'placeholder', 'columnname AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
                         'dv_orderby_id', 'dv_isnullvalue AS isNullValue',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
-                        'CASE WHEN isenabled = 1 THEN True ELSE False END AS isenabled',
                         'vdefault AS value'
                         ]
         v_sql = f"SELECT {', '.join(column_names)} " \
-                f"FROM sys_param_user " \
-                f"ORDER BY layoutname, layoutorder, id"
+                f"FROM config_form_fields " \
+                f"WHERE formname = 'dlg_options' " \
+                f"ORDER BY layoutname, layoutorder, columnname"
         v_raw_widgets = global_vars.gpkg_dao_config.get_rows(v_sql)
 
         # format widgets as a json
@@ -74,7 +74,7 @@ def getconfig(p_input: dict) -> dict:
                     widget['comboIds'] = cmb_ids
                     widget['comboNames'] = cmb_names
 
-                if widget['id'] == parameter:
+                if widget['columnname'] == parameter:
                     if widget['value'] in (0, 1, '0', '1'):
                         widget['value'] = str(widget['value'] == '1')
 

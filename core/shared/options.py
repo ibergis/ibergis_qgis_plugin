@@ -50,11 +50,15 @@ class DrOptions:
             return False
 
         # Get sys_param values
-        v_sql = f"SELECT distinct tabname FROM sys_param_user WHERE tabname IS NOT NULL"
+        v_sql = f"SELECT distinct tabname " \
+                f"FROM config_form_fields " \
+                f"WHERE formname = 'dlg_options' AND tabname IS NOT NULL"
         tab_list = global_vars.gpkg_dao_config.get_rows(v_sql)
         tab_list = sorted(tab_list, key=lambda tab: self.tabs_to_show.index(tab[0]) if tab[0] in self.tabs_to_show else float('inf'))
 
-        v_sql = f"select distinct (layoutname), tabname FROM sys_param_user WHERE layoutname IS NOT NULL"
+        v_sql = f"select distinct (layoutname), tabname " \
+                f"FROM config_form_fields " \
+                f"WHERE formname = 'dlg_options' AND layoutname IS NOT NULL"
         lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
 
         main_tab = self.dlg_go2epa_options.findChild(QTabWidget, 'main_tab')
@@ -79,8 +83,16 @@ class DrOptions:
                     gridlayout = QGridLayout()
                     gridlayout.setObjectName(f"{lyt[0]}")
 
-                    row = i // 2
-                    col = i % 2
+                    try:
+                        lyt_name_split = lyt[0].split('_')
+                        lyt_row = lyt_name_split[-2]
+                        lyt_col = lyt_name_split[-1]
+                        row = int(lyt_row) - 1
+                        col = int(lyt_col) - 1
+                    except:
+                        msg = f"Layout '{lyt[0]}' has an invalid name. It has to end with _<row>_<column> indicating where in the dialog it should go."
+                        tools_qgis.show_warning(msg)
+                        continue
 
                     layout.addWidget(groupBox, row, col)
 
