@@ -61,6 +61,20 @@ class DrImportInpTask(DrTask):
                 curve_values.to_sql(
                     "cat_curve_value", connection, if_exists="append", index=False
                 )
+            elif item["table"] == "cat_timeseries_value":
+                timeseries = item["df"][["idval", "fname"]].drop_duplicates()
+                timeseries_values = (
+                    item["df"][["idval", "date", "time", "value"]]
+                    .rename(columns={"idval": "timeseries"})
+                    .dropna(subset=["date", "time"])
+                )
+                connection = self.dao.conn
+                timeseries.to_sql(
+                    "cat_timeseries", connection, if_exists="append", index=False
+                )
+                timeseries_values.to_sql(
+                    "cat_timeseries_value", connection, if_exists="append", index=False
+                )
             else:
                 invalid_columns = set(item["df"].columns).difference(
                     columns[item["table"]], {"geometry"}

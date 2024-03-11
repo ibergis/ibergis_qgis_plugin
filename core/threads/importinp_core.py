@@ -203,7 +203,7 @@ _tables = (
             "Date": "date",
             "Time": "time",
             "Value": "value",
-            # "File_Name":
+            "File_Name": "fname",
         },
     },
     {
