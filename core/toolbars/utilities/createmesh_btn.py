@@ -158,6 +158,9 @@ class DrCreateMeshButton(DrAction):
             if not tools_qt.show_question(message):
                 return
 
+        # Reset txt_infolog
+        tools_qt.set_widget_text(dlg, 'txt_infolog', "")
+
         self.feedback = Feedback()
         self.thread_triangulation = DrCreateMeshTask(
             "Triangulation",
@@ -304,6 +307,8 @@ class DrCreateMeshButton(DrAction):
         dlg = self.dlg_mesh
         dlg.btn_cancel.clicked.disconnect()
         dlg.btn_cancel.clicked.connect(dlg.reject)
+        dlg.mainTab.setTabEnabled(0, True)
+        dlg.btn_ok.setEnabled(True)
 
     def _on_task_terminated(self):
         self._on_task_end()
