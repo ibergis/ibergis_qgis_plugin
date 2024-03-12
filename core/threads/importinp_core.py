@@ -369,6 +369,19 @@ def get_dataframes(inp_dict, epsg):
                 .rename(columns={"idval": "timeseries"})
                 .dropna(subset=["date", "time"])
             )
+
+            def time_type(row):
+                if not row.fname:
+                    return "FILE"
+                dates = ts_values[ts_values["timeseries"] == row.idval]["date"]
+                if (dates == "").all():
+                    return "RELATIVE"
+                return "ABSOLUTE"
+
+            ts["times_type"] = pd.Series(
+                {row.Index: time_type(row) for row in ts.itertuples()}
+            )
+
             dataframes.append({"table": "cat_timeseries", "df": ts})
             dataframes.append({"table": "cat_timeseries_value", "df": ts_values})
             continue
