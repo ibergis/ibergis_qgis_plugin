@@ -370,6 +370,24 @@ def get_dataframes(inp_dict, epsg):
                 .dropna(subset=["date", "time"])
             )
 
+            def timeseries_type(timeseries_name):
+                sections = [
+                    ("INFLOWS", "INFLOW HYDROGRAPH"),
+                    ("ORIFICE", "ORIFICE"),
+                    ("RAINGAGE", "RAINFALL"),
+                ]
+                for section, tstype in sections:
+                    ts_column = []
+                    if section not in inp_dict:
+                        continue
+                    if section == "INFLOWS":
+                        ts_column = inp_dict[section]["data"]["Direct"]["Time_Series"]
+                    # TODO: if section == "ORIFICE"
+                    # TODO: if section == "RAINGAGE"
+                    if timeseries_name in ts_column.values:
+                        return tstype
+                return "OTHER"
+
             def time_type(row):
                 if not row.fname:
                     return "FILE"
@@ -378,6 +396,9 @@ def get_dataframes(inp_dict, epsg):
                     return "RELATIVE"
                 return "ABSOLUTE"
 
+            ts["timser_type"] = pd.Series(
+                {row.Index: timeseries_type(row.idval) for row in ts.itertuples()}
+            )
             ts["times_type"] = pd.Series(
                 {row.Index: time_type(row) for row in ts.itertuples()}
             )
