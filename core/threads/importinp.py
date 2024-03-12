@@ -55,35 +55,21 @@ class DrImportInpTask(DrTask):
             self.feedback.setProgressText(f"{df.columns}")
             self.feedback.setProgressText(f"{df}")
 
-            if table_name == "cat_timeseries_value":
-                timeseries = df[["idval", "fname"]].drop_duplicates()
-                timeseries_values = (
-                    df[["idval", "date", "time", "value"]]
-                    .rename(columns={"idval": "timeseries"})
-                    .dropna(subset=["date", "time"])
-                )
-                connection = self.dao.conn
-                timeseries.to_sql(
-                    "cat_timeseries", connection, if_exists="append", index=False
-                )
-                timeseries_values.to_sql(
-                    "cat_timeseries_value", connection, if_exists="append", index=False
-                )
+            columns = self._get_colums(table_name)
+
+            invalid_columns = set(df.columns).difference(columns, {"geometry"})
+            if invalid_columns:
+                raise ValueError(f"Invalid columns for {table_name}: {invalid_columns}")
+
+            missing_columns = columns.difference(df.columns)
+            for column in missing_columns:
+                df[column] = None
+
+            if "geometry" in df.columns:
+                df.to_file(gpkg_file, driver="GPKG", layer=table_name, mode="a")
             else:
-                columns = self._get_colums(table_name)
-                invalid_columns = set(df.columns).difference(columns, {"geometry"})
-                if invalid_columns:
-                    raise ValueError(
-                        f"Invalid columns for {table_name}: {invalid_columns}"
-                    )
-                missing_columns = columns.difference(df.columns)
-                for column in missing_columns:
-                    df[column] = None
-                if "geometry" in df.columns:
-                    df.to_file(gpkg_file, driver="GPKG", layer=table_name, mode="a")
-                else:
-                    connection = self.dao.conn
-                    df.to_sql(table_name, connection, if_exists="append", index=False)
+                connection = self.dao.conn
+                df.to_sql(table_name, connection, if_exists="append", index=False)
 
         # for i, item in enumerate(data.values()):
 

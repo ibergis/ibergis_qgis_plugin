@@ -361,6 +361,18 @@ def get_dataframes(inp_dict, epsg):
             dataframes.append({"table": "cat_curve_value", "df": curve_values})
             continue
 
+        if section == "TIMESERIES":
+            df = get_dataframe(inp_dict[section]["data"], table, epsg)
+            ts = df[["idval", "fname"]].drop_duplicates()
+            ts_values = (
+                df[["idval", "date", "time", "value"]]
+                .rename(columns={"idval": "timeseries"})
+                .dropna(subset=["date", "time"])
+            )
+            dataframes.append({"table": "cat_timeseries", "df": ts})
+            dataframes.append({"table": "cat_timeseries_value", "df": ts_values})
+            continue
+
         data = inp_dict[section]["data"]
         if type(data) in (dict, list):
             # print(section, ":")
