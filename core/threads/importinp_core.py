@@ -189,10 +189,8 @@ _tables = (
         "section": "CURVES",
         "mapper": {
             "Name": "idval",
-            # "Type":
             "Depth": "xcoord",
             "Area": "ycoord",
-            # "Annotation":
         },
     },
     {
@@ -355,7 +353,12 @@ def get_dataframes(inp_dict, epsg):
                 curve_df.insert(0, "curve_type", ct)
                 curve_df.columns = df.columns
                 df = pd.concat([df, curve_df], ignore_index=True)
-            dataframes.append({"table": "cat_curve", "df": df})
+            curves = df[["idval", "curve_type"]].drop_duplicates()
+            curve_values = df[["idval", "xcoord", "ycoord"]].rename(
+                columns={"idval": "curve"}
+            )
+            dataframes.append({"table": "cat_curve", "df": curves})
+            dataframes.append({"table": "cat_curve_value", "df": curve_values})
             continue
 
         data = inp_dict[section]["data"]

@@ -36,7 +36,6 @@ class DrImportInpTask(DrTask):
         inp_dict = inp2dict(self.input_file, self.feedback)
         if self.isCanceled():
             return False
-        columns = {table: self._get_colums(table) for table in core.tables()}
         data = core.get_dataframes(inp_dict, global_vars.data_epsg)
 
         if self.isCanceled():
@@ -44,27 +43,22 @@ class DrImportInpTask(DrTask):
 
         for i, item in enumerate(data):
             self.feedback.setProgress(i / len(data) * 100)
-            if len(item["df"]) == 0:
-                self.feedback.setProgressText(f"Skipping empty table {item['table']}")
+            table_name = item["table"]
+            df = item["df"]
+            if len(df) == 0:
+                self.feedback.setProgressText(f"Skipping empty table {table_name}")
                 continue
             if self.isCanceled():
                 return False
-            self.feedback.setProgressText(f"Saving table {item['table']}")
+            self.feedback.setProgressText(f"Saving table {table_name}")
 
-            if item["table"] == "cat_curve":
-                curves = item["df"][["idval", "curve_type"]].drop_duplicates()
-                curve_values = item["df"][["idval", "xcoord", "ycoord"]].rename(
-                    columns={"idval": "curve"}
-                )
-                connection = self.dao.conn
-                curves.to_sql("cat_curve", connection, if_exists="append", index=False)
-                curve_values.to_sql(
-                    "cat_curve_value", connection, if_exists="append", index=False
-                )
-            elif item["table"] == "cat_timeseries_value":
-                timeseries = item["df"][["idval", "fname"]].drop_duplicates()
+            self.feedback.setProgressText(f"{df.columns}")
+            self.feedback.setProgressText(f"{df}")
+
+            if table_name == "cat_timeseries_value":
+                timeseries = df[["idval", "fname"]].drop_duplicates()
                 timeseries_values = (
-                    item["df"][["idval", "date", "time", "value"]]
+                    df[["idval", "date", "time", "value"]]
                     .rename(columns={"idval": "timeseries"})
                     .dropna(subset=["date", "time"])
                 )
@@ -76,19 +70,20 @@ class DrImportInpTask(DrTask):
                     "cat_timeseries_value", connection, if_exists="append", index=False
                 )
             else:
-                invalid_columns = set(item["df"].columns).difference(
-                    columns[item["table"]], {"geometry"}
-                )
+                columns = self._get_colums(table_name)
+                invalid_columns = set(df.columns).difference(columns, {"geometry"})
                 if invalid_columns:
                     raise ValueError(
-                        f"Invalid columns for {item['table']}: {invalid_columns}"
+                        f"Invalid columns for {table_name}: {invalid_columns}"
                     )
-                missing_columns = columns[item["table"]].difference(item["df"].columns)
+                missing_columns = columns.difference(df.columns)
                 for column in missing_columns:
-                    item["df"][column] = None
-                item["df"].to_file(
-                    gpkg_file, driver="GPKG", layer=item["table"], mode="a"
-                )
+                    df[column] = None
+                if "geometry" in df.columns:
+                    df.to_file(gpkg_file, driver="GPKG", layer=table_name, mode="a")
+                else:
+                    connection = self.dao.conn
+                    df.to_sql(table_name, connection, if_exists="append", index=False)
 
         # for i, item in enumerate(data.values()):
 
