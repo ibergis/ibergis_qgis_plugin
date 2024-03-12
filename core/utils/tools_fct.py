@@ -27,7 +27,7 @@ def getconfig(p_input: dict) -> dict:
                         'dv_orderby_id', 'dv_isnullvalue AS isNullValue',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
-                        'vdefault AS value'
+                        'vdefault AS value', 'tooltip'
                         ]
         v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM config_form_fields " \
