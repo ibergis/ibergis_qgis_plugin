@@ -582,7 +582,7 @@ INSERT INTO inlet (fid, code, descript, outlet_node, outlet_type, top_elev, widt
 INSERT INTO inlet (fid, code, descript, outlet_node, outlet_type, top_elev, width, "length", "depth", "method", weir_cd, orifice_cd, a_param, b_param, efficiency, annotation, geom) VALUES(103, '1103', NULL, 'J5', 'TO NETWORK', 40.1, 1.0, 0.2, NULL, 'UPC', NULL, NULL, 0.496, 0.712, 90.0, NULL, ST_GeomFromText('POINT (418584.066459 4577703.285258)', <SRID_VALUE>));
 
 
-INSERT INTO inp_weir (fid, code, node_1, node_2, weir_type, shape, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES(1, 'W1', 'S1', 'J62', 'TRANSVERSE', 'CIRCULAR', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418716.4602315871 4577600.00343433)', <SRID_VALUE>));
+INSERT INTO inp_weir (fid, code, node_1, node_2, weir_type, shape, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES(1, 'W1', 'S1', 'J62', 'TRANSVERSE', 'RECT_OPEN', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418716.4602315871 4577600.00343433)', <SRID_VALUE>));
 
 INSERT INTO inp_inflow (fid, code, timeseries, format, mfactor, sfactor, ufactor, base, geom) SELECT 1, 'J1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0, geom FROM v_node WHERE code='J1';
 
