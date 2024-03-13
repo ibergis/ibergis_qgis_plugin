@@ -407,6 +407,56 @@ def get_dataframes(inp_dict, epsg):
             dataframes.append({"table": "cat_timeseries_value", "df": ts_values})
             continue
 
+        if section == "TRANSECTS":
+            print(f"{inp_dict[section]}")
+            df = inp_dict[section]["data"]
+            df_sections = inp_dict[section]["XSections"]
+
+            transects = (
+                df[["TransectName"]]
+                .drop_duplicates()
+                .rename(columns={"TransectName": "idval"})
+            )
+
+            tr_value_rows = []
+            for row in df.itertuples():
+                xsections = df_sections[df_sections["TransectName"] == row.TransectName]
+
+                gr_line = ""
+                for pair in xsections.itertuples():
+                    gr_line += f" {pair.Elevation} {pair.Station} "
+                gr_line = gr_line.strip()
+
+                tr_value_rows += [
+                    {
+                        "transect": row.TransectName,
+                        "data_group": "NC",
+                        "value": (
+                            f"{row.RoughnessLeftBank} {row.RoughnessRightBank} "
+                            f"{row.RoughnessChannel}"
+                        ),
+                    },
+                    {
+                        "transect": row.TransectName,
+                        "data_group": "X1",
+                        "value": (
+                            f"{row.TransectName} {len(xsections)} {row.BankStationLeft} "
+                            f"{row.BankStationRight} 0 0 0 {row.ModifierMeander}"
+                            f"{row.ModifierStations} {row.ModifierElevations}"
+                        ),
+                    },
+                    {
+                        "transect": row.TransectName,
+                        "data_group": "GR",
+                        "value": gr_line,
+                    },
+                ]
+
+            transect_values = pd.DataFrame(tr_value_rows)
+            dataframes.append({"table": "cat_transects", "df": transects})
+            dataframes.append({"table": "cat_transects_value", "df": transect_values})
+            continue
+
         data = inp_dict[section]["data"]
         if type(data) in (dict, list):
             # print(section, ":")
