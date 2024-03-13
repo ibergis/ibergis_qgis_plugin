@@ -85,7 +85,7 @@ def getconfig(p_input: dict) -> dict:
                     widget['comboNames'] = cmb_names
 
                 if widget['columnname'] == parameter:
-                    if widget['value'] in (0, 1, '0', '1'):
+                    if widget['value'] in (0, 1, '0', '1') and widget['widgettype'] != 'combo':
                         widget['value'] = str(widget['value'] == '1')
 
                     if value is not None:
