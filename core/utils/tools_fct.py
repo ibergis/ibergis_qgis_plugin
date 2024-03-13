@@ -5,6 +5,7 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 import json
+from ctypes import Union
 
 # -*- coding: utf-8 -*-
 from ... import global_vars
@@ -18,6 +19,7 @@ def getconfig(p_input: dict) -> dict:
     v_raw_widgets: list
     v_widgets: list
     v_raw_values: list
+    v_addparam: Union[str, dict]
 
     try:
 
@@ -27,7 +29,7 @@ def getconfig(p_input: dict) -> dict:
                         'dv_orderby_id', 'dv_isnullvalue AS isNullValue',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
-                        'vdefault AS value', 'tooltip'
+                        'vdefault AS value', 'tooltip', 'addparam'
                         ]
         v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM config_form_fields " \
@@ -61,12 +63,20 @@ def getconfig(p_input: dict) -> dict:
                     cmb_ids = []
                     cmb_names = []
                     if widget['dv_querytext']:
+                        result = None
+                        executed = False
                         v_querystring = widget['dv_querytext']
-                        # First try to execute querytext on config.gpkg
-                        result = global_vars.gpkg_dao_config.get_row(v_querystring)
-                        if not result:
-                            # If nothing is found, execute it on the project's gpkg
-                            result = global_vars.gpkg_dao_data.get_row(v_querystring)
+                        v_addparam = widget['addparam']
+                        if v_addparam:
+                            v_addparam = json.loads(v_addparam)
+                            if v_addparam.get('execute_on') == 'data':
+                                # Execute query on data gpkg if configured in addparam
+                                result = global_vars.gpkg_dao_data.get_row(v_querystring)
+                                executed = True
+
+                        # Execute on config gpkg if not configured
+                        if not result and not executed:
+                            result = global_vars.gpkg_dao_config.get_row(v_querystring)
                         if result:
                             cmb_ids = result[0]
                             cmb_names = result[1]
