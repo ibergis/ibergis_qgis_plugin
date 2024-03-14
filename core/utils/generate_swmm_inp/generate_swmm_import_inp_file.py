@@ -162,7 +162,7 @@ def inp2dict(readfile, feedback):
             ].set_index(0)
             occuring_patterns_types.columns = ["PatternType"]
             all_patterns = all_patterns.fillna(np.nan)
-            all_patterns = all_patterns.replace(
+            all_patterns[1] = all_patterns[1].replace(
                 {
                     "HOURLY": np.nan,
                     "DAILY": np.nan,
@@ -187,7 +187,7 @@ def inp2dict(readfile, feedback):
             )
             all_patterns = all_patterns.join(occuring_patterns_types, on="Name")
             all_patterns = {
-                "data": v.iloc[:, :-1] for k, v in all_patterns.groupby("PatternType")
+                k: v.iloc[:, :-1] for k, v in all_patterns.groupby("PatternType")
             }
     else:
         all_patterns = dict()
@@ -224,8 +224,7 @@ def inp2dict(readfile, feedback):
             all_patterns[pattern_type] = build_df_from_vals_list(
                 [], pattern_cols[pattern_type]
             )
-    # dict_res_table["PATTERNS"] = all_patterns
-    dict_res_table["PATTERNS"] = {"data": all_patterns}
+    dict_res_table["PATTERNS"] = all_patterns
 
     if feedback.isCanceled():
         return
