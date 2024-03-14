@@ -185,15 +185,6 @@ _tables = (
         },
     },
     {
-        "table_name": "cat_pattern_value",
-        "section": "PATTERNS",
-        "mapper": {
-            "Name": "idval",
-            "Time_Stamp": "pattern_type",
-            "Factor": "value",
-        },
-    },
-    {
         "table_name": "inp_dwf",
         "section": "DWF",
         "mapper": {
@@ -354,6 +345,25 @@ def get_dataframes(inp_dict, epsg):
 
     dataframes.append({"table": "cat_timeseries", "df": ts})
     dataframes.append({"table": "cat_timeseries_value", "df": ts_values})
+
+    # Section PATTERNS
+    def format_patterns(pattern_type, df):
+        df.columns = ["pattern", "timestep", "value"]
+        df["pattern_type"] = pattern_type
+        df["timestep"] = df.groupby("pattern").cumcount() + 1
+        return df
+
+    df = pd.concat([format_patterns(pt, df) for pt, df in inp_dict["PATTERNS"].items()])
+
+    patterns = (
+        df[["pattern", "pattern_type"]]
+        .drop_duplicates()
+        .rename(columns={"pattern": "idval"})
+    )
+    pattern_values = df[["pattern", "timestep", "value"]]
+
+    dataframes.append({"table": "cat_pattern", "df": patterns})
+    dataframes.append({"table": "cat_pattern_value", "df": pattern_values})
 
     # Section TRANSECTS
     df = inp_dict["TRANSECTS"]["data"]
