@@ -52,8 +52,6 @@ class DrImportInpTask(DrTask):
                 return False
             self.feedback.setProgressText(f"Saving table {table_name}")
 
-            self.feedback.setProgressText(f"{df}")
-
             if table_name in ["OPTIONS", "REPORT"]:
                 for row in df.itertuples():
                     self.dao.execute_sql(
@@ -71,7 +69,6 @@ class DrImportInpTask(DrTask):
                 )
                 continue
 
-            self.feedback.setProgressText(f"{df.columns}")
             columns = self._get_colums(table_name)
 
             invalid_columns = set(df.columns).difference(columns, {"geometry"})
@@ -87,24 +84,5 @@ class DrImportInpTask(DrTask):
             else:
                 connection = self.dao.conn
                 df.to_sql(table_name, connection, if_exists="append", index=False)
-
-        # for i, item in enumerate(data.values()):
-
-        #     self.feedback.setProgress(i / len(data) * 100)
-
-        #     ##TODO: Check this
-        #     if item["df"] is None:
-        #         continue
-
-        #     if len(item["df"]) == 0:
-        #         self.feedback.setProgressText(f"Skipping empty table {item['table']}")
-        #         continue
-        #     if self.isCanceled():
-        #         return False
-        #     self.feedback.setProgressText(f"Saving table {item['table']}")
-
-        #     ##TODO:: Verify conflicts with "mode"=a to append values
-        #     item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
-        #     # item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"])
 
         return True
