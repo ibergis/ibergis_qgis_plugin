@@ -287,6 +287,11 @@ def get_dataframes(inp_dict, epsg):
     df = pd.DataFrame(new_data)
     dataframes.append({"table": "REPORT", "df": df})
 
+    # Section CONTROLS
+    data = inp_dict["CONTROLS"]["data"]
+    controls = "\n".join([" ".join(line) for line in data])
+    dataframes.append({"table": "CONTROLS", "df": controls})
+
     # Section CURVES
     df = pd.DataFrame(columns=["curve_type", "idval", "xcoord", "ycoord"])
     for curve_type, curve_df in inp_dict["CURVES"].items():

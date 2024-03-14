@@ -52,7 +52,6 @@ class DrImportInpTask(DrTask):
                 return False
             self.feedback.setProgressText(f"Saving table {table_name}")
 
-            self.feedback.setProgressText(f"{df.columns}")
             self.feedback.setProgressText(f"{df}")
 
             if table_name in ["OPTIONS", "REPORT"]:
@@ -65,6 +64,14 @@ class DrImportInpTask(DrTask):
                         """
                     )
                 continue
+
+            if table_name == "CONTROLS":
+                self.dao.execute_sql(
+                    f"INSERT INTO cat_controls (descript) VALUES ('{df}')"
+                )
+                continue
+
+            self.feedback.setProgressText(f"{df.columns}")
             columns = self._get_colums(table_name)
 
             invalid_columns = set(df.columns).difference(columns, {"geometry"})
