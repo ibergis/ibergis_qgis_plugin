@@ -273,6 +273,20 @@ def get_dataframe(data, table_info, epsg):
 def get_dataframes(inp_dict, epsg):
     dataframes = []
 
+    # Section OPTIONS
+    df = inp_dict["OPTIONS"]["data"].rename(columns={"Value": "value"})
+    df["parameter"] = "inp_options_" + df["Option"].str.lower()
+    dataframes.append({"table": "OPTIONS", "df": df[["parameter", "value"]]})
+
+    # Section REPORT
+    data = inp_dict["REPORT"]["data"]
+    new_data = [
+        {"parameter": f"inp_report_{param.lower()}", "value": value}
+        for param, value in data
+    ]
+    df = pd.DataFrame(new_data)
+    dataframes.append({"table": "REPORT", "df": df})
+
     # Section CURVES
     df = pd.DataFrame(columns=["curve_type", "idval", "xcoord", "ycoord"])
     for curve_type, curve_df in inp_dict["CURVES"].items():

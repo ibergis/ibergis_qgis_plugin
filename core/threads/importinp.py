@@ -55,6 +55,16 @@ class DrImportInpTask(DrTask):
             self.feedback.setProgressText(f"{df.columns}")
             self.feedback.setProgressText(f"{df}")
 
+            if table_name in ["OPTIONS", "REPORT"]:
+                for row in df.itertuples():
+                    self.dao.execute_sql(
+                        f"""
+                        UPDATE config_param_user
+                        SET value = '{row.value}'
+                        WHERE parameter = '{row.parameter}'
+                        """
+                    )
+                continue
             columns = self._get_colums(table_name)
 
             invalid_columns = set(df.columns).difference(columns, {"geometry"})
