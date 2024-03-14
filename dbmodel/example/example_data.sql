@@ -584,7 +584,7 @@ INSERT INTO inlet (fid, code, descript, outlet_node, outlet_type, top_elev, widt
 
 INSERT INTO inp_weir (fid, code, node_1, node_2, weir_type, shape, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES(1, 'W1', 'S1', 'J62', 'TRANSVERSE', 'RECT_OPEN', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418716.4602315871 4577600.00343433)', <SRID_VALUE>));
 
-INSERT INTO inp_inflow (fid, code, timeseries, format, mfactor, sfactor, ufactor, base, geom) SELECT 1, 'J1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0, geom FROM v_node WHERE code='J1';
+INSERT INTO inp_inflow (fid, code, timeseries, format, mfactor, sfactor, ufactor, base) VALUES(1, 'J1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0);
 
 INSERT INTO inp_storage (fid, code, descript, elev, ymax, y0, ysur, storage_type, curve, geom) VALUES(1,'S1', NULL, 26.470, 3.500, 0.0, 0.0, 'TABULAR', 'EBAR-02', ST_GeomFromText('POINT (418716.0233455198 4577601.812087212)', <SRID_VALUE>));
 
@@ -703,10 +703,10 @@ INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(24, 'demo-rain', '
 
 
 INSERT INTO inp_dwf (code) select code from v_node;
-UPDATE inp_dwf set pattern1='DAILY_PATTERN', baseline= 0.0001 where fid<25;
-UPDATE inp_dwf set pattern2='MONTHLY_PATTERN', baseline=0.0001 where fid between 25 and 30;
-UPDATE inp_dwf set pattern3='HOURLY_PATTERN', baseline=0.0002 where fid between 31 and 45;
-UPDATE inp_dwf set pattern4='WEEKEND_PATTERN', baseline=0.0003 where fid>45;
+UPDATE inp_dwf set pattern1='DAILY_PATTERN', avg_value= 0.0001 where fid<25;
+UPDATE inp_dwf set pattern2='MONTHLY_PATTERN', avg_value=0.0001 where fid between 25 and 30;
+UPDATE inp_dwf set pattern3='HOURLY_PATTERN', avg_value=0.0002 where fid between 31 and 45;
+UPDATE inp_dwf set pattern4='WEEKEND_PATTERN', avg_value=0.0003 where fid>45;
 
 
 

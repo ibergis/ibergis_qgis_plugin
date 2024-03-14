@@ -429,8 +429,8 @@ create table inp_dwf (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
+    format text check (typeof(format) = 'text' or format=null) default 'FLOW',
     avg_value real check (typeof(avg_value)='real' or avg_value = null) DEFAULT 0.0001,
-    baseline real check (typeof(baseline) = 'real' or baseline=null) default 0.0001,
     pattern1 text check (typeof(pattern1) = 'text' or pattern1 = null),
     pattern2 text check (typeof(pattern2) = 'text' or pattern2 = null),
     pattern3 text check (typeof(pattern3) = 'text' or pattern3 = null),
@@ -1011,7 +1011,7 @@ create view if not exists vi_losses as
 create view if not exists vi_dwf as 
     select 
     code as Name, 
-    'FLOW' as Constituent, 
+    format as Constituent, 
     avg_value as Average_Value, 
     pattern1 as Time_Pattern1, 
     pattern2 as Time_Pattern2, 
