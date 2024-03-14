@@ -188,8 +188,8 @@ _tables = (
         "table_name": "inp_dwf",
         "section": "DWF",
         "mapper": {
-            "Node": "node_id",
-            # "Constituent":
+            "Name": "code",
+            "Constituent": "format",
             "Average_Value": "avg_value",
             "Time_Pattern1": "pattern1",
             "Time_Pattern2": "pattern2",
@@ -201,7 +201,7 @@ _tables = (
         "table_name": "inp_inflow",
         "section": "INFLOWS",
         "mapper": {
-            "Name": "node_id",
+            "Name": "code",
             "Constituent": "format",
             "Baseline": "base",
             "Baseline_Pattern": "pattern",
@@ -452,6 +452,13 @@ def get_dataframes(inp_dict, epsg):
             continue
 
         data = inp_dict[section]["data"]
+
+        if section == "INFLOWS":
+            data = inp_dict[section]["data"]["Direct"]
+
+        if section == "DWF":
+            data = inp_dict["INFLOWS"]["data"]["Dry_Weather"]
+
         if type(data) in (dict, list):
             # print(section, ":")
             # print(f"{data}")
