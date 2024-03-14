@@ -454,7 +454,6 @@ create table inp_inflow (
     base real check (typeof(base)='real' or base=null) default 0,
     pattern text check (typeof(pattern) = 'integer' or pattern=null),
     type text check(typeof(type)='text' or type=null),
-    geom geometry,
     FOREIGN KEY (pattern) REFERENCES cat_pattern(idval) on update cascade on delete restrict
     FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
