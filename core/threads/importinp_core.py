@@ -185,26 +185,6 @@ _tables = (
         },
     },
     {
-        "table_name": "cat_curve_value",
-        "section": "CURVES",
-        "mapper": {
-            "Name": "idval",
-            "Depth": "xcoord",
-            "Area": "ycoord",
-        },
-    },
-    {
-        "table_name": "cat_timeseries_value",
-        "section": "TIMESERIES",
-        "mapper": {
-            "Name": "idval",
-            "Date": "date",
-            "Time": "time",
-            "Value": "value",
-            "File_Name": "fname",
-        },
-    },
-    {
         "table_name": "cat_pattern_value",
         "section": "PATTERNS",
         "mapper": {
@@ -224,21 +204,6 @@ _tables = (
             "Time_Pattern2": "pattern2",
             "Time_Pattern3": "pattern3",
             "Time_Pattern4": "pattern4",
-        },
-    },
-    {
-        "table_name": "cat_transects",
-        "section": "TRANSECTS",
-        "mapper": {
-            "TransectName": "idval",
-            "RoughnessLeftBlank": "descript",
-            "RoughnessRightBlank": "descript",
-            "RoughnessChannel": "descript",
-            "BankStationLeft": "descript",
-            "BankStationRight": "descript",
-            "ModifierStations": "descript",
-            "ModifierElevations": "descript",
-            "ModifierMeander": "descript",
         },
     },
     {
@@ -308,6 +273,116 @@ def get_dataframe(data, table_info, epsg):
 def get_dataframes(inp_dict, epsg):
     dataframes = []
 
+    # Section CURVES
+    df = pd.DataFrame(columns=["curve_type", "idval", "xcoord", "ycoord"])
+    for curve_type, curve_df in inp_dict["CURVES"].items():
+        ct = curve_type.upper()
+        curve_df.insert(0, "curve_type", ct)
+        curve_df.columns = df.columns
+        df = pd.concat([df, curve_df], ignore_index=True)
+    curves = df[["idval", "curve_type"]].drop_duplicates()
+    curve_values = df[["idval", "xcoord", "ycoord"]].rename(columns={"idval": "curve"})
+    dataframes.append({"table": "cat_curve", "df": curves})
+    dataframes.append({"table": "cat_curve_value", "df": curve_values})
+
+    # Section TIMESERIES
+    df = inp_dict["TIMESERIES"]["data"].rename(
+        columns={
+            "Name": "idval",
+            "Date": "date",
+            "Time": "time",
+            "Value": "value",
+            "File_Name": "fname",
+        }
+    )
+    ts = df[["idval", "fname"]].drop_duplicates()
+    ts_values = (
+        df[["idval", "date", "time", "value"]]
+        .rename(columns={"idval": "timeseries"})
+        .dropna(subset=["date", "time"])
+    )
+
+    def timeseries_type(timeseries_name):
+        sections = [
+            ("INFLOWS", "INFLOW HYDROGRAPH"),
+            ("ORIFICE", "ORIFICE"),
+            ("RAINGAGE", "RAINFALL"),
+        ]
+        for section, tstype in sections:
+            ts_column = []
+            if section not in inp_dict:
+                continue
+            if section == "INFLOWS":
+                ts_column = inp_dict[section]["data"]["Direct"]["Time_Series"]
+            # TODO: if section == "ORIFICE"
+            # TODO: if section == "RAINGAGE"
+            if timeseries_name in ts_column.values:
+                return tstype
+        return "OTHER"
+
+    def time_type(row):
+        if not row.fname:
+            return "FILE"
+        dates = ts_values[ts_values["timeseries"] == row.idval]["date"]
+        if (dates == "").all():
+            return "RELATIVE"
+        return "ABSOLUTE"
+
+    ts["timser_type"] = pd.Series(
+        {row.Index: timeseries_type(row.idval) for row in ts.itertuples()}
+    )
+    ts["times_type"] = pd.Series({row.Index: time_type(row) for row in ts.itertuples()})
+
+    dataframes.append({"table": "cat_timeseries", "df": ts})
+    dataframes.append({"table": "cat_timeseries_value", "df": ts_values})
+
+    # Section TRANSECTS
+    df = inp_dict["TRANSECTS"]["data"]
+    df_sections = inp_dict["TRANSECTS"]["XSections"]
+
+    transects = (
+        df[["TransectName"]].drop_duplicates().rename(columns={"TransectName": "idval"})
+    )
+
+    tr_value_rows = []
+    for row in df.itertuples():
+        xsections = df_sections[df_sections["TransectName"] == row.TransectName]
+
+        gr_line = ""
+        for pair in xsections.itertuples():
+            gr_line += f" {pair.Elevation} {pair.Station} "
+        gr_line = gr_line.strip()
+
+        tr_value_rows += [
+            {
+                "transect": row.TransectName,
+                "data_group": "NC",
+                "value": (
+                    f"{row.RoughnessLeftBank} {row.RoughnessRightBank} "
+                    f"{row.RoughnessChannel}"
+                ),
+            },
+            {
+                "transect": row.TransectName,
+                "data_group": "X1",
+                "value": (
+                    f"{row.TransectName} {len(xsections)} {row.BankStationLeft} "
+                    f"{row.BankStationRight} 0 0 0 {row.ModifierMeander}"
+                    f"{row.ModifierStations} {row.ModifierElevations}"
+                ),
+            },
+            {
+                "transect": row.TransectName,
+                "data_group": "GR",
+                "value": gr_line,
+            },
+        ]
+
+    transect_values = pd.DataFrame(tr_value_rows)
+    dataframes.append({"table": "cat_transects", "df": transects})
+    dataframes.append({"table": "cat_transects_value", "df": transect_values})
+
+    # Tables that need to be merged before import
     tables_to_merge = {
         "inp_conduit": ("CONDUITS", "XSECTIONS", "LOSSES"),
         "inp_weir": ("WEIRS", "XSECTIONS"),
@@ -334,6 +409,7 @@ def get_dataframes(inp_dict, epsg):
         if not df.empty:
             dataframes.append({"table": table, "df": df})
 
+    # Tables in the mapping _tables
     for table in _tables:
         if table["table_name"] in tables_to_merge:
             continue
@@ -344,117 +420,6 @@ def get_dataframes(inp_dict, epsg):
         section = table["section"]
 
         if section not in inp_dict:
-            continue
-
-        if section == "CURVES":
-            df = pd.DataFrame(columns=["curve_type", "idval", "xcoord", "ycoord"])
-            for curve_type, curve_df in inp_dict[section].items():
-                ct = curve_type.upper()
-                curve_df.insert(0, "curve_type", ct)
-                curve_df.columns = df.columns
-                df = pd.concat([df, curve_df], ignore_index=True)
-            curves = df[["idval", "curve_type"]].drop_duplicates()
-            curve_values = df[["idval", "xcoord", "ycoord"]].rename(
-                columns={"idval": "curve"}
-            )
-            dataframes.append({"table": "cat_curve", "df": curves})
-            dataframes.append({"table": "cat_curve_value", "df": curve_values})
-            continue
-
-        if section == "TIMESERIES":
-            df = get_dataframe(inp_dict[section]["data"], table, epsg)
-            ts = df[["idval", "fname"]].drop_duplicates()
-            ts_values = (
-                df[["idval", "date", "time", "value"]]
-                .rename(columns={"idval": "timeseries"})
-                .dropna(subset=["date", "time"])
-            )
-
-            def timeseries_type(timeseries_name):
-                sections = [
-                    ("INFLOWS", "INFLOW HYDROGRAPH"),
-                    ("ORIFICE", "ORIFICE"),
-                    ("RAINGAGE", "RAINFALL"),
-                ]
-                for section, tstype in sections:
-                    ts_column = []
-                    if section not in inp_dict:
-                        continue
-                    if section == "INFLOWS":
-                        ts_column = inp_dict[section]["data"]["Direct"]["Time_Series"]
-                    # TODO: if section == "ORIFICE"
-                    # TODO: if section == "RAINGAGE"
-                    if timeseries_name in ts_column.values:
-                        return tstype
-                return "OTHER"
-
-            def time_type(row):
-                if not row.fname:
-                    return "FILE"
-                dates = ts_values[ts_values["timeseries"] == row.idval]["date"]
-                if (dates == "").all():
-                    return "RELATIVE"
-                return "ABSOLUTE"
-
-            ts["timser_type"] = pd.Series(
-                {row.Index: timeseries_type(row.idval) for row in ts.itertuples()}
-            )
-            ts["times_type"] = pd.Series(
-                {row.Index: time_type(row) for row in ts.itertuples()}
-            )
-
-            dataframes.append({"table": "cat_timeseries", "df": ts})
-            dataframes.append({"table": "cat_timeseries_value", "df": ts_values})
-            continue
-
-        if section == "TRANSECTS":
-            print(f"{inp_dict[section]}")
-            df = inp_dict[section]["data"]
-            df_sections = inp_dict[section]["XSections"]
-
-            transects = (
-                df[["TransectName"]]
-                .drop_duplicates()
-                .rename(columns={"TransectName": "idval"})
-            )
-
-            tr_value_rows = []
-            for row in df.itertuples():
-                xsections = df_sections[df_sections["TransectName"] == row.TransectName]
-
-                gr_line = ""
-                for pair in xsections.itertuples():
-                    gr_line += f" {pair.Elevation} {pair.Station} "
-                gr_line = gr_line.strip()
-
-                tr_value_rows += [
-                    {
-                        "transect": row.TransectName,
-                        "data_group": "NC",
-                        "value": (
-                            f"{row.RoughnessLeftBank} {row.RoughnessRightBank} "
-                            f"{row.RoughnessChannel}"
-                        ),
-                    },
-                    {
-                        "transect": row.TransectName,
-                        "data_group": "X1",
-                        "value": (
-                            f"{row.TransectName} {len(xsections)} {row.BankStationLeft} "
-                            f"{row.BankStationRight} 0 0 0 {row.ModifierMeander}"
-                            f"{row.ModifierStations} {row.ModifierElevations}"
-                        ),
-                    },
-                    {
-                        "transect": row.TransectName,
-                        "data_group": "GR",
-                        "value": gr_line,
-                    },
-                ]
-
-            transect_values = pd.DataFrame(tr_value_rows)
-            dataframes.append({"table": "cat_transects", "df": transects})
-            dataframes.append({"table": "cat_transects_value", "df": transect_values})
             continue
 
         data = inp_dict[section]["data"]
