@@ -26,7 +26,7 @@ def getconfig(p_input: dict) -> dict:
         # get widgets from sys_param_user
         column_names = ['columnname', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
                         'placeholder', 'columnname AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
-                        'dv_orderby_id', 'dv_isnullvalue AS isNullValue',
+                        'dv_orderby_id', 'CASE WHEN dv_isnullvalue = 1 THEN True ELSE False END AS isNullValue',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
                         'vdefault AS value', 'tooltip', 'addparam'
@@ -80,6 +80,10 @@ def getconfig(p_input: dict) -> dict:
                         if result:
                             cmb_ids = result[0]
                             cmb_names = result[1]
+
+                    if widget.get('isNullValue', False):
+                        list(cmb_ids).insert(0, '') if cmb_ids else None
+                        list(cmb_names).insert(0, '') if cmb_names else None
 
                     widget['comboIds'] = cmb_ids
                     widget['comboNames'] = cmb_names
