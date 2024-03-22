@@ -13,7 +13,7 @@ from ...threads.validatemesh import validations_dict
 from ...ui.ui_manager import DrCreateMeshUi
 from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
-from ....lib import tools_qt
+from ....lib import tools_qt, tools_os
 
 
 class DrCreateMeshButton(DrAction):
@@ -198,7 +198,11 @@ class DrCreateMeshButton(DrAction):
 
     def _load_widget_values(self):
         dlg = self.dlg_mesh
-        # TODO: Set all validation checks
+        # chk_validation
+        chk_validation = tools_dr.get_config_parser('dlg_create_mesh', 'chk_validation', "user", "session")
+        if chk_validation not in (None, 'null'):
+            tools_qt.set_checked(dlg, 'chk_validation', chk_validation)
+            dlg.btn_config.setEnabled(tools_os.set_boolean(chk_validation))
 
         # chk_transition
         chk_transition = tools_dr.get_config_parser('dlg_create_mesh', 'chk_transition', "user", "session")
@@ -219,17 +223,14 @@ class DrCreateMeshButton(DrAction):
 
         # cmb_dem_layer
         cmb_dem_layer = tools_dr.get_config_parser('dlg_create_mesh', 'cmb_dem_layer', "user", "session")
-        print(f"{cmb_dem_layer=}")
         if cmb_dem_layer not in (None, 'null'):
             tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_dem_layer'), cmb_dem_layer, 1, add_new=False)
         # cmb_roughness_layer
         cmb_roughness_layer = tools_dr.get_config_parser('dlg_create_mesh', 'cmb_roughness_layer', "user", "session")
-        print(f"{cmb_roughness_layer=}")
         if cmb_roughness_layer not in (None, 'null'):
             tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_roughness_layer'), cmb_roughness_layer, 1, add_new=False)
         # cmb_losses_layer
         cmb_losses_layer = tools_dr.get_config_parser('dlg_create_mesh', 'cmb_losses_layer', "user", "session")
-        print(f"{cmb_losses_layer=}")
         if cmb_losses_layer not in (None, 'null'):
             tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_losses_layer'), cmb_losses_layer, 1, add_new=False)
 
@@ -240,7 +241,9 @@ class DrCreateMeshButton(DrAction):
 
     def _save_widget_values(self):
         dlg = self.dlg_mesh
-        # TODO: Get all validation checks
+        # chk_validation
+        chk_validation = tools_qt.is_checked(dlg, 'chk_validation')
+        tools_dr.set_config_parser('dlg_create_mesh', 'chk_validation', chk_validation, "user", "session")
 
         # chk_transition
         chk_transition = tools_qt.is_checked(dlg, 'chk_transition')
@@ -257,15 +260,12 @@ class DrCreateMeshButton(DrAction):
 
         # cmb_dem_layer
         cmb_dem_layer = tools_qt.get_combo_value(dlg, 'cmb_dem_layer', 1)
-        print(f"{cmb_dem_layer=}")
         tools_dr.set_config_parser('dlg_create_mesh', 'cmb_dem_layer', cmb_dem_layer, "user", "session")
         # cmb_roughness_layer
         cmb_roughness_layer = tools_qt.get_combo_value(dlg, 'cmb_roughness_layer', 1)
-        print(f"{cmb_roughness_layer=}")
         tools_dr.set_config_parser('dlg_create_mesh', 'cmb_roughness_layer', cmb_roughness_layer, "user", "session")
         # cmb_losses_layer
         cmb_losses_layer = tools_qt.get_combo_value(dlg, 'cmb_losses_layer', 1)
-        print(f"{cmb_losses_layer=}")
         tools_dr.set_config_parser('dlg_create_mesh', 'cmb_losses_layer', cmb_losses_layer, "user", "session")
 
         # txt_name
