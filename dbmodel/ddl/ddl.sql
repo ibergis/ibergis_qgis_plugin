@@ -1015,8 +1015,7 @@ create view if not exists vi_dwf as
     pattern1 as Time_Pattern1, 
     pattern2 as Time_Pattern2, 
     pattern3 as Time_Pattern3, 
-    pattern4 as Time_Pattern4,
-    baseline as Baseline
+    pattern4 as Time_Pattern4
     from inp_dwf;
 
 create view if not exists vi_controls as 
