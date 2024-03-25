@@ -438,6 +438,11 @@ class DrExecuteModel(DrTask):
         row = self.dao.get_row(sql)
         rain_class = int(row[0]) if row and row[0] else 0
 
+        # options_setallhyetografs
+        sql = "SELECT value FROM config_param_user WHERE parameter = 'options_setallhyetografs'"
+        row = self.dao.get_row(sql)
+        timeseries_override = row[0] if row else None
+
         if rain_class != 1:
             file_name.write_text("Hyetographs\n0\nEnd\n")
             return
@@ -454,11 +459,12 @@ class DrExecuteModel(DrTask):
             for i, ht_row in enumerate(gdf.itertuples(), start=1):
                 file.write(f"{i}\n")
                 file.write(f"{ht_row.x} {ht_row.y}\n")
+                timeseries = timeseries_override if timeseries_override not in (None, '') else ht_row.timeseries
 
                 sql = f"""
                     SELECT time, value 
                     FROM cat_timeseries_value 
-                    WHERE timeseries ='{ht_row.timeseries}'
+                    WHERE timeseries ='{timeseries}'
                 """
                 ts_rows = self.dao.get_rows(sql)
                 if ts_rows:
