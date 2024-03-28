@@ -497,10 +497,22 @@ class DrExecuteModel(DrTask):
             file_name.write_text(f"{rain_class} 0\n")
             return
 
-        raster_idval = f"SELECT idval FROM cat_raster WHERE id = '{raster_id}'"
+        sql = f"SELECT idval, raster_type FROM cat_raster WHERE id = '{raster_id}'"
+        row = self.dao.get_row(sql)
+
+        if row is None:
+            raise Exception(f"Raster data not found. Raster id: {raster_id}.")
+        
+        raster_idval = row["idval"]
+        raster_type = row["raster_type"]
+
+        if raster_type not in ("Intensity", "Volume"):
+            raise Exception(f"Invalid raster type: {raster_type}.")
+        
+        raster_type_code = 0 if raster_type == "Intensity" else 1
 
         with open(file_name, "w") as file:
-            file.write(f"{rain_class} 0\n")
+            file.write(f"{rain_class} {raster_type_code}\n")
             # TODO: path where rasters are
 
             sql = f"""
