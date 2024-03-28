@@ -489,6 +489,33 @@ class DrExecuteModel(DrTask):
             file_name.write_text(f"{rain_class} 0\n")
             return
 
+        # options_setrainfall_raster
+        sql = "SELECT value FROM config_param_user WHERE parameter = 'options_setrainfall_raster'"
+        row = self.dao.get_row(sql)
+        raster_id = row[0] if row else None
+        if raster_id is None:
+            file_name.write_text(f"{rain_class} 0\n")
+            return
+
+        raster_idval = f"SELECT idval FROM cat_raster WHERE id = '{raster_id}'"
+
+        with open(file_name, "w") as file:
+            file.write(f"{rain_class} 0\n")
+            # TODO: path where rasters are
+
+            sql = f"""
+                SELECT time, fname 
+                FROM cat_raster_value 
+                WHERE raster ='{raster_idval}'
+            """
+            raster_rows = self.dao.get_rows(sql)
+            if raster_rows:
+                file.write(f"{len(raster_rows)}\n")
+                for raster_row in raster_rows:
+                    hours, minutes = map(int, raster_row["time"].split(":"))
+                    seconds = hours * 3600 + minutes * 60
+                    file.write(f"{seconds} \"{raster_row['fname']}\"\n")
+
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}
         self.generate_inp_task = DrEpaFileManager("Go2Epa", go2epa_params, None)
