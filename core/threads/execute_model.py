@@ -497,10 +497,11 @@ class DrExecuteModel(DrTask):
             file_name.write_text(f"{rain_class} 0\n")
             return
 
+        # get information about raster
         sql = f"SELECT idval, raster_type FROM cat_raster WHERE id = '{raster_id}'"
         row = self.dao.get_row(sql)
 
-        if row is None:
+        if not row:
             raise Exception(f"Raster data not found. Raster id: {raster_id}.")
         
         raster_idval = row["idval"]
@@ -511,22 +512,40 @@ class DrExecuteModel(DrTask):
         
         raster_type_code = 0 if raster_type == "Intensity" else 1
 
-        with open(file_name, "w") as file:
-            file.write(f"{rain_class} {raster_type_code}\n")
-            # TODO: path where rasters are
-
-            sql = f"""
+        # get raster values
+        sql = f"""
                 SELECT time, fname 
                 FROM cat_raster_value 
                 WHERE raster ='{raster_idval}'
             """
-            raster_rows = self.dao.get_rows(sql)
-            if raster_rows:
-                file.write(f"{len(raster_rows)}\n")
-                for raster_row in raster_rows:
-                    hours, minutes = map(int, raster_row["time"].split(":"))
-                    seconds = hours * 3600 + minutes * 60
-                    file.write(f"{seconds} \"{raster_row['fname']}\"\n")
+        raster_rows = self.dao.get_rows(sql)
+
+        if not raster_rows:
+            raise Exception(f"Raster values not found. Raster idval: {raster_idval}.")
+
+        def str2seconds(time: str) -> int:
+            hours, minutes = map(int, time.split(":"))
+            seconds = hours * 3600 + minutes * 60
+            return seconds
+
+        times = [str2seconds(row["time"]) for row in raster_rows]
+        paths = [Path(row["fname"]) for row in raster_rows]
+
+        project_folder = Path(self.dao.db_filepath).parent
+        commom_path = paths[0].parent
+
+        # check if all parents are the same
+        if not all(path.parent == commom_path for path in paths):
+            raise Exception(
+                f"Not all rasters are in the same folder. Raster idval: {raster_idval}."
+            )
+
+        with open(file_name, "w") as file:
+            file.write(f"{rain_class} {raster_type_code}\n")
+            file.write(f"{project_folder / commom_path}\n")
+            file.write(f"{len(times)}\n")
+            for seconds, path in zip(times, paths):
+                file.write(f'{seconds} "{path.name}"\n')
 
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}
