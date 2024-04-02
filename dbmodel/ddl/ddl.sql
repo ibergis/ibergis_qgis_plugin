@@ -276,7 +276,7 @@ CREATE TABLE inp_outlet (
     cd1 real check (typeof(cd1)='real' or cd1= null) default 1,
     cd2 real check (typeof(cd2)='real' or cd2= null) default 1,
     curve text check (typeof(curve)='text' or curve= null),
-    annotation real check (typeof(annotation)='real' or annotation= null),
+    annotation text check (typeof(annotation)='real' or annotation= null),
     geom geometry,
     FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict
 );
@@ -375,7 +375,7 @@ CREATE TABLE inp_divider (
     curve text check (typeof(curve) = 'text' or curve = null),
     q0 real check (typeof(q0) = 'real' or q0 = null),
     qmax real check (typeof(qmax) = 'real' or qmax = null),
-    annotation real check (typeof(annotation) = 'real' or annotation = null),
+    annotation text check (typeof(annotation) = 'real' or annotation = null),
     geom geometry,
     FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
     FOREIGN KEY (divert_arc) references inp_conduit(code) on update cascade on delete restrict
