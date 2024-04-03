@@ -32,7 +32,7 @@ _tables = (
             "Geom4": "geom4",
             "Barrels": "barrels",
             "Culvert": "culvert",
-            "Shp_Trnsct": "descript",
+            "Shp_Trnsct": "curve_transect",
         },
     },
     {
@@ -392,6 +392,8 @@ def get_dataframes(inp_dict, epsg):
                 df.drop("barrels", axis=1, inplace=True)
             if "culvert" in df.columns:
                 df.drop("culvert", axis=1, inplace=True)
+            if "curve_transect" in df.columns:
+                df.drop("curve_transect", axis=1, inplace=True)
 
         if table == "inp_orifice":
             # Drop columns 'geom3' and 'geom4' of df if they exist

@@ -243,8 +243,7 @@ CREATE TABLE inp_conduit (
     geom2 real check (typeof(geom2) = 'real' or geom2 = null),
     geom3 real check (typeof(geom3) = 'real' or geom3 = null),
     geom4 real check (typeof(geom4) = 'real' or geom4 = null),
-    curve text check (typeof(curve) = 'text' or curve=null),
-    transect text check (typeof(transect) = 'text' or transect=null),
+    curve_transect text check (typeof(curve_transect) = 'text' or curve_transect=null),
     roughness real check (typeof(roughness) = 'real' or roughness = null),
     length real check (typeof(length) = 'real' or length = null),
     z1 real check (typeof(z1) = 'real' or z1 = null),
@@ -259,9 +258,9 @@ CREATE TABLE inp_conduit (
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     seepage real check (typeof(seepage) = 'real' or seepage = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
-    FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
+    geom geometry
+    -- , FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    -- FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
 );
 
 CREATE TABLE inp_outlet (
@@ -801,7 +800,7 @@ create view if not exists vi_conduits as
     geom4 as Geom4, 
     barrels as Barrels, 
     culvert as Culvert, 
-    COALESCE(curve, '') || COALESCE(transect, '') as Shp_Trnsct,
+    curve_transect as Shp_Trnsct,
     kentry as Kentry, 
     kexit as Kexit, 
     kavg as Kavg, 
@@ -1039,8 +1038,8 @@ create view if not exists vi_inflows as
     from inp_inflow;
 
 create view if not exists vi_xsections as
-    select code as Link, shape as Shape, geom1 as Geom1, curve as Geom2, 0 as Geom3, 0 as Geom4, barrels, culvert from inp_conduit where shape ='CUSTOM' union
-    select code as Link, shape as Shape, transect as Geom1, 0 as Geom2, 0 as Geom3, 0 as Geom4 , barrels, culvert from inp_conduit where shape='IRREGULAR'union
+    select code as Link, shape as Shape, geom1 as Geom1, curve_transect as Geom2, 0 as Geom3, 0 as Geom4, barrels, culvert from inp_conduit where shape ='CUSTOM' union
+    select code as Link, shape as Shape, curve_transect as Geom1, 0 as Geom2, 0 as Geom3, 0 as Geom4 , barrels, culvert from inp_conduit where shape='IRREGULAR'union
     select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3 , geom4 as Geom4, barrels, culvert from inp_conduit where shape not in ('CUSTOM', 'IRREGULAR') union
     select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, null as Geom3, null as Geom4, null as barrels, null as culvert from inp_orifice union
     select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, null as Geom3, null as Geom4, null as barrels, null as culvert from inp_weir;
