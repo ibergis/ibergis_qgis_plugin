@@ -10,15 +10,15 @@ This version of Giswater is provided by Giswater Association
 -- TRIGGERS TO CREATE AN AUTOINDEX FOR EACH ELEMENT
 -- ------------------------------------------------
 
-create trigger "trg_ins_code_inp_outlet" after insert on "inp_outlet" BEGIN update inp_outlet set code = 'T'||fid; END;
-create trigger "trg_ins_code_inp_weir" after insert on "inp_weir" BEGIN update inp_weir set code = 'W'||fid;END;
-create trigger "trg_ins_code_inp_orifice" after insert on "inp_orifice" BEGIN update inp_orifice set code = 'R'||fid; END;
-create trigger "trg_ins_code_inp_pump" after insert on "inp_pump" BEGIN update inp_pump set code = 'P'||fid; END;
-create trigger "trg_ins_code_inp_conduit" after insert on "inp_conduit" BEGIN update inp_conduit set code = 'C'||fid; END;
-create trigger "trg_ins_code_inp_storage" after insert on "inp_storage" BEGIN update inp_storage set code = 'S'||fid; END;
-create trigger "trg_ins_code_inp_junction" after insert on "inp_junction" BEGIN update inp_junction set code = 'J'||fid; END;
-create trigger "trg_ins_code_inp_outfall" after insert on "inp_outfall" BEGIN update inp_outfall set code = 'O'||fid; END;
-create trigger "trg_ins_code_inp_divider" after insert on "inp_divider" BEGIN update inp_divider set code = 'D'||fid; END;
+create trigger "trg_ins_code_inp_outlet" after insert on "inp_outlet" BEGIN update inp_outlet set code = 'T'||fid WHERE code IS NULL; END;
+create trigger "trg_ins_code_inp_weir" after insert on "inp_weir" BEGIN update inp_weir set code = 'W'||fid WHERE code IS NULL;END;
+create trigger "trg_ins_code_inp_orifice" after insert on "inp_orifice" BEGIN update inp_orifice set code = 'R'||fid WHERE code IS NULL; END;
+create trigger "trg_ins_code_inp_pump" after insert on "inp_pump" BEGIN update inp_pump set code = 'P'||fid WHERE code IS NULL; END;
+create trigger "trg_ins_code_inp_conduit" after insert on "inp_conduit" BEGIN update inp_conduit set code = 'C'||fid WHERE code IS NULL; END;
+create trigger "trg_ins_code_inp_storage" after insert on "inp_storage" BEGIN update inp_storage set code = 'S'||fid WHERE code IS NULL; END;
+create trigger "trg_ins_code_inp_junction" after insert on "inp_junction" BEGIN update inp_junction set code = 'J'||fid WHERE code IS NULL; END;
+create trigger "trg_ins_code_inp_outfall" after insert on "inp_outfall" BEGIN update inp_outfall set code = 'O'||fid WHERE code IS NULL; END;
+create trigger "trg_ins_code_inp_divider" after insert on "inp_divider" BEGIN update inp_divider set code = 'D'||fid WHERE code IS NULL; END;
 
 
 ----------------------------------------------------------------------------------------
