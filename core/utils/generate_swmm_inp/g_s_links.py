@@ -97,9 +97,7 @@ def get_conduits_from_shapefile(conduits_raw):
             if pd.isna(xs_row[col]):
                 return '1'
             return int(xs_row[col])
-        if col == 'Geom2' and xs_row['Shape'] == 'CUSTOM':
-            return xs_row[col] 
-        if xs_row['Shape'] in ['IRREGULAR', 'STREET', 'CUSTOM']:
+        if xs_row['Shape'] in ['IRREGULAR', 'STREET']:
             return ''
         if pd.isna(xs_row[col]):
             return '0'
@@ -364,8 +362,6 @@ def adjust_xsection_df(all_xsections): # no feedback!
     all_xsections.loc[all_xsections['Shape'] == 'IRREGULAR', 'Geom1'] = np.nan
     all_xsections.loc[all_xsections['Shape'] == 'CUSTOM', 'Shp_Trnsct'] = all_xsections.loc[all_xsections['Shape'] == 'CUSTOM', 'Geom2']
     all_xsections.loc[all_xsections['Shape'] == 'CUSTOM', 'Geom2'] = np.nan
-    all_xsections.loc[all_xsections['Shape'] == 'CUSTOM', 'Barrels'] = all_xsections.loc[all_xsections['Shape'] == 'CUSTOM', 'Geom3']
-    all_xsections.loc[all_xsections['Shape'] == 'CUSTOM', 'Geom3'] = np.nan
     return all_xsections
 
 # outlets
