@@ -456,7 +456,7 @@ class DrEpaFileManager(DrTask):
         query = """SELECT
                     ct.idval AS timeseries_name,
                     ctv.date,
-                    ctv.time,
+                    time(ctv.time),
                     ctv.value,
                     ct.fname,
                     ct.descript
