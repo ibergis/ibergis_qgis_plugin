@@ -780,7 +780,18 @@ create view if not exists vi_title as select parameter, value from config_param_
 
 create view if not exists vi_files as select fname as Name from inp_files;
 
-create view if not exists vi_options as select parameter as Option, value as Value from config_param_user where parameter like 'inp_options%';
+create view if not exists vi_options as
+select
+  parameter as Option,
+  case
+    when parameter in ('inp_options_start_date', 'inp_options_end_date', 'inp_options_report_start_date')
+      then strftime('%m/%d/%Y', value)
+    when parameter in ('inp_options_sweep_start', 'inp_options_sweep_end')
+      then strftime('%m/%d', value)
+    else value
+  end as Value
+from config_param_user
+where parameter like 'inp_options%';
 
 create view if not exists vi_conduits as 
     select 
