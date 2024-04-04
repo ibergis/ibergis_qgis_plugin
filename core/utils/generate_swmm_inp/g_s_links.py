@@ -279,6 +279,7 @@ def get_outlets_from_shapefile(outlets_raw):
                   outlets_raw.keys())
     outlets_raw['Name'] = [str(x) for x in outlets_raw['Name']]
     outlets_raw['Qcoeff'] = outlets_raw['Qcoeff'].fillna(1)
+    outlets_raw['InOffset'] = outlets_raw['InOffset'].fillna('*')
     outlets_raw['CurveName'] = outlets_raw['CurveName'].fillna('*')
     outlets_raw['FlapGate'] = outlets_raw['FlapGate'].fillna('NO')
     outlets_raw['QCurve'] = [get_outl_curve(outlets_raw.loc[i]) for i in outlets_raw.index]
