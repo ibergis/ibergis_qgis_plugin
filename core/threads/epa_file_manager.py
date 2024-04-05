@@ -200,7 +200,7 @@ class DrEpaFileManager(DrTask):
         FILE_CURVES = self._create_curves_file()
         FILE_PATTERNS = self._create_patterns_file()
         FILE_OPTIONS = self._create_options_file()
-        # TODO: FILE_REPORT
+        FILE_REPORT = self._create_report_file()
         FILE_CONTROLS = self._create_controls_file()
         FILE_TIMESERIES = self._create_timeseries_file()
         FILE_INFLOWS = self._create_inflows_file()
@@ -220,6 +220,7 @@ class DrEpaFileManager(DrTask):
             'FILE_CURVES': FILE_CURVES,
             'FILE_PATTERNS': FILE_PATTERNS,
             'FILE_OPTIONS': FILE_OPTIONS,
+            'FILE_REPORT': FILE_REPORT,
             'FILE_CONTROLS': FILE_CONTROLS,
             'FILE_TIMESERIES': FILE_TIMESERIES,
             'FILE_INFLOWS': FILE_INFLOWS,
@@ -231,6 +232,7 @@ class DrEpaFileManager(DrTask):
                 shutil.copy(FILE_CURVES, f"{self.debug_folder_path}{os.sep}debug_curves.xlsx")
                 shutil.copy(FILE_PATTERNS, f"{self.debug_folder_path}{os.sep}debug_patterns.xlsx")
                 shutil.copy(FILE_OPTIONS, f"{self.debug_folder_path}{os.sep}debug_options.xlsx")
+                shutil.copy(FILE_REPORT, f"{self.debug_folder_path}{os.sep}debug_report.xlsx")
                 shutil.copy(FILE_TIMESERIES, f"{self.debug_folder_path}{os.sep}debug_timeseries.xlsx")
                 shutil.copy(FILE_INFLOWS, f"{self.debug_folder_path}{os.sep}debug_inflows.xlsx")
             except Exception as e:
@@ -414,6 +416,27 @@ class DrEpaFileManager(DrTask):
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
             sheet_name = "OPTIONS"
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+        return file_path
+    
+    def _create_report_file(self):
+        query = """SELECT
+                    Option,
+                    Value
+                FROM
+                    vi_report;"""
+        conn = self.dao.conn
+        df = pd.read_sql_query(query, conn)
+
+        # Apply the desired transformation to the 'Option' column
+        df['Option'] = df['Option'].str.replace('inp_report_', '').str.upper()
+
+        temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+        file_path = temp_file.name
+        # Create a new Excel writer
+        with pd.ExcelWriter(file_path) as writer:
+            sheet_name = "REPORT"
             df.to_excel(writer, sheet_name=sheet_name, index=False)
 
         return file_path

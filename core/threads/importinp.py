@@ -56,9 +56,8 @@ class DrImportInpTask(DrTask):
                 for row in df.itertuples():
                     self.dao.execute_sql(
                         f"""
-                        UPDATE config_param_user
-                        SET value = '{row.value}'
-                        WHERE parameter = '{row.parameter}'
+                        INSERT OR REPLACE INTO config_param_user (parameter, value)
+                        VALUES ('{row.parameter}', '{row.value}')
                         """
                     )
                 continue

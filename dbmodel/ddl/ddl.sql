@@ -793,6 +793,8 @@ select
 from config_param_user
 where parameter like 'inp_options%';
 
+create view if not exists vi_report as select parameter as Option, value as Value from config_param_user where parameter like 'inp_report%' and value is not null;
+
 create view if not exists vi_conduits as 
     select 
     code as Name, 
