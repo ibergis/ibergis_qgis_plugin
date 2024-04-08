@@ -370,6 +370,7 @@ def getinfofromid(p_input: dict) -> dict:
                             'dv_orderby_id', 'dv_isnullvalue AS isNullValue',
                             'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                             'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
+                            'CASE WHEN hidden = 1 THEN True ELSE False END AS hidden',
                             'vdefault AS value', 'tooltip', 'addparam AS widgetcontrols', 'addparam'
                             ]
             v_sql = f"SELECT {', '.join(column_names)} " \
