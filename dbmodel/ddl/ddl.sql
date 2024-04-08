@@ -258,7 +258,9 @@ CREATE TABLE inp_conduit (
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     seepage real check (typeof(seepage) = 'real' or seepage = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
+    geom geometry,
+    FOREIGN KEY (node_1) REFERENCES inp_junction (code) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES inp_junction (code) on update cascade on delete restrict
     -- , FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
     -- FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
 );
@@ -296,7 +298,9 @@ CREATE TABLE inp_orifice (
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     close_time real check (typeof(close_time) = 'real' or close_time = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
+    geom geometry,
+    FOREIGN KEY (node_1) REFERENCES inp_junction (code) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES inp_junction (code) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_weir (
@@ -339,7 +343,9 @@ CREATE TABLE inp_pump (
     shutoff real check (typeof(shutoff) = 'real' or shutoff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
+    FOREIGN KEY (node_1) REFERENCES inp_junction (code) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES inp_junction (code) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_outfall (
