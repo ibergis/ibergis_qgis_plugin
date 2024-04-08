@@ -561,9 +561,12 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
                 layer.setFieldConstraint(field_index, QgsFieldConstraints.ConstraintUnique,
                                          QgsFieldConstraints.ConstraintStrengthHard)
 
-        if field.get('ismandatory') is False:
+        if field.get('ismandatory') is True:
             layer.setFieldConstraint(field_index, QgsFieldConstraints.ConstraintNotNull,
-                                     QgsFieldConstraints.ConstraintStrengthSoft)
+                                     QgsFieldConstraints.ConstraintStrengthHard)
+        else:
+            layer.setFieldConstraint(field_index, QgsFieldConstraints.ConstraintNotNull,
+                                     QgsFieldConstraints.ConstraintStrengthNotSet)
 
         # Manage editability
         # Get layer config
