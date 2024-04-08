@@ -473,7 +473,7 @@ INSERT INTO inp_junction (fid, code, y0, ysur, apond, descript, elev, ymax, geom
 INSERT INTO inp_junction (fid, code, y0, ysur, apond, descript, elev, ymax, geom) VALUES(63, 'J64', 0, 0, 0, NULL, 30.059, 3.45, ST_GeomFromText('POINT (418714.078339 4577601.459724)', <SRID_VALUE>));
 INSERT INTO inp_junction (fid, code, y0, ysur, apond, descript, elev, ymax, geom) VALUES(64, 'J65', 0, 0, 0, NULL, 38.180, 1.45, ST_GeomFromText('POINT (418493.46591867064 4577561.1257339055)', <SRID_VALUE>));
 INSERT INTO inp_junction (fid, code, y0, ysur, apond, descript, elev, ymax, geom) VALUES(65, 'J66', 0, 0, 0, NULL, 32.939, 1.9, ST_GeomFromText('POINT (418438.58008409 4578027.703742279)', <SRID_VALUE>));
-INSERT INTO inp_junction (fid, code, y0, ysur, apond, descript, elev, ymax, geom) VALUES(66, 'J66', 0, 0, 0, NULL, 33.510, 1.6, ST_GeomFromText('POINT (418565.1422 4577575.730855)', <SRID_VALUE>));
+INSERT INTO inp_junction (fid, code, y0, ysur, apond, descript, elev, ymax, geom) VALUES(66, 'J67', 0, 0, 0, NULL, 33.510, 1.6, ST_GeomFromText('POINT (418565.1422 4577575.730855)', <SRID_VALUE>));
 
 
 
