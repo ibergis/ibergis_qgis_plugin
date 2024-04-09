@@ -371,7 +371,7 @@ def getinfofromid(p_input: dict) -> dict:
                             'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                             'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
                             'CASE WHEN hidden = 1 THEN True ELSE False END AS hidden',
-                            'vdefault AS value', 'tooltip', 'addparam AS widgetcontrols', 'addparam'
+                            'vdefault AS value', 'tooltip', 'widgetcontrols', 'addparam'
                             ]
             v_sql = f"SELECT {', '.join(column_names)} " \
                     f"FROM config_form_fields " \
