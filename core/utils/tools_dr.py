@@ -593,7 +593,6 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
             value_relation = widgetcontrols['valueRelation']
             if value_relation.get('activated'):
                 try:
-                    print("using value_relation:")
                     vr_layer = value_relation['layer']
                     vr_layer = tools_qgis.get_layer_by_tablename(vr_layer).id()  # Get layer id
                     vr_key_column = value_relation['keyColumn']  # Get 'Key'
@@ -602,7 +601,6 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
                     vr_filter_expression = value_relation['filterExpression']  # Get 'FilterExpression'
                     if vr_filter_expression is None:
                         vr_filter_expression = ''
-                    print(f"{vr_layer=} {vr_key_column=} {vr_value_column=} {vr_allow_nullvalue=} {vr_filter_expression=}")
 
                     # Create and apply ValueRelation config
                     editor_widget_setup = QgsEditorWidgetSetup('ValueRelation', {'Layer': f'{vr_layer}',
@@ -623,7 +621,6 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
                     use_vr = False
 
         if not use_vr:
-            print("not using value relation:")
             # Manage new values in ValueMap
             if field['widgettype'] == 'combo':
                 if 'comboIds' in field:
@@ -631,7 +628,6 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
                     for i in range(0, len(field['comboIds'])):
                         valuemap_values[field['comboNames'][i]] = field['comboIds'][i]
                 # Set values into valueMap
-                print(f"ValueMap - {valuemap_values}")
                 editor_widget_setup = QgsEditorWidgetSetup('ValueMap', {'map': valuemap_values})
                 layer.setEditorWidgetSetup(field_index, editor_widget_setup)
             elif field['widgettype'] == 'check':

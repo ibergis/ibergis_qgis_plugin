@@ -462,8 +462,8 @@ class DrExecuteModel(DrTask):
                 timeseries = timeseries_override if timeseries_override not in (None, '') else ht_row.timeseries
 
                 sql = f"""
-                    SELECT time, value 
-                    FROM cat_timeseries_value 
+                    SELECT time, value
+                    FROM cat_timeseries_value
                     WHERE timeseries ='{timeseries}'
                 """
                 ts_rows = self.dao.get_rows(sql)
@@ -503,19 +503,19 @@ class DrExecuteModel(DrTask):
 
         if not row:
             raise Exception(f"Raster data not found. Raster id: {raster_id}.")
-        
+
         raster_idval = row["idval"]
         raster_type = row["raster_type"]
 
         if raster_type not in ("Intensity", "Volume"):
             raise Exception(f"Invalid raster type: {raster_type}.")
-        
+
         raster_type_code = 0 if raster_type == "Intensity" else 1
 
         # get raster values
         sql = f"""
-                SELECT time, fname 
-                FROM cat_raster_value 
+                SELECT time, fname
+                FROM cat_raster_value
                 WHERE raster ='{raster_idval}'
             """
         raster_rows = self.dao.get_rows(sql)
