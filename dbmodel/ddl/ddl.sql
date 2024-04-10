@@ -236,8 +236,8 @@ CREATE TABLE inp_conduit (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    node_1 text check (typeof(node_1) = 'text' or node_1 = null),
-    node_2 text check (typeof(node_2) = 'text' or node_2 = null),
+    node_1 integer check (typeof(node_1) = 'integer' or node_1 = null),
+    node_2 integer check (typeof(node_2) = 'integer' or node_2 = null),
     shape text check (typeof(shape) = 'text' and shape in ('ARCH', 'BASKETHANDLE', 'CIRCULAR', 'CUSTOM', 'DUMMY', 'EGG', 'FILLED_CIRCULAR', 'FORCE_MAIN', 'HORIZ_ELLIPSE', 'HORSESHOE', 'IRREGULAR', 'MODBASKETHANDLE', 'PARABOLIC', 'POWER', 'RECT_CLOSED', 'RECT_OPEN', 'RECT_ROUND', 'RECT_TRIANGULAR', 'SEMICIRCULAR', 'SEMIELLIPTICAL', 'TRAPEZOIDAL', 'TRIANGULAR', 'VERT_ELLIPSE', 'VIRTUAL')) NOT NULL,
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
     geom2 real check (typeof(geom2) = 'real' or geom2 = null),
@@ -259,9 +259,9 @@ CREATE TABLE inp_conduit (
     seepage real check (typeof(seepage) = 'real' or seepage = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (node_1) REFERENCES inp_junction (code) on update cascade on delete restrict,
-    FOREIGN KEY (node_2) REFERENCES inp_junction (code) on update cascade on delete restrict
-    -- , FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    FOREIGN KEY (node_1) REFERENCES all_nodes (fid) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES all_nodes (fid) on update cascade on delete restrict
+    -- FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
     -- FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
 );
 
@@ -269,8 +269,8 @@ CREATE TABLE inp_outlet (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript)='text' or descript= null),
-    node_1 text check (typeof(node_1)='text' or node_1= null),
-    node_2 text check (typeof(node_2)='text' or node_2= null),
+    node_1 integer check (typeof(node_1) = 'integer' or node_1 = null),
+    node_2 integer check (typeof(node_2) = 'integer' or node_2 = null),
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     outlet_type text check (typeof(outlet_type) in ('text', null) and outlet_type in ('FUNCTIONAL/DEPTH', 'FUNCTIONAL/HEAD', 'TABULAR/DEPTH', 'TABULAR/HEAD')),
     offsetval real check (typeof(offsetval) = 'real' or offsetval = null),
@@ -279,7 +279,9 @@ CREATE TABLE inp_outlet (
     curve text check (typeof(curve)='text' or curve= null),
     annotation text check (typeof(annotation)='real' or annotation= null),
     geom geometry,
-    FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict
+    FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict,
+    FOREIGN KEY (node_1) REFERENCES all_nodes (fid) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES all_nodes (fid) on update cascade on delete restrict
 );
 
 
@@ -287,8 +289,8 @@ CREATE TABLE inp_orifice (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    node_1 text check (typeof(node_1) = 'text' or node_1 = null),
-    node_2 text check (typeof(node_2) = 'text' or node_2 = null),
+    node_1 integer check (typeof(node_1) = 'integer' or node_1 = null),
+    node_2 integer check (typeof(node_2) = 'integer' or node_2 = null),
     ori_type text check (typeof(ori_type) in ('text', null) and ori_type in ('BOTTOM', 'SIDE')),
     shape text check (typeof(shape) in ('text', null) and shape in ('CIRCULAR', 'RECT_CLOSED')) NOT NULL,
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
@@ -299,16 +301,16 @@ CREATE TABLE inp_orifice (
     close_time real check (typeof(close_time) = 'real' or close_time = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (node_1) REFERENCES inp_junction (code) on update cascade on delete restrict,
-    FOREIGN KEY (node_2) REFERENCES inp_junction (code) on update cascade on delete restrict
+    FOREIGN KEY (node_1) REFERENCES all_nodes (fid) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES all_nodes (fid) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_weir (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    node_1 text check (typeof(node_1) = 'text' or node_1 = null),
-    node_2 text check (typeof(node_2) = 'text' or node_2 = null),
+    node_1 integer check (typeof(node_1) = 'integer' or node_1 = null),
+    node_2 integer check (typeof(node_2) = 'integer' or node_2 = null),
     weir_type text check (typeof(weir_type) in ('text', null) and weir_type in ('ROADWAY', 'SIDEFLOW', 'TRANSVERSE', 'TRAPEZOIDAL', 'V-NOTCH')),
     offsetval real check (typeof(offsetval) = 'real' or offsetval = null),
     shape text check (typeof(shape) in ('text', null) and shape in ('RECT_OPEN', 'TRAPEZOIDAL', 'TRIANGULAR')) NOT NULL,
@@ -328,15 +330,17 @@ CREATE TABLE inp_weir (
     end_coeff real check (typeof(end_coeff)='real' or end_coeff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
+    FOREIGN KEY (node_1) REFERENCES all_nodes (fid) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES all_nodes (fid) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_pump (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
-    node_1 text check (typeof(node_1) = 'text' or node_1 = null),
-    node_2 text check (typeof(node_2) = 'text' or node_2 = null),
+    node_1 integer check (typeof(node_1) = 'integer' or node_1 = null),
+    node_2 integer check (typeof(node_2) = 'integer' or node_2 = null),
     curve text check (typeof( curve) = 'text' or  curve = null),
     state text check (typeof(state) in ('text', null) and state in ('OFF', 'ON')),
     startup real check (typeof(startup) = 'real' or startup = null),
@@ -344,8 +348,8 @@ CREATE TABLE inp_pump (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
     FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
-    FOREIGN KEY (node_1) REFERENCES inp_junction (code) on update cascade on delete restrict,
-    FOREIGN KEY (node_2) REFERENCES inp_junction (code) on update cascade on delete restrict
+    FOREIGN KEY (node_1) REFERENCES all_nodes (fid) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES all_nodes (fid) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_outfall (
@@ -383,7 +387,7 @@ CREATE TABLE inp_divider (
     annotation text check (typeof(annotation) = 'real' or annotation = null),
     geom geometry,
     FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
-    FOREIGN KEY (divert_arc) references inp_conduit(code) on update cascade on delete restrict
+    FOREIGN KEY (divert_arc) references inp_conduit(fid) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_storage (
@@ -1082,17 +1086,22 @@ SELECT code AS gully_id,
     geom 
 FROM inlet;
 
-CREATE VIEW if not exists v_node as
-    select code, geom from inp_storage union
-    select code, geom from inp_outfall union
-    select code, geom from inp_junction union
-    select code, geom from inp_divider;
-CREATE VIEW if not exists v_arc as
-    select code, geom from inp_outlet union
-    select code, geom from inp_weir union
-    select code, geom from inp_orifice union
-    select code, geom from inp_pump union
-    select code, geom from inp_conduit;
+CREATE TABLE all_nodes (
+    fid integer primary key,
+    code text,
+    table_name text,
+    table_fid integer,
+    geom geometry
+);
+
+CREATE TABLE all_arcs (
+    fid integer primary key,
+    code text,
+    table_name text,
+    table_fid integer,
+    geom geometry
+);
+
 
 CREATE VIEW if not exists v_ui_file AS 
     SELECT name, ROUND(LENGTH(iber2d || COALESCE(roof, '') || losses) / 1024.0, 3) AS kilobytes FROM cat_file ORDER BY name ASC;
