@@ -7,6 +7,14 @@ about=Disclaimer: This plugin is released using the open source GNU-GPL3 license
 version=0.1.002
 author=David Erill, Xavier Torret, Maria Guzman, Edgar Fusté, Jordi Blanch, Sergi Maspons, Pablo Marques
 Changelog=Version 0.1.002
+    - Fix & Improve INP importer & exporter
+    - Fix & Improve IBER exporter (export rainfall raster, add option to use NO LOSSES, options_simulation_details, etc.)
+    - Improve IBER execution (more accurate percentage, create simulation folder if it doesn't exist, etc.)
+    - Mesh validator: Only check vertex-edge and intersect for ground layer
+    - Save & load user's values in create mesh dialog
+    - Refactor "Iber Options" tab
+    - Make layers fields configurable via config_form_fields
+
 tags= urban drainage, flooding
 homepage=https://www.xxxxx.org
 repository=https//github.com/drain-iber/drain_qgis_plugin
