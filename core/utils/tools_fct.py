@@ -360,6 +360,7 @@ def getinfofromid(p_input: dict) -> dict:
     try:
 
         dao_config = global_vars.gpkg_dao_config.clone()
+        dao_data = global_vars.gpkg_dao_data.clone()
 
         v_islayer = p_input['feature'].get('isLayer')
         v_tablename = p_input['feature'].get('tableName')
@@ -377,6 +378,7 @@ def getinfofromid(p_input: dict) -> dict:
                     f"FROM config_form_fields " \
                     f"WHERE formname = '{v_tablename}' " \
                     f"ORDER BY layoutorder, columnname"
+            
             v_raw_widgets = dao_config.get_rows(v_sql)
 
             # format widgets as a json
@@ -389,49 +391,36 @@ def getinfofromid(p_input: dict) -> dict:
                         key = key.split(' AS ')[1]
                     widget_dict[key] = value
                 v_widgets.append(widget_dict)
+                    
+            for widget in v_widgets:
+                if widget['widgettype'] == 'combo':
+                    cmb_ids = []
+                    cmb_names = []
+                    if widget['dv_querytext']:
+                        result = None
+                        executed = False
+                        v_querystring = widget['dv_querytext']
+                        v_addparam = widget['addparam']
+                        if v_addparam:
+                            v_addparam = json.loads(v_addparam)
+                            if v_addparam.get('execute_on') == 'data':
+                                # Execute query on data gpkg if configured in addparam
+                                result = dao_data.get_rows(v_querystring)
+                                executed = True
 
-            # Iterate through the raw values and update the corresponding widgets in v_widgets
-            for row in v_raw_values:
-                parameter, value = row
-                for widget in v_widgets:
-                    # TODO: improve performance, this code is called more times than needed
-                    if widget['widgettype'] == 'combo':
-                        cmb_ids = []
-                        cmb_names = []
-                        if widget['dv_querytext']:
-                            result = None
-                            executed = False
-                            v_querystring = widget['dv_querytext']
-                            v_addparam = widget['addparam']
-                            if v_addparam:
-                                v_addparam = json.loads(v_addparam)
-                                if v_addparam.get('execute_on') == 'data':
-                                    # Execute query on data gpkg if configured in addparam
-                                    result = global_vars.gpkg_dao_data.get_row(v_querystring)
-                                    executed = True
+                        # Execute on config gpkg if not configured
+                        if not result and not executed:
+                            result = dao_config.get_rows(v_querystring)
+                            
+                        if result:
+                            for row in result:
+                                cmb_ids.append(row[0])
+                                cmb_names.append(row[1])
 
-                            # Execute on config gpkg if not configured
-                            if not result and not executed:
-                                result = global_vars.gpkg_dao_config.get_row(v_querystring)
-                            if result:
-                                cmb_ids = result[0]
-                                cmb_names = result[1]
+                    widget['comboIds'] = cmb_ids
+                    widget['comboNames'] = cmb_names
 
-                        widget['comboIds'] = cmb_ids
-                        widget['comboNames'] = cmb_names
-
-                    if widget['columnname'] == parameter:
-                        if widget['value'] in (0, 1, '0', '1') and widget['widgettype'] != 'combo':
-                            widget['value'] = str(widget['value'] == '1')
-
-                        if value is not None:
-                            if widget['widgettype'] == 'check' and value in ('0', '1'):
-                                value = str(value == '1')
-                            widget['value'] = value
-
-                        break
-
-        # return
+        
         v_return["body"] = {"data": {}, "form": {}}
         v_return["body"]["data"] = {
             "fields": v_widgets
