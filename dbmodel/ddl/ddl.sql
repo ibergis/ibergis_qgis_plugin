@@ -387,7 +387,7 @@ CREATE TABLE inp_divider (
     annotation text check (typeof(annotation) = 'real' or annotation = null),
     geom geometry,
     FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
-    FOREIGN KEY (divert_arc) references inp_conduit(fid) on update cascade on delete restrict
+    FOREIGN KEY (divert_arc) references inp_conduit(code) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_storage (
