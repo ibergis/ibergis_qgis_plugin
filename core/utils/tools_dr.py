@@ -569,7 +569,7 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
                                      QgsFieldConstraints.ConstraintStrengthHard)
         else:
             layer.setFieldConstraint(field_index, QgsFieldConstraints.ConstraintNotNull,
-                                     QgsFieldConstraints.ConstraintStrengthNotSet)
+                                     QgsFieldConstraints.ConstraintStrengthSoft)
 
         # Manage editability
         # Get layer config
@@ -656,6 +656,10 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
                                                            {'IsMultiline': widgetcontrols['setMultiline']})
             else:
                 editor_widget_setup = QgsEditorWidgetSetup('TextEdit', {'IsMultiline': False})
+            layer.setEditorWidgetSetup(field_index, editor_widget_setup)
+
+        if field['widgettype'] == 'hidden':
+            editor_widget_setup = QgsEditorWidgetSetup('Hidden', {})
             layer.setEditorWidgetSetup(field_index, editor_widget_setup)
 
 

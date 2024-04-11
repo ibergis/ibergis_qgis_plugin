@@ -378,7 +378,7 @@ def getinfofromid(p_input: dict) -> dict:
                     f"FROM config_form_fields " \
                     f"WHERE formname = '{v_tablename}' " \
                     f"ORDER BY layoutorder, columnname"
-            
+
             v_raw_widgets = dao_config.get_rows(v_sql)
 
             # format widgets as a json
@@ -391,7 +391,7 @@ def getinfofromid(p_input: dict) -> dict:
                         key = key.split(' AS ')[1]
                     widget_dict[key] = value
                 v_widgets.append(widget_dict)
-                    
+
             for widget in v_widgets:
                 if widget['widgettype'] == 'combo':
                     cmb_ids = []
@@ -411,7 +411,7 @@ def getinfofromid(p_input: dict) -> dict:
                         # Execute on config gpkg if not configured
                         if not result and not executed:
                             result = dao_config.get_rows(v_querystring)
-                            
+
                         if result:
                             for row in result:
                                 cmb_ids.append(row[0])
@@ -420,7 +420,14 @@ def getinfofromid(p_input: dict) -> dict:
                     widget['comboIds'] = cmb_ids
                     widget['comboNames'] = cmb_names
 
-        
+                if 'ismandatory' in widget:
+                    widget['ismandatory'] = bool(widget['ismandatory'])
+                if 'iseditable' in widget:
+                    widget['iseditable'] = bool(widget['iseditable'])
+                if 'hidden' in widget:
+                    widget['hidden'] = bool(widget['hidden'])
+
+
         v_return["body"] = {"data": {}, "form": {}}
         v_return["body"]["data"] = {
             "fields": v_widgets
