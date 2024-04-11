@@ -32,7 +32,7 @@ _tables = (
             "Geom4": "geom4",
             "Barrels": "barrels",
             "Culvert": "culvert",
-            "Shp_Trnsct": "descript",
+            "Shp_Trnsct": "curve_transect",
         },
     },
     {
@@ -75,9 +75,6 @@ _tables = (
             "FlapGate": "flap",
             "CloseTime": "close_time",
             "Annotation": "annotation",
-            "Shape": "shape",
-            "Height": "geom1",
-            "Width": "geom2",
         },
     },
     {
@@ -99,8 +96,6 @@ _tables = (
             "CoeffCurve": "curve",
             "Annotation": "annotation",
             "Height": "elev",
-            "Length": "geom1",
-            "SideSlope": "geom2",
         },
     },
     {
@@ -190,42 +185,11 @@ _tables = (
         },
     },
     {
-        "table_name": "cat_curve_value",
-        "section": "CURVES",
-        "mapper": {
-            "Name": "idval",
-            # "Type":
-            "Depth": "xcoord",
-            "Area": "ycoord",
-            # "Annotation":
-        },
-    },
-    {
-        "table_name": "cat_timeseries_value",
-        "section": "TIMESERIES",
-        "mapper": {
-            "Name": "idval",
-            "Date": "date",
-            "Time": "time",
-            "Value": "value",
-            # "File_Name":
-        },
-    },
-    {
-        "table_name": "cat_pattern_value",
-        "section": "PATTERNS",
-        "mapper": {
-            "Name": "idval",
-            "Time_Stamp": "pattern_type",
-            "Factor": "value",
-        },
-    },
-    {
         "table_name": "inp_dwf",
         "section": "DWF",
         "mapper": {
-            "Node": "node_id",
-            # "Constituent":
+            "Name": "code",
+            "Constituent": "format",
             "Average_Value": "avg_value",
             "Time_Pattern1": "pattern1",
             "Time_Pattern2": "pattern2",
@@ -234,25 +198,10 @@ _tables = (
         },
     },
     {
-        "table_name": "cat_transects",
-        "section": "TRANSECTS",
-        "mapper": {
-            "TransectName": "idval",
-            "RoughnessLeftBlank": "descript",
-            "RoughnessRightBlank": "descript",
-            "RoughnessChannel": "descript",
-            "BankStationLeft": "descript",
-            "BankStationRight": "descript",
-            "ModifierStations": "descript",
-            "ModifierElevations": "descript",
-            "ModifierMeander": "descript",
-        },
-    },
-    {
         "table_name": "inp_inflow",
         "section": "INFLOWS",
         "mapper": {
-            "Name": "node_id",
+            "Name": "code",
             "Constituent": "format",
             "Baseline": "base",
             "Baseline_Pattern": "pattern",
@@ -276,45 +225,158 @@ def get_dataframe(data, table_info, epsg):
     gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
     return gdf
 
-    # mapper = table_info["mapper"]
-    # gdf = None
-
-    # ##TODO: Check this
-    # if type(data) not in (dict, list):
-    #     print(f"DATA IF  -------------------- {data}")
-    #     df = data.rename(columns=mapper).applymap(null2none)
-    #     if 'geometry' in df:
-    #         gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
-    #         gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
-    #     else:
-    #         gdf = df[mapper.values()]
-    #     missing_columns = columns - set(gdf.columns)
-    #     for column in missing_columns:
-    #         gdf[column] = None
-
-    # else:
-    #     print(f"DATA ELSE -------------------- {data}")
-    #     return
-    #     for key in data:
-    #         # print(f"KEY -> {key}")
-    #         # print(f"data_frame -> {data[key]}")
-
-    #         df = data[key].rename(columns=mapper).applymap(null2none)
-    #         if 'geometry' not in df:
-    #             return None
-    #         gs = gpd.GeoSeries.from_wkt(df["geometry"].apply(qgsgeo2wkt))
-    #         gdf = gpd.GeoDataFrame(df[mapper.values()], geometry=gs, crs=f"EPSG:{epsg}")
-    #         # gdf["scenario_id"] = scenario_id
-    #         missing_columns = columns - set(gdf.columns)
-    #         for column in missing_columns:
-    #             gdf[column] = None
-
-    # return gdf
-
 
 def get_dataframes(inp_dict, epsg):
     dataframes = []
 
+    # Section OPTIONS
+    df = inp_dict["OPTIONS"]["data"].rename(columns={"Value": "value"})
+    df["parameter"] = "inp_options_" + df["Option"].str.lower()
+    dataframes.append({"table": "OPTIONS", "df": df[["parameter", "value"]]})
+
+    # Section REPORT
+    data = inp_dict["REPORT"]["data"]
+    new_data = [
+        {"parameter": f"inp_report_{param.lower()}", "value": value}
+        for param, value in data
+    ]
+    df = pd.DataFrame(new_data)
+    dataframes.append({"table": "REPORT", "df": df})
+
+    # Section CONTROLS
+    data = inp_dict["CONTROLS"]["data"]
+    controls = "\n".join([" ".join(line) for line in data])
+    dataframes.append({"table": "CONTROLS", "df": controls})
+
+    # Section CURVES
+    df = pd.DataFrame(columns=["curve_type", "idval", "xcoord", "ycoord"])
+    for curve_type, curve_df in inp_dict["CURVES"].items():
+        ct = curve_type.upper()
+        curve_df.insert(0, "curve_type", ct)
+        curve_df.columns = df.columns
+        df = pd.concat([df, curve_df], ignore_index=True)
+    curves = df[["idval", "curve_type"]].drop_duplicates()
+    curve_values = df[["idval", "xcoord", "ycoord"]].rename(columns={"idval": "curve"})
+    dataframes.append({"table": "cat_curve", "df": curves})
+    dataframes.append({"table": "cat_curve_value", "df": curve_values})
+
+    # Section TIMESERIES
+    df = inp_dict["TIMESERIES"]["data"].rename(
+        columns={
+            "Name": "idval",
+            "Date": "date",
+            "Time": "time",
+            "Value": "value",
+            "File_Name": "fname",
+        }
+    )
+    ts = df[["idval", "fname"]].drop_duplicates()
+    ts_values = (
+        df[["idval", "date", "time", "value"]]
+        .rename(columns={"idval": "timeseries"})
+        .dropna(subset=["date", "time"])
+    )
+
+    def timeseries_type(timeseries_name):
+        sections = [
+            ("INFLOWS", "INFLOW HYDROGRAPH"),
+            ("ORIFICE", "ORIFICE"),
+            ("RAINGAGE", "RAINFALL"),
+        ]
+        for section, tstype in sections:
+            ts_column = []
+            if section not in inp_dict:
+                continue
+            if section == "INFLOWS":
+                ts_column = inp_dict[section]["data"]["Direct"]["Time_Series"]
+            # TODO: if section == "ORIFICE"
+            # TODO: if section == "RAINGAGE"
+            if timeseries_name in ts_column.values:
+                return tstype
+        return "OTHER"
+
+    def time_type(row):
+        if not row.fname:
+            return "FILE"
+        dates = ts_values[ts_values["timeseries"] == row.idval]["date"]
+        if (dates == "").all():
+            return "RELATIVE"
+        return "ABSOLUTE"
+
+    ts["timser_type"] = pd.Series(
+        {row.Index: timeseries_type(row.idval) for row in ts.itertuples()}
+    )
+    ts["times_type"] = pd.Series({row.Index: time_type(row) for row in ts.itertuples()})
+
+    dataframes.append({"table": "cat_timeseries", "df": ts})
+    dataframes.append({"table": "cat_timeseries_value", "df": ts_values})
+
+    # Section PATTERNS
+    def format_patterns(pattern_type, df):
+        df.columns = ["pattern", "timestep", "value"]
+        df["pattern_type"] = pattern_type
+        df["timestep"] = df.groupby("pattern").cumcount() + 1
+        return df
+
+    df = pd.concat([format_patterns(pt, df) for pt, df in inp_dict["PATTERNS"].items()])
+
+    patterns = (
+        df[["pattern", "pattern_type"]]
+        .drop_duplicates()
+        .rename(columns={"pattern": "idval"})
+    )
+    pattern_values = df[["pattern", "timestep", "value"]]
+
+    dataframes.append({"table": "cat_pattern", "df": patterns})
+    dataframes.append({"table": "cat_pattern_value", "df": pattern_values})
+
+    # Section TRANSECTS
+    df = inp_dict["TRANSECTS"]["data"]
+    df_sections = inp_dict["TRANSECTS"]["XSections"]
+
+    transects = (
+        df[["TransectName"]].drop_duplicates().rename(columns={"TransectName": "idval"})
+    )
+
+    tr_value_rows = []
+    for row in df.itertuples():
+        xsections = df_sections[df_sections["TransectName"] == row.TransectName]
+
+        gr_line = ""
+        for pair in xsections.itertuples():
+            gr_line += f" {pair.Elevation} {pair.Station} "
+        gr_line = gr_line.strip()
+
+        tr_value_rows += [
+            {
+                "transect": row.TransectName,
+                "data_group": "NC",
+                "value": (
+                    f"{row.RoughnessLeftBank} {row.RoughnessRightBank} "
+                    f"{row.RoughnessChannel}"
+                ),
+            },
+            {
+                "transect": row.TransectName,
+                "data_group": "X1",
+                "value": (
+                    f"{row.TransectName} {len(xsections)} {row.BankStationLeft} "
+                    f"{row.BankStationRight} 0 0 0 {row.ModifierMeander}"
+                    f"{row.ModifierStations} {row.ModifierElevations}"
+                ),
+            },
+            {
+                "transect": row.TransectName,
+                "data_group": "GR",
+                "value": gr_line,
+            },
+        ]
+
+    transect_values = pd.DataFrame(tr_value_rows)
+    dataframes.append({"table": "cat_transects", "df": transects})
+    dataframes.append({"table": "cat_transects_value", "df": transect_values})
+
+    # Tables that need to be merged before import
     tables_to_merge = {
         "inp_conduit": ("CONDUITS", "XSECTIONS", "LOSSES"),
         "inp_weir": ("WEIRS", "XSECTIONS"),
@@ -323,9 +385,27 @@ def get_dataframes(inp_dict, epsg):
 
     for table, sections in tables_to_merge.items():
         df = get_merged_df(inp_dict, sections, epsg)
+
+        if table in ("inp_weir", "inp_orifice"):
+            # Drop columns 'barrels' and 'culvert' of df if they exist
+            if "barrels" in df.columns:
+                df.drop("barrels", axis=1, inplace=True)
+            if "culvert" in df.columns:
+                df.drop("culvert", axis=1, inplace=True)
+            if "curve_transect" in df.columns:
+                df.drop("curve_transect", axis=1, inplace=True)
+
+        if table == "inp_orifice":
+            # Drop columns 'geom3' and 'geom4' of df if they exist
+            if "geom3" in df.columns:
+                df.drop("geom3", axis=1, inplace=True)
+            if "geom4" in df.columns:
+                df.drop("geom4", axis=1, inplace=True)
+
         if not df.empty:
             dataframes.append({"table": table, "df": df})
 
+    # Tables in the mapping _tables
     for table in _tables:
         if table["table_name"] in tables_to_merge:
             continue
@@ -338,17 +418,14 @@ def get_dataframes(inp_dict, epsg):
         if section not in inp_dict:
             continue
 
-        if section == "CURVES":
-            df = pd.DataFrame(columns=["curve_type", "idval", "xcoord", "ycoord"])
-            for curve_type, curve_df in inp_dict[section].items():
-                ct = curve_type.upper()
-                curve_df.insert(0, "curve_type", ct)
-                curve_df.columns = df.columns
-                df = pd.concat([df, curve_df], ignore_index=True)
-            dataframes.append({"table": "cat_curve", "df": df})
-            continue
-
         data = inp_dict[section]["data"]
+
+        if section == "INFLOWS":
+            data = inp_dict[section]["data"]["Direct"]
+
+        if section == "DWF":
+            data = inp_dict["INFLOWS"]["data"]["Dry_Weather"]
+
         if type(data) in (dict, list):
             # print(section, ":")
             # print(f"{data}")
@@ -356,45 +433,6 @@ def get_dataframes(inp_dict, epsg):
         df = get_dataframe(data, table, epsg)
         dataframes.append({"table": table["table_name"], "df": df})
     return dataframes
-
-    # dict_all, dict_text_tables = dicts
-    # dataframes = {}
-
-    # for table in _tables:
-    #     table_name = table["table_name"]
-    #     section = table["section"]
-
-    #     if section in dict_text_tables:
-    #         the_dict = dict_text_tables
-    #     elif section in dict_all:
-    #         the_dict = dict_all
-    #     else:
-    #         continue
-
-    #     # TODO Handle CURVES section
-    #     if section == "CURVES":
-    #         continue
-
-    #     df = get_dataframe(
-    #         the_dict[section]["data"],
-    #         table,
-    #         columns[table_name],
-    #         epsg,
-    #     )
-
-    #     if table_name in dataframes:
-    #         print(f"Merging in {section}")
-    #         df = df.dropna(how='all', axis='columns')
-    #         old_df = dataframes[table_name]["df"].dropna(how='all', axis='columns')
-    #         new_df = old_df.merge(df, left_on="code", right_index=True)
-    #         missing_columns = columns[table_name] - set(new_df.columns)
-    #         for column in missing_columns:
-    #             new_df[column] = None
-    #         dataframes[table_name]["df"] = new_df
-    #     else:
-    #         dataframes[table_name] = {"table": table_name, "df": df}
-
-    # return dataframes
 
 
 def get_merged_df(inp_dict, sections, epsg):

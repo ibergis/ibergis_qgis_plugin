@@ -36,7 +36,6 @@ class DrImportInpTask(DrTask):
         inp_dict = inp2dict(self.input_file, self.feedback)
         if self.isCanceled():
             return False
-        columns = {table: self._get_colums(table) for table in core.tables()}
         data = core.get_dataframes(inp_dict, global_vars.data_epsg)
 
         if self.isCanceled():
@@ -44,55 +43,45 @@ class DrImportInpTask(DrTask):
 
         for i, item in enumerate(data):
             self.feedback.setProgress(i / len(data) * 100)
-            if len(item["df"]) == 0:
-                self.feedback.setProgressText(f"Skipping empty table {item['table']}")
+            table_name = item["table"]
+            df = item["df"]
+            if len(df) == 0:
+                self.feedback.setProgressText(f"Skipping empty table {table_name}")
                 continue
             if self.isCanceled():
                 return False
-            self.feedback.setProgressText(f"Saving table {item['table']}")
+            self.feedback.setProgressText(f"Saving table {table_name}")
 
-            if item["table"] == "cat_curve":
-                curves = item["df"][["idval", "curve_type"]].drop_duplicates()
-                curve_values = item["df"][["idval", "xcoord", "ycoord"]].rename(
-                    columns={"idval": "curve"}
-                )
-                connection = self.dao.conn
-                curves.to_sql("cat_curve", connection, if_exists="append", index=False)
-                curve_values.to_sql(
-                    "cat_curve_value", connection, if_exists="append", index=False
-                )
-            else:
-                invalid_columns = set(item["df"].columns).difference(
-                    columns[item["table"]], {"geometry"}
-                )
-                if invalid_columns:
-                    raise ValueError(
-                        f"Invalid columns for {item['table']}: {invalid_columns}"
+            if table_name in ["OPTIONS", "REPORT"]:
+                for row in df.itertuples():
+                    self.dao.execute_sql(
+                        f"""
+                        INSERT OR REPLACE INTO config_param_user (parameter, value)
+                        VALUES ('{row.parameter}', '{row.value}')
+                        """
                     )
-                missing_columns = columns[item["table"]].difference(item["df"].columns)
-                for column in missing_columns:
-                    item["df"][column] = None
-                item["df"].to_file(
-                    gpkg_file, driver="GPKG", layer=item["table"], mode="a"
+                continue
+
+            if table_name == "CONTROLS":
+                self.dao.execute_sql(
+                    f"INSERT INTO cat_controls (descript) VALUES ('{df}')"
                 )
+                continue
 
-        # for i, item in enumerate(data.values()):
+            columns = self._get_colums(table_name)
 
-        #     self.feedback.setProgress(i / len(data) * 100)
+            invalid_columns = set(df.columns).difference(columns, {"geometry"})
+            if invalid_columns:
+                raise ValueError(f"Invalid columns for {table_name}: {invalid_columns}")
 
-        #     ##TODO: Check this
-        #     if item["df"] is None:
-        #         continue
+            missing_columns = columns.difference(df.columns)
+            for column in missing_columns:
+                df[column] = None
 
-        #     if len(item["df"]) == 0:
-        #         self.feedback.setProgressText(f"Skipping empty table {item['table']}")
-        #         continue
-        #     if self.isCanceled():
-        #         return False
-        #     self.feedback.setProgressText(f"Saving table {item['table']}")
-
-        #     ##TODO:: Verify conflicts with "mode"=a to append values
-        #     item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"], mode="a")
-        #     # item["df"].to_file(gpkg_file, driver="GPKG", layer=item["table"])
+            if "geometry" in df.columns:
+                df.to_file(gpkg_file, driver="GPKG", layer=table_name, mode="a")
+            else:
+                connection = self.dao.conn
+                df.to_sql(table_name, connection, if_exists="append", index=False)
 
         return True

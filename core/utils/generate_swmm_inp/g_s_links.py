@@ -94,19 +94,14 @@ def get_conduits_from_shapefile(conduits_raw):
         if col == 'Barrels':
             if xs_row['Shape'] in ['IRREGULAR', 'STREET']:
                 return ''
-            else:
-                if pd.isna(xs_row[col]):
-                    return '1'
-                else:
-                    return int(xs_row[col])
-        else:
-            if xs_row['Shape'] in ['IRREGULAR', 'STREET']:
-                return ''
-            else:
-                if pd.isna(xs_row[col]):
-                    return '0'
-                else:
-                    return xs_row[col]
+            if pd.isna(xs_row[col]):
+                return '1'
+            return int(xs_row[col])
+        if xs_row['Shape'] in ['IRREGULAR', 'STREET']:
+            return ''
+        if pd.isna(xs_row[col]):
+            return '0'
+        return xs_row[col]
     xsections_df['Geom2'] = xsections_df.apply(lambda x: fill_empty_xsects(x, 'Geom2'), axis=1)
     xsections_df['Geom3'] = xsections_df.apply(lambda x: fill_empty_xsects(x, 'Geom3'), axis=1)
     xsections_df['Geom4'] = xsections_df.apply(lambda x: fill_empty_xsects(x, 'Geom4'), axis=1)
@@ -284,6 +279,7 @@ def get_outlets_from_shapefile(outlets_raw):
                   outlets_raw.keys())
     outlets_raw['Name'] = [str(x) for x in outlets_raw['Name']]
     outlets_raw['Qcoeff'] = outlets_raw['Qcoeff'].fillna(1)
+    outlets_raw['InOffset'] = outlets_raw['InOffset'].fillna('*')
     outlets_raw['CurveName'] = outlets_raw['CurveName'].fillna('*')
     outlets_raw['FlapGate'] = outlets_raw['FlapGate'].fillna('NO')
     outlets_raw['QCurve'] = [get_outl_curve(outlets_raw.loc[i]) for i in outlets_raw.index]

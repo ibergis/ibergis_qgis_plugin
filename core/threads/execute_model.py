@@ -47,7 +47,7 @@ class DrExecuteModel(DrTask):
     PROGRESS_HYETOGRAPHS = 40
     PROGRESS_RAIN = 50
     PROGRESS_INP = 70
-    PROGRESS_IBER = 90
+    PROGRESS_IBER = 97
     PROGRESS_END = 100
 
     def __init__(self, description: str, params: dict, timer=None):
@@ -321,27 +321,30 @@ class DrExecuteModel(DrTask):
                 sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_method'"
                 row = self.dao.get_row(sql)
                 losses_method = row[0] if row and row[0] is not None else 2
-                self.progress_changed.emit("Export files", lerp_progress(50, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
-                # cn_multiplier
-                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_cn_multiplier'"
-                row = self.dao.get_row(sql)
-                cn_multiplier = row[0] if row else 0
-                self.progress_changed.emit("Export files", lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
-                # ia_coeff
-                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_scs_ia_coefficient'"
-                row = self.dao.get_row(sql)
-                ia_coeff = row[0] if row else 0
-                self.progress_changed.emit("Export files", lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
-                # start_time
-                sql = "SELECT value FROM config_user_params WHERE parameter = 'options_losses_starttime'"
-                row = self.dao.get_row(sql)
-                start_time = row[0] if row else 0
-                self.progress_changed.emit("Export files", lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
-                # Replace first line
-                new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
-                losses_content_lines = losses_content.split('\n')
-                losses_content_lines[0] = new_first_line
-                losses_content = '\n'.join(losses_content_lines)
+                if losses_method == '0':
+                    losses_content = '0'
+                else:
+                    self.progress_changed.emit("Export files", lerp_progress(50, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    # cn_multiplier
+                    sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_cn_multiplier'"
+                    row = self.dao.get_row(sql)
+                    cn_multiplier = row[0] if row else 1
+                    self.progress_changed.emit("Export files", lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    # ia_coeff
+                    sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_ia_coefficient'"
+                    row = self.dao.get_row(sql)
+                    ia_coeff = row[0] if row else 0.2
+                    self.progress_changed.emit("Export files", lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    # start_time
+                    sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_starttime'"
+                    row = self.dao.get_row(sql)
+                    start_time = row[0] if row else 0
+                    self.progress_changed.emit("Export files", lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    # Replace first line
+                    new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
+                    losses_content_lines = losses_content.split('\n')
+                    losses_content_lines[0] = new_first_line
+                    losses_content = '\n'.join(losses_content_lines)
             self.progress_changed.emit("Export files", lerp_progress(90, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber_Losses.dat', losses_content)
@@ -368,6 +371,8 @@ class DrExecuteModel(DrTask):
                 value = "Enabled" if value == "True" else "Disabled"
             elif parameter == 'options_plan_id':
                 value = "0"
+            elif parameter == 'options_simulation_details':
+                value = "1" if value == "True" else "0"
             options[parameter] = value
 
         project_name = options.get('project_name', 'test')
@@ -433,6 +438,11 @@ class DrExecuteModel(DrTask):
         row = self.dao.get_row(sql)
         rain_class = int(row[0]) if row and row[0] else 0
 
+        # options_setallhyetografs
+        sql = "SELECT value FROM config_param_user WHERE parameter = 'options_setallhyetografs'"
+        row = self.dao.get_row(sql)
+        timeseries_override = row[0] if row else None
+
         if rain_class != 1:
             file_name.write_text("Hyetographs\n0\nEnd\n")
             return
@@ -449,11 +459,12 @@ class DrExecuteModel(DrTask):
             for i, ht_row in enumerate(gdf.itertuples(), start=1):
                 file.write(f"{i}\n")
                 file.write(f"{ht_row.x} {ht_row.y}\n")
+                timeseries = timeseries_override if timeseries_override not in (None, '') else ht_row.timeseries
 
                 sql = f"""
-                    SELECT time, value 
-                    FROM cat_timeseries_value 
-                    WHERE timeseries ='{ht_row.timeseries}'
+                    SELECT time, value
+                    FROM cat_timeseries_value
+                    WHERE timeseries ='{timeseries}'
                 """
                 ts_rows = self.dao.get_rows(sql)
                 if ts_rows:
@@ -477,6 +488,64 @@ class DrExecuteModel(DrTask):
         if rain_class != 2:
             file_name.write_text(f"{rain_class} 0\n")
             return
+
+        # options_setrainfall_raster
+        sql = "SELECT value FROM config_param_user WHERE parameter = 'options_setrainfall_raster'"
+        row = self.dao.get_row(sql)
+        raster_id = row[0] if row else None
+        if raster_id is None:
+            file_name.write_text(f"{rain_class} 0\n")
+            return
+
+        # get information about raster
+        sql = f"SELECT idval, raster_type FROM cat_raster WHERE id = '{raster_id}'"
+        row = self.dao.get_row(sql)
+
+        if not row:
+            raise Exception(f"Raster data not found. Raster id: {raster_id}.")
+
+        raster_idval = row["idval"]
+        raster_type = row["raster_type"]
+
+        if raster_type not in ("Intensity", "Volume"):
+            raise Exception(f"Invalid raster type: {raster_type}.")
+
+        raster_type_code = 0 if raster_type == "Intensity" else 1
+
+        # get raster values
+        sql = f"""
+                SELECT time, fname
+                FROM cat_raster_value
+                WHERE raster ='{raster_idval}'
+            """
+        raster_rows = self.dao.get_rows(sql)
+
+        if not raster_rows:
+            raise Exception(f"Raster values not found. Raster idval: {raster_idval}.")
+
+        def str2seconds(time: str) -> int:
+            hours, minutes = map(int, time.split(":"))
+            seconds = hours * 3600 + minutes * 60
+            return seconds
+
+        times = [str2seconds(row["time"]) for row in raster_rows]
+        paths = [Path(row["fname"]) for row in raster_rows]
+
+        project_folder = Path(self.dao.db_filepath).parent
+        commom_path = paths[0].parent
+
+        # check if all parents are the same
+        if not all(path.parent == commom_path for path in paths):
+            raise Exception(
+                f"Not all rasters are in the same folder. Raster idval: {raster_idval}."
+            )
+
+        with open(file_name, "w") as file:
+            file.write(f"{rain_class} {raster_type_code}\n")
+            file.write(f"{project_folder / commom_path}\n")
+            file.write(f"{len(times)}\n")
+            for seconds, path in zip(times, paths):
+                file.write(f'{seconds} "{path.name}"\n')
 
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}
@@ -510,7 +579,8 @@ class DrExecuteModel(DrTask):
             destination_path = os.path.join(destination_folder, file)
             shutil.copy2(source_path, destination_path)  # shutil.copy2 preserves metadata
 
-        self.progress_changed.emit("Run Iber", lerp_progress(20, self.PROGRESS_INP, self.PROGRESS_IBER), '', False)
+        init_progress = lerp_progress(10, self.PROGRESS_INP, self.PROGRESS_IBER)
+        self.progress_changed.emit("Run Iber", init_progress, '', False)
 
         process = subprocess.Popen([iber_exe_path],
                                    stdout=subprocess.PIPE,
@@ -526,7 +596,14 @@ class DrExecuteModel(DrTask):
             if output == '' and process.poll() is not None:
                 break
             if output:
-                self.progress_changed.emit("Run Iber", None, f'{output.strip()}', True)
+                try:
+                    # 0.000        1.00000    13:58:47:68       0.000       0.000     0.00%        --
+                    output_parts = [x for x in output.strip().split(' ') if x != '']
+                    output_percentage = output_parts[5].replace('%', '')
+                    iber_percentage = lerp_progress(int(float(output_percentage)), init_progress, self.PROGRESS_IBER)
+                except:
+                    iber_percentage = None
+                self.progress_changed.emit("Run Iber", iber_percentage, f'{output.strip()}', True)
 
         if process.poll() is None:
             process.terminate()

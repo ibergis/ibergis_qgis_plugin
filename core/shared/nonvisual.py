@@ -569,7 +569,7 @@ class DrNonVisual:
 
             # Calcule el área
             area = np.trapz(y_list, x_list) * 2
-            
+
             # Create inverted plot
             plot_widget.axes.plot(y_list, x_list, color="blue")
 
@@ -1723,7 +1723,7 @@ class DrNonVisual:
         # Show tabs
         for i in range(tab_lidlayers.count()):
             tab_name = tab_lidlayers.widget(i).objectName().upper()
-            
+
             # Set the first non-hidden tab selected
             if tab_name == lidtabs[0]:
                 tab_lidlayers.setCurrentIndex(i)
@@ -2081,7 +2081,7 @@ class DrNonVisual:
 
             raster_id = raster_id.strip("'")
             raster_type = raster_type.strip("'")
-            fields = f"""{{"idval": "{raster_id}", "raster_type": "{raster_type}"}}"""
+            fields = f"""{{"raster_type": "{raster_type}"}}"""
 
             result = self._setfields(raster_id, table_name, fields)
             if not result:

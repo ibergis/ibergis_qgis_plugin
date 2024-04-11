@@ -334,12 +334,7 @@ def write_inp(
         df_to_inp_section('CONTROLS')
 
     # report options
-    feedback.setProgressText('writing [REPORT options]...')
-    file1.write('[REPORT]\n')
-    file1.write('SUBCATCHMENTS ALL\n')
-    file1.write('NODES ALL\n')
-    file1.write('LINKS ALL\n')
-    file1.write('\n')
+    df_to_inp_section('REPORT')
 
     # tags
     file1.write('[TAGS]\n')

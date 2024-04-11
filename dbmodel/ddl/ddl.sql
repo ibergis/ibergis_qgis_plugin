@@ -166,7 +166,7 @@ CREATE TABLE roof (
     lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (outlet_code) REFERENCES inp_junction(code) on update cascade on delete restrict
+    FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
 );
 
 
@@ -200,7 +200,7 @@ CREATE TABLE inlet (
     efficiency real check (typeof(efficiency) = 'real' or efficiency = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (outlet_node) references junction (code) on update cascade on delete restrict
+    FOREIGN KEY (outlet_node) references node (code) on update cascade on delete restrict
 );
 
 
@@ -243,8 +243,7 @@ CREATE TABLE inp_conduit (
     geom2 real check (typeof(geom2) = 'real' or geom2 = null),
     geom3 real check (typeof(geom3) = 'real' or geom3 = null),
     geom4 real check (typeof(geom4) = 'real' or geom4 = null),
-    curve text check (typeof(curve) = 'text' or curve=null),
-    transect text check (typeof(transect) = 'text' or transect=null),
+    curve_transect text check (typeof(curve_transect) = 'text' or curve_transect=null),
     roughness real check (typeof(roughness) = 'real' or roughness = null),
     length real check (typeof(length) = 'real' or length = null),
     z1 real check (typeof(z1) = 'real' or z1 = null),
@@ -260,25 +259,29 @@ CREATE TABLE inp_conduit (
     seepage real check (typeof(seepage) = 'real' or seepage = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
-    FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
+    FOREIGN KEY (node_1) REFERENCES node (code) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES node (code) on update cascade on delete restrict
+    -- FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    -- FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict   
 );
 
 CREATE TABLE inp_outlet (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript)='text' or descript= null),
-    node_1 text check (typeof(node_1)='text' or node_1= null),
-    node_2 text check (typeof(node_2)='text' or node_2= null),
+    node_1 text check (typeof(node_1) = 'text' or node_1 = null),
+    node_2 text check (typeof(node_2) = 'text' or node_2 = null),
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     outlet_type text check (typeof(outlet_type) in ('text', null) and outlet_type in ('FUNCTIONAL/DEPTH', 'FUNCTIONAL/HEAD', 'TABULAR/DEPTH', 'TABULAR/HEAD')),
     offsetval real check (typeof(offsetval) = 'real' or offsetval = null),
     cd1 real check (typeof(cd1)='real' or cd1= null) default 1,
     cd2 real check (typeof(cd2)='real' or cd2= null) default 1,
     curve text check (typeof(curve)='text' or curve= null),
-    annotation real check (typeof(annotation)='real' or annotation= null),
+    annotation text check (typeof(annotation)='real' or annotation= null),
     geom geometry,
-    FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict
+    FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict,
+    FOREIGN KEY (node_1) REFERENCES node (code) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES node (code) on update cascade on delete restrict
 );
 
 
@@ -297,7 +300,9 @@ CREATE TABLE inp_orifice (
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     close_time real check (typeof(close_time) = 'real' or close_time = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry
+    geom geometry,
+    FOREIGN KEY (node_1) REFERENCES node (code) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES node (code) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_weir (
@@ -308,7 +313,7 @@ CREATE TABLE inp_weir (
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
     weir_type text check (typeof(weir_type) in ('text', null) and weir_type in ('ROADWAY', 'SIDEFLOW', 'TRANSVERSE', 'TRAPEZOIDAL', 'V-NOTCH')),
     offsetval real check (typeof(offsetval) = 'real' or offsetval = null),
-    shape text check (typeof(shape) in ('text', null) and shape in ('CIRCULAR', 'RECT_CLOSED')) NOT NULL,
+    shape text check (typeof(shape) in ('text', null) and shape in ('RECT_OPEN', 'TRAPEZOIDAL', 'TRIANGULAR')) NOT NULL,
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
     geom2 real check (typeof(geom2) = 'real' or geom2 = null)  DEFAULT 0.00,
     geom3 real check (typeof(geom3) = 'real' or geom3 = null)  DEFAULT 0.00,
@@ -325,7 +330,9 @@ CREATE TABLE inp_weir (
     end_coeff real check (typeof(end_coeff)='real' or end_coeff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
+    FOREIGN KEY (node_1) REFERENCES node (code) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES node (code) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_pump (
@@ -340,7 +347,9 @@ CREATE TABLE inp_pump (
     shutoff real check (typeof(shutoff) = 'real' or shutoff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
-    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
+    FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
+    FOREIGN KEY (node_1) REFERENCES node (code) on update cascade on delete restrict,
+    FOREIGN KEY (node_2) REFERENCES node (code) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_outfall (
@@ -372,10 +381,10 @@ CREATE TABLE inp_divider (
     divider_type text check (typeof(divider_type) IN ('text', null) and divider_type in ('CUTOFF', 'OVERFLOW', 'TABULAR', 'WEIR')),
     cutoff_flow real check (typeof(cutoff_flow) = 'real' or cutoff_flow = null),
     qmin real check (typeof(qmin) = 'real' or qmin = null),
-    curve integer check (typeof(curve) = 'integer' or curve = null),
+    curve text check (typeof(curve) = 'text' or curve = null),
     q0 real check (typeof(q0) = 'real' or q0 = null),
     qmax real check (typeof(qmax) = 'real' or qmax = null),
-    annotation real check (typeof(annotation) = 'real' or annotation = null),
+    annotation text check (typeof(annotation) = 'real' or annotation = null),
     geom geometry,
     FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
     FOREIGN KEY (divert_arc) references inp_conduit(code) on update cascade on delete restrict
@@ -429,8 +438,8 @@ create table inp_dwf (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
+    format text check (typeof(format) = 'text' or format=null) default 'FLOW',
     avg_value real check (typeof(avg_value)='real' or avg_value = null) DEFAULT 0.0001,
-    baseline real check (typeof(baseline) = 'real' or baseline=null) default 0.0001,
     pattern1 text check (typeof(pattern1) = 'text' or pattern1 = null),
     pattern2 text check (typeof(pattern2) = 'text' or pattern2 = null),
     pattern3 text check (typeof(pattern3) = 'text' or pattern3 = null),
@@ -454,7 +463,6 @@ create table inp_inflow (
     base real check (typeof(base)='real' or base=null) default 0,
     pattern text check (typeof(pattern) = 'integer' or pattern=null),
     type text check(typeof(type)='text' or type=null),
-    geom geometry,
     FOREIGN KEY (pattern) REFERENCES cat_pattern(idval) on update cascade on delete restrict
     FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
@@ -782,7 +790,20 @@ create view if not exists vi_title as select parameter, value from config_param_
 
 create view if not exists vi_files as select fname as Name from inp_files;
 
-create view if not exists vi_options as select parameter as Option, value as Value from config_param_user where parameter like 'inp_options%';
+create view if not exists vi_options as
+select
+  parameter as Option,
+  case
+    when parameter in ('inp_options_start_date', 'inp_options_end_date', 'inp_options_report_start_date')
+      then strftime('%m/%d/%Y', value)
+    when parameter in ('inp_options_sweep_start', 'inp_options_sweep_end')
+      then strftime('%m/%d', value)
+    else value
+  end as Value
+from config_param_user
+where parameter like 'inp_options%';
+
+create view if not exists vi_report as select parameter as Option, value as Value from config_param_user where parameter like 'inp_report%' and value is not null;
 
 create view if not exists vi_conduits as 
     select 
@@ -802,7 +823,7 @@ create view if not exists vi_conduits as
     geom4 as Geom4, 
     barrels as Barrels, 
     culvert as Culvert, 
-    COALESCE(curve, '') || COALESCE(transect, '') as Shp_Trnsct,
+    curve_transect as Shp_Trnsct,
     kentry as Kentry, 
     kexit as Kexit, 
     kavg as Kavg, 
@@ -1011,13 +1032,12 @@ create view if not exists vi_losses as
 create view if not exists vi_dwf as 
     select 
     code as Name, 
-    'FLOW' as Constituent, 
+    format as Constituent, 
     avg_value as Average_Value, 
     pattern1 as Time_Pattern1, 
     pattern2 as Time_Pattern2, 
     pattern3 as Time_Pattern3, 
-    pattern4 as Time_Pattern4,
-    baseline as Baseline
+    pattern4 as Time_Pattern4
     from inp_dwf;
 
 create view if not exists vi_controls as 
@@ -1041,8 +1061,8 @@ create view if not exists vi_inflows as
     from inp_inflow;
 
 create view if not exists vi_xsections as
-    select code as Link, shape as Shape, geom1 as Geom1, curve as Geom2, 0 as Geom3, 0 as Geom4, barrels, culvert from inp_conduit where shape ='CUSTOM' union
-    select code as Link, shape as Shape, transect as Geom1, 0 as Geom2, 0 as Geom3, 0 as Geom4 , barrels, culvert from inp_conduit where shape='IRREGULAR'union
+    select code as Link, shape as Shape, geom1 as Geom1, curve_transect as Geom2, 0 as Geom3, 0 as Geom4, barrels, culvert from inp_conduit where shape ='CUSTOM' union
+    select code as Link, shape as Shape, curve_transect as Geom1, 0 as Geom2, 0 as Geom3, 0 as Geom4 , barrels, culvert from inp_conduit where shape='IRREGULAR'union
     select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, geom3 as Geom3 , geom4 as Geom4, barrels, culvert from inp_conduit where shape not in ('CUSTOM', 'IRREGULAR') union
     select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, null as Geom3, null as Geom4, null as barrels, null as culvert from inp_orifice union
     select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, null as Geom3, null as Geom4, null as barrels, null as culvert from inp_weir;
@@ -1066,17 +1086,22 @@ SELECT code AS gully_id,
     geom 
 FROM inlet;
 
-CREATE VIEW if not exists v_node as
-    select code, geom from inp_storage union
-    select code, geom from inp_outfall union
-    select code, geom from inp_junction union
-    select code, geom from inp_divider;
-CREATE VIEW if not exists v_arc as
-    select code, geom from inp_outlet union
-    select code, geom from inp_weir union
-    select code, geom from inp_orifice union
-    select code, geom from inp_pump union
-    select code, geom from inp_conduit;
+CREATE TABLE node (
+    fid integer primary key,
+    code text unique,
+    table_name text,
+    table_fid integer,
+    geom geometry
+);
+
+CREATE TABLE arc (
+    fid integer primary key,
+    code text unique,
+    table_name text,
+    table_fid integer,
+    geom geometry
+);
+
 
 CREATE VIEW if not exists v_ui_file AS 
     SELECT name, ROUND(LENGTH(iber2d || COALESCE(roof, '') || losses) / 1024.0, 3) AS kilobytes FROM cat_file ORDER BY name ASC;

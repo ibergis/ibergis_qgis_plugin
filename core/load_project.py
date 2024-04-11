@@ -8,11 +8,12 @@ or (at your option) any later version.
 import os
 from functools import partial
 
-from qgis.core import QgsProject, QgsSnappingUtils
+from qgis.core import QgsProject, QgsSnappingUtils, QgsApplication
 from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtWidgets import QToolBar, QActionGroup, QDockWidget, QApplication, QDialog
 
 from .models.plugin_toolbar import DrPluginToolbar
+from .threads.project_layers_config import DrProjectLayersConfig
 from .toolbars import buttons
 from .utils import tools_dr
 from .toolbars.utilities.bc_scenario_manager import set_bc_filter
@@ -118,6 +119,9 @@ class DrLoadProject(QObject):
 
         # Reset dialogs position
         tools_dr.reset_position_dialog()
+
+        # Call gw_fct_setcheckproject and create GwProjectLayersConfig thread
+        self._config_layers()
 
 
     # region private functions
@@ -308,6 +312,29 @@ class DrLoadProject(QObject):
         self._enable_toolbar("utilities")
         self._enable_toolbar("toc")
         self._hide_button("308")
+
+
+    def _config_layers(self):
+        """ Call gw_fct_setcheckproject and create GwProjectLayersConfig thread """
+
+        # Set project layers with gw_fct_getinfofromid: This process takes time for user
+        # Manage if task is already running
+        if hasattr(self, 'task_get_layers') and self.task_get_layers is not None:
+            try:
+                if self.task_get_layers.isActive():
+                    message = "ConfigLayerFields task is already active!"
+                    tools_qgis.show_warning(message)
+                    return
+            except RuntimeError:
+                pass
+        # Set background task 'ConfigLayerFields'
+        description = f"ConfigLayerFields"
+        params = {}
+        self.task_get_layers = DrProjectLayersConfig(description, params)
+        QgsApplication.taskManager().addTask(self.task_get_layers)
+        QgsApplication.taskManager().triggerTask(self.task_get_layers)
+
+        return True
 
 
     def _create_toolbar(self, toolbar_id):

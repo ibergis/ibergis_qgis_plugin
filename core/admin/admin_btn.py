@@ -267,7 +267,7 @@ class DrAdminButton:
 
         self._open_form_create_gis_project()
 
-            
+
     def _gis_create_project(self):
         """"""
 
@@ -522,12 +522,12 @@ class DrAdminButton:
         elif self.rdb_data.isChecked():
             tools_log.log_info("Execute 'custom_execution' (empty data)")
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
-            return True
+            return self.populate_config_params()
 
     def populate_config_params(self):
         """Populate table config_param_user"""
 
-        sql_select = f"SELECT id, vdefault FROM sys_param_user"
+        sql_select = f"SELECT columnname, vdefault FROM config_form_fields WHERE formtype = 'form_options'"
         rows = self.gpkg_dao_config.get_rows(sql_select)
 
         if not rows:

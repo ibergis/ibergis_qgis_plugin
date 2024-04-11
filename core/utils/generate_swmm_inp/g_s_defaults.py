@@ -93,7 +93,7 @@ pattern_times = {
 def_sections_dict = {
     'TITLE': None,
     'OPTIONS': ['Option', 'Value'],
-    'REPORT': None,
+    'REPORT': ['Option', 'Value'],
     'FILES': None,
     'RAINGAGES': [
         'Name',
@@ -421,6 +421,15 @@ def_tables_dict = {
         'filename': 'gisswmm_options',
         'tables': {
             'OPTIONS': {
+                'Option': 'String',
+                'Value': 'String'
+            }
+        }
+     },
+    'REPORT': {
+        'filename': 'gisswmm_report',
+        'tables': {
+            'REPORT': {
                 'Option': 'String',
                 'Value': 'String'
             }

@@ -5,6 +5,7 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 import json
+from ctypes import Union
 
 # -*- coding: utf-8 -*-
 from ... import global_vars
@@ -18,21 +19,22 @@ def getconfig(p_input: dict) -> dict:
     v_raw_widgets: list
     v_widgets: list
     v_raw_values: list
+    v_addparam: Union[str, dict]
 
     try:
 
         # get widgets from sys_param_user
-        column_names = ['id', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
-                        'placeholder', 'id AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
-                        'dv_orderby_id', 'dv_isnullvalue',
+        column_names = ['columnname', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
+                        'placeholder', 'columnname AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
+                        'dv_orderby_id', 'CASE WHEN dv_isnullvalue = 1 THEN True ELSE False END AS isNullValue',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
-                        'CASE WHEN isenabled = 1 THEN True ELSE False END AS isenabled',
-                        'vdefault AS value'
+                        'vdefault AS value', 'tooltip', 'addparam'
                         ]
         v_sql = f"SELECT {', '.join(column_names)} " \
-                f"FROM sys_param_user " \
-                f"ORDER BY layoutname, layoutorder, id"
+                f"FROM config_form_fields " \
+                f"WHERE formname = 'dlg_options' " \
+                f"ORDER BY layoutname, layoutorder, columnname"
         v_raw_widgets = global_vars.gpkg_dao_config.get_rows(v_sql)
 
         # format widgets as a json
@@ -61,21 +63,33 @@ def getconfig(p_input: dict) -> dict:
                     cmb_ids = []
                     cmb_names = []
                     if widget['dv_querytext']:
+                        result = None
+                        executed = False
                         v_querystring = widget['dv_querytext']
-                        # First try to execute querytext on config.gpkg
-                        result = global_vars.gpkg_dao_config.get_row(v_querystring)
-                        if not result:
-                            # If nothing is found, execute it on the project's gpkg
-                            result = global_vars.gpkg_dao_data.get_row(v_querystring)
+                        v_addparam = widget['addparam']
+                        if v_addparam:
+                            v_addparam = json.loads(v_addparam)
+                            if v_addparam.get('execute_on') == 'data':
+                                # Execute query on data gpkg if configured in addparam
+                                result = global_vars.gpkg_dao_data.get_row(v_querystring)
+                                executed = True
+
+                        # Execute on config gpkg if not configured
+                        if not result and not executed:
+                            result = global_vars.gpkg_dao_config.get_row(v_querystring)
                         if result:
                             cmb_ids = result[0]
                             cmb_names = result[1]
 
+                    if widget.get('isNullValue', False):
+                        list(cmb_ids).insert(0, '') if cmb_ids else None
+                        list(cmb_names).insert(0, '') if cmb_names else None
+
                     widget['comboIds'] = cmb_ids
                     widget['comboNames'] = cmb_names
 
-                if widget['id'] == parameter:
-                    if widget['value'] in (0, 1, '0', '1'):
+                if widget['columnname'] == parameter:
+                    if widget['value'] in (0, 1, '0', '1') and widget['widgettype'] != 'combo':
                         widget['value'] = str(widget['value'] == '1')
 
                     if value is not None:
@@ -329,6 +343,105 @@ def setfields(p_input: dict) -> dict:
         global_vars.gpkg_dao_data.rollback()
 
     v_return = _create_return(v_return, accepted=accepted, message=v_message)
+    return v_return
+
+
+def getinfofromid(p_input: dict) -> dict:
+    accepted: bool = True
+    v_return: dict = {}
+    v_islayer: bool = False
+    v_tablename: str
+    v_sql: str
+    v_raw_widgets: list = []
+    v_widgets: list = []
+    v_raw_values: list = []
+    v_addparam: Union[str, dict]
+
+    try:
+
+        dao_config = global_vars.gpkg_dao_config.clone()
+        dao_data = global_vars.gpkg_dao_data.clone()
+
+        v_islayer = p_input['feature'].get('isLayer')
+        v_tablename = p_input['feature'].get('tableName')
+
+        if v_islayer:
+            column_names = ['columnname', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
+                            'placeholder', 'columnname AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
+                            'dv_orderby_id', 'dv_isnullvalue AS isNullValue',
+                            'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
+                            'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
+                            'CASE WHEN hidden = 1 THEN True ELSE False END AS hidden',
+                            'vdefault AS value', 'tooltip', 'widgetcontrols', 'addparam'
+                            ]
+            v_sql = f"SELECT {', '.join(column_names)} " \
+                    f"FROM config_form_fields " \
+                    f"WHERE formname = '{v_tablename}' " \
+                    f"ORDER BY layoutorder, columnname"
+
+            v_raw_widgets = dao_config.get_rows(v_sql)
+
+            # format widgets as a json
+            v_widgets = []
+            for row in v_raw_widgets:
+                widget_dict = {}
+                for i, value in enumerate(row):
+                    key = column_names[i]
+                    if ' AS ' in key:
+                        key = key.split(' AS ')[1]
+                    widget_dict[key] = value
+                v_widgets.append(widget_dict)
+
+            for widget in v_widgets:
+                if widget['widgettype'] == 'combo':
+                    cmb_ids = []
+                    cmb_names = []
+                    if widget['dv_querytext']:
+                        result = None
+                        executed = False
+                        v_querystring = widget['dv_querytext']
+                        v_addparam = widget['addparam']
+                        if v_addparam:
+                            v_addparam = json.loads(v_addparam)
+                            if v_addparam.get('execute_on') == 'data':
+                                # Execute query on data gpkg if configured in addparam
+                                result = dao_data.get_rows(v_querystring)
+                                executed = True
+
+                        # Execute on config gpkg if not configured
+                        if not result and not executed:
+                            result = dao_config.get_rows(v_querystring)
+
+                        if result:
+                            for row in result:
+                                cmb_ids.append(row[0])
+                                cmb_names.append(row[1])
+
+                    widget['comboIds'] = cmb_ids
+                    widget['comboNames'] = cmb_names
+
+                if 'ismandatory' in widget:
+                    widget['ismandatory'] = bool(widget['ismandatory'])
+                if 'iseditable' in widget:
+                    widget['iseditable'] = bool(widget['iseditable'])
+                if 'hidden' in widget:
+                    widget['hidden'] = bool(widget['hidden'])
+
+
+        v_return["body"] = {"data": {}, "form": {}}
+        v_return["body"]["data"] = {
+            "fields": v_widgets
+        }
+        v_return["body"]["form"]["formTabs"] = [
+            {
+                "fields": v_widgets
+            }
+        ]
+    except Exception as e:
+        print(f"EXCEPTION IN getconfig: {e}")
+        accepted = False
+
+    v_return = _create_return(v_return, accepted=accepted)
     return v_return
 
 

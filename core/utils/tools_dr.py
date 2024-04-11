@@ -554,6 +554,9 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
 
         # widgetcontrols
         widgetcontrols = field.get('widgetcontrols')
+        if type(widgetcontrols) == str:
+            widgetcontrols = json.loads(widgetcontrols)
+
         if widgetcontrols:
             if widgetcontrols.get('setQgisConstraints') is True:
                 layer.setFieldConstraint(field_index, QgsFieldConstraints.ConstraintNotNull,
@@ -561,7 +564,10 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
                 layer.setFieldConstraint(field_index, QgsFieldConstraints.ConstraintUnique,
                                          QgsFieldConstraints.ConstraintStrengthHard)
 
-        if field.get('ismandatory') is False:
+        if field.get('ismandatory') is True:
+            layer.setFieldConstraint(field_index, QgsFieldConstraints.ConstraintNotNull,
+                                     QgsFieldConstraints.ConstraintStrengthHard)
+        else:
             layer.setFieldConstraint(field_index, QgsFieldConstraints.ConstraintNotNull,
                                      QgsFieldConstraints.ConstraintStrengthSoft)
 
@@ -582,10 +588,9 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
         layer.setEditorWidgetSetup(field_index, editor_widget_setup)
 
         # Manage ValueRelation configuration
-        use_vr = 'widgetcontrols' in field and field['widgetcontrols'] \
-                 and 'valueRelation' in field['widgetcontrols'] and field['widgetcontrols']['valueRelation']
+        use_vr = widgetcontrols and widgetcontrols.get('valueRelation')
         if use_vr:
-            value_relation = field['widgetcontrols']['valueRelation']
+            value_relation = widgetcontrols['valueRelation']
             if value_relation.get('activated'):
                 try:
                     vr_layer = value_relation['layer']
@@ -644,13 +649,17 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
                 editor_widget_setup = QgsEditorWidgetSetup('TextEdit', {'IsMultiline': 'False'})
                 layer.setEditorWidgetSetup(field_index, editor_widget_setup)
 
-        # multiline: key comes from widgecontrol but it's used here in order to set false when key is missing
+        # multiline: key comes from widgecontrols, but it's used here in order to set false when key is missing
         if field['widgettype'] == 'text':
-            if field['widgetcontrols'] and 'setMultiline' in field['widgetcontrols']:
+            if widgetcontrols and 'setMultiline' in widgetcontrols:
                 editor_widget_setup = QgsEditorWidgetSetup('TextEdit',
-                                                           {'IsMultiline': field['widgetcontrols']['setMultiline']})
+                                                           {'IsMultiline': widgetcontrols['setMultiline']})
             else:
                 editor_widget_setup = QgsEditorWidgetSetup('TextEdit', {'IsMultiline': False})
+            layer.setEditorWidgetSetup(field_index, editor_widget_setup)
+
+        if field['widgettype'] == 'hidden':
+            editor_widget_setup = QgsEditorWidgetSetup('Hidden', {})
             layer.setEditorWidgetSetup(field_index, editor_widget_setup)
 
 
@@ -1666,9 +1675,9 @@ def fill_combo(widget, field):
             elem = [comboIds[i], comboNames[i]]
             combolist.append(elem)
     else:
-        msg = f"key 'comboIds' or/and comboNames not found WHERE widgetname='{field['widgetname']}' " \
+        msg = f"Found combobox that has no values. HINT: WHERE id='{field['widgetname']}' " \
               f"AND widgettype='{field['widgettype']}'"
-        tools_qgis.show_message(msg, 2)
+        tools_log.log_warning(msg)
     # Populate combo
     for record in combolist:
         widget.addItem(record[1], record)

@@ -9,7 +9,7 @@ from qgis.PyQt.QtSql import QSqlTableModel
 
 from ..dialog import DrAction
 from ...ui.ui_manager import DrBCScenarioManagerUi, DrBCScenarioUi, DrMeshSelectorUi
-from ....lib import tools_qgis, tools_qt, tools_db
+from ....lib import tools_qgis, tools_qt, tools_db, tools_log
 from ...threads.savetomesh import DrSaveToMeshTask
 from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
@@ -17,18 +17,22 @@ from .... import global_vars
 
 def set_bc_filter():
 
+    layer_name = 'boundary_conditions'
+    bc_layer = tools_qgis.get_layer_by_tablename(layer_name)
+
     sql = f"""SELECT idval FROM cat_bscenario WHERE active = 1"""
     row = tools_db.get_row(sql)
     if not row:
         msg = "No current bcscenario found"
-        tools_qgis.show_warning(msg)
+        tools_log.log_warning(msg)
+        if bc_layer is None:
+            return
+        bc_layer.setSubsetString(f"FALSE")
         return
     cur_scenario = row['idval']
 
-    layer_name = 'boundary_conditions'
-    bc_layer = tools_qgis.get_layer_by_tablename(layer_name)
     if bc_layer is None:
-        msg = f"Layer {layer_name} not found."
+        msg = f"Tried to set filter to '{layer_name}' but layer was not found."
         tools_qgis.show_warning(msg)
         return
     bc_layer.setSubsetString(f"bscenario = '{cur_scenario}'")
