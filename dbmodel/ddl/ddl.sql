@@ -69,8 +69,8 @@ CREATE TABLE cat_curve (
 CREATE TABLE cat_curve_value (
     id integer primary key,
     curve text NOT NULL,
-    xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
-    ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
+    xcoord real CHECK (typeof(xcoord)='real' OR xcoord = NULL),
+    ycoord real CHECK (typeof(ycoord)='real' OR ycoord = NULL),
     FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict
 );
 
@@ -137,7 +137,7 @@ CREATE TABLE ground (
     fid integer PRIMARY KEY,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
+    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 1.0,
     annotation text check (typeof(annotation) = 'text' or annotation = null),
 	landuse text CHECK (typeof(landuse)='text' OR landuse=NULL),
     custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness=NULL),
@@ -172,13 +172,13 @@ CREATE TABLE roof (
 CREATE TABLE mesh_anchor_points (
     fid integer PRIMARY KEY,
     geom geometry,
-    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0
+    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 1.0
 );
 
 CREATE TABLE mesh_anchor_lines (
     fid integer PRIMARY KEY,
     geom geometry,
-    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0
+    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 1.0
 );
 
 CREATE TABLE inlet (
@@ -312,7 +312,7 @@ CREATE TABLE inp_weir (
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
     weir_type text check (typeof(weir_type) in ('text', null) and weir_type in ('ROADWAY', 'SIDEFLOW', 'TRANSVERSE', 'TRAPEZOIDAL', 'V-NOTCH')),
     offsetval real check (typeof(offsetval) = 'real' or offsetval = null),
-    shape text check (typeof(shape) in ('text', null) and shape in ('RECT_OPEN', 'TRAPEZOIDAL', 'TRIANGULAR')) NOT NULL,
+    shape text check (typeof(shape) = 'text' and shape in ('RECT_OPEN', 'TRAPEZOIDAL', 'TRIANGULAR')),
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
     geom2 real check (typeof(geom2) = 'real' or geom2 = null)  DEFAULT 0.00,
     geom3 real check (typeof(geom3) = 'real' or geom3 = null)  DEFAULT 0.00,
