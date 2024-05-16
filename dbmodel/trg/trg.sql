@@ -18,10 +18,14 @@ create trigger "trg_ins_code_inp_storage" AFTER INSERT on "inp_storage" FOR EACH
 create trigger "trg_ins_code_inp_junction" AFTER INSERT on "inp_junction" FOR EACH ROW BEGIN update inp_junction set code = 'J'||fid WHERE code IS NULL; END;
 create trigger "trg_ins_code_inp_outfall" AFTER INSERT on "inp_outfall" FOR EACH ROW BEGIN update inp_outfall set code = 'O'||fid WHERE code IS NULL; END;
 create trigger "trg_ins_code_inp_divider" AFTER INSERT on "inp_divider" FOR EACH ROW BEGIN update inp_divider set code = 'D'||fid WHERE code IS NULL; END;
-    
------------------------------------
--- TRIGGERS TO MANAGE FOREIGN KEYS
------------------------------------
+
+
+
+------------------------------------------------
+-- TRIGGERS TO MANAGE TOPOLOGY WITH FOREIGN KEYS
+------------------------------------------------
+
+-- nodes
 CREATE TRIGGER trg_ins_inp_junction AFTER INSERT ON inp_junction FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_junction'); END;
 CREATE TRIGGER trg_ins_inp_storage AFTER INSERT ON inp_storage FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_storage'); END;
 CREATE TRIGGER trg_ins_inp_outfall AFTER INSERT ON inp_outfall FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_outfall'); END;
@@ -32,7 +36,13 @@ CREATE TRIGGER trg_upd_code_inp_storage AFTER UPDATE of code on inp_storage FOR 
 CREATE TRIGGER trg_upd_code_inp_outfall AFTER UPDATE of code on inp_outfall FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_outfall'; END;
 CREATE TRIGGER trg_upd_code_inp_divider AFTER UPDATE of code on inp_divider FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_divider'; END;
 
+CREATE TRIGGER trg_del_inp_junction AFTER DELETE on inp_junction FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_junction'; END;
+CREATE TRIGGER trg_del_inp_storage AFTER DELETE on inp_storage FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_storage'; END;
+CREATE TRIGGER trg_del_inp_outfall AFTER DELETE on inp_outfall FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_outfall'; END;
+CREATE TRIGGER trg_del_inp_divider AFTER DELETE on inp_divider FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_divider'; END;
 
+
+-- arcs
 CREATE TRIGGER trg_ins_inp_outlet AFTER INSERT ON inp_outlet FOR EACH ROW BEGIN INSERT INTO arc (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_outlet'); END;
 CREATE TRIGGER trg_ins_inp_weir AFTER INSERT ON inp_weir FOR EACH ROW BEGIN INSERT INTO arc (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_weir'); END;
 CREATE TRIGGER trg_ins_inp_orifice AFTER INSERT ON inp_orifice FOR EACH ROW BEGIN INSERT INTO arc (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_orifice'); END;
@@ -44,6 +54,14 @@ CREATE TRIGGER trg_upd_code_inp_weir AFTER UPDATE of code on inp_weir FOR EACH R
 CREATE TRIGGER trg_upd_code_inp_orifice AFTER UPDATE of code on inp_orifice FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_orifice'; END;
 CREATE TRIGGER trg_upd_code_inp_pump AFTER UPDATE of code on inp_pump FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_pump'; END;
 CREATE TRIGGER trg_upd_code_inp_conduit AFTER UPDATE of code on inp_conduit FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_conduit'; END;
+
+CREATE TRIGGER trg_del_inp_outlet AFTER DELETE on inp_outlet FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_outlet'; END;
+CREATE TRIGGER trg_del_inp_weir AFTER DELETE on inp_weir FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_weir'; END;
+CREATE TRIGGER trg_del_inp_orifice AFTER DELETE on inp_orifice FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_orifice'; END;
+CREATE TRIGGER trg_del_inp_pump AFTER DELETE on inp_pump FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_pump'; END;
+CREATE TRIGGER trg_del_inp_conduit AFTER DELETE on inp_conduit FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_conduit'; END;
+
+
 
 --------------------------------------------------------------------------------------------------------------
 -- TOPOCONTROL TRIGGERS: SET node_1 AND node_2 TO ARCS BY PROXIMITY (conduits, pumps, outlets, orifices, weir)
