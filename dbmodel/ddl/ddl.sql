@@ -150,7 +150,6 @@ CREATE TABLE roof (
     fid integer PRIMARY KEY,
     code text unique check (typeof(code) = 'text' or code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
     elev real CHECK (typeof(elev)='real' OR elev = NULL),
     slope real CHECK (typeof(slope)='real' OR slope=NULL),
     width real CHECK (typeof(width)='real' OR width=NULL),
