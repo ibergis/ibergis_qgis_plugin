@@ -1122,10 +1122,17 @@ CREATE TABLE arc (
 CREATE VIEW if not exists v_ui_file AS 
     SELECT name, ROUND(LENGTH(iber2d || COALESCE(roof, '') || losses) / 1024.0, 3) AS kilobytes FROM cat_file ORDER BY name ASC;
 
-create view v_subc2outlet as 
-    select 'R'||r.code as subc_id, j.code as outlet_id, 'JUNCTION' as outlet_type, ST_makeline(st_centroid(r.geom), j.geom) as geom from roof r join inp_junction j on r.outlet_code=j.code
-    union
-    select 'INL'||i.code as subc_id, j.code as outlet_id, 'JUNCTION' as outlet_type, ST_makeline(i.geom, j.geom) as geom from inlet i join inp_junction j on i.outlet_node=j.code;
+
+CREATE VIEW vi_roof2junction as 
+SELECT r.code, r.outlet_code, setsrid(MakeLine(centroid(r.geom), j.geom), <SRID_VALUE>) AS geom
+    FROM roof r
+    JOIN inp_junction j ON r.outlet_code = j.code;
+
+
+CREATE VIEW vi_inlet2junction as 
+SELECT i.code, i.outlet_node, setsrid(MakeLine(i.geom, j.geom),  <SRID_VALUE>) AS geom 
+    FROM inlet i 
+    JOIN inp_junction j ON i.outlet_node = j.code;
 
 
 -- ----------------------------------------
