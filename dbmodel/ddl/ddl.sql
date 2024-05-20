@@ -166,8 +166,8 @@ CREATE TABLE roof (
     inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
     lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
 );
 
 
