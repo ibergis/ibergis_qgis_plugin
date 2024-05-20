@@ -9,15 +9,15 @@ This version of Giswater is provided by Giswater Association
 ---------------------------------------------------
 -- TRIGGERS TO CREATE AN AUTOINDEX FOR EACH ELEMENT
 -- ------------------------------------------------
-create trigger "trg_ins_code_inp_outlet" AFTER INSERT on "inp_outlet" FOR EACH ROW BEGIN update inp_outlet set code = 'T'||fid WHERE code IS NULL; END;
-create trigger "trg_ins_code_inp_weir" AFTER INSERT on "inp_weir" FOR EACH ROW BEGIN update inp_weir set code = 'W'||fid WHERE code IS NULL;END;
-create trigger "trg_ins_code_inp_orifice" AFTER INSERT on "inp_orifice" FOR EACH ROW BEGIN update inp_orifice set code = 'R'||fid WHERE code IS NULL; END;
-create trigger "trg_ins_code_inp_pump" AFTER INSERT on "inp_pump" FOR EACH ROW BEGIN update inp_pump set code = 'P'||fid WHERE code IS NULL; END;
-create trigger "trg_ins_code_inp_conduit" AFTER INSERT on "inp_conduit" FOR EACH ROW BEGIN update inp_conduit set code = 'C'||fid WHERE code IS NULL; END;
-create trigger "trg_ins_code_inp_storage" AFTER INSERT on "inp_storage" FOR EACH ROW BEGIN update inp_storage set code = 'S'||fid WHERE code IS NULL; END;
-create trigger "trg_ins_code_inp_junction" AFTER INSERT on "inp_junction" FOR EACH ROW BEGIN update inp_junction set code = 'J'||fid WHERE code IS NULL; END;
-create trigger "trg_ins_code_inp_outfall" AFTER INSERT on "inp_outfall" FOR EACH ROW BEGIN update inp_outfall set code = 'O'||fid WHERE code IS NULL; END;
-create trigger "trg_ins_code_inp_divider" AFTER INSERT on "inp_divider" FOR EACH ROW BEGIN update inp_divider set code = 'D'||fid WHERE code IS NULL; END;
+create trigger "trg_ins_code_inp_outlet" AFTER INSERT on "inp_outlet" FOR EACH ROW BEGIN update inp_outlet set code = 'T'||fid; END;
+create trigger "trg_ins_code_inp_weir" AFTER INSERT on "inp_weir" FOR EACH ROW BEGIN update inp_weir set code = 'W'||fid;END;
+create trigger "trg_ins_code_inp_orifice" AFTER INSERT on "inp_orifice" FOR EACH ROW BEGIN update inp_orifice set code = 'R'||fid; END;
+create trigger "trg_ins_code_inp_pump" AFTER INSERT on "inp_pump" FOR EACH ROW BEGIN update inp_pump set code = 'P'||fid; END;
+create trigger "trg_ins_code_inp_conduit" AFTER INSERT on "inp_conduit" FOR EACH ROW BEGIN update inp_conduit set code = 'C'||fid; END;
+create trigger "trg_ins_code_inp_storage" AFTER INSERT on "inp_storage" FOR EACH ROW BEGIN update inp_storage set code = 'S'||fid; END;
+create trigger "trg_ins_code_inp_junction" AFTER INSERT on "inp_junction" FOR EACH ROW BEGIN update inp_junction set code = 'J'||fid; END;
+create trigger "trg_ins_code_inp_outfall" AFTER INSERT on "inp_outfall" FOR EACH ROW BEGIN update inp_outfall set code = 'O'||fid; END;
+create trigger "trg_ins_code_inp_divider" AFTER INSERT on "inp_divider" FOR EACH ROW BEGIN update inp_divider set code = 'D'||fid; END;
 
 
 
@@ -56,10 +56,10 @@ CREATE TRIGGER trg_upd_code_inp_pump AFTER UPDATE of code on inp_pump FOR EACH R
 CREATE TRIGGER trg_upd_code_inp_conduit AFTER UPDATE of code on inp_conduit FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_conduit'; END;
 
 CREATE TRIGGER trg_del_inp_outlet AFTER DELETE on inp_outlet FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_outlet'; END;
-CREATE TRIGGER trg_del_inp_weir AFTER DELETE on inp_weir FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_weir'; END;
 CREATE TRIGGER trg_del_inp_orifice AFTER DELETE on inp_orifice FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_orifice'; END;
-CREATE TRIGGER trg_del_inp_pump AFTER DELETE on inp_pump FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_pump'; END;
 CREATE TRIGGER trg_del_inp_conduit AFTER DELETE on inp_conduit FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_conduit'; END;
+CREATE TRIGGER trg_del_inp_weir AFTER DELETE on inp_weir FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_weir'; END;
+CREATE TRIGGER trg_del_inp_pump AFTER DELETE on inp_pump FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_pump'; END;
 
 
 
