@@ -29,6 +29,8 @@ class DrCreateMeshTask(DrTask):
         self,
         description,
         execute_validations: list[str],
+        clean_geometries: bool,
+        clean_tolerance: float,
         enable_transition: bool,
         transition_slope: float,
         transition_start: float,
@@ -41,6 +43,8 @@ class DrCreateMeshTask(DrTask):
     ):
         super().__init__(description)
         self.execute_validations = execute_validations
+        self.clean_geometries = clean_geometries
+        self.clean_tolerance = clean_tolerance
         self.enable_transition = enable_transition
         self.transition_slope = transition_slope
         self.transition_start = transition_start
@@ -198,6 +202,8 @@ class DrCreateMeshTask(DrTask):
                 layers["ground"],
                 ["custom_roughness", "landuse", "scs_cn"],
                 point_anchor_layer=layers["mesh_anchor_points"],
+                do_clean_up=self.clean_geometries,
+                clean_tolerance=self.clean_tolerance,
                 enable_transition=self.enable_transition,
                 transition_slope=self.transition_slope,
                 transition_start=self.transition_start,

@@ -34,6 +34,7 @@ class DrCreateMeshButton(DrAction):
         # Set widgets
         tools_dr.load_settings(dlg)
         tools_dr.disable_tab_log(dlg)
+        tools_qt.double_validator(dlg.txt_tolerance)
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
@@ -75,6 +76,7 @@ class DrCreateMeshButton(DrAction):
         dlg.btn_clear_selection.clicked.connect(self._listval_clear_selection)
         dlg.btn_toggle_selection.clicked.connect(self._listval_toggle_selection)
         dlg.btn_valid_ok.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 0))
+        dlg.chk_clean_geometries.stateChanged.connect(dlg.txt_tolerance.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_start.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
@@ -120,6 +122,8 @@ class DrCreateMeshButton(DrAction):
                 for validation_id, validation in self.validations.items()
                 if validation["list_item"].checkState() == Qt.Checked
             ]
+        clean_geometries = dlg.chk_clean_geometries.isChecked()
+        clean_tolerance = float(dlg.txt_tolerance.text())
         enable_transition = dlg.chk_transition.isChecked()
         transition_slope = float(dlg.txt_slope.text())
         transition_start = float(dlg.txt_start.text())
@@ -165,6 +169,8 @@ class DrCreateMeshButton(DrAction):
         self.thread_triangulation = DrCreateMeshTask(
             "Triangulation",
             execute_validations,
+            clean_geometries,
+            clean_tolerance,
             enable_transition,
             transition_slope,
             transition_start,
@@ -185,7 +191,7 @@ class DrCreateMeshButton(DrAction):
         thread.taskCompleted.connect(self._on_task_completed)
         thread.taskTerminated.connect(self._on_task_terminated)
         thread.feedback.progressText.connect(self._set_progress_text)
-        thread.feedback.progressChanged.connect(dlg.progress_bar.setValue)
+        # thread.feedback.progressChanged.connect(dlg.progress_bar.setValue)
 
         # Timer
         self.t0 = time()
