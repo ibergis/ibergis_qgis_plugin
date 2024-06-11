@@ -138,7 +138,7 @@ CREATE TABLE ground (
     code text unique check (typeof(code) = 'text' or code = null),
     custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 1.0,
+    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 10.0,
     annotation text check (typeof(annotation) = 'text' or annotation = null),
 	landuse text CHECK (typeof(landuse)='text' OR landuse=NULL),
     custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness=NULL),
