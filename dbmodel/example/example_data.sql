@@ -747,10 +747,10 @@ UPDATE inlet SET outlet_type = 'SINK', method = 'UPC', a_param = 0.496 , b_param
 UPDATE inlet SET code = 1000+fid;
 
 -- ground
-update ground set landuse = '3', custom_roughness = 0.02, scs_cn = 65;
+update ground set landuse = 'OPEN SPACE', custom_roughness = 0.02, scs_cn = 65;
 
 -- outfall
-UPDATE inp_outfall set gate = 'NO', curve = '1';
+UPDATE inp_outfall set gate = 'NO', curve = 'PUMP-02';
 
 --conduit
 UPDATE inp_conduit SET geom3 = 0, geom4 = 0, q0 = 0, qmax = 0;
