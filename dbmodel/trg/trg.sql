@@ -18,7 +18,7 @@ create trigger "trg_ins_code_inp_storage" AFTER INSERT on "inp_storage" FOR EACH
 create trigger "trg_ins_code_inp_junction" AFTER INSERT on "inp_junction" FOR EACH ROW BEGIN update inp_junction set code = 'J'||fid; END;
 create trigger "trg_ins_code_inp_outfall" AFTER INSERT on "inp_outfall" FOR EACH ROW BEGIN update inp_outfall set code = 'O'||fid; END;
 create trigger "trg_ins_code_inp_divider" AFTER INSERT on "inp_divider" FOR EACH ROW BEGIN update inp_divider set code = 'D'||fid; END;
-create trigger "trg_ins_code_roof" AFTER INSERT on "roof" FOR EACH ROW BEGIN update inp_divider set code = 'RF'||fid; END;
+create trigger "trg_ins_code_roof" AFTER INSERT on "roof" FOR EACH ROW BEGIN update roof set code = 'RF'||fid; END;
 
 
 ------------------------------------------------
