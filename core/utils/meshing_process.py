@@ -63,7 +63,9 @@ try:
         # convert to 0-based index
         return faces - 1
 
-    def clean_geometries(gdf: gpd.GeoDataFrame, feedback: QgsFeedback) -> Optional[gpd.GeoDataFrame]:
+    def clean_geometries(
+            gdf: gpd.GeoDataFrame, tolerance: float, feedback: QgsFeedback
+        ) -> Optional[gpd.GeoDataFrame]:
         data: gpd.GeoDataFrame = gdf.copy() # type: ignore
 
         # Extract vertices from polygons. Keep information on how to reconstruct the polygon
@@ -96,7 +98,7 @@ try:
         ) # type: ignore
 
         join: gpd.GeoDataFrame = vertices.sjoin_nearest(
-            vertices, max_distance=0.5, distance_col="dist", exclusive=True
+            vertices, max_distance=tolerance, distance_col="dist", exclusive=True
         )
         join = join[join["dist"] > 1e-5] # type: ignore
 
@@ -114,12 +116,9 @@ try:
 
         for i, count in zip(indices, counts):
             if count == 1:
-                assert vertices.loc[i, "moved"] == False
                 if not vertices.loc[i, "anchor"]:
                     entry = join.loc[i]
                     other_i = entry["index_right"]
-
-                    assert vertices.loc[other_i, "moved"] == False
 
                     vertices.loc[i, "geometry"] = vertices.loc[other_i].geometry
                     vertices.loc[i, "moved"] = True
@@ -191,6 +190,8 @@ try:
         extra_fields: list[str] = [],
         line_anchor_layer: Optional[QgsVectorLayer] = None,
         point_anchor_layer: Optional[QgsVectorLayer] = None,
+        do_clean_up: bool = True,
+        clean_tolerance: float = 0.5,
         algorithm: int = ALGORITHMS["Frontal-Delaunay"],
         enable_transition: bool = True,
         transition_slope: float = 0.5,
@@ -225,10 +226,11 @@ try:
             ) # type: ignore
         print(f"Done! {time.time() - start}s")
 
-        start = time.time()
-        print("Cleaning polygons... ", end="")
-        data = clean_geometries(data, feedback)
-        print(f"Done! {time.time() - start}s")
+        if do_clean_up:
+            start = time.time()
+            print("Cleaning polygons... ", end="")
+            data = clean_geometries(data, clean_tolerance, feedback)
+            print(f"Done! {time.time() - start}s")
 
         if (
             (feedback is not None and feedback.isCanceled()) or

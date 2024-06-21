@@ -39,6 +39,7 @@ class DrProjectCheckTask(DrTask):
         self.log_messages = []
         self.log_features_arc = []
         self.log_features_node = []
+        self.log_features_polygon = []
 
 
     def run(self):
@@ -94,6 +95,10 @@ class DrProjectCheckTask(DrTask):
         status, message = self._check_topology(layers)
         if not status:
             return False, f"Topology check failed: {message}"
+        # Check roof volumes
+        status, message = self._check_roof_volumes()
+        if not status:
+            return False, f"Roof volumes check failed: {message}"
 
         return True, message
 
@@ -124,6 +129,11 @@ class DrProjectCheckTask(DrTask):
         """ Checks if there are node on top of eachother """
 
         try:
+            geometry_dict = {
+                QgsWkbTypes.LineGeometry: 'Arc',
+                QgsWkbTypes.PointGeometry: 'Node',
+                QgsWkbTypes.PolygonGeometry: 'Polygon'
+            }
             update_text = 'Check topology process'
             self.progressUpdate.emit(update_text)
             node_layers_to_check = ['inp_storage', 'inp_outfall', 'inp_junction', 'inp_divider']
@@ -136,7 +146,7 @@ class DrProjectCheckTask(DrTask):
             arc_layers = [lyr for lyr in arc_layers if lyr is not None]
             arc_buffer = 2
 
-            polygon_layers_to_check = []
+            polygon_layers_to_check = ['roof']
             polygon_layers = [tools_qgis.get_layer_by_tablename(lyr) for lyr in polygon_layers_to_check]
             polygon_layers = [lyr for lyr in polygon_layers if lyr is not None]
 
@@ -148,8 +158,21 @@ class DrProjectCheckTask(DrTask):
             aux_progress_step = self.total_feature_count // 4  # 25% increments (4 steps)
             n = 0
             for layer in layers:
-                if tools_qgis.get_tablename_from_layer(layer) not in layers_to_check:
+                layer_name = tools_qgis.get_tablename_from_layer(layer)
+                if layer_name not in layers_to_check:
                     continue
+
+                check_attr = []
+                if layer.geometryType() == QgsWkbTypes.LineGeometry:
+                    check_attr = ['node_1', 'node_2']
+                    if layer_name in ('inp_weir', 'inp_conduit'):
+                        check_attr.append('shape')
+                elif layer.geometryType() == QgsWkbTypes.PointGeometry:
+                    pass
+                elif layer.geometryType() == QgsWkbTypes.PolygonGeometry:
+                    if layer_name == 'roof':
+                        check_attr = ['outlet_code']
+
 
                 for feature in layer.getFeatures():
                     n += 1
@@ -165,13 +188,26 @@ class DrProjectCheckTask(DrTask):
                         update_text = "100%"
                         self.progressUpdate.emit(update_text)
                     feature_geom = feature.geometry()
+
+                    # Check NULL attributes
+                    msg = None
+                    descript = "NULL attributes: "
+                    for attr in check_attr:
+                        if feature[attr] in (None, 'NULL', 'null'):
+                            if not msg:
+                                msg = f"WARNING! {layer.name()} {feature['code']} doesn't have {attr}"
+                            else:
+                                msg += f", {attr}"
+
+                            descript += f"{attr}, "
+                    if msg:
+                        self.log_messages.append(msg)
+                        descript = descript[:-2]
+                        getattr(self, f'log_features_{geometry_dict.get(feature_geom.type()).lower()}').append((feature, descript))
+
                     # Lines
                     if feature_geom.type() == QgsWkbTypes.LineGeometry:
-                        if any(feature[attr] in (None, 'NULL', 'null') for attr in ('node_1', 'node_2')):
-                            msg = f"WARNING! Arc {feature['code']} doesn't have node_1 or node_2."
-                            self.log_messages.append(msg)
-                            self.log_features_arc.append(feature)
-                        continue
+                        pass
 
                     # Points
                     elif feature_geom.type() == QgsWkbTypes.PointGeometry:
@@ -187,9 +223,35 @@ class DrProjectCheckTask(DrTask):
                     # Polygons
                     elif feature_geom.type() == QgsWkbTypes.PolygonGeometry:
                         pass
+
                     # Other / No geometry
                     else:
                         pass
+        except Exception as e:
+            return False, e
+
+        return True, "Success"
+
+
+    def _check_roof_volumes(self):
+        """  """
+
+        try:
+            layer_name = "roof"
+            layer = tools_qgis.get_layer_by_tablename(layer_name)
+            if layer is None:
+                return False, f"Layer '{layer_name}' not found"
+
+            for feature in layer.getFeatures():
+                outlet_vol = feature["outlet_vol"] if feature["outlet_vol"] else 0
+                street_vol = feature["street_vol"] if feature["street_vol"] else 0
+                infiltr_vol = feature["infiltr_vol"] if feature["infiltr_vol"] else 0
+
+                if outlet_vol + street_vol + infiltr_vol != 100:
+                    msg = f"WARNING! Roof {feature['code']} has volumes that don't sum up to 100."
+                    self.log_messages.append(msg)
+                    descript = f"{outlet_vol=}, {street_vol=}, {infiltr_vol=}"
+                    self.log_features_polygon.append((feature, descript))
         except Exception as e:
             return False, e
 
@@ -217,7 +279,7 @@ class DrProjectCheckTask(DrTask):
         tools_qt.hide_void_groupbox(self.dlg_audit_project)
 
         # Add temporal layers if needed
-        if self.log_features_node or self.log_features_arc:
+        if any([self.log_features_node, self.log_features_arc, self.log_features_polygon]):
             self._add_temp_layers()
 
 
@@ -266,6 +328,20 @@ class DrProjectCheckTask(DrTask):
             arc_layer.renderer().symbol().setOpacity(0.7)
             global_vars.iface.layerTreeView().refreshLayerSymbology(arc_layer.id())
 
+        if self.log_features_polygon:
+            # Create in-memory layers
+            oolygon_fields = [QgsField("code", QVariant.String), QgsField("descript", QVariant.String)]
+            polygon_layer = self.create_in_memory_layer("Polygon", "polygon", oolygon_fields)
+            # Add features to the layers
+            self.add_features_to_layer(polygon_layer, self.log_features_polygon, 'code')
+            # Add layer to ToC
+            QgsProject.instance().addMapLayer(polygon_layer, False)
+            my_group.insertLayer(1, polygon_layer)
+            # Set the rendering style
+            polygon_layer.renderer().symbol().setColor(QColor("red"))
+            polygon_layer.renderer().symbol().setOpacity(0.7)
+            global_vars.iface.layerTreeView().refreshLayerSymbology(polygon_layer.id())
+
         # Refresh the map canvas
         global_vars.iface.mapCanvas().refresh()
 
@@ -280,11 +356,12 @@ class DrProjectCheckTask(DrTask):
 
     def add_features_to_layer(self, layer, features, field_id):
         layer.startEditing()
-        for feature in features:
+        for feature, descript in features:
             feature_geom = feature.geometry()
             new_feature = QgsFeature(layer.fields())
             new_feature.setGeometry(feature_geom)
             new_feature.setAttribute(field_id, feature[field_id])
+            new_feature.setAttribute('descript', descript)
             layer.addFeature(new_feature)
         layer.commitChanges()
 

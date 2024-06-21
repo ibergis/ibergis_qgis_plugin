@@ -238,6 +238,8 @@ class DrExecuteModel(DrTask):
             "result_max_bed_shear_stress": "Maximum_Bed_Shear_Stress",
             "result_energy": "Energy",
             "result_steamlines": "Streamlines",
+            "result_results_raster": "Raster interpolation",
+            "result_results_raster_cell": "Raster cell size",
         }
         sql = "SELECT parameter, value FROM config_param_user WHERE parameter like 'result_%'"
         rows = self.dao.get_rows(sql)

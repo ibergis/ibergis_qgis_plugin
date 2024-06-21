@@ -172,7 +172,7 @@ def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None):
     polygons_df = polygons_df.set_index('fid')
 
     vertices_df = pd.DataFrame(vertices_rows, columns=['x', 'y', 'z', 'fid'])
-    vertices_df[['x', 'y', 'z']] = vertices_df[['x', 'y', 'z']].astype(np.float32)
+    vertices_df[['x', 'y', 'z']] = vertices_df[['x', 'y', 'z']].astype(np.float64)
     vertices_df['fid'] = vertices_df['fid'].astype(np.uint32)
     vertices_df = vertices_df.set_index('fid')
 

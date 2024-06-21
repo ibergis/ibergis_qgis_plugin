@@ -69,8 +69,8 @@ CREATE TABLE cat_curve (
 CREATE TABLE cat_curve_value (
     id integer primary key,
     curve text NOT NULL,
-    xcoord real CHECK (typeof(xcoord)='real') NOT NULL,
-    ycoord real CHECK (typeof(ycoord)='real') NOT NULL,
+    xcoord real CHECK (typeof(xcoord)='real' OR xcoord = NULL),
+    ycoord real CHECK (typeof(ycoord)='real' OR ycoord = NULL),
     FOREIGN KEY (curve) references cat_curve (idval) on update cascade on delete restrict
 );
 
@@ -136,8 +136,9 @@ CREATE TABLE cat_raster_value (
 CREATE TABLE ground (
     fid integer PRIMARY KEY,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
+    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 10.0,
     annotation text check (typeof(annotation) = 'text' or annotation = null),
 	landuse text CHECK (typeof(landuse)='text' OR landuse=NULL),
     custom_roughness real CHECK (typeof(custom_roughness)='real' OR custom_roughness=NULL),
@@ -149,8 +150,8 @@ CREATE TABLE ground (
 CREATE TABLE roof (
     fid integer PRIMARY KEY,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0,
     elev real CHECK (typeof(elev)='real' OR elev = NULL),
     slope real CHECK (typeof(slope)='real' OR slope=NULL),
     width real CHECK (typeof(width)='real' OR width=NULL),
@@ -161,30 +162,28 @@ CREATE TABLE roof (
     outlet_vol real CHECK (typeof(outlet_vol) = 'real' OR outlet_vol=NULL),
     street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
     infiltr_vol real CHECK (typeof(infiltr_vol) = 'real' OR infiltr_vol=NULL),
-    totalvol real CHECK (typeof(totalvol)='real' OR totalvol=NULL),
-    inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
-    lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    geom geometry,
-    FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
+    geom geometry
+    --FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
 );
 
 
 CREATE TABLE mesh_anchor_points (
     fid integer PRIMARY KEY,
     geom geometry,
-    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0
+    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 1.0
 );
 
 CREATE TABLE mesh_anchor_lines (
     fid integer PRIMARY KEY,
     geom geometry,
-    cellsize real CHECK (typeof(cellsize)='real') NOT NULL DEFAULT 1.0
+    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 1.0
 );
 
 CREATE TABLE inlet (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
    	outlet_node text check (typeof(outlet_node) = 'text' or outlet_node = null),
     outlet_type text check (typeof(outlet_type) in ('text', null) and outlet_type in ('SINK', 'TO NETWORK')),
@@ -203,10 +202,10 @@ CREATE TABLE inlet (
     FOREIGN KEY (outlet_node) references node (code) on update cascade on delete restrict
 );
 
-
 CREATE TABLE hyetograph (
     fid integer primary key,
-    idval text unique check (typeof(idval)='text') NOT NULL,
+    code text unique check (typeof(code)='text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     timeseries text CHECK (typeof(timeseries)='text' OR timeseries=NULL),
 	geom geometry,
     FOREIGN KEY (timeseries) references cat_timeseries (idval) on update cascade on delete restrict
@@ -215,6 +214,7 @@ CREATE TABLE hyetograph (
 create table boundary_conditions (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     bscenario text check (typeof(bscenario)='text' or bscenario=null),
     boundary_type text check (typeof(boundary_type) in ('text', null) and boundary_type in (
@@ -235,6 +235,7 @@ create table boundary_conditions (
 CREATE TABLE inp_conduit (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
@@ -268,6 +269,7 @@ CREATE TABLE inp_conduit (
 CREATE TABLE inp_outlet (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript)='text' or descript= null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
@@ -288,6 +290,7 @@ CREATE TABLE inp_outlet (
 CREATE TABLE inp_orifice (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
@@ -308,12 +311,13 @@ CREATE TABLE inp_orifice (
 CREATE TABLE inp_weir (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
     weir_type text check (typeof(weir_type) in ('text', null) and weir_type in ('ROADWAY', 'SIDEFLOW', 'TRANSVERSE', 'TRAPEZOIDAL', 'V-NOTCH')),
     offsetval real check (typeof(offsetval) = 'real' or offsetval = null),
-    shape text check (typeof(shape) in ('text', null) and shape in ('RECT_OPEN', 'TRAPEZOIDAL', 'TRIANGULAR')) NOT NULL,
+    shape text check (typeof(shape) = 'text' and shape in ('RECT_OPEN', 'TRAPEZOIDAL', 'TRIANGULAR')),
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
     geom2 real check (typeof(geom2) = 'real' or geom2 = null)  DEFAULT 0.00,
     geom3 real check (typeof(geom3) = 'real' or geom3 = null)  DEFAULT 0.00,
@@ -337,6 +341,7 @@ CREATE TABLE inp_weir (
 
 CREATE TABLE inp_pump (
     fid integer primary key,
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     code text unique check (typeof(code) = 'text' or code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     node_1 text check (typeof(node_1) = 'text' or node_1 = null),
@@ -355,6 +360,7 @@ CREATE TABLE inp_pump (
 CREATE TABLE inp_outfall (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     gate text check (typeof(gate) in ('text', null) and gate in ('YES', 'NO')),
     outfall_type text check (typeof(outfall_type) in ('text', null) and outfall_type in ('FIXED', 'FREE', 'NORMAL', 'TIDAL', 'TIMESERIES')),
@@ -371,6 +377,7 @@ CREATE TABLE inp_outfall (
 CREATE TABLE inp_divider (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     ymax real check (typeof(ymax) = 'real' or ymax = null),
@@ -393,6 +400,7 @@ CREATE TABLE inp_divider (
 CREATE TABLE inp_storage (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     ymax real check (typeof(ymax) = 'real' or ymax = null),
@@ -415,6 +423,7 @@ CREATE TABLE inp_storage (
 CREATE TABLE inp_junction (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     elev real check (typeof(elev) = 'real' or elev = null),
     ymax real check (typeof(ymax) = 'real' or ymax = null),
@@ -437,6 +446,7 @@ create table inp_files (
 create table inp_dwf (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     format text check (typeof(format) = 'text' or format=null) default 'FLOW',
     avg_value real check (typeof(avg_value)='real' or avg_value = null) DEFAULT 0.0001,
@@ -454,6 +464,7 @@ create table inp_dwf (
 create table inp_inflow (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text check (typeof(descript) = 'text' or descript = null),
     timeseries text check (typeof(timeseries) = 'text' or timeseries = null),
     format text check (typeof(format) = 'text' or format =null) default 'FLOW',
@@ -1091,6 +1102,7 @@ CREATE TABLE node (
     code text unique,
     table_name text,
     table_fid integer,
+    custom_code text,
     geom geometry
 );
 
@@ -1099,6 +1111,7 @@ CREATE TABLE arc (
     code text unique,
     table_name text,
     table_fid integer,
+    custom_code text,
     geom geometry
 );
 
@@ -1106,10 +1119,17 @@ CREATE TABLE arc (
 CREATE VIEW if not exists v_ui_file AS 
     SELECT name, ROUND(LENGTH(iber2d || COALESCE(roof, '') || losses) / 1024.0, 3) AS kilobytes FROM cat_file ORDER BY name ASC;
 
-create view v_subc2outlet as 
-    select 'R'||r.code as subc_id, j.code as outlet_id, 'JUNCTION' as outlet_type, ST_makeline(st_centroid(r.geom), j.geom) as geom from roof r join inp_junction j on r.outlet_code=j.code
-    union
-    select 'INL'||i.code as subc_id, j.code as outlet_id, 'JUNCTION' as outlet_type, ST_makeline(i.geom, j.geom) as geom from inlet i join inp_junction j on i.outlet_node=j.code;
+
+CREATE VIEW vi_roof2junction as 
+SELECT r.code, r.outlet_code, setsrid(MakeLine(centroid(r.geom), j.geom), <SRID_VALUE>) AS geom
+    FROM roof r
+    JOIN inp_junction j ON r.outlet_code = j.code;
+
+
+CREATE VIEW vi_inlet2junction as 
+SELECT i.code, i.outlet_node, setsrid(MakeLine(i.geom, j.geom),  <SRID_VALUE>) AS geom 
+    FROM inlet i 
+    JOIN inp_junction j ON i.outlet_node = j.code;
 
 
 -- ----------------------------------------
