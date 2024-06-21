@@ -95,6 +95,10 @@ class DrProjectCheckTask(DrTask):
         status, message = self._check_topology(layers)
         if not status:
             return False, f"Topology check failed: {message}"
+        # Check roof volumes
+        status, message = self._check_roof_volumes()
+        if not status:
+            return False, f"Roof volumes check failed: {message}"
 
         return True, message
 
@@ -219,6 +223,30 @@ class DrProjectCheckTask(DrTask):
                     # Other / No geometry
                     else:
                         pass
+        except Exception as e:
+            return False, e
+
+        return True, "Success"
+
+
+    def _check_roof_volumes(self):
+        """  """
+
+        try:
+            layer_name = "roof"
+            layer = tools_qgis.get_layer_by_tablename(layer_name)
+            if layer is None:
+                return False, f"Layer '{layer_name}' not found"
+
+            for feature in layer.getFeatures():
+                outlet_vol = feature["outlet_vol"] if feature["outlet_vol"] else 0
+                street_vol = feature["street_vol"] if feature["street_vol"] else 0
+                infiltr_vol = feature["infiltr_vol"] if feature["infiltr_vol"] else 0
+
+                if outlet_vol + street_vol + infiltr_vol != 100:
+                    msg = f"WARNING! Roof {feature['code']} has volumes that don't sum up to 100."
+                    self.log_messages.append(msg)
+                    self.log_features_polygon.append(feature)
         except Exception as e:
             return False, e
 
