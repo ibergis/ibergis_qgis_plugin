@@ -598,13 +598,13 @@ INSERT INTO inlet (outlet_node, top_elev, geom) VALUES('J5', 40.1, ST_GeomFromTe
 -- ------------------------------------------------------------
 -- INP_WEIR, INFLOW, STORAGE, PUMP, DIVIDER, OUTLET AND ORIFICE
 -- ------------------------------------------------------------
-INSERT INTO inp_weir (weir_type, node_1, node_2, shape, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES('TRANSVERSE', 'S1', 'J61', 'RECT_OPEN', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418716.4602315871 4577600.00343433)', <SRID_VALUE>));
+INSERT INTO inp_weir (weir_type, shape, node_1, node_2, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES('TRANSVERSE', 'RECT_OPEN', 'S1', 'J61', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING(418716.023346 4577601.812087, 418716.460232 4577600.003434)', <SRID_VALUE>));
 
 INSERT INTO inp_inflow (code, timeseries, format, mfactor, sfactor, ufactor, base) VALUES('J1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0);
 
-INSERT INTO inp_storage (elev, ymax, y0, ysur, storage_type, curve, geom) VALUES(26.470, 3.500, 0.0, 0.0, 'TABULAR', 'EBAR-02', ST_GeomFromText('POINT (418716.0233455198 4577601.812087212)', <SRID_VALUE>));
+INSERT INTO inp_storage (elev, ymax, y0, ysur, storage_type, curve, geom) VALUES(26.470, 3.500, 0.0, 0.0, 'TABULAR', 'EBAR-02', ST_GeomFromText('POINT(418716.023346 4577601.812087)', <SRID_VALUE>));
 
-INSERT INTO inp_pump (curve, state, startup, shutoff, geom) VALUES('PUMP-02', 'ON', 2.0, 0.4, ST_GeomFromText('LINESTRING (418716.0233455198 4577601.812087212, 418717.9662245355 4577602.212748872)', <SRID_VALUE>));
+INSERT INTO inp_pump (curve, state, startup, shutoff, geom) VALUES('PUMP-02', 'ON', 2.0, 0.4, ST_GeomFromText('LINESTRING(418716.023346 4577601.812087, 418717.966225 4577602.212749)', <SRID_VALUE>));
 
 INSERT INTO inp_divider (elev, y0, ysur, apond, divert_arc, divider_type, qmin, geom) VALUES(28.0, 0.0, 0.0, 0.0, 'C55', 'CUTOFF', 0.0, ST_GeomFromText('POINT (418532.967222 4578069.811764)', <SRID_VALUE>));
 
@@ -687,7 +687,7 @@ INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('RECT
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 49.5192, 1.65, 1.5, ST_GeomFromText('LINESTRING (418665.323381 4577592.793343, 418714.078339 4577601.459724)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 55.138, 1.66, 1.45, ST_GeomFromText('LINESTRING (418706.273352 4577657.874548, 418715.716291 4577603.55112)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 1.765, 1.76, 1.85, ST_GeomFromText('LINESTRING (418715.716291 4577603.55112, 418716.023346 4577601.812087)', <SRID_VALUE>));
-INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 1.976, 1.6, 1.6, ST_GeomFromText('LINESTRING (418714.078339 4577601.459724, 418716.023346 4577601.812087)', <SRID_VALUE>));
+INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 1.976, 1.6, 1.6, ST_GeomFromText('LINESTRING(418714.078339 4577601.459724, 418716.023346 4577601.812087)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 63.094, 1.83, 1.65, ST_GeomFromText('LINESTRING (418358.648363 4577894.088494, 418349.179849 4577956.468092)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 1.0, 0.0, 4.580, 0.6, 0.6, ST_GeomFromText('LINESTRING (418493.46591867064 4577561.1257339055, 418490.7708482869 4577557.4220293965)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 1.0, 0.0, 5.177, 0.4, 0.4, ST_GeomFromText('LINESTRING (418438.58008409 4578027.703742279, 418440.0567244498 4578032.6662221765)', <SRID_VALUE>));
@@ -759,7 +759,7 @@ UPDATE inp_conduit set curve_transect = 'SHAPE_DEMO' WHERE shape = 'CUSTOM';
 UPDATE inp_conduit SET roughness = 0.012;
 UPDATE inp_conduit set geom1=1, geom2=1 where shape='RECT_OPEN';
 
---UPDATE inp_weir set node_1 = 'S1' where code = 'W1';
+UPDATE inp_weir set node_1 = 'S1' where code = 'W1';
 
 
 -- -------------------
