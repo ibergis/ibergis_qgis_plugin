@@ -19,3 +19,5 @@ samples/test_*
 samples/*.qgs~
 samples/test_*.qgz
 .vscode/
+*.gpkg-shm
+*.gpkg-wal
