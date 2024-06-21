@@ -191,15 +191,19 @@ class DrProjectCheckTask(DrTask):
 
                     # Check NULL attributes
                     msg = None
+                    descript = "NULL attributes: "
                     for attr in check_attr:
                         if feature[attr] in (None, 'NULL', 'null'):
                             if not msg:
                                 msg = f"WARNING! {layer.name()} {feature['code']} doesn't have {attr}"
                             else:
                                 msg += f", {attr}"
+
+                            descript += f"{attr}, "
                     if msg:
                         self.log_messages.append(msg)
-                        getattr(self, f'log_features_{geometry_dict.get(feature_geom.type()).lower()}').append(feature)
+                        descript = descript[:-2]
+                        getattr(self, f'log_features_{geometry_dict.get(feature_geom.type()).lower()}').append((feature, descript))
 
                     # Lines
                     if feature_geom.type() == QgsWkbTypes.LineGeometry:
@@ -246,7 +250,8 @@ class DrProjectCheckTask(DrTask):
                 if outlet_vol + street_vol + infiltr_vol != 100:
                     msg = f"WARNING! Roof {feature['code']} has volumes that don't sum up to 100."
                     self.log_messages.append(msg)
-                    self.log_features_polygon.append(feature)
+                    descript = f"{outlet_vol=}, {street_vol=}, {infiltr_vol=}"
+                    self.log_features_polygon.append((feature, descript))
         except Exception as e:
             return False, e
 
@@ -351,11 +356,12 @@ class DrProjectCheckTask(DrTask):
 
     def add_features_to_layer(self, layer, features, field_id):
         layer.startEditing()
-        for feature in features:
+        for feature, descript in features:
             feature_geom = feature.geometry()
             new_feature = QgsFeature(layer.fields())
             new_feature.setGeometry(feature_geom)
             new_feature.setAttribute(field_id, feature[field_id])
+            new_feature.setAttribute('descript', descript)
             layer.addFeature(new_feature)
         layer.commitChanges()
 
