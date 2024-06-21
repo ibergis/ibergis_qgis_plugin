@@ -4,16 +4,15 @@ qgisMinimumVersion=3.10
 qgisMaximumVersion=3.99
 description=Plugin to manage drain project
 about=Disclaimer: This plugin is released using the open source GNU-GPL3 license. Although a reasonable effort has been made to assure that the results obtained are correct,  some of the capabilities provided by Giswater are experimental, therefore the development team and the Giswater Association are not responsible and assume no liability whatsoever for any results or any use made of the results obtained from the program, nor for any damages or litigation that result from the use of these programs for any purpose.
-version=0.1.002
-author=David Erill, Xavier Torret, Maria Guzman, Edgar Fusté, Jordi Blanch, Sergi Maspons, Pablo Marques
-Changelog=Version 0.1.002
-    - Fix & Improve INP importer & exporter
-    - Fix & Improve IBER exporter (export rainfall raster, add option to use NO LOSSES, options_simulation_details, etc.)
-    - Improve IBER execution (more accurate percentage, create simulation folder if it doesn't exist, etc.)
-    - Mesh validator: Only check vertex-edge and intersect for ground layer
-    - Save & load user's values in create mesh dialog
-    - Refactor "Iber Options" tab
-    - Make layers fields configurable via config_form_fields
+version=0.1.003
+author=David Erill, Xavier Torret, Maria Guzman, Edgar Fusté, Jordi Blanch, Sergi Maspons, Pablo Marques, Marcos Sanz Ramos, Esteban Sañudo
+Changelog=Version 0.1.003
+    - Remove not null constraints to ease functionality
+    - Add column 'custom_code' to customize a row_id for each feature
+    - Fix geometries of roof and ground
+    - Add views vi_roof2junction and vi_inlet2junction
+    - Improve check project: check NULL attributes of some layers
+
 
 tags= urban drainage, flooding
 homepage=https://www.xxxxx.org
