@@ -162,9 +162,6 @@ CREATE TABLE roof (
     outlet_vol real CHECK (typeof(outlet_vol) = 'real' OR outlet_vol=NULL),
     street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
     infiltr_vol real CHECK (typeof(infiltr_vol) = 'real' OR infiltr_vol=NULL),
-    totalvol real CHECK (typeof(totalvol)='real' OR totalvol=NULL),
-    inletvol real CHECK (typeof(inletvol)='real' OR inletvol=NULL),
-    lossvol real CHECK (typeof(lossvol)='real' OR lossvol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry
     --FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
