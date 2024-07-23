@@ -6,7 +6,7 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import Qgis, QgsEditFormConfig
+from qgis.core import Qgis, QgsEditFormConfig, QgsRasterLayer
 
 from .task import DrTask
 from ..utils import tools_dr, tools_fct
@@ -97,6 +97,8 @@ class DrProjectLayersConfig(DrTask):
         for layer_name in layers_list:
             layer = tools_qgis.get_layer_by_tablename(layer_name)
             if layer is None:
+                continue
+            if isinstance(layer, QgsRasterLayer):
                 continue
             config = layer.editFormConfig()
             if Qgis.QGIS_VERSION_INT >= 33200:
