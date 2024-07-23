@@ -118,17 +118,26 @@ class DrCreateMeshTask(DrTask):
                 print("Validating landuses... ", end="")
                 start = time.time()
 
-                rows = self.dao.get_rows("SELECT id, manning FROM cat_landuses")
-                landuses = {} if rows is None else dict(rows)
-                landuses_df = pd.DataFrame(rows, columns=["id", "manning"]).set_index("id")
+                rows = self.dao.get_rows("SELECT id, idval, manning FROM cat_landuses")
+                landuses_df = pd.DataFrame(
+                    rows, columns=["id", "idval", "manning"]
+                ).set_index("id")
+                missing_roughness = []
 
                 if self.roughness_layer == "ground_layer":
                     rows = self.dao.get_rows(
                         "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
                     )
-                    used_landuses = (
-                        [] if rows is None else [int(row[0]) for row in rows]
-                    )
+                    used_landuses = [] if rows is None else [row[0] for row in rows]
+
+                    missing_roughness = [
+                        l
+                        for l in used_landuses
+                        if l not in landuses_df["idval"].values
+                        or landuses_df[landuses_df["idval"] == l]["manning"]
+                        .isna()
+                        .any()
+                    ]
                 else:
                     rows = self.roughness_layer.height()
                     cols = self.roughness_layer.width()
@@ -138,12 +147,13 @@ class DrCreateMeshTask(DrTask):
                         [bl.value(r, c) for r in range(rows) for c in range(cols)]
                     )
                     used_landuses = {int(x) for x in unique_values if x != 255}
+                    missing_roughness = [
+                        str(l)
+                        for l in used_landuses
+                        if l not in landuses_df.index
+                        or np.isnan(landuses_df.loc[l, "manning"])
+                    ]
 
-                missing_roughness = [
-                    str(l)
-                    for l in used_landuses
-                    if l not in landuses or landuses[l] is None
-                ]
                 print(f"Done! {time.time() - start}s")
 
                 if missing_roughness:
@@ -234,7 +244,7 @@ class DrCreateMeshTask(DrTask):
                 start = time.time()
                 def get_roughness(row):
                     if np.isnan(row["custom_roughness"]):
-                        return landuses[int(row["landuse"])]
+                        return landuses_df.loc[landuses_df['idval'] == row["landuse"], 'manning'].values[0]
                     else:
                         return row["custom_roughness"]
                 
