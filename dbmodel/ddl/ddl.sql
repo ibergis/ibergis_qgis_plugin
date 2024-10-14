@@ -152,7 +152,6 @@ CREATE TABLE roof (
     code text unique check (typeof(code) = 'text' or code = null),
     custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
     descript text CHECK (typeof(descript)='text' OR descript=NULL),
-    elev real CHECK (typeof(elev)='real' OR elev = NULL),
     slope real CHECK (typeof(slope)='real' OR slope=NULL),
     width real CHECK (typeof(width)='real' OR width=NULL),
     roughness real CHECK (typeof(roughness)='real' OR roughness=NULL),
