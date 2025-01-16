@@ -346,7 +346,7 @@ try:
         triangles = get_faces()
 
         extra_data = {
-            field: np.empty(len(triangles))
+            field: np.empty(len(triangles), dtype=np.object_)
             for field in extra_fields
         }
         

@@ -301,12 +301,12 @@ class DrExecuteModel(DrTask):
             iber2d_content, roof_content, losses_content = row
 
             # Write content to files
-            project_name, iber2d_options = self._get_iber2d_options()
+            project_name, result_iber_format, iber2d_options = self._get_iber2d_options()
             iber2d_lines = iber2d_content.split('\n')
             if iber2d_lines[0] == "MATRIU":
-                iber2d_content = f"{project_name}\n{iber2d_options}\n{iber2d_content}"
+                iber2d_content = f"{project_name}\n{result_iber_format}\n{iber2d_options}\n{iber2d_content}"
             else:
-                iber2d_lines[1] = f"{iber2d_options}"
+                iber2d_lines[1] = f"{result_iber_format}\n{iber2d_options}"
                 iber2d_content = '\n'.join(iber2d_lines)
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber2D.dat', iber2d_content)
@@ -358,7 +358,7 @@ class DrExecuteModel(DrTask):
               "WHERE parameter IN ('project_name','options_delta_time','options_tmax','options_rank_results'," \
               "'options_order','options_cfl','options_wetdry_edge','options_viscosity_coeff','options_t0'," \
               "'options_simulation_details','options_simulation_new','options_plan_id','options_simulation_plan'," \
-              "'options_timeseries');"
+              "'options_timeseries','result_iber_format');"
         rows = self.dao.get_rows(sql)
         if not rows:
             return 'OPTIONS_ERROR', "-9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999"
@@ -378,6 +378,7 @@ class DrExecuteModel(DrTask):
             options[parameter] = value
 
         project_name = options.get('project_name', 'test')
+        result_iber_format = options.get('result_iber_format', '2')
         options_delta_time = options.get('options_delta_time', '0')
         options_tmax = options.get('options_tmax', '0')
         options_rank_results = options.get('options_rank_results', '0')
@@ -393,7 +394,7 @@ class DrExecuteModel(DrTask):
         options_timeseries = options.get('options_timeseries', '0')
 
         options_str = f"{options_delta_time} {options_tmax} {options_rank_results} {options_order} {options_cfl} {options_wetdry_edge} {options_viscosity_coeff} {options_t0} {options_simulation_details} {options_simulation_new} {options_plan_id} {options_simulation_plan} {options_timeseries}"
-        return project_name, options_str
+        return project_name, result_iber_format, options_str
 
 
     def _write_to_file(self, file_path, content):

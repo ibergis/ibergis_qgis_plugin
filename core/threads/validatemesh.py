@@ -397,12 +397,6 @@ _validation_steps = [
             "function": validate_cellsize,
             "layer": "ground",
         },
-        "check_cellsizes_roof": {
-            "name": "Roof Invalid Cellsizes",
-            "type": "error",
-            "function": validate_cellsize,
-            "layer": "roof",
-        },
         "check_groundroughness_params": {
             "name": "Ground Roughness Invalid Parameters",
             "type": "error",
