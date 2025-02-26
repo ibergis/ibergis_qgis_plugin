@@ -2,7 +2,6 @@ import traceback
 
 from . import importinp_core as core
 from .task import DrTask
-from ..utils.generate_swmm_inp import inp2dict
 from ... import global_vars
 
 
@@ -32,6 +31,7 @@ class DrImportInpTask(DrTask):
         return columns
 
     def _import_file(self):
+        return False
         gpkg_file = self.dao.db_filepath
         inp_dict = inp2dict(self.input_file, self.feedback)
         if self.isCanceled():
