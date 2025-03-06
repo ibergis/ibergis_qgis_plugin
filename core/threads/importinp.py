@@ -1,5 +1,9 @@
 import traceback
 import os
+import pandas as pd
+
+from datetime import datetime
+from itertools import count
 
 from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsCoordinateReferenceSystem, QgsProject, QgsFeature
 
@@ -8,7 +12,7 @@ from .epa_file_manager import _tables_dict
 from .task import DrTask
 from ..utils.generate_swmm_inp.generate_swmm_import_inp_file import ImportInpFile
 from ..utils import tools_dr
-from ...lib import tools_qgis
+from ...lib import tools_qgis, tools_db
 from ... import global_vars
 
 
@@ -31,8 +35,10 @@ class DrImportInpTask(DrTask):
             output = self._import_file()
             if not output:
                 return False
+            # Get non-visual data from xlsx and import it
+            self._import_non_visual_data()
             # Get data from gpkg and import it to existing layers (changing the column names)
-            self._import_to_project()
+            self._import_gpkgs_to_project()
             return True
         except Exception:
             self.exception = traceback.format_exc()
@@ -59,7 +65,25 @@ class DrImportInpTask(DrTask):
         }
         return params
 
-    def _import_to_project(self):
+    def _import_non_visual_data(self):
+        """ Import the non-visual data from the xlsx to the gpkg """
+
+        from swmm_api import read_inp_file
+        # Get the data from the inp file
+        inp_file = self.input_file
+        self.network = read_inp_file(inp_file)
+
+        try:
+            self._save_patterns()
+            self._save_curves()
+            self._save_timeseries()
+            # self._save_controls()
+            # self._save_lids()
+        except Exception as e:
+            print(e)
+            return
+
+    def _import_gpkgs_to_project(self):
         """ Import the data from the gpkg to the project """
 
         gpkgs = ['SWMM_junctions', 'SWMM_outfalls', 'SWMM_storages', 'SWMM_pumps', 'SWMM_orifices', 'SWMM_weirs',
@@ -128,3 +152,214 @@ class DrImportInpTask(DrTask):
         target_layer.addFeatures(features_to_add)
         target_layer.commitChanges()
 
+    def _save_patterns(self):
+        from swmm_api.input_file.section_labels import PATTERNS
+
+        pattern_rows = tools_db.get_rows("SELECT idval FROM cat_pattern", dao=self.dao)
+        patterns_db: list[str] = []
+        if pattern_rows:
+            patterns_db = [x[0] for x in pattern_rows]
+
+        # self.results["patterns"] = 0
+        for pattern_name, pattern in self.network[PATTERNS].items():
+            if pattern_name in patterns_db:
+                message = f'The pattern "{pattern_name}" already exists in database. Skipping...'
+                print(message)
+                continue
+
+            pattern_type = pattern.cycle
+            sql = f"INSERT INTO cat_pattern (idval, pattern_type) VALUES ('{pattern_name}', '{pattern_type}')"
+            tools_db.execute_sql(sql, dao=self.dao)
+
+            values = []
+            for idx, f in enumerate(pattern.factors):
+                values_str = f"('{pattern_name}', {idx+1}, {f})"
+                values.append(values_str)
+
+            values_str = ", ".join(values)
+            sql = f"INSERT INTO cat_pattern_value (pattern, timestep, value) VALUES {values_str}"
+            tools_db.execute_sql(sql, dao=self.dao)
+            # self.results["patterns"] += 1
+
+    def _save_curves(self) -> None:
+        from swmm_api.input_file.section_labels import CURVES
+
+        curve_rows = tools_db.get_rows("SELECT id FROM cat_curve", dao=self.dao)
+        curves_db: set[str] = set()
+        if curve_rows:
+            curves_db = {x[0] for x in curve_rows}
+
+        # self.results["curves"] = 0
+        for curve_name, curve in self.network[CURVES].items():
+            if curve.kind is None:
+                message = f'The "{curve_name}" curve does not have a specified curve type and was not imported.'
+                print(message)
+                continue
+
+            if curve_name in curves_db:
+                message = f'The curve "{curve_name}" already exists in database. Skipping...'
+                print(message)
+                continue
+
+            curve_type: str = curve.kind
+
+            sql = f"INSERT INTO cat_curve (idval, curve_type) VALUES ('{curve_name}', '{curve_type}')"
+            tools_db.execute_sql(sql, dao=self.dao)
+
+            values = []
+            for x, y in curve.points:
+                values_str = f"('{curve_name}', {x}, {y})"
+                values.append(values_str)
+            values_str = ", ".join(values)
+            sql = f"INSERT INTO cat_curve_value (curve, xcoord, ycoord) VALUES {values_str}"
+            tools_db.execute_sql(sql, dao=self.dao)
+            # self.results["curves"] += 1
+
+    def _save_timeseries(self) -> None:
+        from swmm_api.input_file.section_labels import TIMESERIES
+        from swmm_api.input_file.sections import TimeseriesFile, TimeseriesData
+
+        ts_rows = tools_db.get_rows("SELECT id FROM cat_timeseries", dao=self.dao)
+        ts_db: set[str] = set()
+        if ts_rows:
+            ts_db = {x[0] for x in ts_rows}
+
+        def format_ts(ts_data: tuple) -> tuple:
+            ts_data_f = tuple()
+            if not ts_data:
+                return ts_data_f
+            def format_time(time, value) -> tuple:
+                if isinstance(time, float):
+                    total_minutes = int(time * 60)
+                    hh = total_minutes // 60
+                    mm = total_minutes % 60
+                    return (f"{hh:02}:{mm:02}", value)
+                if isinstance(time, datetime):
+                    date_str = time.strftime("%m/%d/%Y")
+                    time_str = time.strftime("%H:%M")
+                    return (f"{date_str}", f"{time_str}", value)
+                return tuple()
+
+            ts_data_f = format_time(ts_data[0], ts_data[1])
+            return ts_data_f
+
+        # self.results["timeseries"] = 0
+        for ts_name, ts in self.network[TIMESERIES].items():
+            if ts is None:
+                message = f'The timeseries "{ts_name}" was not imported.'
+                print(message)
+                continue
+
+            if ts_name in ts_db:
+                message = f'The timeseries "{ts_name}" already exists in database. Skipping...'
+                print(message)
+                continue
+
+            fname = None
+            times_type = None
+            if type(ts) is TimeseriesFile:
+                fname = ts.filename
+                times_type = "FILE"
+            elif type(ts) is TimeseriesData:
+                times_type = "ABSOLUTE" if isinstance(ts.data[0][0], datetime) else "RELATIVE"
+
+            fields_str = "idval, timser_type, times_type"
+            if fname:
+                fields_str += ", fname"
+            values_str = f"('{ts_name}', 'Other', '{times_type}'"
+            if fname:
+                values_str += f", '{fname}'"
+            sql = f"INSERT INTO cat_timeseries ({fields_str}) VALUES ({values_str})"
+            tools_db.execute_sql(sql, dao=self.dao)
+
+            match times_type:
+                case "RELATIVE":
+                    fields = "timeseries, time, value"
+                case "ABSOLUTE":
+                    fields = "timeseries, date, time, value"
+                case _:
+                    continue
+
+            sql = f"INSERT INTO cat_timeseries_value ({fields}) VALUES "
+            values = []
+            for ts_data in ts.data:
+                ts_data_f = format_ts(ts_data)
+
+                values_str = ", ".join([f"'{ts_name}'"] + [f"'{x}'" for x in ts_data_f])
+                values.append(f"({values_str})")
+            sql += ", ".join(values)
+            tools_db.execute_sql(sql, dao=self.dao)
+            # self.results["timeseries"] += 1
+
+    def _save_controls(self) -> None:
+        from swmm_api.input_file.section_labels import CONTROLS
+
+        controls_rows = get_rows("SELECT text FROM cat_controls", commit=self.force_commit)
+        controls_db: set[str] = set()
+        if controls_rows:
+            controls_db = {x[0] for x in controls_rows}
+
+        self.results["controls"] = 0
+        for control_name, control in self.network[CONTROLS].items():
+            text = control.to_inp_line()
+            if text in controls_db:
+                msg = f"The control '{control_name}' is already on database. Skipping..."
+                self._log_message(msg)
+                continue
+            sql = "INSERT INTO cat_controls (sector_id, text, active) VALUES (%s, %s, true)"
+            params = (self.sector, text)
+            execute_sql(sql, params, commit=self.force_commit)
+            self.results["controls"] += 1
+
+    def _save_lids(self) -> None:
+        from swmm_api.input_file.section_labels import LID_CONTROLS
+
+        lid_rows = get_rows("SELECT lidco_id FROM inp_lid", commit=self.force_commit)
+        lids_db: set[str] = set()
+        if lid_rows:
+            lids_db = {x[0] for x in lid_rows}
+
+        self.results["lids"] = 0
+        for lid_name, lid in self.network[LID_CONTROLS].items():
+            if lid_name in lids_db:
+                # Manage if lid already exists
+                for i in count(2):
+                    new_name = f"{lid_name}_{i}"
+                    if new_name in lids_db:
+                        continue
+                    message = f'The curve "{lid_name}" has been renamed to "{new_name}" to avoid a collision with an existing curve.'
+                    self.mappings["curves"][lid_name] = new_name
+                    lid_name = new_name
+                    break
+
+            lid_type: str = lid.lid_kind
+            sql = "INSERT INTO inp_lid (lidco_id, lidco_type) VALUES (%s, %s)"
+            params = (lid_name, lid_type)
+            execute_sql(sql, params, commit=self.force_commit)
+
+            # Insert lid_values
+            sql = """
+                INSERT INTO inp_lid_value (lidco_id, lidlayer, value_2, value_3, value_4, value_5, value_6, value_7, value_8)
+                VALUES %s
+            """
+            template = "(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            params = []
+            for k, v in lid.layer_dict.items():
+                match k:
+                    case 'SURFACE':
+                        lid_values = (lid_name, k, v.StorHt, v.VegFrac, v.Rough, v.Slope, v.Xslope, None, None)
+                    case 'SOIL':
+                        lid_values = (lid_name, k, v.Thick, v.Por, v.FC, v.WP, v.Ksat, v.Kcoeff, v.Suct)
+                    case 'PAVEMENT':
+                        lid_values = (lid_name, k, v.Thick, v.Vratio, v.FracImp, v.Perm, v.Vclog, v.regeneration_interval, v.regeneration_fraction)
+                    case 'STORAGE':
+                        lid_values = (lid_name, k, v.Height, v.Vratio, v.Seepage, v.Vclog, v.Covrd, None, None)
+                    case 'DRAIN':
+                        lid_values = (lid_name, k, v.Coeff, v.Expon, v.Offset, v.Delay, v.open_level, v.close_level, v.Qcurve)
+                    case 'DRAINMAT':
+                        lid_values = (lid_name, k, v.Thick, v.Vratio, v.Rough, None, None, None, None)
+                    case _:
+                        continue
+                params.append(lid_values)
+            toolsdb_execute_values(sql, params, template, commit=self.force_commit)
+            self.results["lids"] += 1
