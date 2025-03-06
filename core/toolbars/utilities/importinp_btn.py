@@ -37,10 +37,13 @@ class DrImportINPButton(DrAction):
         if not self._validate_inputs():
             return
         self._save_user_values()
+        save_folder = Path(self.input_file).parent / (Path(self.input_file).stem + "_temp_files")
+        save_folder.mkdir(parents=True, exist_ok=True)
         self.thread = DrImportInpTask(
             "Import INP file",
             self.input_file,
             global_vars.gpkg_dao_data.db_filepath,
+            str(save_folder),
             self.feedback,
         )
 
@@ -49,10 +52,10 @@ class DrImportINPButton(DrAction):
         dlg.btn_cancel.clicked.disconnect()
         dlg.btn_cancel.clicked.connect(self.thread.cancel)
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
-        self.thread.feedback.progressText.connect(self._set_progress_text)
-        self.thread.feedback.progressChanged.connect(dlg.progress_bar.setValue)
-        self.thread.taskCompleted.connect(self._on_task_completed)
-        self.thread.taskTerminated.connect(self._on_task_terminated)
+        # self.thread.feedback.progressText.connect(self._set_progress_text)
+        # self.thread.feedback.progressChanged.connect(dlg.progress_bar.setValue)
+        # self.thread.taskCompleted.connect(self._on_task_completed)
+        # self.thread.taskTerminated.connect(self._on_task_terminated)
 
         # Timer
         self.t0 = time()
@@ -62,6 +65,7 @@ class DrImportINPButton(DrAction):
         dlg.rejected.connect(self.timer.stop)
 
         QgsApplication.taskManager().addTask(self.thread)
+        QgsApplication.taskManager().triggerTask(self.thread)
 
     def _get_file_dialog(self, widget):
         # Check if selected file exists. Set default value if necessary

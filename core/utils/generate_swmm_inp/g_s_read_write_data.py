@@ -368,7 +368,8 @@ def create_layer_from_df(
         else:
             # replace nan with NULL in tables
             data_df = data_df.applymap(replace_nan_null)
-        data_df = data_df[data_df_column_order]
+        if len(data_df) > 0:
+            data_df = data_df[data_df_column_order]
     if len(data_df) != 0:
         # add features if data_df is not empty (which can be the case for tables)
         feature_list = data_df.apply(lambda x: create_feature_from_row(x, geom_type), axis=1)

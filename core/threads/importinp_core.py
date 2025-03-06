@@ -22,10 +22,10 @@ _tables = (
         },
     },
     {
-        "table_name": None,
+        "table_name": "inp_conduit",
         "section": "XSECTIONS",
         "mapper": {
-            "Shape": "shape",
+            "XsectShape": "shape",
             "Geom1": "geom1",
             "Geom2": "geom2",
             "Geom3": "geom3",
@@ -36,7 +36,7 @@ _tables = (
         },
     },
     {
-        "table_name": None,
+        "table_name": "inp_conduit",
         "section": "LOSSES",
         "mapper": {
             "Kentry": "kentry",
