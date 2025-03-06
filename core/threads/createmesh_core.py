@@ -43,15 +43,15 @@ def execute_ground_zonal_statistics(vector_layer: QgsVectorLayer, raster_layer: 
     for i, feature in enumerate(result_layer.getFeatures()):
         fids[i] = feature["fid"]
         values[i] = feature["_majority"]
-    
+
     return fids, values
 
 
 def triangulate_roof(
-    roof_layer: QgsVectorLayer, 
+    roof_layer: QgsVectorLayer,
     feedback: QgsFeedback
 ) -> Optional[tuple[pd.DataFrame, pd.DataFrame]]:
-    
+
     res = processing.run("3d:tessellate", {
         "INPUT": roof_layer,
         "OUTPUT": "TEMPORARY_OUTPUT"
@@ -73,7 +73,7 @@ def triangulate_roof(
         ]
 
         vertices_df = pd.DataFrame(vertices, columns=['x', 'y'])
-        vertices_df['z'] = feature["elev"]
+        vertices_df['z'] = 0
         vertices_df["category"] = "roof"
 
         triangles_df = pd.DataFrame(triangles, columns=['v1', 'v2', 'v3', 'v4'], dtype=np.uint32)
