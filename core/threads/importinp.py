@@ -77,7 +77,7 @@ class DrImportInpTask(DrTask):
             self._save_patterns()
             self._save_curves()
             self._save_timeseries()
-            # self._save_controls()
+            self._save_controls()
             # self._save_lids()
         except Exception as e:
             print(e)
@@ -184,7 +184,7 @@ class DrImportInpTask(DrTask):
     def _save_curves(self) -> None:
         from swmm_api.input_file.section_labels import CURVES
 
-        curve_rows = tools_db.get_rows("SELECT id FROM cat_curve", dao=self.dao)
+        curve_rows = tools_db.get_rows("SELECT idval FROM cat_curve", dao=self.dao)
         curves_db: set[str] = set()
         if curve_rows:
             curves_db = {x[0] for x in curve_rows}
@@ -219,7 +219,7 @@ class DrImportInpTask(DrTask):
         from swmm_api.input_file.section_labels import TIMESERIES
         from swmm_api.input_file.sections import TimeseriesFile, TimeseriesData
 
-        ts_rows = tools_db.get_rows("SELECT id FROM cat_timeseries", dao=self.dao)
+        ts_rows = tools_db.get_rows("SELECT idval FROM cat_timeseries", dao=self.dao)
         ts_db: set[str] = set()
         if ts_rows:
             ts_db = {x[0] for x in ts_rows}
@@ -295,22 +295,21 @@ class DrImportInpTask(DrTask):
     def _save_controls(self) -> None:
         from swmm_api.input_file.section_labels import CONTROLS
 
-        controls_rows = get_rows("SELECT text FROM cat_controls", commit=self.force_commit)
+        controls_rows = tools_db.get_rows("SELECT descript FROM cat_controls", dao=self.dao)
         controls_db: set[str] = set()
         if controls_rows:
             controls_db = {x[0] for x in controls_rows}
 
-        self.results["controls"] = 0
+        # self.results["controls"] = 0
         for control_name, control in self.network[CONTROLS].items():
             text = control.to_inp_line()
             if text in controls_db:
                 msg = f"The control '{control_name}' is already on database. Skipping..."
-                self._log_message(msg)
+                print(msg)
                 continue
-            sql = "INSERT INTO cat_controls (sector_id, text, active) VALUES (%s, %s, true)"
-            params = (self.sector, text)
-            execute_sql(sql, params, commit=self.force_commit)
-            self.results["controls"] += 1
+            sql = f"INSERT INTO cat_controls (descript) VALUES ('{text}')"
+            tools_db.execute_sql(sql, dao=self.dao)
+            # self.results["controls"] += 1
 
     def _save_lids(self) -> None:
         from swmm_api.input_file.section_labels import LID_CONTROLS
