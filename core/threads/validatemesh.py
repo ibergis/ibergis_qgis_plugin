@@ -166,7 +166,7 @@ def validate_ground_layer(
         landuse = feature["landuse"]
         roughness = feature["custom_roughness"]
         if (
-            landuse or 
+            landuse or
             (roughness and roughness > 0)
         ):
             continue
@@ -191,8 +191,7 @@ def validate_roof_layer(
 
     fid_field = QgsField("fid", QVariant.Int)
     roughness_field = QgsField("roughness", QVariant.Double)
-    elev_field = QgsField("elev", QVariant.Double)
-    provider.addAttributes([fid_field, roughness_field, elev_field])
+    provider.addAttributes([fid_field, roughness_field])
     output_layer.updateFields()
 
     # Fill layer the with errors
@@ -201,7 +200,6 @@ def validate_roof_layer(
         if feedback.isCanceled():
             return
         roughness = feature["roughness"]
-        elev = feature["elev"]
         slope = feature["slope"]
         width = feature["width"]
         isconnected = feature["isconnected"]
@@ -212,7 +210,6 @@ def validate_roof_layer(
         if (
             type(roughness) in [int, float]
             and roughness >= 0
-            and type(elev) in [int, float]
             and type(slope) in [int, float]
             and type(width) in [int, float]
             and type(isconnected) == int
@@ -225,7 +222,7 @@ def validate_roof_layer(
 
         invalid_feature = QgsFeature(output_layer.fields())
         invalid_feature.setAttributes(
-            [feature["fid"], feature["roughness"], feature["elev"]]
+            [feature["fid"], feature["roughness"]]
         )
         invalid_feature.setGeometry(feature.geometry())
         output_layer.addFeature(invalid_feature)
@@ -470,7 +467,7 @@ def validate_input_layers(
             print(f"Executing '{validation['name']}' validation... ", end="")
             result_layers = validation["function"](parameter, feedback)
             print(f"Done! {time.time() - start}s")
-            
+
             if type(result_layers) not in (tuple, list):
                 result_layers = [result_layers]
 

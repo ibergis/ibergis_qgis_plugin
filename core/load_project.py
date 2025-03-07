@@ -44,7 +44,7 @@ class DrLoadProject(QObject):
         # Get variables from qgis project
         self._get_project_variables()
 
-        # Check if loaded project is valid for Giswater
+        # Check if loaded project is valid for Drain
         if not self._check_project(show_warning):
             return
 
@@ -270,7 +270,7 @@ class DrLoadProject(QObject):
                 while not successful and attempt < 10:
                     button_def = tools_dr.get_config_parser('buttons_def', str(index_action), "project", "drain")
                     button_tooltip = tools_dr.get_config_parser('buttons_tooltip', str(index_action), "project", "drain")
-                    
+
                     if button_def not in (None, 'None'):
                         # Check if the class associated to the button definition exists
                         if hasattr(buttons, button_def):

@@ -529,6 +529,21 @@ def add_layer_temp(dialog, data, layer_name, force_tab=True, reset_text=True, ta
     return {'text_result': text_result, 'temp_layers_added': temp_layers_added}
 
 
+def load_gpkg(gpkg_file) -> dict:
+    """ Loads all layers from the GPKG file into a dictionary """
+
+    from osgeo import ogr
+
+    layers = {}
+    gpkg = ogr.Open(gpkg_file)
+
+    for l in gpkg:
+        layer = QgsVectorLayer(f"{gpkg_file}|layername={l.GetName()}", l.GetName(), 'ogr')
+        if layer.isValid():
+            layers[l.GetName()] = layer
+
+    return layers
+
 def config_layer_attributes(json_result, layer, layer_name, thread=None):
 
     for field in json_result['body']['data']['fields']:
