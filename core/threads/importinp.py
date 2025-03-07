@@ -266,7 +266,7 @@ class DrImportInpTask(DrTask):
             fields_str = "idval, timser_type, times_type"
             if fname:
                 fields_str += ", fname"
-            values_str = f"('{ts_name}', 'Other', '{times_type}'"
+            values_str = f"'{ts_name}', 'OTHER', '{times_type}'"
             if fname:
                 values_str += f", '{fname}'"
             sql = f"INSERT INTO cat_timeseries ({fields_str}) VALUES ({values_str})"
@@ -287,7 +287,8 @@ class DrImportInpTask(DrTask):
 
                 values_str = ", ".join([f"'{ts_name}'"] + [f"'{x}'" for x in ts_data_f])
                 values.append(f"({values_str})")
-            sql += ", ".join(values)
+            values_str = ", ".join(values)
+            sql += f"{values_str}"
             tools_db.execute_sql(sql, dao=self.dao)
             # self.results["timeseries"] += 1
 
