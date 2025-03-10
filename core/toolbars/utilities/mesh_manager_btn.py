@@ -132,10 +132,10 @@ class DrMeshManagerButton(DrAction):
         # Load data from GPKG
         sql = f"SELECT name, iber2d, roof, losses FROM cat_file WHERE name = '{value}'"
         row = tools_db.get_row(sql)
-        
+
         if not row:
             return
-        
+
         mesh = mesh_parser.loads(row["iber2d"], row["roof"], row["losses"])
 
         self.thread = DrCreateTempMeshLayerTask("Create Temp Mesh Layer", mesh)
@@ -144,6 +144,12 @@ class DrMeshManagerButton(DrAction):
 
     def _load_layer(self):
         """Add temp layer to TOC"""
+
+        # Remove layer if already exists
+        layer_name = self.thread.layer.name()
+        tools_qgis.remove_layer_from_toc(layer_name, group_name="DRAIN TEMPORAL")
+
+        # Add layer to TOC
         tools_qt.add_layer_to_toc(self.thread.layer, group="DRAIN TEMPORAL")
         iface.setActiveLayer(self.thread.layer)
         iface.zoomToActiveLayer()
