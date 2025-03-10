@@ -25,6 +25,7 @@ class DrMeshManagerButton(DrAction):
         self.dlg_manager = None
         self.dlg_bc = None
         self.dlg_ms = None
+        self.last_mesh = None
 
     def clicked_event(self):
         self.manage_meshes()
@@ -45,6 +46,8 @@ class DrMeshManagerButton(DrAction):
         # Populate
         self._fill_manager_table(tbl_mesh_mng, 'v_ui_file') #, expr="file_name = 'Iber2D.dat'")
 
+        self._set_active_mesh_label()
+
         # Signals
         txt_filter.textChanged.connect(partial(self._filter_table))
         btn_create_mesh.clicked.connect(partial(self._create_mesh))
@@ -55,6 +58,12 @@ class DrMeshManagerButton(DrAction):
         btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_manager))
 
         tools_dr.open_dialog(self.dlg_manager, dlg_name="dlg_mesh_manager")
+
+    def _set_active_mesh_label(self):
+
+        # Populate active mesh label
+        if tools_qgis.get_layer_by_layername("Mesh Temp Layer") and self.last_mesh:
+            self.dlg_manager.lbl_active_mesh.setText(f"Active mesh: {self.last_mesh}")
 
     def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.NoEditTriggers, expr=None):
         """ Fills manager table """
@@ -137,6 +146,7 @@ class DrMeshManagerButton(DrAction):
             return
 
         mesh = mesh_parser.loads(row["iber2d"], row["roof"], row["losses"])
+        self.last_mesh = value
 
         self.thread = DrCreateTempMeshLayerTask("Create Temp Mesh Layer", mesh)
         self.thread.taskCompleted.connect(self._load_layer)
@@ -153,6 +163,8 @@ class DrMeshManagerButton(DrAction):
         tools_qt.add_layer_to_toc(self.thread.layer, group="DRAIN TEMPORAL")
         iface.setActiveLayer(self.thread.layer)
         iface.zoomToActiveLayer()
+
+        self._set_active_mesh_label()
 
     def _import_mesh(self):
 
