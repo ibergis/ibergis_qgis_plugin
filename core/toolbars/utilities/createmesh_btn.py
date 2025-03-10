@@ -49,21 +49,21 @@ class DrCreateMeshButton(DrAction):
         ]
         # DEM
         rows = [[None, "Fill elevation with zeroes"], *raster_layers]
-        tools_qt.fill_combo_values(dlg.cmb_dem_layer, rows, add_empty=True)
+        tools_qt.fill_combo_values(dlg.cmb_dem_layer, rows, add_empty=False)
         # Roughness
         rows = [
             [None, "Fill roughness with zeroes"],
             ["ground_layer", "Ground"],
             *raster_layers,
         ]
-        tools_qt.fill_combo_values(dlg.cmb_roughness_layer, rows, add_empty=True)
+        tools_qt.fill_combo_values(dlg.cmb_roughness_layer, rows, add_empty=False)
         # Roughness
         rows = [
             [None, "Fill losses with zeroes"],
             ["ground_layer", "Ground"],
             *raster_layers,
         ]
-        tools_qt.fill_combo_values(dlg.cmb_losses_layer, rows, add_empty=True)
+        tools_qt.fill_combo_values(dlg.cmb_losses_layer, rows, add_empty=False)
 
         # Load user's last values
         self._load_widget_values()
@@ -231,14 +231,20 @@ class DrCreateMeshButton(DrAction):
         cmb_dem_layer = tools_dr.get_config_parser('dlg_create_mesh', 'cmb_dem_layer', "user", "session")
         if cmb_dem_layer not in (None, 'null'):
             tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_dem_layer'), cmb_dem_layer, 1, add_new=False)
+        else:
+            tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_dem_layer'), "Fill elevation with zeroes", 1, add_new=False)
         # cmb_roughness_layer
         cmb_roughness_layer = tools_dr.get_config_parser('dlg_create_mesh', 'cmb_roughness_layer', "user", "session")
         if cmb_roughness_layer not in (None, 'null'):
             tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_roughness_layer'), cmb_roughness_layer, 1, add_new=False)
+        else:
+            tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_roughness_layer'), "Ground", 1, add_new=False)
         # cmb_losses_layer
         cmb_losses_layer = tools_dr.get_config_parser('dlg_create_mesh', 'cmb_losses_layer', "user", "session")
         if cmb_losses_layer not in (None, 'null'):
             tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_losses_layer'), cmb_losses_layer, 1, add_new=False)
+        else:
+            tools_qt.set_combo_value(dlg.findChild(QComboBox, 'cmb_losses_layer'), "Ground", 1, add_new=False)
 
         # txt_name
         txt_name = tools_dr.get_config_parser('dlg_create_mesh', 'txt_name', "user", "session")
