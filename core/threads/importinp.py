@@ -181,17 +181,17 @@ class DrImportInpTask(DrTask):
                 target_layer = target_layer
                 field_map = _tables_dict[dr_layername]["mapper"]
                 print(f"Importing {dr_layername} into project...")
-                self._insert_data(source_layer, target_layer, field_map)
+                self._insert_data(source_layer, target_layer, field_map, batch_size=50000)
 
                 print(f"Imported {dr_layername} into project.")
 
-    def _insert_data(self, source_layer, target_layer, field_map):
-        """Copies features from the source layer to the target layer with mapped fields."""
-
-        features_to_add = []
+    def _insert_data(self, source_layer, target_layer, field_map, batch_size=1000):
+        """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
 
         # Get the target field names in order
         target_field_names = [field.name() for field in target_layer.fields()]
+
+        features_to_add = []
 
         for feature in source_layer.getFeatures():
             new_feature = QgsFeature(target_layer.fields())
@@ -205,9 +205,18 @@ class DrImportInpTask(DrTask):
             new_feature.setGeometry(feature.geometry())  # Preserve geometry
             features_to_add.append(new_feature)
 
-        target_layer.startEditing()
-        target_layer.addFeatures(features_to_add)
-        target_layer.commitChanges()
+            # Commit in batches
+            if len(features_to_add) >= batch_size:
+                target_layer.startEditing()
+                target_layer.addFeatures(features_to_add)
+                target_layer.commitChanges()
+                features_to_add.clear()
+
+        # Commit any remaining features
+        if features_to_add:
+            target_layer.startEditing()
+            target_layer.addFeatures(features_to_add)
+            target_layer.commitChanges()
 
     def _save_patterns(self):
         from swmm_api.input_file.section_labels import PATTERNS
