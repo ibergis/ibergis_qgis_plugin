@@ -37,8 +37,12 @@ class DrImportInpTask(DrTask):
                 return False
             # Get non-visual data from xlsx and import it
             self._import_non_visual_data()
+            # Disable triggers
+            self._enable_triggers(False)
             # Get data from gpkg and import it to existing layers (changing the column names)
             self._import_gpkgs_to_project()
+            # Enable triggers
+            self._enable_triggers(True)
             return True
         except Exception:
             self.exception = traceback.format_exc()
@@ -64,6 +68,59 @@ class DrImportInpTask(DrTask):
             "DATA_CRS": QgsCoordinateReferenceSystem("EPSG:25831"),
         }
         return params
+
+    def _enable_triggers(self, enable: bool) -> None:
+        """ Enable or disable triggers in the database """
+
+        create_sentences = [
+            "PRAGMA foreign_keys = ON;",
+            # Junctions
+            "CREATE TRIGGER trg_del_inp_junction AFTER DELETE on inp_junction FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_junction'; END;",
+            "CREATE TRIGGER trg_ins_code_inp_junction AFTER INSERT on inp_junction FOR EACH ROW BEGIN update inp_junction set code = 'J'||fid; END;",
+            "CREATE TRIGGER trg_ins_inp_junction AFTER INSERT ON inp_junction FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_junction'); END;",
+            "CREATE TRIGGER trg_upd_code_inp_junction AFTER UPDATE of code on inp_junction FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_junction'; END;",
+            # Conduits
+            "CREATE TRIGGER trg_del_inp_conduit AFTER DELETE on inp_conduit FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_conduit'; END;",
+            "CREATE TRIGGER trg_ins_code_inp_conduit AFTER INSERT on inp_conduit FOR EACH ROW BEGIN update inp_conduit set code = 'C'||fid; END;",
+            "CREATE TRIGGER trg_ins_inp_conduit AFTER INSERT ON inp_conduit FOR EACH ROW BEGIN INSERT INTO arc (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_conduit'); END;",
+            ("CREATE TRIGGER trg_ins_nodes_inp_conduit AFTER INSERT ON inp_conduit FOR EACH ROW "
+            "BEGIN "
+            "    UPDATE inp_conduit SET "
+            "        node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_EndPoint(NEW.geom)) LIMIT 1), "
+            "        node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_StartPoint(NEW.geom)) LIMIT 1) "
+            "    WHERE fid = NEW.fid;-- AND (node_1 IS NULL OR node_2 IS NULL); "
+            "END;"),
+            "CREATE TRIGGER trg_upd_code_inp_conduit AFTER UPDATE of code on inp_conduit FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_conduit'; END;",
+            ("CREATE TRIGGER trg_upd_nodes_inp_conduit AFTER UPDATE OF geom ON inp_conduit FOR EACH ROW "
+            "BEGIN "
+            "    UPDATE inp_conduit SET "
+            "        node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_EndPoint(NEW.geom)) LIMIT 1), "
+            "        node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_StartPoint(NEW.geom)) LIMIT 1) "
+            "    WHERE geom = NEW.geom; -- AND (node_1 IS NULL OR node_2 IS NULL); "
+            "END;"),
+        ]
+        delete_sentences = [
+            "PRAGMA foreign_keys = OFF;",
+            # Junctions
+            "DROP TRIGGER trg_del_inp_junction",
+            "DROP TRIGGER trg_ins_code_inp_junction",
+            "DROP TRIGGER trg_ins_inp_junction",
+            "DROP TRIGGER trg_upd_code_inp_junction",
+            # Conduits
+            "DROP TRIGGER trg_del_inp_conduit",
+            "DROP TRIGGER trg_ins_code_inp_conduit",
+            "DROP TRIGGER trg_ins_inp_conduit",
+            "DROP TRIGGER trg_ins_nodes_inp_conduit",
+            "DROP TRIGGER trg_upd_code_inp_conduit",
+            "DROP TRIGGER trg_upd_nodes_inp_conduit",
+        ]
+        if enable:
+            sentences = create_sentences
+        else:
+            sentences = delete_sentences
+
+        for sentence in sentences:
+            tools_db.execute_sql(sentence, dao=self.dao)
 
     def _import_non_visual_data(self):
         """ Import the non-visual data from the xlsx to the gpkg """
