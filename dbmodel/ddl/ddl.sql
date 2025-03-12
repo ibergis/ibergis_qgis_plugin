@@ -806,8 +806,6 @@ select
   case
     when parameter in ('inp_options_start_date', 'inp_options_end_date', 'inp_options_report_start_date')
       then strftime('%m/%d/%Y', value)
-    when parameter in ('inp_options_sweep_start', 'inp_options_sweep_end')
-      then strftime('%m/%d', value)
     else value
   end as Value
 from config_param_user
