@@ -1805,39 +1805,20 @@ def execute_procedure(function_name, parameters=None, schema_name=None, commit=T
             tools_qgis.show_warning("Function not found in tools_fct", parameter=function_name)
             return None
 
-    if type(parameters) == str:
+    if type(parameters) is str:
         parameters = json.loads(parameters)
+    msg = f"tools_fct.{function_name}({parameters})"
+    tools_log.log_db(msg, bold='b')
     json_result = getattr(tools_fct, function_name)(parameters)
     if commit:
         global_vars.gpkg_dao_data.commit()
 
-    # Manage schema_name and parameters
-    # if schema_name:
-    #     sql = f"SELECT {schema_name}.{function_name}("
-    # elif schema_name is None and global_vars.schema_name:
-    #     sql = f"SELECT {global_vars.schema_name}.{function_name}("
-    # else:
-    #     sql = f"SELECT {function_name}("
-    # if parameters:
-    #     sql += f"{parameters}"
-    # sql += f");"
+    # # Get log_sql for developers
+    # dev_log_sql = get_config_parser('log', 'log_sql', "user", "init", False)
+    # if dev_log_sql in ("True", "False"):
+    #     log_sql = tools_os.set_boolean(dev_log_sql)
 
-    # Get log_sql for developers
-    dev_log_sql = get_config_parser('log', 'log_sql', "user", "init", False)
-    if dev_log_sql in ("True", "False"):
-        log_sql = tools_os.set_boolean(dev_log_sql)
-
-    # # Execute database function
-    # row = tools_db.get_row(sql, commit=commit, log_sql=log_sql, aux_conn=aux_conn)
-    # if not row or not row[0]:
-    #     tools_log.log_warning(f"Function error: {function_name}")
-    #     tools_log.log_warning(sql)
-    #     return None
-    #
-    # # Get json result
-    # json_result = row[0]
-    # if log_sql:
-    #     tools_log.log_db(json_result, header="SERVER RESPONSE")
+    tools_log.log_db(json_result, header="SERVER RESPONSE")
 
     # All functions called from python should return 'status', if not, something has probably failed in postrgres
     if 'status' not in json_result:

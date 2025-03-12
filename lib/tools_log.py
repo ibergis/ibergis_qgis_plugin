@@ -207,7 +207,7 @@ def log_error(text=None, context_name=None, parameter=None, logger_file=True, st
 
 def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message_level=0, logger_file=True,
         stack_level_increase=0):
-    """ Write information message into QGIS Log Messages Panel (tab Giswater DB) """
+    """ Write information message into QGIS Log Messages Panel (tab Drain DB) """
 
     if type(text) is dict:
         text = json.dumps(text)
