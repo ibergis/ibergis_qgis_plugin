@@ -6,6 +6,7 @@ or (at your option) any later version.
 """
 import json
 from ctypes import Union
+from datetime import datetime
 
 # -*- coding: utf-8 -*-
 from ... import global_vars
@@ -95,6 +96,11 @@ def getconfig(p_input: dict) -> dict:
                     if value is not None:
                         if widget['widgettype'] == 'check' and value in ('0', '1'):
                             value = str(value == '1')
+                        elif widget['widgettype'] == 'datetime':
+                            try:
+                                value = datetime.strptime(value, '%d/%m/%Y').strftime('%Y-%m-%d')
+                            except ValueError:
+                                pass
                         widget['value'] = value
 
                     break

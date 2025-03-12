@@ -993,10 +993,10 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
                     widget.setDisplayFormat('yyyy/MM/dd')
                     if global_vars.date_format in ("dd/MM/yyyy", "dd-MM-yyyy", "yyyy/MM/dd", "yyyy-MM-dd"):
                         widget.setDisplayFormat(global_vars.date_format)
-                    date = QDate.currentDate()
+                    widget.clear()
                     if field.get('value') not in ('', None, 'null'):
                         date = QDate.fromString(field['value'].replace('/', '-'), 'yyyy-MM-dd')
-                    widget.setDate(date)
+                        widget.setDate(date)
                     widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
                     widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
                 elif field['widgettype'] == 'spinbox':

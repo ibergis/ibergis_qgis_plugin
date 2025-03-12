@@ -7,9 +7,11 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 import json
 from functools import partial
+from typing import List, Dict, Any
 
 from qgis.PyQt.QtWidgets import QWidget, QComboBox, QGroupBox, QSpacerItem, QSizePolicy, \
     QGridLayout, QTabWidget
+from qgis.PyQt.QtCore import QDateTime
 from ..ui.ui_manager import DrGo2EpaOptionsUi
 from ..utils import tools_dr
 from ...lib import tools_qgis, tools_qt, tools_db, tools_log
@@ -128,6 +130,7 @@ class DrOptions:
 
     def _update_values(self, _json):
 
+        _json = self._parse_values_json(_json)
         my_json = json.dumps(_json)
         form = '"formName":"epaoptions"'
         extras = f'"fields":{my_json}'
@@ -165,3 +168,13 @@ class DrOptions:
         for combo_child in json_result['fields']:
             if combo_child is not None:
                 tools_dr.manage_combo_child(dialog, widget, combo_child)
+
+    def _parse_values_json(self, _json: List[Dict[str, Any]]):
+
+        format_str = "yyyy-MM-dd"
+
+        for item in _json:
+            if isinstance(item["value"], QDateTime):
+                item["value"] = item["value"].toString(format_str)
+
+        return _json
