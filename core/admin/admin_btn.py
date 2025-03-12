@@ -76,6 +76,15 @@ class DrAdminButton:
         self.project_epsg = project_srid
         self.locale = project_locale
 
+
+        self.gpkg_full_path = project_path + "/" + gpkg_name + ".gpkg"
+        if os.path.exists(self.gpkg_full_path):
+            text = "Geopackage already exists. Do you want to overwrite it?"
+            response = tools_qt.show_question(text)
+            if not response:
+                return False
+            os.remove(self.gpkg_full_path)
+
         log_suffix = '%Y%m%d %H:%M:%S'
         self.project_params = {"project_name": self.gpkg_name, "project_descript": self.project_descript, "project_user": getpass.getuser(),
                               "project_tstamp": str(time.strftime(log_suffix)),"project_version": self.plugin_version}
@@ -591,10 +600,9 @@ class DrAdminButton:
 
         self.gpkg_full_path = path + "/" + gpkg_name + ".gpkg"
         if os.path.exists(self.gpkg_full_path):
-            text = f"Geopackage already exists. Do you want to overwrite it?"
-            response = tools_qt.show_question(text)
-            if not response:
-                return False
+            msg = "Geopackage already exists."
+            tools_log.log_warning(msg, parameter=self.gpkg_full_path)
+            return False
 
         driver = gdal.GetDriverByName('GPKG')
         dataset = driver.Create(self.gpkg_full_path, 0, 0, 0, gdal.GDT_Unknown)
