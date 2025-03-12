@@ -5,21 +5,23 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 import time
+import datetime
 import getpass
 # -*- coding: utf-8 -*-
 import os
 from functools import partial
 from osgeo import gdal
 
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.PyQt.QtWidgets import QRadioButton, QLineEdit, QComboBox, QFileDialog, QTableView, QAbstractItemView
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsApplication
 from qgis.utils import reloadPlugin
 
 from .gis_file_create import DrGisFileCreate
 from ..ui.ui_manager import DrAdminUi
 from ..utils import tools_dr
+from ..threads.project_gpkg_schema_create import DrGpkgCreateSchemaTask
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
 
@@ -91,30 +93,16 @@ class DrAdminButton:
             tools_qt.show_info_box(msg, "Info")
             return
 
-        tools_log.log_info(f"Creating GPKG {self.gpkg_name}'")
-        tools_log.log_info(f"Create schema: Executing function 'create_gpkg'")
-        create_gpkg_status = self.create_gpkg()
-        if not create_gpkg_status:
-            return
-        tools_log.log_info(f"Create schema: Executing function '_check_database_connection'")
-        connection_status = self._check_database_connection(self.gpkg_full_path, self.gpkg_name)
-        if not connection_status:
-            tools_log.log_info("Function '_check_database_connection' returned False")
-            return
-        tools_log.log_info(f"Create schema: Executing function 'main_execution'")
-        status = self.create_schema_main_execution()
-        if not status:
-            tools_log.log_info("Function 'main_execution' returned False")
-            return
-        tools_log.log_info(f"Create schema: Executing function 'custom_execution'")
-        status_custom = self.create_schema_custom_execution()
-        if not status_custom:
-            tools_log.log_info("Function 'custom_execution' returned False")
-            return
+        # Timer
+        self.t0 = time.time()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self._on_timer_timeout)
+        self.timer.start(500)
 
-        tools_qt.show_info_box("Geopackage created successfully")
-
-        self.change_tab()
+        params = {}
+        self.create_gpkg_thread = DrGpkgCreateSchemaTask(self, "Create GPKG", params, timer=self.timer)
+        QgsApplication.taskManager().addTask(self.create_gpkg_thread)
+        QgsApplication.taskManager().triggerTask(self.create_gpkg_thread)
 
 
     def change_tab(self):
@@ -134,15 +122,16 @@ class DrAdminButton:
 
         status = (self.error_count == 0)
         self._manage_result_message(status, parameter="Create project")
-        if status:
-            if is_utils is False:
-                self._close_dialog_admin(self.dlg_readsql)
+        if not status:
             # Reset count error variable to 0
             self.error_count = 0
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
             tools_qgis.show_info("A rollback on schema will be done.")
             if dlg:
                 tools_dr.close_dialog(dlg)
+            return
+        global_vars.gpkg_dao_data = global_vars.gpkg_dao_data.clone()
+        self.change_tab()
 
 
     def init_dialog_create_project(self):
@@ -509,7 +498,7 @@ class DrAdminButton:
         return status
 
 
-    def create_schema_custom_execution(self):
+    def create_schema_custom_execution(self, config_dao=None):
         """ Custom execution """
 
         if self.rdb_sample.isChecked():
@@ -518,17 +507,20 @@ class DrAdminButton:
             load_sample = self.load_sample_data()
             if not load_sample:
                 return
-            return self.populate_config_params()
+            return self.populate_config_params(config_dao)
         elif self.rdb_data.isChecked():
             tools_log.log_info("Execute 'custom_execution' (empty data)")
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
-            return self.populate_config_params()
+            return self.populate_config_params(config_dao)
 
-    def populate_config_params(self):
+    def populate_config_params(self, config_dao=None):
         """Populate table config_param_user"""
 
+        if not config_dao:
+            config_dao = self.gpkg_dao_config
+
         sql_select = f"SELECT columnname, vdefault FROM config_form_fields WHERE formtype = 'form_options'"
-        rows = self.gpkg_dao_config.get_rows(sql_select)
+        rows = config_dao.get_rows(sql_select)
 
         if not rows:
             return False
@@ -664,11 +656,11 @@ class DrAdminButton:
         if status:
             if msg_ok is None:
                 msg_ok = "Process finished successfully"
-            tools_qgis.show_info(msg_ok, parameter=parameter)
+            tools_qgis.show_info(msg_ok, parameter=parameter, dialog=self.dlg_readsql)
         else:
             if msg_error is None:
                 msg_error = "Process finished with some errors"
-            tools_qgis.show_warning(msg_error, parameter=parameter)
+            tools_qgis.show_warning(msg_error, parameter=parameter, dialog=self.dlg_readsql)
 
 
     def _select_active_locales(self):
@@ -732,3 +724,9 @@ class DrAdminButton:
             sql = f"""CREATE TRIGGER "trigger_insert_feature_count_{tablename}" {aux_str} INSERT ON "{tablename}" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
             tools_db.execute_sql(sql, commit=False)
             global_vars.gpkg_dao_data.commit()
+
+    def _on_timer_timeout(self):
+        # Update timer
+        elapsed_time = time.time() - self.t0
+        text = str(datetime.timedelta(seconds=round(elapsed_time)))
+        self.dlg_readsql.lbl_time.setText(text)

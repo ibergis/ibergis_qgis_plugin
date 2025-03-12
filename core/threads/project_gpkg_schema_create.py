@@ -12,6 +12,7 @@ import os
 from .task import DrTask
 from ..utils import tools_dr
 from ...lib import tools_qt, tools_log
+from ... import global_vars
 
 
 class DrGpkgCreateSchemaTask(DrTask):
@@ -26,61 +27,60 @@ class DrGpkgCreateSchemaTask(DrTask):
         self.dict_folders_process = {}
         self.db_exception = (None, None, None)  # error, sql, filepath
         self.timer = timer
+        self.config_dao = None
 
-        # Manage buttons & other dlg-related widgets
-        # Disable dlg_readsql_create_project buttons
-        self.admin.dlg_readsql_create_project.btn_cancel_task.show()
-        self.admin.dlg_readsql_create_project.btn_accept.hide()
-        self.admin.dlg_readsql_create_project.btn_close.setEnabled(False)
-        try:
-            self.admin.dlg_readsql_create_project.key_escape.disconnect()
-        except TypeError:
-            pass
+        # # Manage buttons & other dlg-related widgets
+        # # Disable dlg_readsql_create_project buttons
+        # self.admin.dlg_readsql_create_project.btn_cancel_task.show()
+        # self.admin.dlg_readsql_create_project.btn_accept.hide()
+        # self.admin.dlg_readsql_create_project.btn_close.setEnabled(False)
+        # try:
+        #     self.admin.dlg_readsql_create_project.key_escape.disconnect()
+        # except TypeError:
+        #     pass
 
-        # Disable red 'X' from dlg_readsql_create_project
-        self.admin.dlg_readsql_create_project.setWindowFlag(Qt.WindowCloseButtonHint, False)
-        self.admin.dlg_readsql_create_project.show()
-        # Disable dlg_readsql buttons
-        self.admin.dlg_readsql.btn_close.setEnabled(False)
+        # # Disable red 'X' from dlg_readsql_create_project
+        # self.admin.dlg_readsql_create_project.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        # self.admin.dlg_readsql_create_project.show()
+        # # Disable dlg_readsql buttons
+        # self.admin.dlg_readsql.btn_close.setEnabled(False)
 
 
     def run(self):
 
         super().run()
-        self.is_test = self.params['is_test']
         self.finish_execution = {'import_data': False}
         self.dict_folders_process = {}
         self.admin.total_sql_files = 0
         self.admin.current_sql_file = 0
+        self.config_dao = global_vars.gpkg_dao_config.clone()
         tools_log.log_info(f"Create schema: Executing function 'main_execution'")
         status = self.main_execution()
         if not status:
             tools_log.log_info("Function main_execution returned False")
             return False
-        tools_log.log_info(f"Create schema: Executing function 'custom_execution'")
-        self.custom_execution()
         return True
 
 
     def finished(self, result):
 
         super().finished(result)
-        # Enable dlg_readsql_create_project buttons
-        self.admin.dlg_readsql_create_project.btn_cancel_task.hide()
-        self.admin.dlg_readsql_create_project.btn_accept.show()
-        self.admin.dlg_readsql_create_project.btn_close.setEnabled(True)
-        # Enable red 'X' from dlg_readsql_create_project
-        self.admin.dlg_readsql_create_project.setWindowFlag(Qt.WindowCloseButtonHint, True)
-        self.admin.dlg_readsql_create_project.show()
-        # Disable dlg_readsql buttons
-        self.admin.dlg_readsql.btn_close.setEnabled(True)
+        # # Enable dlg_readsql_create_project buttons
+        # self.admin.dlg_readsql_create_project.btn_cancel_task.hide()
+        # self.admin.dlg_readsql_create_project.btn_accept.show()
+        # self.admin.dlg_readsql_create_project.btn_close.setEnabled(True)
+        # # Enable red 'X' from dlg_readsql_create_project
+        # self.admin.dlg_readsql_create_project.setWindowFlag(Qt.WindowCloseButtonHint, True)
+        # self.admin.dlg_readsql_create_project.show()
+        # # Disable dlg_readsql buttons
+        # self.admin.dlg_readsql.btn_close.setEnabled(True)
 
         if self.isCanceled():
             if self.timer:
                 self.timer.stop()
             self.setProgress(100)
             # Handle db exception
-            if self.db_exception is not None:
+            if self.db_exception != (None, None, None):
                 error, sql, filepath = self.db_exception
                 tools_qt.manage_exception_db(error, sql, filepath=filepath)
             return
@@ -100,26 +100,34 @@ class DrGpkgCreateSchemaTask(DrTask):
         self.setProgress(100)
 
 
-    def set_progress(self, value):
-
-        if not self.is_test:
-            self.setProgress(value)
-
-
-    def main_execution(self):
+    def main_execution(self) -> bool:
         """ Main common execution """
 
-        gpkg = self.params['gpkg']
-        project_locale = self.params['project_locale']
-        project_srid = self.params['project_srid']
-
-        tools_log.log_info(f"Create schema: Executing function 'calculate_number_of_files'")
-        self.admin.total_sql_files = self.calculate_number_of_files()
-        tools_log.log_info(f"Number of SQL files 'TOTAL': {self.admin.total_sql_files}")
-        status = self.admin.load_base(self.dict_folders_process['load_base'])
-        if not status or self.isCanceled():
+        tools_log.log_info(f"Creating GPKG {self.admin.gpkg_name}'")
+        tools_log.log_info(f"Create schema: Executing function 'create_gpkg'")
+        create_gpkg_status = self.admin.create_gpkg()
+        if not create_gpkg_status:
             return False
 
+        tools_log.log_info(f"Create schema: Executing function '_check_database_connection'")
+        connection_status = self.admin._check_database_connection(self.admin.gpkg_full_path, self.admin.gpkg_name)
+        if not connection_status:
+            tools_log.log_info("Function '_check_database_connection' returned False")
+            return False
+
+        tools_log.log_info(f"Create schema: Executing function 'main_execution'")
+        status = self.admin.create_schema_main_execution()
+        if not status:
+            tools_log.log_info("Function 'main_execution' returned False")
+            return False
+
+        tools_log.log_info(f"Create schema: Executing function 'custom_execution'")
+        status_custom = self.admin.create_schema_custom_execution(self.config_dao)
+        if not status_custom:
+            tools_log.log_info("Function 'custom_execution' returned False")
+            return False
+
+        return True
 
     def custom_execution(self):
         """ Custom execution """
