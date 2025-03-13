@@ -298,6 +298,7 @@ class DrEpaFileManager(DrTask):
 
 
     def _create_curves_file(self):
+        from ..utils.generate_swmm_inp.g_s_defaults import def_tables_dict
         # Use pandas to read the SQL table into a DataFrame
         query = """SELECT
                     cc.curve_type,
@@ -319,7 +320,6 @@ class DrEpaFileManager(DrTask):
         file_path = temp_file.name
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
-            headers = ["Name", "Depth", "Area", "Annotation"]  # TODO: maybe use respective x-value/y-value columns depending on curve_type
             # Iterate over each group and save it to a separate sheet
             for curve_type, data in grouped_data:
                 # Concatenate all curves of the same curve_type, with curve_name separated by semicolon
@@ -327,6 +327,8 @@ class DrEpaFileManager(DrTask):
                 # Track the current row position
                 current_row = 1
                 sheet_name = f"{curve_type[0].capitalize()}"
+
+                headers = list(def_tables_dict['CURVES']['tables'][sheet_name].keys()) + ['Annotation']
 
                 for curve_name, curve_data in grouped_by_curve_name:
                     # Remove the 'curve_type' columns from the individual sheets
@@ -419,7 +421,7 @@ class DrEpaFileManager(DrTask):
             df.to_excel(writer, sheet_name=sheet_name, index=False)
 
         return file_path
-    
+
     def _create_report_file(self):
         query = """SELECT
                     Option,
