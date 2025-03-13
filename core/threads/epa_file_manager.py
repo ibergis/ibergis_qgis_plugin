@@ -543,6 +543,12 @@ class DrEpaFileManager(DrTask):
         conn = self.dao.conn
         df_dwf = pd.read_sql_query(query, conn)
 
+        # FAKE Hydrographs
+        df_hydrographs = pd.DataFrame(columns=['Name', 'Rain_Gage', 'Months', 'R_ShortTerm', 'T_ShortTerm', 'K_ShortTerm', 'D_max_ShortTerm', 'D_recovery_ShortTerm', 'D_init_ShortTerm', 'R_MediumTerm', 'T_MediumTerm', 'K_MediumTerm', 'D_max_MediumTerm', 'D_recovery_MediumTerm', 'D_init_MediumTerm', 'R_LongTerm', 'T_LongTerm', 'K_LongTerm', 'D_max_LongTerm', 'D_recovery_LongTerm', 'D_init_LongTerm'])
+
+        # FAKE RDII
+        df_rdii = pd.DataFrame(columns=['Node', 'UnitHydrograph', 'SewerArea'])
+
         temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
         file_path = temp_file.name
         # Create a new Excel writer
@@ -551,6 +557,10 @@ class DrEpaFileManager(DrTask):
             df_direct.to_excel(writer, sheet_name="Direct", index=False)
             # Write Dry Weather inflows to its sheet
             df_dwf.to_excel(writer, sheet_name="Dry_Weather", index=False)
+            # Write Hydrographs inflows to its sheet
+            df_hydrographs.to_excel(writer, sheet_name="Hydrographs", index=False)
+            # Write RDII inflows to its sheet
+            df_rdii.to_excel(writer, sheet_name="RDII", index=False)
 
         return file_path
 
