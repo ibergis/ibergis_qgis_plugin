@@ -349,7 +349,7 @@ try:
             field: np.empty(len(triangles), dtype=np.object_)
             for field in extra_fields
         }
-        
+
         start = 0
         for i, feature in data.iterrows():
             element_types, element_tags, _ = gmsh.model.mesh.getElements(2, feature["__polygon_id"])
@@ -401,14 +401,13 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
 
     optmized_df = pd.concat([mesh.polygons, c1, c2, c3], axis=1)
 
-    # def is_ccw(row):
-    #     r1 = shapely.LinearRing([(row.x1, row.y1), (row.x2, row.y2), (row.x3, row.y3)])
-    #     return r1.is_ccw
+    v1x = optmized_df['x2'] - optmized_df['x1']
+    v1y = optmized_df['y2'] - optmized_df['y1']
+    v2x = optmized_df['x3'] - optmized_df['x1']
+    v2y = optmized_df['y3'] - optmized_df['y1']
 
-    # opt_df["is_ccw"] = opt_df.apply(is_ccw, axis=1)
-
-    # wrong = opt_df[opt_df["is_ccw"] == False]
-    # print(wrong["category"].value_counts())
+    det = v1x * v2y - v1y * v2x
+    optmized_df['is_ccw'] = det > 0
 
     def get_feature(row):
         geom = QgsTriangle(
@@ -424,10 +423,10 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
             row.v1, row.v2, row.v3, row.v4,
             row.roughness,
             row.scs_cn,
-            # row.is_ccw
+            row.is_ccw
         ])
         return feature
-    
+
     features = map(get_feature, optmized_df.itertuples())
 
     layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
@@ -442,7 +441,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
         QgsField("vertex_id4", QVariant.Int),
         QgsField("roughness", QVariant.Double),
         QgsField("scs_cn", QVariant.Double),
-        # QgsField("is_ccw", QVariant.Bool),
+        QgsField("is_ccw", QVariant.Bool),
     ]
     provider.addAttributes(fields)
     layer.updateFields()

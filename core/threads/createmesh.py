@@ -247,7 +247,7 @@ class DrCreateMeshTask(DrTask):
                         return landuses_df.loc[landuses_df['idval'] == row["landuse"], 'manning'].values[0]
                     else:
                         return row["custom_roughness"]
-                
+
                 # TODO: Try to not use apply
                 # ground_triangles_df["roughness"] = ground_triangles_df["custom_roughness"].fillna()
                 ground_triangles_df["roughness"] = ground_triangles_df.apply(get_roughness, axis=1)
@@ -327,7 +327,9 @@ class DrCreateMeshTask(DrTask):
             roof_triangles_df["v3"] += len(ground_vertices_df)
             roof_triangles_df["v4"] += len(ground_vertices_df)
 
-            ground_triangles_df["roof_id"] = -1 # To avoid changing the type of the column when concatenating
+            # To avoid changing the type of the column when concatenating,
+            # if not, the nan's change the datatype of the column to object
+            ground_triangles_df["roof_id"] = -1
 
             print(f"Done! {time.time() - start}s")
 
@@ -389,7 +391,7 @@ class DrCreateMeshTask(DrTask):
                 self.feedback.setProgressText("Getting ground losses from raster...")
                 print("Getting ground losses from raster... ", end="")
                 start = time.time()
-                
+
                 fids, scs_cn = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
                 triangles_df.loc[fids, "scs_cn"] = scs_cn
 
