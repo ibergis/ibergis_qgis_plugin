@@ -88,7 +88,7 @@ class DrImportInpTask(DrTask):
             "    UPDATE inp_conduit SET "
             "        node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_EndPoint(NEW.geom)) LIMIT 1), "
             "        node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_StartPoint(NEW.geom)) LIMIT 1) "
-            "    WHERE fid = NEW.fid;-- AND (node_1 IS NULL OR node_2 IS NULL); "
+            "    WHERE fid = NEW.fid; "
             "END;"),
             "CREATE TRIGGER trg_upd_code_inp_conduit AFTER UPDATE of code on inp_conduit FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_conduit'; END;",
             ("CREATE TRIGGER trg_upd_nodes_inp_conduit AFTER UPDATE OF geom ON inp_conduit FOR EACH ROW "
@@ -96,7 +96,7 @@ class DrImportInpTask(DrTask):
             "    UPDATE inp_conduit SET "
             "        node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_EndPoint(NEW.geom)) LIMIT 1), "
             "        node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_StartPoint(NEW.geom)) LIMIT 1) "
-            "    WHERE geom = NEW.geom; -- AND (node_1 IS NULL OR node_2 IS NULL); "
+            "    WHERE geom = NEW.geom; "
             "END;"),
         ]
         delete_sentences = [

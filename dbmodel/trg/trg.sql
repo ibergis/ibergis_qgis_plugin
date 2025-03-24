@@ -37,10 +37,10 @@ CREATE TRIGGER trg_upd_code_inp_storage AFTER UPDATE of code on inp_storage FOR 
 CREATE TRIGGER trg_upd_code_inp_outfall AFTER UPDATE of code on inp_outfall FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_outfall'; END;
 CREATE TRIGGER trg_upd_code_inp_divider AFTER UPDATE of code on inp_divider FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_divider'; END;
 
-CREATE TRIGGER trg_del_inp_junction AFTER DELETE on inp_junction FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_junction'; END;
-CREATE TRIGGER trg_del_inp_storage AFTER DELETE on inp_storage FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_storage'; END;
-CREATE TRIGGER trg_del_inp_outfall AFTER DELETE on inp_outfall FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_outfall'; END;
-CREATE TRIGGER trg_del_inp_divider AFTER DELETE on inp_divider FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_divider'; END;
+CREATE TRIGGER trg_del_inp_junction AFTER DELETE on inp_junction FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_junction'; END;
+CREATE TRIGGER trg_del_inp_storage AFTER DELETE on inp_storage FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_storage'; END;
+CREATE TRIGGER trg_del_inp_outfall AFTER DELETE on inp_outfall FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_outfall'; END;
+CREATE TRIGGER trg_del_inp_divider AFTER DELETE on inp_divider FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_divider'; END;
 
 
 -- arcs
@@ -74,7 +74,7 @@ BEGIN
     UPDATE inp_conduit SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE fid = NEW.fid;-- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE fid = NEW.fid;
 END;
 
 CREATE TRIGGER trg_upd_nodes_inp_conduit AFTER UPDATE OF geom ON inp_conduit FOR EACH ROW
@@ -82,7 +82,7 @@ BEGIN
     UPDATE inp_conduit SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE geom = NEW.geom; -- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE geom = NEW.geom;
 END;
 
 
@@ -92,7 +92,7 @@ BEGIN
     UPDATE inp_weir SET 
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE fid = NEW.fid; -- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE fid = NEW.fid;
 END;
 
 CREATE TRIGGER trg_upd_nodes_inp_weir AFTER UPDATE OF geom ON inp_weir FOR EACH ROW
@@ -100,7 +100,7 @@ BEGIN
     UPDATE inp_weir SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE geom = NEW.geom; -- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE geom = NEW.geom;
 END;
 
 
@@ -110,7 +110,7 @@ BEGIN
     UPDATE inp_pump SET 
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE fid = NEW.fid; -- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE fid = NEW.fid;
 END;
 
 CREATE TRIGGER trg_upd_nodes_inp_pump AFTER UPDATE OF geom ON inp_pump FOR EACH ROW
@@ -118,7 +118,7 @@ BEGIN
     UPDATE inp_pump SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE geom = NEW.geom; -- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE geom = NEW.geom;
 END;
 
 
@@ -128,7 +128,7 @@ BEGIN
     UPDATE inp_orifice SET 
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE fid = NEW.fid; -- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE fid = NEW.fid;
 END;
 
 CREATE TRIGGER trg_upd_nodes_inp_orifice AFTER UPDATE OF geom ON inp_orifice FOR EACH ROW
@@ -136,7 +136,7 @@ BEGIN
     UPDATE inp_orifice SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE geom = NEW.geom; -- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE geom = NEW.geom;
 END;
 
 
@@ -146,7 +146,7 @@ BEGIN
     UPDATE inp_outlet SET 
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE fid = NEW.fid; -- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE fid = NEW.fid;
 END;
 
 CREATE TRIGGER trg_upd_nodes_inp_outlet AFTER UPDATE OF geom ON inp_outlet FOR EACH ROW
@@ -154,7 +154,7 @@ BEGIN
     UPDATE inp_outlet SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
-    WHERE geom = NEW.geom; -- AND (node_1 IS NULL OR node_2 IS NULL);
+    WHERE geom = NEW.geom;
 END;
 
 
