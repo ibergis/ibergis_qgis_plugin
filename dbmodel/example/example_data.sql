@@ -724,6 +724,8 @@ INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(23, 'demo-rain', '
 INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(24, 'demo-rain', '23:00', 'rain\20200121_23.tif');
 
 
+INSERT INTO hyetograph (timeseries, geom) VALUES('T5-5m', ST_GeomFromText('POINT (419104.15832005773 4576995.253196637)', <SRID_VALUE>));
+
 -- --------------
 -- SAMPLE (OTHER)
 -- --------------

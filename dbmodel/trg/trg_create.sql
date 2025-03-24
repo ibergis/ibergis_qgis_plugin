@@ -23,6 +23,7 @@ create trigger "trg_ins_code_inp_divider" AFTER INSERT on "inp_divider" FOR EACH
 create trigger "trg_ins_code_roof" AFTER INSERT on "roof" FOR EACH ROW BEGIN update roof set code = 'RF'||fid; END;
 create trigger "trg_ins_code_ground" AFTER INSERT on "ground" FOR EACH ROW BEGIN update ground set code = 'GR'||fid; END;
 create trigger "trg_ins_code_inlet" AFTER INSERT on "inlet" FOR EACH ROW BEGIN UPDATE inlet SET code = 'IN'||fid; END;
+create trigger "trg_ins_code_hyetograph" AFTER INSERT on "hyetograph" FOR EACH ROW BEGIN UPDATE hyetograph SET code = 'RG'||fid; END;
 
 
 ------------------------------------------------

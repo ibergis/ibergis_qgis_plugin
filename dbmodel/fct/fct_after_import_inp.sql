@@ -22,6 +22,7 @@ UPDATE inp_divider SET custom_code = code;
 UPDATE roof SET custom_code = code;
 UPDATE ground SET custom_code = code;
 UPDATE inlet SET custom_code = code;
+UPDATE hyetograph SET custom_code = code;
 
 
 -- -------------------
@@ -39,6 +40,7 @@ UPDATE inp_divider SET code = 'D'||fid;
 UPDATE roof SET code = 'RF'||fid;
 UPDATE ground SET code = 'GR'||fid;
 UPDATE inlet SET code = 'IN'||fid;
+UPDATE hyetograph SET code = 'RG'||fid;
 
 
 -- ----------------------------------------------------
