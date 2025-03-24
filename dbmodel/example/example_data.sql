@@ -598,7 +598,7 @@ INSERT INTO inlet (outlet_node, top_elev, geom) VALUES('J5', 40.1, ST_GeomFromTe
 -- ------------------------------------------------------------
 -- INP_WEIR, INFLOW, STORAGE, PUMP, DIVIDER, OUTLET AND ORIFICE
 -- ------------------------------------------------------------
-INSERT INTO inp_weir (weir_type, shape, node_1, node_2, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES('TRANSVERSE', 'RECT_OPEN', 'S1', 'J61', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING(418716.023346 4577601.812087, 418716.460232 4577600.003434)', <SRID_VALUE>));
+INSERT INTO inp_weir (weir_type, node_1, node_2, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES('TRANSVERSE', 'S1', 'J61', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING(418716.023346 4577601.812087, 418716.460232 4577600.003434)', <SRID_VALUE>));
 
 INSERT INTO inp_inflow (code, timeseries, format, mfactor, sfactor, ufactor, base) VALUES('J1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0);
 
@@ -764,6 +764,24 @@ UPDATE inp_conduit set geom2=1 where shape='FORCE_MAIN' AND geom2=0;
 
 UPDATE inp_weir set node_1 = 'S1' where code = 'W1';
 
+-- fix extent of layers
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM ground)a WHERE table_name = 'ground';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM roof)a WHERE table_name = 'roof';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM boundary_conditions)a WHERE table_name = 'boundary_conditions';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inlet)a WHERE table_name = 'inlet';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_divider)a WHERE table_name = 'inp_divider';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM node)a WHERE table_name = 'node';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM arc)a WHERE table_name = 'arc';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_outlet)a WHERE table_name = 'inp_outlet';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_orifice)a WHERE table_name = 'inp_orifice';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_weir)a WHERE table_name = 'inp_weir';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_pump)a WHERE table_name = 'inp_pump';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_outfall)a WHERE table_name = 'inp_outfall';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_storage)a WHERE table_name = 'inp_storage';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_conduit)a WHERE table_name = 'inp_conduit';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_junction)a WHERE table_name = 'inp_junction';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM vi_roof2junction)a WHERE table_name = 'vi_roof2junction';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM vi_inlet2junction)a WHERE table_name = 'vi_inlet2junction';
 
 -- -------------------
 -- ENABLE FOREIGN KEYS
