@@ -316,7 +316,6 @@ CREATE TABLE inp_weir (
     node_2 text check (typeof(node_2) = 'text' or node_2 = null),
     weir_type text check (typeof(weir_type) in ('text', null) and weir_type in ('ROADWAY', 'SIDEFLOW', 'TRANSVERSE', 'TRAPEZOIDAL', 'V-NOTCH')),
     offsetval real check (typeof(offsetval) = 'real' or offsetval = null),
-    shape text check (typeof(shape) = 'text' and shape in ('RECT_OPEN', 'TRAPEZOIDAL', 'TRIANGULAR')),
     geom1 real check (typeof(geom1) = 'real' or geom1 = null),
     geom2 real check (typeof(geom2) = 'real' or geom2 = null)  DEFAULT 0.00,
     geom3 real check (typeof(geom3) = 'real' or geom3 = null)  DEFAULT 0.00,
