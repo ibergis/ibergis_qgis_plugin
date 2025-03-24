@@ -72,55 +72,16 @@ class DrImportInpTask(DrTask):
     def _enable_triggers(self, enable: bool) -> None:
         """ Enable or disable triggers in the database """
 
-        create_sentences = [
-            "PRAGMA foreign_keys = ON;",
-            # Junctions
-            "CREATE TRIGGER trg_del_inp_junction AFTER DELETE on inp_junction FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_junction'; END;",
-            "CREATE TRIGGER trg_ins_code_inp_junction AFTER INSERT on inp_junction FOR EACH ROW BEGIN update inp_junction set code = 'J'||fid; END;",
-            "CREATE TRIGGER trg_ins_inp_junction AFTER INSERT ON inp_junction FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_junction'); END;",
-            "CREATE TRIGGER trg_upd_code_inp_junction AFTER UPDATE of code on inp_junction FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_junction'; END;",
-            # Conduits
-            "CREATE TRIGGER trg_del_inp_conduit AFTER DELETE on inp_conduit FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_conduit'; END;",
-            "CREATE TRIGGER trg_ins_code_inp_conduit AFTER INSERT on inp_conduit FOR EACH ROW BEGIN update inp_conduit set code = 'C'||fid; END;",
-            "CREATE TRIGGER trg_ins_inp_conduit AFTER INSERT ON inp_conduit FOR EACH ROW BEGIN INSERT INTO arc (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_conduit'); END;",
-            ("CREATE TRIGGER trg_ins_nodes_inp_conduit AFTER INSERT ON inp_conduit FOR EACH ROW "
-            "BEGIN "
-            "    UPDATE inp_conduit SET "
-            "        node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_EndPoint(NEW.geom)) LIMIT 1), "
-            "        node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_StartPoint(NEW.geom)) LIMIT 1) "
-            "    WHERE fid = NEW.fid; "
-            "END;"),
-            "CREATE TRIGGER trg_upd_code_inp_conduit AFTER UPDATE of code on inp_conduit FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_conduit'; END;",
-            ("CREATE TRIGGER trg_upd_nodes_inp_conduit AFTER UPDATE OF geom ON inp_conduit FOR EACH ROW "
-            "BEGIN "
-            "    UPDATE inp_conduit SET "
-            "        node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_EndPoint(NEW.geom)) LIMIT 1), "
-            "        node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.1), ST_StartPoint(NEW.geom)) LIMIT 1) "
-            "    WHERE geom = NEW.geom; "
-            "END;"),
-        ]
-        delete_sentences = [
-            "PRAGMA foreign_keys = OFF;",
-            # Junctions
-            "DROP TRIGGER trg_del_inp_junction",
-            "DROP TRIGGER trg_ins_code_inp_junction",
-            "DROP TRIGGER trg_ins_inp_junction",
-            "DROP TRIGGER trg_upd_code_inp_junction",
-            # Conduits
-            "DROP TRIGGER trg_del_inp_conduit",
-            "DROP TRIGGER trg_ins_code_inp_conduit",
-            "DROP TRIGGER trg_ins_inp_conduit",
-            "DROP TRIGGER trg_ins_nodes_inp_conduit",
-            "DROP TRIGGER trg_upd_code_inp_conduit",
-            "DROP TRIGGER trg_upd_nodes_inp_conduit",
-        ]
+        trg_path = os.path.join(global_vars.plugin_dir, 'dbmodel', 'trg')
         if enable:
-            sentences = create_sentences
+            f_to_read = os.path.join(trg_path, 'trg_create.sql')
+            tools_db.execute_sql("PRAGMA foreign_keys = ON;", dao=self.dao)
         else:
-            sentences = delete_sentences
-
-        for sentence in sentences:
-            tools_db.execute_sql(sentence, dao=self.dao)
+            f_to_read = os.path.join(trg_path, 'trg_delete.sql')
+            tools_db.execute_sql("PRAGMA foreign_keys = OFF;", dao=self.dao)
+        status = self.dao.execute_script_sql(str(f_to_read))
+        if not status:
+            print(f"Error {f_to_read} not executed")
 
     def _import_non_visual_data(self):
         """ Import the non-visual data from the xlsx to the gpkg """

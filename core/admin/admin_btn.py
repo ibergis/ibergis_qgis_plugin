@@ -78,7 +78,7 @@ class DrAdminButton:
 
 
         self.gpkg_full_path = project_path + "/" + gpkg_name + ".gpkg"
-        if os.path.exists(self.gpkg_full_path):            
+        if os.path.exists(self.gpkg_full_path):
             text = "Geopackage already exists. Do you want to overwrite it?"
             response = tools_qt.show_question(text)
             if not response:
