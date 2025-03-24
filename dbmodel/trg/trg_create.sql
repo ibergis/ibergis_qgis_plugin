@@ -6,6 +6,8 @@ as published by the Free Software Foundation, either version 3 of the License, o
 This version of Giswater is provided by Giswater Association
 */
 
+
+
 ---------------------------------------------------
 -- TRIGGERS TO CREATE AN AUTOINDEX FOR EACH ELEMENT
 -- ------------------------------------------------
@@ -161,5 +163,3 @@ END;
 -- -------------------
 -- ENABLE FOREIGN KEYS: enables insertion of data without using any restriction
 -- -------------------
-
-PRAGMA foreign_keys = OFF;
