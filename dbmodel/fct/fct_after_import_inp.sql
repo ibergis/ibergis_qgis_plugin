@@ -44,8 +44,8 @@ UPDATE inlet SET code = 'IN'||fid;
 -- ----------------------------------------------------
 -- BUILD TOPOLOGY by TRIGGERING THE TOPOCONTROL TRIGGER
 -- ----------------------------------------------------
-UPDATE inp_conduit SET the_geom = the_geom;
-UPDATE inp_pump SET the_geom = the_geom;
-UPDATE inp_outlet SET the_geom = the_geom;
-UPDATE inp_orifice SET the_geom = the_geom;
-UPDATE inp_weir SET the_geom = the_geom;
+UPDATE inp_conduit SET geom = geom;
+UPDATE inp_pump SET geom = geom;
+UPDATE inp_outlet SET geom = geom;
+UPDATE inp_orifice SET geom = geom;
+UPDATE inp_weir SET geom = geom;
