@@ -56,12 +56,15 @@ class DrGpkgDao(object):
 
         try:
             status = True
-            if self.cursor:
+            if hasattr(self, "cursor") and self.cursor:
                 self.cursor.close()
-            if self.conn:
+                #del self.cursor
+            if hasattr(self, "conn") and self.conn:
                 self.conn.close()
-            del self.cursor
-            del self.conn
+                #del self.conn
+            if hasattr(self, "db_qsql") and self.db_qsql:
+                self.db_qsql.close()    
+                #del self.db_qsql                                            
             self.enable_spatial = None
         except Exception as e:
             self.last_error = e

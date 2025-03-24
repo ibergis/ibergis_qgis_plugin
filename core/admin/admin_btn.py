@@ -78,11 +78,13 @@ class DrAdminButton:
 
 
         self.gpkg_full_path = project_path + "/" + gpkg_name + ".gpkg"
-        if os.path.exists(self.gpkg_full_path):
+        if os.path.exists(self.gpkg_full_path):            
             text = "Geopackage already exists. Do you want to overwrite it?"
             response = tools_qt.show_question(text)
             if not response:
                 return False
+            if global_vars.gpkg_dao_data:
+                global_vars.gpkg_dao_data.close_db()
             os.remove(self.gpkg_full_path)
 
         log_suffix = '%Y%m%d %H:%M:%S'
@@ -139,6 +141,7 @@ class DrAdminButton:
             if dlg:
                 tools_dr.close_dialog(dlg)
             return
+        global_vars.gpkg_dao_data.close_db()
         global_vars.gpkg_dao_data = global_vars.gpkg_dao_data.clone()
         self.change_tab()
 
