@@ -38,4 +38,4 @@ UPDATE inp_outfall SET code = 'O'||fid;
 UPDATE inp_divider SET code = 'D'||fid;
 UPDATE roof SET code = 'RF'||fid;
 UPDATE ground SET code = 'GR'||fid;
-UPDATE inlet SET code = 'GR'||fid;
+UPDATE inlet SET code = 'IN'||fid;

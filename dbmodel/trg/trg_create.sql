@@ -22,6 +22,7 @@ create trigger "trg_ins_code_inp_outfall" AFTER INSERT on "inp_outfall" FOR EACH
 create trigger "trg_ins_code_inp_divider" AFTER INSERT on "inp_divider" FOR EACH ROW BEGIN update inp_divider set code = 'D'||fid; END;
 create trigger "trg_ins_code_roof" AFTER INSERT on "roof" FOR EACH ROW BEGIN update roof set code = 'RF'||fid; END;
 create trigger "trg_ins_code_ground" AFTER INSERT on "ground" FOR EACH ROW BEGIN update ground set code = 'GR'||fid; END;
+create trigger "trg_ins_code_inlet" AFTER INSERT on "inlet" FOR EACH ROW BEGIN UPDATE inlet SET code = 'IN'||fid; END;
 
 
 ------------------------------------------------
@@ -33,16 +34,19 @@ CREATE TRIGGER trg_ins_inp_junction AFTER INSERT ON inp_junction FOR EACH ROW BE
 CREATE TRIGGER trg_ins_inp_storage AFTER INSERT ON inp_storage FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_storage'); END;
 CREATE TRIGGER trg_ins_inp_outfall AFTER INSERT ON inp_outfall FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_outfall'); END;
 CREATE TRIGGER trg_ins_inp_divider AFTER INSERT ON inp_divider FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_divider'); END;
+CREATE TRIGGER trg_ins_inp_inlet AFTER INSERT ON inlet FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inlet'); END;
 
 CREATE TRIGGER trg_upd_code_inp_junction AFTER UPDATE of code on inp_junction FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_junction'; END;
 CREATE TRIGGER trg_upd_code_inp_storage AFTER UPDATE of code on inp_storage FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_storage'; END;
 CREATE TRIGGER trg_upd_code_inp_outfall AFTER UPDATE of code on inp_outfall FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_outfall'; END;
 CREATE TRIGGER trg_upd_code_inp_divider AFTER UPDATE of code on inp_divider FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_divider'; END;
+CREATE TRIGGER trg_upd_code_inp_inlet AFTER UPDATE of code on inlet FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inlet'; END;
 
 CREATE TRIGGER trg_del_inp_junction AFTER DELETE on inp_junction FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_junction'; END;
 CREATE TRIGGER trg_del_inp_storage AFTER DELETE on inp_storage FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_storage'; END;
 CREATE TRIGGER trg_del_inp_outfall AFTER DELETE on inp_outfall FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_outfall'; END;
 CREATE TRIGGER trg_del_inp_divider AFTER DELETE on inp_divider FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_divider'; END;
+CREATE TRIGGER trg_del_inp_inlet AFTER DELETE on inlet FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inlet'; END;
 
 
 -- arcs
@@ -158,8 +162,3 @@ BEGIN
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
     WHERE geom = NEW.geom;
 END;
-
-
--- -------------------
--- ENABLE FOREIGN KEYS: enables insertion of data without using any restriction
--- -------------------
