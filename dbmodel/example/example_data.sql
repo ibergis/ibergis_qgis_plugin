@@ -38,18 +38,18 @@ INSERT INTO cat_timeseries (id, idval, timser_type, times_type) VALUES(4, 'T10-5
 INSERT INTO cat_timeseries (id, idval, timser_type, times_type) VALUES(5, 'T5-5m-e2', 'RAINFALL', 'RELATIVE');
 INSERT INTO cat_timeseries (id, idval, timser_type, times_type) VALUES(6, 'T10-5m-e2', 'RAINFALL', 'RELATIVE');
 
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(1, 'ABSOLUTE-5m', '01/01/2017', '00:00', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(2, 'ABSOLUTE-5m', '01/01/2017', '00:05', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(3, 'ABSOLUTE-5m', '01/01/2017', '00:10', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(4, 'ABSOLUTE-5m', '01/01/2017', '00:15', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(5, 'ABSOLUTE-5m', '01/01/2017', '00:20', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(6, 'ABSOLUTE-5m', '01/01/2017', '00:25', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(7, 'ABSOLUTE-5m', '01/01/2017', '00:30', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(8, 'ABSOLUTE-5m', '01/01/2017', '00:35', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(9, 'ABSOLUTE-5m', '01/01/2017', '00:40', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(10, 'ABSOLUTE-5m', '01/01/2017', '00:45', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(11, 'ABSOLUTE-5m', '01/01/2017', '00:50', 0.01);
-INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(12, 'ABSOLUTE-5m', '01/01/2017', '00:55', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(1, 'ABSOLUTE-5m', '2017-01-01', '00:00', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(2, 'ABSOLUTE-5m', '2017-01-01', '00:05', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(3, 'ABSOLUTE-5m', '2017-01-01', '00:10', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(4, 'ABSOLUTE-5m', '2017-01-01', '00:15', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(5, 'ABSOLUTE-5m', '2017-01-01', '00:20', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(6, 'ABSOLUTE-5m', '2017-01-01', '00:25', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(7, 'ABSOLUTE-5m', '2017-01-01', '00:30', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(8, 'ABSOLUTE-5m', '2017-01-01', '00:35', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(9, 'ABSOLUTE-5m', '2017-01-01', '00:40', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(10, 'ABSOLUTE-5m', '2017-01-01', '00:45', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(11, 'ABSOLUTE-5m', '2017-01-01', '00:50', 0.01);
+INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(12, 'ABSOLUTE-5m', '2017-01-01', '00:55', 0.01);
 INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(13, 'INFLOW-5m', NULL, '00:00', 0.01);
 INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(14, 'INFLOW-5m', NULL, '00:05', 0.01);
 INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(15, 'INFLOW-5m', NULL, '00:10', 0.01);
@@ -723,6 +723,7 @@ INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(22, 'demo-rain', '
 INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(23, 'demo-rain', '22:00', 'rain\20200121_22.tif');
 INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(24, 'demo-rain', '23:00', 'rain\20200121_23.tif');
 
+
 -- --------------
 -- SAMPLE (OTHER)
 -- --------------
@@ -758,6 +759,8 @@ UPDATE inp_conduit set curve_transect = 'TRANSECT_DEMO' WHERE shape = 'IRREGULAR
 UPDATE inp_conduit set curve_transect = 'SHAPE_DEMO' WHERE shape = 'CUSTOM';
 UPDATE inp_conduit SET roughness = 0.012;
 UPDATE inp_conduit set geom1=1, geom2=1 where shape='RECT_OPEN';
+UPDATE inp_conduit set geom2=1 where shape='FORCE_MAIN' AND geom2=0;
+
 
 UPDATE inp_weir set node_1 = 'S1' where code = 'W1';
 
