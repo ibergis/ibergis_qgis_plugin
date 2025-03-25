@@ -41,12 +41,21 @@ class DrImportInpTask(DrTask):
             self._enable_triggers(False)
             # Get data from gpkg and import it to existing layers (changing the column names)
             self._import_gpkgs_to_project()
+            # Execute the after import fct
+            self._execute_after_import_fct()
             # Enable triggers
             self._enable_triggers(True)
             return True
         except Exception:
             self.exception = traceback.format_exc()
             return False
+
+    def finished(self, result):
+
+        super().finished(result)
+
+        if self.isCanceled():
+            return
 
     def _import_file(self):
 
@@ -58,6 +67,16 @@ class DrImportInpTask(DrTask):
 
         # processing.run("GenSwmmInp:ImportInpFile", {'INP_FILE':'P:\\31_GISWATER\\313_DEV\\epa_importinp\\maspi_proves\\ud_bcn_prim_saved.inp','GEODATA_DRIVER':1,'SAVE_FOLDER':'C:\\Users\\usuario\\Desktop\\QGIS Projects\\drain\\importinp','PREFIX':'','DATA_CRS':QgsCoordinateReferenceSystem('EPSG:25831')})
         return True
+
+    def _execute_after_import_fct(self):
+        """ Execute the after import fct """
+
+        fct_path = os.path.join(global_vars.plugin_dir, 'dbmodel', 'fct', 'fct_after_import_inp.sql')
+        with open(fct_path, 'r') as f:
+            sql = f.read()
+        status = self.dao.execute_script_sql(str(sql))
+        if not status:
+            print(f"Error {fct_path} not executed")
 
     def _manage_params(self) -> dict:
         params = {
@@ -75,11 +94,13 @@ class DrImportInpTask(DrTask):
         trg_path = os.path.join(global_vars.plugin_dir, 'dbmodel', 'trg')
         if enable:
             f_to_read = os.path.join(trg_path, 'trg_create.sql')
-            tools_db.execute_sql("PRAGMA foreign_keys = ON;", dao=self.dao)
+            with open(f_to_read, 'r') as f:
+                sql = f.read()
         else:
             f_to_read = os.path.join(trg_path, 'trg_delete.sql')
-            tools_db.execute_sql("PRAGMA foreign_keys = OFF;", dao=self.dao)
-        status = self.dao.execute_script_sql(str(f_to_read))
+            with open(f_to_read, 'r') as f:
+                sql = f.read()
+        status = self.dao.execute_script_sql(str(sql))
         if not status:
             print(f"Error {f_to_read} not executed")
 

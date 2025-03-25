@@ -460,6 +460,8 @@ class DrAdminButton:
             tools_log.log_warning(msg)
         for file in filelist:
             if ".sql" in file:
+                if "trg_delete" in file:
+                    continue
                 tools_log.log_info(os.path.join(filedir, file))
                 self.current_sql_file += 1
                 status = self._read_execute_file(filedir, file, self.project_epsg)
