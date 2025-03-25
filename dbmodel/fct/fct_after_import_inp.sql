@@ -43,6 +43,12 @@ UPDATE inlet SET code = 'IN'||fid;
 UPDATE hyetograph SET code = 'RG'||fid;
 
 
+UPDATE node set code = 'S'||table_fid WHERE table_name = 'inp_storage';
+UPDATE node set code = 'J'||table_fid WHERE table_name = 'inp_junction';
+UPDATE node set code = 'O'||table_fid WHERE table_name = 'inp_outfall';
+UPDATE node set code = 'D'||table_fid WHERE table_name = 'inp_divider';
+UPDATE node set code = 'IN'||table_fid WHERE table_name = 'inlet';
+
 -- ----------------------------------------------------
 -- BUILD TOPOLOGY by TRIGGERING THE TOPOCONTROL TRIGGER
 -- ----------------------------------------------------

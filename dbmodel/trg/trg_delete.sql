@@ -22,6 +22,7 @@ DROP TRIGGER IF EXISTS "trg_ins_code_inp_outfall";
 DROP TRIGGER IF EXISTS "trg_ins_code_inp_divider";
 DROP TRIGGER IF EXISTS "trg_ins_code_roof";
 DROP TRIGGER IF EXISTS "trg_ins_code_ground";
+DROP TRIGGER IF EXISTS "trg_ins_code_inlet";
 
 ------------------------------------------------
 -- TRIGGERS TO MANAGE TOPOLOGY WITH FOREIGN KEYS
@@ -32,16 +33,20 @@ DROP TRIGGER IF EXISTS "trg_ins_inp_junction";
 DROP TRIGGER IF EXISTS "trg_ins_inp_storage";
 DROP TRIGGER IF EXISTS "trg_ins_inp_outfall";
 DROP TRIGGER IF EXISTS "trg_ins_inp_divider";
+DROP TRIGGER IF EXISTS "trg_ins_inp_inlet";
 
 DROP TRIGGER IF EXISTS "trg_upd_code_inp_junction";
 DROP TRIGGER IF EXISTS "trg_upd_code_inp_storage";
 DROP TRIGGER IF EXISTS "trg_upd_code_inp_outfall";
 DROP TRIGGER IF EXISTS "trg_upd_code_inp_divider";
+DROP TRIGGER IF EXISTS "trg_upd_code_inp_inlet";
 
 DROP TRIGGER IF EXISTS "trg_del_inp_junction";
 DROP TRIGGER IF EXISTS "trg_del_inp_storage";
 DROP TRIGGER IF EXISTS "trg_del_inp_outfall";
 DROP TRIGGER IF EXISTS "trg_del_inp_divider";
+DROP TRIGGER IF EXISTS "trg_del_inp_inlet";
+
 
 
 -- arcs
