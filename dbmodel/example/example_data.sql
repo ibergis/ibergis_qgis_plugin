@@ -723,7 +723,7 @@ INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(23, 'demo-rain', '
 INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(24, 'demo-rain', '23:00', 'rain\20200121_23.tif');
 
 
-INSERT INTO hyetograph (timeseries, geom) VALUES('T5-5m', ST_GeomFromText('POINT (419104.15832005773 4576995.253196637)', <SRID_VALUE>));
+INSERT INTO hyetograph (timeseries, geom) VALUES('T5-5m', ST_GeomFromText('POINT (418491.9487122135 4577974.670495977)', <SRID_VALUE>));
 
 -- --------------
 -- SAMPLE (OTHER)
@@ -781,6 +781,7 @@ UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_
 UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_storage)a WHERE table_name = 'inp_storage';
 UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_conduit)a WHERE table_name = 'inp_conduit';
 UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM inp_junction)a WHERE table_name = 'inp_junction';
+UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM hyetograph)a WHERE table_name = 'hyetograph';
 UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM vi_roof2junction)a WHERE table_name = 'vi_roof2junction';
 UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM vi_inlet2junction)a WHERE table_name = 'vi_inlet2junction';
 
