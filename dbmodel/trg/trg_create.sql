@@ -96,7 +96,7 @@ END;
 ---- inp_weir
 CREATE TRIGGER trg_ins_nodes_inp_weir AFTER INSERT ON inp_weir FOR EACH ROW
 BEGIN
-    UPDATE inp_weir SET 
+    UPDATE inp_weir SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
     WHERE fid = NEW.fid;
@@ -114,7 +114,7 @@ END;
 ---- inp_pump
 CREATE TRIGGER trg_ins_nodes_inp_pump AFTER INSERT ON inp_pump FOR EACH ROW
 BEGIN
-    UPDATE inp_pump SET 
+    UPDATE inp_pump SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
     WHERE fid = NEW.fid;
@@ -132,7 +132,7 @@ END;
 ---- inp_orifice
 CREATE TRIGGER trg_ins_nodes_inp_orifice AFTER INSERT ON inp_orifice FOR EACH ROW
 BEGIN
-    UPDATE inp_orifice SET 
+    UPDATE inp_orifice SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
     WHERE fid = NEW.fid;
@@ -150,7 +150,7 @@ END;
 ---- inp_outlet
 CREATE TRIGGER trg_ins_nodes_inp_outlet AFTER INSERT ON inp_outlet FOR EACH ROW
 BEGIN
-    UPDATE inp_outlet SET 
+    UPDATE inp_outlet SET
         node_2 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_EndPoint(NEW.geom)) LIMIT 1),
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
     WHERE fid = NEW.fid;
@@ -163,3 +163,5 @@ BEGIN
         node_1 = (SELECT node.code FROM node WHERE ST_Intersects(ST_Buffer(node.geom, 0.01), ST_StartPoint(NEW.geom)) LIMIT 1)
     WHERE geom = NEW.geom;
 END;
+
+PRAGMA foreign_keys = ON;
