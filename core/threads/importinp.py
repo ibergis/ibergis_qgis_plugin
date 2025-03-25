@@ -72,11 +72,12 @@ class DrImportInpTask(DrTask):
         """ Execute the after import fct """
 
         fct_path = os.path.join(global_vars.plugin_dir, 'dbmodel', 'fct', 'fct_after_import_inp.sql')
-        with open(fct_path, 'r') as f:
+        with open(fct_path, 'r', encoding="utf8") as f:
             sql = f.read()
         status = self.dao.execute_script_sql(str(sql))
         if not status:
             print(f"Error {fct_path} not executed")
+            print(self.dao.last_error)
 
     def _manage_params(self) -> dict:
         params = {
@@ -94,15 +95,16 @@ class DrImportInpTask(DrTask):
         trg_path = os.path.join(global_vars.plugin_dir, 'dbmodel', 'trg')
         if enable:
             f_to_read = os.path.join(trg_path, 'trg_create.sql')
-            with open(f_to_read, 'r') as f:
+            with open(f_to_read, 'r', encoding="utf8") as f:
                 sql = f.read()
         else:
             f_to_read = os.path.join(trg_path, 'trg_delete.sql')
-            with open(f_to_read, 'r') as f:
+            with open(f_to_read, 'r', encoding="utf8") as f:
                 sql = f.read()
         status = self.dao.execute_script_sql(str(sql))
         if not status:
             print(f"Error {f_to_read} not executed")
+            print(self.dao.last_error)
 
     def _import_non_visual_data(self):
         """ Import the non-visual data from the xlsx to the gpkg """
