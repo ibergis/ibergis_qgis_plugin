@@ -170,6 +170,21 @@ class DrImportInpTask(DrTask):
 
                 print(f"Imported {dr_layername} into project.")
 
+                # Insert junctions, dividers, outfalls, storages into node table
+                if dr_layername in ['inp_junction', 'inp_divider', 'inp_outfall', 'inp_storage']:
+                    # For some reason the node table is not detected
+                    sql = "SELECT * FROM node"
+                    tools_db.execute_sql(sql, log_sql=True, is_thread=True, dao=self.dao)
+                    if self.dao.last_error:
+                        print(self.dao.last_error)
+                    sql = f"INSERT INTO node (table_fid, code, geom, table_name) SELECT fid, code, geom, '{dr_layername}' FROM {dr_layername}"
+                    tools_db.execute_sql(sql, log_sql=True, is_thread=True, dao=self.dao)
+                elif dr_layername in ['inp_conduit', 'inp_pump', 'inp_orifice', 'inp_weir', 'inp_outlet']:
+                    sql = f"INSERT INTO arc (table_fid, code, geom, table_name) SELECT fid, code, geom, '{dr_layername}' FROM {dr_layername}"
+                    tools_db.execute_sql(sql, log_sql=True, is_thread=True, dao=self.dao)
+                if self.dao.last_error:
+                    print(self.dao.last_error)
+
     def _insert_data(self, source_layer, target_layer, field_map, batch_size=1000):
         """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
 
