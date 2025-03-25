@@ -117,6 +117,7 @@ INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(72, 
 -- TRANSECTS
 -- ---------
 INSERT INTO cat_transects (id, idval, descript) VALUES(1, 'TRANSECT_DEMO', 'text to test');
+INSERT INTO cat_transects (id, idval, descript) VALUES(2, 'SHAPE_DEMO', 'text to test');
 
 INSERT INTO cat_transects_value (id, transect, data_group, value) VALUES
 (1, 'TRANSECT_DEMO', ';This is a demo', null),
@@ -124,7 +125,11 @@ INSERT INTO cat_transects_value (id, transect, data_group, value) VALUES
 (3, 'TRANSECT_DEMO', 'X1', 'TRANSECT_DEMO 4 0 0 0 0 0 0 0'),
 (4, 'TRANSECT_DEMO', 'GR', '0.8 0 0.02 2 0.02 6 0.8 8');
 
-
+INSERT INTO cat_transects_value (id, transect, data_group, value) VALUES
+(5, 'SHAPE_DEMO', ';This is a demo2', null),
+(6, 'SHAPE_DEMO', 'NC', '0.01 0.01 0.01'),
+(7, 'SHAPE_DEMO', 'X1', 'SHAPE_DEMO 5 0 0 0 0 0 0 0'),
+(8, 'SHAPE_DEMO', 'GR', '0.6 0 0.02 2 0.02 6 0.6 8');
 
 -- --------
 -- CONTROLS
@@ -141,8 +146,7 @@ ELSE PUMP P1 STATUS = OFF');
 -- -------------------
 INSERT INTO cat_curve (id, idval, curve_type, descript) VALUES(1, 'PUMP-02', 'PUMP2', NULL);
 INSERT INTO cat_curve (id, idval, curve_type, descript) VALUES(2, 'OUTLET_DEMO', 'RATING', NULL);
-INSERT INTO cat_curve (id, idval, curve_type, descript) VALUES(3, 'SHAPE_DEMO', 'SHAPE', NULL);
-INSERT INTO cat_curve (id, idval, curve_type, descript) VALUES(4, 'EBAR-02', 'STORAGE', NULL);
+INSERT INTO cat_curve (id, idval, curve_type, descript) VALUES(3, 'EBAR-02', 'STORAGE', NULL);
 
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(1, 'PUMP-02', 10.0, 0.045);
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(2, 'PUMP-02', 20.0, 0.038);
@@ -152,12 +156,8 @@ INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(5, 'OUTLET_DEMO',
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(6, 'OUTLET_DEMO', 1.0, 1.0);
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(7, 'OUTLET_DEMO', 2.0, 1.0);
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(8, 'OUTLET_DEMO', 3.0, 1.0);
-INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(9, 'SHAPE_DEMO', 0.0, 0.0);
-INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(10, 'SHAPE_DEMO', 0.05, 0.4);
-INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(11, 'SHAPE_DEMO', 0.9, 0.4);
-INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(12, 'SHAPE_DEMO', 0.97, 0.2);
-INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(13, 'EBAR-02', 0.0, 15.0);
-INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(14, 'EBAR-02', 10.0, 15.0);
+INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(9, 'EBAR-02', 0.0, 15.0);
+INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(10, 'EBAR-02', 10.0, 15.0);
 
 
 INSERT INTO cat_pattern (id, idval, pattern_type, descript) VALUES(1, 'DAILY_PATTERN', 'DAILY', NULL);

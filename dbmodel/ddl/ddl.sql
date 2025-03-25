@@ -260,9 +260,8 @@ CREATE TABLE inp_conduit (
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
     FOREIGN KEY (node_1) REFERENCES node (code) on update cascade on delete restrict,
-    FOREIGN KEY (node_2) REFERENCES node (code) on update cascade on delete restrict
-    -- FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict
-    -- FOREIGN KEY (transect) references cat_transects(idval) on update cascade on delete restrict
+    FOREIGN KEY (node_2) REFERENCES node (code) on update cascade on delete restrict,
+    FOREIGN KEY (curve_transect) references cat_transects(idval) on update cascade on delete restrict
 );
 
 CREATE TABLE inp_outlet (
