@@ -125,11 +125,12 @@ class DrImportInpTask(DrTask):
     def _import_gpkgs_to_project(self):
         """ Import the data from the gpkg to the project """
 
-        gpkgs = ['SWMM_junctions', 'SWMM_outfalls', 'SWMM_storages', 'SWMM_pumps', 'SWMM_orifices', 'SWMM_weirs',
+        gpkgs = ['SWMM_junctions', 'SWMM_outfalls', 'SWMM_storages', 'SWMM_dividers', 'SWMM_pumps', 'SWMM_orifices', 'SWMM_weirs',
                  'SWMM_outlets', 'SWMM_conduits', 'SWMM_raingages', 'SWMM_subcatchments']
         layermap = {
             'SWMM_conduits': 'inp_conduit',
             'SWMM_junctions': 'inp_junction',
+            'SWMM_dividers': 'inp_divider',
             'SWMM_orifices': 'inp_orifice',
             'SWMM_outfalls': 'inp_outfall',
             'SWMM_outlets': 'inp_outlet',
