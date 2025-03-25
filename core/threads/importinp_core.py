@@ -78,6 +78,20 @@ _tables = (
         },
     },
     {
+        "table_name": "inp_orifice",
+        "section": "XSECTIONS",
+        "mapper": {
+            "XsectShape": "shape",
+            "Height": "geom1",
+            "Width": "geom2",
+            # "Geom3": "geom3",
+            # "Geom4": "geom4",
+            # "Barrels": "barrels",
+            # "Culvert": "culvert",
+            # "Shp_Trnsct": "curve_transect",
+        },
+    },
+    {
         "table_name": "inp_weir",
         "section": "WEIRS",
         "mapper": {
@@ -96,6 +110,20 @@ _tables = (
             "CoeffCurve": "curve",
             "Annotation": "annotation",
             "Height": "elev",
+        },
+    },
+     {
+        "table_name": "inp_weir",
+        "section": "XSECTIONS",
+        "mapper": {
+            # "XsectShape": "shape",
+            "Height": "geom1",
+            "Length": "geom2",
+            "SideSlope": "geom3",
+            # "SideSlope": "geom4",
+            # "Barrels": "barrels",
+            # "Culvert": "culvert",
+            # "Shp_Trnsct": "curve_transect",
         },
     },
     {
