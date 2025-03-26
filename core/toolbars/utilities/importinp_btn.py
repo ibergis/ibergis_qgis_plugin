@@ -5,7 +5,7 @@ from time import time
 
 from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
-from qgis.PyQt.QtWidgets import QFileDialog
+from qgis.PyQt.QtWidgets import QFileDialog, QTextEdit
 
 from ..dialog import DrAction
 from ...threads.importinp import DrImportInpTask
@@ -20,6 +20,8 @@ class DrImportINPButton(DrAction):
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
+        self.cur_process = None
+        self.cur_text = None
 
     def clicked_event(self):
         self.dlg_import = DrImportInpUi()
@@ -32,8 +34,8 @@ class DrImportINPButton(DrAction):
         tools_dr.open_dialog(dlg, dlg_name="import")
 
     def _execute_process(self):
-        dlg = self.dlg_import
-        self.feedback = Feedback()
+        dlg = self.dlg_import        
+        self.feedback = Feedback(0,70,40)
         if not self._validate_inputs():
             return
         self._save_user_values()
@@ -46,16 +48,20 @@ class DrImportINPButton(DrAction):
             str(save_folder),
             self.feedback,
         )
+        self.thread.progress_changed.connect(self._progress_changed)
+        self.feedback.progress_changed.connect(self._progress_changed)
+
+        # Show tab log
+        tools_dr.set_tabs_enabled(self.dlg_import)
+        self.dlg_import.mainTab.setCurrentIndex(1)
 
         # Set signals
         dlg.btn_ok.setEnabled(False)
         dlg.btn_cancel.clicked.disconnect()
         dlg.btn_cancel.clicked.connect(self.thread.cancel)
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
-        # self.thread.feedback.progressText.connect(self._set_progress_text)
-        # self.thread.feedback.progressChanged.connect(dlg.progress_bar.setValue)
-        # self.thread.taskCompleted.connect(self._on_task_completed)
-        # self.thread.taskTerminated.connect(self._on_task_terminated)
+        self.thread.taskCompleted.connect(self._on_task_completed)
+        self.thread.taskTerminated.connect(self._on_task_terminated)
 
         # Timer
         self.t0 = time()
@@ -66,6 +72,36 @@ class DrImportINPButton(DrAction):
 
         QgsApplication.taskManager().addTask(self.thread)
         QgsApplication.taskManager().triggerTask(self.thread)
+
+    def _progress_changed(self, process, progress, text, new_line):
+        # Progress bar
+        if progress is not None:
+            self.dlg_import.progress_bar.setValue(progress)
+
+        # TextEdit log
+        txt_infolog = self.dlg_import.findChild(QTextEdit, 'txt_infolog')
+        cur_text = tools_qt.get_text(self.dlg_import, txt_infolog, return_string_null=False)
+        if process and process not in (self.cur_process, "Import INP algorithm"):
+            cur_text = f"{cur_text}\n" \
+                       f"--------------------\n" \
+                       f"{process}\n" \
+                       f"--------------------\n\n"
+            self.cur_process = process
+            self.cur_text = None
+
+        # Import INP log is cumulative, so it's saved until the process ends
+        if process == "Import INP algorithm" and not self.cur_text:
+            self.cur_text = cur_text
+
+        if self.cur_text:
+            cur_text = self.cur_text
+
+        end_line = '\n' if new_line else ''
+        txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
 
     def _get_file_dialog(self, widget):
         # Check if selected file exists. Set default value if necessary
