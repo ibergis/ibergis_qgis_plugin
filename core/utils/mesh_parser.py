@@ -65,9 +65,9 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
         roof_fp.write("Roofs properties\n")
         for roof in mesh.roofs.itertuples():
             roof_fp.write(
-                f"{roof.name} {roof.fid} {roof.slope or -9999} {roof.width or -9999} "
-                f"{roof.roughness or -9999} {roof.isconnected or -9999} {roof.outlet_code or -9999} "
-                f"{roof.outlet_vol or 0} {roof.street_vol or 0} {roof.infiltr_vol or 0}\n"
+                f"{roof.name} {roof.fid} {-9999 if roof.slope is None else roof.slope} {-9999 if roof.width is None else roof.width} "
+                f"{-9999 if roof.roughness is None else roof.roughness} {-9999 if roof.isconnected is None else roof.isconnected} {-9999 if roof.outlet_code is None else roof.outlet_code} "
+                f"{-9999 if roof.outlet_vol is None else roof.outlet_vol} {-9999 if roof.street_vol is None else roof.street_vol} {-9999 if roof.infiltr_vol is None else roof.infiltr_vol}\n"
             )
         roof_fp.write("\nRoof elements\n")
         for pol in mesh.polygons[mesh.polygons["category"] == "roof"].itertuples():
