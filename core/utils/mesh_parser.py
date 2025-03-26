@@ -67,7 +67,7 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
             roof_fp.write(
                 f"{roof.name} {roof.fid} {roof.slope or -9999} {roof.width or -9999} "
                 f"{roof.roughness or -9999} {roof.isconnected or -9999} {roof.outlet_code or -9999} "
-                f"{roof.outlet_vol or -9999} {roof.street_vol or -9999} {roof.infiltr_vol or -9999}\n"
+                f"{roof.outlet_vol or 0} {roof.street_vol or 0} {roof.infiltr_vol or 0}\n"
             )
         roof_fp.write("\nRoof elements\n")
         for pol in mesh.polygons[mesh.polygons["category"] == "roof"].itertuples():
@@ -85,7 +85,7 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
             losses_fp.write(
                 f"2 {losses_config['cn_multiplier']} {losses_config['ia_coefficient']} {losses_config['start_time']}\n"
             )
-            
+
             for index, scs_cn in mesh.polygons["scs_cn"].dropna().items():
                 losses_fp.write(f"{index} {scs_cn}\n")
 
