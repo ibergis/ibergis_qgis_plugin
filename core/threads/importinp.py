@@ -103,7 +103,8 @@ class DrImportInpTask(DrTask):
 
     def _enable_triggers(self, enable: bool) -> None:
         """ Enable or disable triggers in the database """
-
+        if self.isCanceled():
+            return
         trg_path = os.path.join(global_vars.plugin_dir, 'dbmodel', 'trg')
         if enable:
             f_to_read = os.path.join(trg_path, 'trg_create.sql')
@@ -136,11 +137,11 @@ class DrImportInpTask(DrTask):
         self.network = read_inp_file(inp_file)
 
         try:
-            self.PROGRESS_IMPORT_SWMM += 3
+            self.PROGRESS_IMPORT_FILE += 3
             self._save_patterns()
-            self.PROGRESS_IMPORT_SWMM += 3
+            self.PROGRESS_IMPORT_FILE += 3
             self._save_curves()
-            self.PROGRESS_IMPORT_SWMM += 3
+            self.PROGRESS_IMPORT_FILE += 3
             self._save_timeseries()
             self._save_controls()
             # self._save_lids()
@@ -271,13 +272,13 @@ class DrImportInpTask(DrTask):
             if pattern_name in patterns_db:
                 message = f'The pattern "{pattern_name}" already exists in database. Skipping...'                
                 print(message)
-                self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_SWMM, f'The pattern "{pattern_name}" already exists in database. Skipping...', True)
+                self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_FILE, f'The pattern "{pattern_name}" already exists in database. Skipping...', True)
                 continue
 
             pattern_type = pattern.cycle
             sql = f"INSERT INTO cat_pattern (idval, pattern_type) VALUES ('{pattern_name}', '{pattern_type}')"
             tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_SWMM, f'Inserted pattern {pattern_name}, type {pattern_type} into cat_pattern', True)
+            self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_FILE, f'Inserted pattern {pattern_name}, type {pattern_type} into cat_pattern', True)
 
             values = []
             for idx, f in enumerate(pattern.factors):
@@ -289,7 +290,7 @@ class DrImportInpTask(DrTask):
             values_str = ", ".join(values)
             sql = f"INSERT INTO cat_pattern_value (pattern, timestep, value) VALUES {values_str}"
             tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_SWMM, f'Inserted pattern values({values_str}) into cat_pattern_value', True)
+            self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_FILE, f'Inserted pattern values({values_str}) into cat_pattern_value', True)
             # self.results["patterns"] += 1
 
     def _save_curves(self) -> None:
@@ -307,20 +308,20 @@ class DrImportInpTask(DrTask):
             if curve.kind is None:
                 message = f'The "{curve_name}" curve does not have a specified curve type and was not imported.'
                 print(message)
-                self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_SWMM, f'The "{curve_name}" curve does not have a specified curve type and was not imported.', True)
+                self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'The "{curve_name}" curve does not have a specified curve type and was not imported.', True)
                 continue
 
             if curve_name in curves_db:
                 message = f'The curve "{curve_name}" already exists in database. Skipping...'
                 print(message)
-                self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_SWMM, f'The curve "{curve_name}" already exists in database. Skipping...', True)
+                self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'The curve "{curve_name}" already exists in database. Skipping...', True)
                 continue
 
             curve_type: str = curve.kind
 
             sql = f"INSERT INTO cat_curve (idval, curve_type) VALUES ('{curve_name}', '{curve_type}')"
             tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_SWMM, f'Inserted curve {curve_name}, type {curve_type} into cat_curve', True)
+            self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'Inserted curve {curve_name}, type {curve_type} into cat_curve', True)
 
             values = []
             for x, y in curve.points:
@@ -331,7 +332,7 @@ class DrImportInpTask(DrTask):
             values_str = ", ".join(values)
             sql = f"INSERT INTO cat_curve_value (curve, xcoord, ycoord) VALUES {values_str}"
             tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_SWMM, f'Inserted curve values({values_str}) into cat_curve_value', True)
+            self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'Inserted curve values({values_str}) into cat_curve_value', True)
             # self.results["curves"] += 1
 
     def _save_timeseries(self) -> None:
@@ -369,13 +370,13 @@ class DrImportInpTask(DrTask):
             if ts is None:
                 message = f'The timeseries "{ts_name}" was not imported.'
                 print(message)
-                self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_SWMM, f'The timeseries "{ts_name}" was not imported.', True)
+                self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'The timeseries "{ts_name}" was not imported.', True)
                 continue
 
             if ts_name in ts_db:
                 message = f'The timeseries "{ts_name}" already exists in database. Skipping...'
                 print(message)
-                self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_SWMM, f'The timeseries "{ts_name}" already exists in database. Skipping...', True)
+                self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'The timeseries "{ts_name}" already exists in database. Skipping...', True)
                 continue
 
             fname = None
@@ -394,7 +395,7 @@ class DrImportInpTask(DrTask):
                 values_str += f", '{fname}'"
             sql = f"INSERT INTO cat_timeseries ({fields_str}) VALUES ({values_str})"
             tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_SWMM, f'Inserted timeseries({values}) into cat_timeseries', True)
+            self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'Inserted timeseries({values}) into cat_timeseries', True)
 
             match times_type:
                 case "RELATIVE":
@@ -416,7 +417,7 @@ class DrImportInpTask(DrTask):
             values_str = ", ".join(values)
             sql += f"{values_str}"
             tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_SWMM, f'Inserted timeseries values({values_str}) into cat_timeseries_value', True)
+            self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'Inserted timeseries values({values_str}) into cat_timeseries_value', True)
             # self.results["timeseries"] += 1
 
     def _save_controls(self) -> None:
