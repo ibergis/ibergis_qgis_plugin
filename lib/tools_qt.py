@@ -16,7 +16,7 @@ from functools import partial
 from encodings.aliases import aliases
 from warnings import warn
 
-from qgis.PyQt.QtCore import QDate, QDateTime, QSortFilterProxyModel, QStringListModel, QTime, Qt, QRegExp, pyqtSignal,\
+from qgis.PyQt.QtCore import QDate, QDateTime, QSortFilterProxyModel, QStringListModel, QTime, Qt, QRegularExpression, pyqtSignal,\
     QPersistentModelIndex, QCoreApplication, QTranslator
 from qgis.PyQt.QtGui import QPixmap, QDoubleValidator, QTextCharFormat, QFont
 from qgis.PyQt.QtSql import QSqlTableModel
@@ -524,7 +524,7 @@ def enable_tab_by_tab_name(tab_widget, tab_name, enable):
             break
 
 
-def double_validator(widget, min_=-9999999, max_=9999999, decimals=2, notation=QDoubleValidator().StandardNotation):
+def double_validator(widget, min_=-9999999, max_=9999999, decimals=2, notation=QDoubleValidator.StandardNotation):
     """
     Create and apply a validator for doubles to ensure the number is within a maximum and minimum values
         :param widget: Widget to apply the validator
@@ -1048,14 +1048,14 @@ def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=
 def set_text_bold(widget, pattern):
     """ Set bold text when word match with pattern
     :param widget: QTextEdit
-    :param pattern: Text to find used as pattern for QRegExp (String)
+    :param pattern: Text to find used as pattern for QRegularExpression (String)
     :return:
     """
 
     cursor = widget.textCursor()
     format_ = QTextCharFormat()
     format_.setFontWeight(QFont.Bold)
-    regex = QRegExp(pattern)
+    regex = QRegularExpression(pattern)
     pos = 0
     index = regex.indexIn(widget.toPlainText(), pos)
     while index != -1:

@@ -11,7 +11,7 @@ import subprocess
 import webbrowser
 
 from functools import partial
-from qgis.PyQt.QtCore import QDate, QRegExp, Qt
+from qgis.PyQt.QtCore import QDate, QRegularExpression, Qt
 from qgis.PyQt.QtWidgets import QDateEdit, QLineEdit, QTableView, QWidget
 from qgis.core import QgsEditorWidgetSetup, QgsFieldConstraints, QgsLayerTreeLayer, QgsVectorLayer
 from qgis.gui import QgsDateTimeEdit
@@ -518,13 +518,13 @@ def fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields):
 
     widget_list = []
     if no_tabs:
-        widget_list.extend(dialog.findChildren(QComboBox, QRegExp(f"{tab_name}_")))
-        widget_list.extend(dialog.findChildren(QTableView, QRegExp(f"{tab_name}_")))
-        widget_list.extend(dialog.findChildren(QLineEdit, QRegExp(f"{tab_name}_")))
+        widget_list.extend(dialog.findChildren(QComboBox, QRegularExpression(f"{tab_name}_")))
+        widget_list.extend(dialog.findChildren(QTableView, QRegularExpression(f"{tab_name}_")))
+        widget_list.extend(dialog.findChildren(QLineEdit, QRegularExpression(f"{tab_name}_")))
     else:
-        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QComboBox, QRegExp(f"{tab_name}_")))
-        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QTableView, QRegExp(f"{tab_name}_")))
-        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QLineEdit, QRegExp(f"{tab_name}_")))
+        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QComboBox, QRegularExpression(f"{tab_name}_")))
+        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QTableView, QRegularExpression(f"{tab_name}_")))
+        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QLineEdit, QRegularExpression(f"{tab_name}_")))
     return complet_list, widget_list
 
 
@@ -603,13 +603,13 @@ def _reload_table(**kwargs):
     field_id = str(complet_result['body']['feature']['idName'])
     widget_list = []
     if no_tabs:
-        widget_list.extend(dialog.findChildren(QComboBox, QRegExp(f"{tab_name}_")))
-        widget_list.extend(dialog.findChildren(QTableView, QRegExp(f"{tab_name}_")))
-        widget_list.extend(dialog.findChildren(QLineEdit, QRegExp(f"{tab_name}_")))
+        widget_list.extend(dialog.findChildren(QComboBox, QRegularExpression(f"{tab_name}_")))
+        widget_list.extend(dialog.findChildren(QTableView, QRegularExpression(f"{tab_name}_")))
+        widget_list.extend(dialog.findChildren(QLineEdit, QRegularExpression(f"{tab_name}_")))
     else:
-        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QComboBox, QRegExp(f"{tab_name}_")))
-        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QTableView, QRegExp(f"{tab_name}_")))
-        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QLineEdit, QRegExp(f"{tab_name}_")))
+        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QComboBox, QRegularExpression(f"{tab_name}_")))
+        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QTableView, QRegularExpression(f"{tab_name}_")))
+        widget_list.extend(dialog.tab_main.widget(index_tab).findChildren(QLineEdit, QRegularExpression(f"{tab_name}_")))
 
     for table in list_tables:
         widgetname = table.objectName()
