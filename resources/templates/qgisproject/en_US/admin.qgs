@@ -10619,7 +10619,7 @@ def my_form_open(dialog, layer, feature):
         <value>project_gpkg_path</value>
       </variableNames>
       <variableValues type="QStringList">
-        <value>drain_test_154.gpkg</value>
+        <value>__GPKGPATH__</value>
       </variableValues>
     </Variables>
     <WCSLayers type="QStringList"/>
