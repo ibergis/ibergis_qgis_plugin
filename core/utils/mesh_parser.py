@@ -20,11 +20,11 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
             manning_number = tri.roughness
         except KeyError:
             print(f"{tri=}")
-        mesh_fp.write(f"    {tri.v1} {tri.v2} {tri.v3} {tri.v4} {manning_number} {tri.Index}\n")
+        mesh_fp.write(f"    {tri.v1:8d} {tri.v2:8d} {tri.v3:8d} {tri.v4:8d} {manning_number:>8} {tri.Index:8d}\n")
     mesh_fp.write("VERTEXS\n")
     mesh_fp.write(f"  {len(mesh.vertices)}\n")
     for v in mesh.vertices.itertuples():
-        mesh_fp.write(f"    {v.x} {v.y} {v.z} {v.Index}\n")
+        mesh_fp.write(f"    {v.x:>20f} {v.y:>20f} {v.z:>20f} {v.Index:>8d}\n")
     mesh_fp.write("CONDICIONS INICIALS\n")
     mesh_fp.write("CC: CONDICIONS CONTORN\n")
     for (pol_id, side), value in mesh.boundary_conditions.items():
