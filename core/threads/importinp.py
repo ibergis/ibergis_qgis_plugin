@@ -44,21 +44,30 @@ class DrImportInpTask(DrTask):
         try:
             self.dao = global_vars.gpkg_dao_data.clone()
             output = self._import_file()
-            if not output:
+            if not output:                
                 return False
             # Get non-visual data from xlsx and import it
             self._import_non_visual_data()
+            if self.isCanceled():
+                return
             # Disable triggers
             self._enable_triggers(False)
+            if self.isCanceled():
+                return
             # Get data from gpkg and import it to existing layers (changing the column names)
             self._import_gpkgs_to_project()
+            if self.isCanceled():
+                return
             # Execute the after import fct
             self._execute_after_import_fct()
+            if self.isCanceled():
+                return
             # Enable triggers
             self._enable_triggers(True)
             return True
         except Exception:
             self.exception = traceback.format_exc()
+            self.progress_changed.emit("Error", None, self.exception, True)
             return False
 
     def finished(self, result):
