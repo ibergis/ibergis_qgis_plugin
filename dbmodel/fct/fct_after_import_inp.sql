@@ -29,7 +29,7 @@ UPDATE hyetograph SET custom_code = code;
 -- USE DRAIN CORE-CODE
 -- -------------------
 UPDATE inp_outlet SET code = 'T'||fid;
-UPDATE inp_weir SET code = 'W'||fid
+UPDATE inp_weir SET code = 'W'||fid;
 UPDATE inp_orifice SET code = 'R'||fid;
 UPDATE inp_pump SET code = 'P'||fid;
 UPDATE inp_conduit SET code = 'C'||fid;
