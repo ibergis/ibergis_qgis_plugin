@@ -159,7 +159,6 @@ class DrEpaFileManager(DrTask):
         self.process.initAlgorithm(None)
         params = self._manage_params()
         context = QgsProcessingContext()        
-        #self.feedback.progressChanged.connect(self._progress_changed)
         self.output = self.process.processAlgorithm(params, context, self.feedback)
 
         if self.output is not None:
@@ -177,13 +176,6 @@ class DrEpaFileManager(DrTask):
                     print(e)
 
         return True
-
-    def _progress_changed(self, progress):
-
-        return
-        #self.progress_changed.emit(progress, "Import files")
-        #text = f"{self.feedback.textLog()}"
-        #self.progress_changed.emit(progress, text)
 
 
     def _manage_params(self):
@@ -573,7 +565,6 @@ class DrEpaFileManager(DrTask):
         rows = self.dao.get_rows(sql)
         if not rows:
             return False
-        self.progress_changed.emit("Write transects", 0, "writing transects", True)
 
         with open(self.QGIS_OUT_INP_FILE, 'a') as file:
             file.write("[TRANSECTS]\n")
@@ -582,6 +573,5 @@ class DrEpaFileManager(DrTask):
                 row = tuple('' if val is None else val for val in row)
                 # Write lines
                 file.write('  '.join(row) + "\n")
-        self.progress_changed.emit("Write transects", 0, "done", True)
 
     # endregion

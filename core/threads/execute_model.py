@@ -50,7 +50,7 @@ class DrExecuteModel(DrTask):
     PROGRESS_IBER = 97
     PROGRESS_END = 100
 
-    def __init__(self, description: str, params: dict, timer=None):
+    def __init__(self, description: str, params: dict, feedback, timer=None):
         """ Constructor for thread DrExecuteModel
             :param description: description of the task (str)
             :param params: possible params: {"dialog": QDialog, "folder_path": str, "do_generate_inp": bool, "do_export": bool, "do_run": bool, "do_import": bool}
@@ -67,11 +67,12 @@ class DrExecuteModel(DrTask):
         self.dao = None
         self.init_params()
         self.generate_inp_infolog = None
+        self.feedback = feedback
 
 
     def init_params(self):
         self.dialog = self.params.get('dialog')
-        self.folder_path = self.params.get('folder_path')
+        self.folder_path = self.params.get('folder_path')        
         self.do_generate_inp = self.params.get('do_generate_inp', True)
         self.do_export = self.params.get('do_export', True)
         self.do_run = self.params.get('do_run', True)
@@ -552,7 +553,7 @@ class DrExecuteModel(DrTask):
 
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}
-        self.generate_inp_task = DrEpaFileManager("Go2Epa", go2epa_params, None)
+        self.generate_inp_task = DrEpaFileManager("Go2Epa", go2epa_params, self.feedback, None)
         self.generate_inp_task.debug_mode = False
         self.generate_inp_task.progress_changed.connect(self._generate_inp_progress_changed)
         result = self.generate_inp_task._export_inp()

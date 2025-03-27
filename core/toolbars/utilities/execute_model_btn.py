@@ -18,7 +18,7 @@ from qgis.core import QgsApplication
 
 from ...threads.execute_model import DrExecuteModel
 from ...shared.options import DrOptions
-from ...utils import tools_dr
+from ...utils import tools_dr, Feedback
 from ...ui.ui_manager import DrExecuteModelUi
 from .... import global_vars
 from ....lib import tools_qgis, tools_qt, tools_db, tools_os
@@ -102,7 +102,13 @@ class DrExecuteModelButton(DrAction):
                 return False
 
         # TODO: ask for import
-        do_import = True
+        do_import = True    
+
+        do_generate_inp = True   
+        sql = "SELECT value FROM config_param_user WHERE parameter = 'plg_swmm_options'"
+        row = global_vars.gpkg_dao_data.get_row(sql)
+        if row and row[0] == '0':                 
+            do_generate_inp = False
 
         self._save_user_values()
 
@@ -121,10 +127,13 @@ class DrExecuteModelButton(DrAction):
 
         # Set background task 'Execute model'
         description = f"Execute model"
+
         params = {"dialog": self.execute_dlg, "folder_path": self.export_path,
-                  "do_generate_inp": True, "do_export": True, "do_run": True, "do_import": do_import}
-        self.execute_model_task = DrExecuteModel(description, params, timer=self.timer)
+                  "do_generate_inp": do_generate_inp, "do_export": True, "do_run": True, "do_import": do_import}
+        self.feedback = Feedback()
+        self.execute_model_task = DrExecuteModel(description, params, self.feedback, timer=self.timer)
         self.execute_model_task.progress_changed.connect(self._progress_changed)
+        self.feedback.progressChanged.connect(self._progress_changed)
         QgsApplication.taskManager().addTask(self.execute_model_task)
         QgsApplication.taskManager().triggerTask(self.execute_model_task)
 
