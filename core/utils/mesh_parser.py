@@ -24,7 +24,7 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
     mesh_fp.write("VERTEXS\n")
     mesh_fp.write(f"  {len(mesh.vertices)}\n")
     for v in mesh.vertices.itertuples():
-        mesh_fp.write(f"    {v.x:>20f} {v.y:>20f} {v.z:>20f} {v.Index:>8d}\n")
+        mesh_fp.write(f"    {v.x:>20.5f} {v.y:>20.5f} {v.z:>20.5f} {v.Index:>8d}\n")
     mesh_fp.write("CONDICIONS INICIALS\n")
     mesh_fp.write("CC: CONDICIONS CONTORN\n")
     for (pol_id, side), value in mesh.boundary_conditions.items():
