@@ -16,12 +16,12 @@ from datetime import timedelta
 
 from qgis.PyQt.QtCore import QStringListModel, Qt, QTimer
 from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGroupBox, QSpacerItem, QSizePolicy, \
-    QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout
+    QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout, QTextEdit
 from qgis.core import QgsApplication
 
 from ...threads.epa_file_manager import DrEpaFileManager
 from ...shared.options import DrOptions
-from ...utils import tools_dr
+from ...utils import tools_dr, Feedback
 from ...ui.ui_manager import DrGo2EpaUI, DrGo2EpaOptionsUi
 from .... import global_vars
 from ....lib import tools_qgis, tools_qt, tools_db, tools_os
@@ -36,6 +36,8 @@ class DrGo2IberButton(DrAction):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
         self.project_type = global_vars.project_type
         self.epa_options_list = []
+        self.cur_process = None
+        self.cur_text = None
 
 
     def clicked_event(self):
@@ -114,6 +116,33 @@ class DrGo2IberButton(DrAction):
             self.dlg_go2epa.btn_accept.setEnabled(True)
 
 
+    def _progress_changed(self, process, progress, text, new_line):
+        # TextEdit log
+        txt_infolog = self.dlg_go2epa.findChild(QTextEdit, 'txt_infolog')        
+        cur_text = tools_qt.get_text(self.dlg_go2epa, txt_infolog, return_string_null=False)
+        if process and process not in (self.cur_process, "Import INP algorithm"):
+            cur_text = f"{cur_text}\n" \
+                       f"--------------------\n" \
+                       f"{process}\n" \
+                       f"--------------------\n\n"
+            self.cur_process = process
+            self.cur_text = None
+
+        # Import INP log is cumulative, so it's saved until the process ends
+        if process == "Import INP algorithm" and not self.cur_text:
+            self.cur_text = cur_text
+
+        if self.cur_text:
+            cur_text = self.cur_text
+
+        end_line = '\n' if new_line else ''
+        txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
+
     def _check_fields(self):
 
         result_name = tools_qt.get_text(self.dlg_go2epa, self.dlg_go2epa.txt_file_path, False, False)
@@ -184,7 +213,7 @@ class DrGo2IberButton(DrAction):
         self.dlg_go2epa.txt_infolog.clear()
         status = self._check_fields()
         if status is False:
-            return
+            return                
 
         # Get widgets values
         self.export_file_path = tools_qt.get_text(self.dlg_go2epa, 'txt_file_path')
@@ -211,7 +240,10 @@ class DrGo2IberButton(DrAction):
         # Set background task 'Go2Epa'
         description = f"Go2Epa"
         params = {"dialog": self.dlg_go2epa, "export_file_path": self.export_file_path}
-        self.go2epa_task = DrEpaFileManager(description, params, timer=self.timer)
+        self.feedback = Feedback()
+        self.go2epa_task = DrEpaFileManager(description, params, self.feedback, timer=self.timer)
+        self.go2epa_task.progress_changed.connect(self._progress_changed)
+        self.feedback.progress_changed.connect(self._progress_changed)
         QgsApplication.taskManager().addTask(self.go2epa_task)
         QgsApplication.taskManager().triggerTask(self.go2epa_task)
 

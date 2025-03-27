@@ -52,9 +52,9 @@ class DrEpaFileManager(DrTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()
-    progress_changed = pyqtSignal(int, str)
+    progress_changed = pyqtSignal(str, int, str, bool)  # (Process, Progress, Text, '\n')
 
-    def __init__(self, description, params, timer=None):
+    def __init__(self, description, params, feedback, timer=None):
 
         super().__init__(description)
         self.params = params
@@ -63,8 +63,9 @@ class DrEpaFileManager(DrTask):
         self.fid = 140
         self.function_name = None
         self.timer = timer
+        self.feedback = feedback
         self.initialize_variables()
-        self.set_variables_from_params()
+        self.set_variables_from_params()        
 
         # If enabled it will: add the output layers to your project, save the .xlsx files and the generated .inp file
         self.debug_mode = False
@@ -157,9 +158,8 @@ class DrEpaFileManager(DrTask):
         self.process = GenerateSwmmInpFile()
         self.process.initAlgorithm(None)
         params = self._manage_params()
-        context = QgsProcessingContext()
-        self.feedback = QgsProcessingFeedback()
-        self.feedback.progressChanged.connect(self._progress_changed)
+        context = QgsProcessingContext()        
+        #self.feedback.progressChanged.connect(self._progress_changed)
         self.output = self.process.processAlgorithm(params, context, self.feedback)
 
         if self.output is not None:
@@ -180,8 +180,10 @@ class DrEpaFileManager(DrTask):
 
     def _progress_changed(self, progress):
 
-        text = f"{self.feedback.textLog()}"
-        self.progress_changed.emit(progress, text)
+        return
+        #self.progress_changed.emit(progress, "Import files")
+        #text = f"{self.feedback.textLog()}"
+        #self.progress_changed.emit(progress, text)
 
 
     def _manage_params(self):
@@ -571,6 +573,7 @@ class DrEpaFileManager(DrTask):
         rows = self.dao.get_rows(sql)
         if not rows:
             return False
+        self.progress_changed.emit("Write transects", 0, "writing transects", True)
 
         with open(self.QGIS_OUT_INP_FILE, 'a') as file:
             file.write("[TRANSECTS]\n")
@@ -579,5 +582,6 @@ class DrEpaFileManager(DrTask):
                 row = tuple('' if val is None else val for val in row)
                 # Write lines
                 file.write('  '.join(row) + "\n")
+        self.progress_changed.emit("Write transects", 0, "done", True)
 
     # endregion
