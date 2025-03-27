@@ -2,6 +2,8 @@ import datetime
 from functools import partial
 from pathlib import Path
 from time import time
+import os
+import glob
 
 from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
@@ -40,7 +42,14 @@ class DrImportINPButton(DrAction):
             return
         self._save_user_values()
         save_folder = Path(self.input_file).parent / (Path(self.input_file).stem + "_temp_files")
-        save_folder.mkdir(parents=True, exist_ok=True)
+        if os.path.exists(str(save_folder)):
+            text = "Import files folder already exists. Do you want to overwrite it?"
+            response = tools_qt.show_question(text)
+            if not response:
+                return
+            self._delete_folder(str(save_folder))
+        save_folder.mkdir(parents=True, exist_ok=True)        
+
         self.thread = DrImportInpTask(
             "Import INP file",
             self.input_file,
@@ -72,6 +81,13 @@ class DrImportINPButton(DrAction):
 
         QgsApplication.taskManager().addTask(self.thread)
         QgsApplication.taskManager().triggerTask(self.thread)
+
+
+    def _delete_folder(self, folder):
+        for file in glob.glob(folder + "/*"):
+            os.remove(file)
+        os.rmdir(folder)
+        
 
     def _progress_changed(self, process, progress, text, new_line):
         # Progress bar
