@@ -2494,6 +2494,12 @@ def set_epsg():
     global_vars.project_epsg = epsg
 
 
+def lerp_progress(subtask_progress: int, global_min: int, global_max: int) -> int:
+    global_progress = global_min + ((subtask_progress - 0) / (100 - 0)) * (global_max - global_min)
+
+    return int(global_progress)
+
+
 def manage_current_selections_docker(result, open=False):
     """
     Manage labels for the current_selections docker

@@ -1,6 +1,6 @@
 from qgis.core import QgsFeedback
 from qgis.PyQt.QtCore import pyqtSignal
-from ..threads.execute_model import lerp_progress
+from .tools_dr import lerp_progress
 
 
 class Feedback(QgsFeedback):
