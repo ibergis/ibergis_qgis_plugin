@@ -303,7 +303,7 @@ class DrImportInpTask(DrTask):
             values_str = ", ".join(values)
             sql = f"INSERT INTO cat_pattern_value (pattern, timestep, value) VALUES {values_str}"
             tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_FILE, f'Inserted pattern values({values_str}) into cat_pattern_value', True)
+            # self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_FILE, f'Inserted pattern values({values_str}) into cat_pattern_value', True)
             # self.results["patterns"] += 1
 
     def _save_curves(self) -> None:
@@ -345,7 +345,7 @@ class DrImportInpTask(DrTask):
             values_str = ", ".join(values)
             sql = f"INSERT INTO cat_curve_value (curve, xcoord, ycoord) VALUES {values_str}"
             tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'Inserted curve values({values_str}) into cat_curve_value', True)
+            # self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'Inserted curve values({values_str}) into cat_curve_value', True)
             # self.results["curves"] += 1
 
     def _save_timeseries(self) -> None:
@@ -430,7 +430,7 @@ class DrImportInpTask(DrTask):
             values_str = ", ".join(values)
             sql += f"{values_str}"
             tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'Inserted timeseries values({values_str}) into cat_timeseries_value', True)
+            # self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'Inserted timeseries values({values_str}) into cat_timeseries_value', True)
             # self.results["timeseries"] += 1
 
     def _save_controls(self) -> None:
