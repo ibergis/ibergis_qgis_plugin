@@ -565,11 +565,11 @@ def get_patterns_from_table(patterns_raw, name_col='Name'):
         pattern_cols = def_tables_dict['PATTERNS']['tables'][pattern_type].keys()
         pattern_df = patterns_raw[pattern_type]
         check_columns('Patterns Table', pattern_cols, pattern_df.columns)
-        pattern_df = pattern_df[pattern_df[name_col] != ";"]
-        pattern_df = pattern_df[pd.notna(pattern_df[name_col])]
         if pattern_df.empty:
             pass
         else:
+            pattern_df = pattern_df[pattern_df[name_col] != ";"]
+            pattern_df = pattern_df[pd.notna(pattern_df[name_col])]
             pattern_df.set_index(keys=[name_col], inplace=True)
             for i in pattern_df.index.unique():
                 pattern = pattern_df[pattern_df.index == i]
@@ -746,4 +746,3 @@ def check_columns(
         err_message = err_message+'. Please add columns or check if the correct file/layer was selected. '
         err_message = err_message+'For further advice regarding columns, read the documentation file in the plugin folder.'
         raise QgsProcessingException(err_message)
-
