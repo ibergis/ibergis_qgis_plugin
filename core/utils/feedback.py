@@ -16,15 +16,17 @@ class Feedback(QgsFeedback):
 
     def setProgressText(self, txt):
         self.progressText.emit(txt)
-        self.progress_changed.emit("Import files", self.progress, txt, True)
+        self.progress_changed.emit(None, self.progress, txt, True)
 
     def pushWarning(self, txt):
         msg = "=" * 40 + "\n" + txt + "\n" + "=" * 40
         self.progressText.emit(msg)
-        self.progress_changed.emit("Import files", self.progress, msg, True)
+        self.progress_changed.emit(None, self.progress, msg, True)
 
     def setProgress(self, progress):
-        if self.start_progress is not None and self.end_progress is not None and self.max_progress is not None and progress == 100 and self.progress_state < 40:
+        if None not in (self.start_progress, self.end_progress, self.max_progress) and progress == 100 and self.progress_state < 40:
             lerp_num = lerp_progress(int(self.progress_state/self.max_progress*100), self.start_progress, self.end_progress)
             self.progress_changed.emit(None, lerp_num, None, False)
             self.progress_state += 1
+        elif None in (self.start_progress, self.end_progress, self.max_progress):
+            self.progress_changed.emit(None, progress, None, False)

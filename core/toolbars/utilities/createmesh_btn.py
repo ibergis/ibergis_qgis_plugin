@@ -5,7 +5,7 @@ from time import time
 
 from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt, QTimer
-from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox
+from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox, QTextEdit
 
 from ..dialog import DrAction
 from ...threads.createmesh import DrCreateMeshTask
@@ -21,6 +21,8 @@ class DrCreateMeshButton(DrAction):
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
+        self.cur_process = None
+        self.cur_text = None
 
     def clicked_event(self):
         self.dao = global_vars.gpkg_dao_data.clone()
@@ -190,8 +192,13 @@ class DrCreateMeshButton(DrAction):
         dlg.btn_cancel.clicked.connect(partial(dlg.btn_cancel.setText, "Canceling..."))
         thread.taskCompleted.connect(self._on_task_completed)
         thread.taskTerminated.connect(self._on_task_terminated)
-        thread.feedback.progressText.connect(self._set_progress_text)
+        self.feedback.progress_changed.connect(self._progress_changed)
+        self._progress_changed("Create Mesh", None, None, False)
         # thread.feedback.progressChanged.connect(dlg.progress_bar.setValue)
+
+        # Show tab log
+        tools_dr.set_tabs_enabled(self.dlg_mesh)
+        self.dlg_mesh.mainTab.setCurrentIndex(1)
 
         # Timer
         self.t0 = time()
@@ -201,6 +208,37 @@ class DrCreateMeshButton(DrAction):
         dlg.rejected.connect(self.timer.stop)
 
         QgsApplication.taskManager().addTask(thread)
+
+
+    def _progress_changed(self, process, progress, text, new_line):
+        # Progress bar
+        if progress is not None:
+            self.dlg_mesh.progress_bar.setValue(progress)
+
+        # TextEdit log
+        txt_infolog = self.dlg_mesh.findChild(QTextEdit, 'txt_infolog')
+        cur_text = tools_qt.get_text(self.dlg_mesh, txt_infolog, return_string_null=False)
+        if process and process != self.cur_process:
+            cur_text = f"{cur_text}\n" \
+                       f"--------------------\n" \
+                       f"{process}\n" \
+                       f"--------------------\n\n"
+            self.cur_process = process
+            self.cur_text = None
+
+        if self.cur_text:
+            cur_text = self.cur_text
+
+        end_line = '\n' if new_line else ''
+        if text:
+            txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        else:
+            txt_infolog.setText(f"{cur_text}{end_line}")
+        txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
 
     def _load_widget_values(self):
         dlg = self.dlg_mesh

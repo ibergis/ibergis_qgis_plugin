@@ -118,9 +118,9 @@ class DrGo2IberButton(DrAction):
 
     def _progress_changed(self, process, progress, text, new_line):
         # TextEdit log
-        txt_infolog = self.dlg_go2epa.findChild(QTextEdit, 'txt_infolog')        
+        txt_infolog = self.dlg_go2epa.findChild(QTextEdit, 'txt_infolog')
         cur_text = tools_qt.get_text(self.dlg_go2epa, txt_infolog, return_string_null=False)
-        if process and process not in (self.cur_process, "Import INP algorithm"):
+        if process and process != self.cur_process:
             cur_text = f"{cur_text}\n" \
                        f"--------------------\n" \
                        f"{process}\n" \
@@ -128,15 +128,14 @@ class DrGo2IberButton(DrAction):
             self.cur_process = process
             self.cur_text = None
 
-        # Import INP log is cumulative, so it's saved until the process ends
-        if process == "Import INP algorithm" and not self.cur_text:
-            self.cur_text = cur_text
-
         if self.cur_text:
             cur_text = self.cur_text
 
         end_line = '\n' if new_line else ''
-        txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        if text:
+            txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        else:
+            txt_infolog.setText(f"{cur_text}{end_line}")
         txt_infolog.show()
         # Scroll to the bottom
         scrollbar = txt_infolog.verticalScrollBar()
@@ -245,6 +244,7 @@ class DrGo2IberButton(DrAction):
         params = {"dialog": self.dlg_go2epa, "export_file_path": self.export_file_path}
         self.feedback = Feedback()
         self.go2epa_task = DrEpaFileManager(description, params, self.feedback, timer=self.timer)
+        self._progress_changed("Export INP", 0, None, False)
         self.go2epa_task.progress_changed.connect(self._progress_changed)
         self.feedback.progress_changed.connect(self._progress_changed)
         QgsApplication.taskManager().addTask(self.go2epa_task)

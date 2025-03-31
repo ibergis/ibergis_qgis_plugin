@@ -167,6 +167,7 @@ class DrEpaFileManager(DrTask):
             if self.export_file_path:
                 try:
                     shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.export_file_path}")
+                    self.progress_changed.emit("Exported File", None, f"File saved on: {self.export_file_path}", True)
                 except Exception as e:
                     print(e)
             if self.debug_mode:

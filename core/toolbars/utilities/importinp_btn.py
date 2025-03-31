@@ -59,6 +59,7 @@ class DrImportINPButton(DrAction):
         )
         self.thread.progress_changed.connect(self._progress_changed)
         self.feedback.progress_changed.connect(self._progress_changed)
+        self._progress_changed("Import INP", None, None, False)
 
         # Show tab log
         tools_dr.set_tabs_enabled(self.dlg_import)
@@ -105,15 +106,14 @@ class DrImportINPButton(DrAction):
             self.cur_process = process
             self.cur_text = None
 
-        # Import INP log is cumulative, so it's saved until the process ends
-        if process == "Import INP algorithm" and not self.cur_text:
-            self.cur_text = cur_text
-
         if self.cur_text:
             cur_text = self.cur_text
 
         end_line = '\n' if new_line else ''
-        txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        if text:
+            txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        else:
+            txt_infolog.setText(f"{cur_text}{end_line}")
         txt_infolog.show()
         # Scroll to the bottom
         scrollbar = txt_infolog.verticalScrollBar()
