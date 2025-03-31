@@ -36,7 +36,14 @@ class DrImportINPButton(DrAction):
         tools_dr.open_dialog(dlg, dlg_name="import")
 
     def _execute_process(self):
-        dlg = self.dlg_import        
+        # Show tab log
+        tools_dr.set_tabs_enabled(self.dlg_import)
+        self.dlg_import.mainTab.setCurrentIndex(1)
+
+        if global_vars.project_epsg is None:
+            self._progress_changed("EPSG Error", None, f"Invalid or missing EPSG: {global_vars.project_epsg}", True)
+            return False
+        dlg = self.dlg_import
         self.feedback = Feedback(0,70,40)
         if not self._validate_inputs():
             return
@@ -60,10 +67,6 @@ class DrImportINPButton(DrAction):
         self.thread.progress_changed.connect(self._progress_changed)
         self.feedback.progress_changed.connect(self._progress_changed)
         self._progress_changed("Import INP", None, None, False)
-
-        # Show tab log
-        tools_dr.set_tabs_enabled(self.dlg_import)
-        self.dlg_import.mainTab.setCurrentIndex(1)
 
         # Set signals
         dlg.btn_ok.setEnabled(False)
@@ -140,6 +143,7 @@ class DrImportINPButton(DrAction):
 
     def _on_task_completed(self):
         self._on_task_end("Task finished!")
+        self._progress_changed(None, 100, None, False)
 
     def _on_task_end(self, message):
         tools_dr.fill_tab_log(
@@ -149,7 +153,6 @@ class DrImportINPButton(DrAction):
         )
         sb = self.dlg_import.txt_infolog.verticalScrollBar()
         sb.setValue(sb.maximum())
-        self.feedback.setProgress(100)
         self.feedback = None
         self.timer.stop()
 

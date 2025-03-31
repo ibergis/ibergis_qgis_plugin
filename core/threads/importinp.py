@@ -106,7 +106,7 @@ class DrImportInpTask(DrTask):
             "GEODATA_DRIVER": 1, # 1: GPKG
             "SAVE_FOLDER": self.save_folder,
             "PREFIX": "",
-            "DATA_CRS": QgsCoordinateReferenceSystem("EPSG:25831"),
+            "DATA_CRS": f"EPSG:{global_vars.project_epsg}",
         }
         return params
 
