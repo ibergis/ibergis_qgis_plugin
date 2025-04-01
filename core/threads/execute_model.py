@@ -67,7 +67,7 @@ class DrExecuteModel(DrTask):
 
     def init_params(self):
         self.dialog = self.params.get('dialog')
-        self.folder_path = self.params.get('folder_path')        
+        self.folder_path = self.params.get('folder_path')
         self.do_generate_inp = self.params.get('do_generate_inp', True)
         self.do_export = self.params.get('do_export', True)
         self.do_run = self.params.get('do_run', True)
@@ -300,10 +300,15 @@ class DrExecuteModel(DrTask):
             project_name, result_iber_format, iber2d_options = self._get_iber2d_options()
             iber2d_lines = iber2d_content.split('\n')
             if iber2d_lines[0] == "MATRIU":
-                iber2d_content = f"{project_name}\n{result_iber_format}\n{iber2d_options}\n{iber2d_content}"
+                iber2d_content = f"{project_name}\n{iber2d_options}\n{iber2d_content}"
             else:
-                iber2d_lines[1] = f"{result_iber_format}\n{iber2d_options}"
+                iber2d_lines[1] = f"{iber2d_options}"
                 iber2d_content = '\n'.join(iber2d_lines)
+            # if iber2d_lines[0] == "MATRIU":
+            #     iber2d_content = f"{project_name}\n{result_iber_format}\n{iber2d_options}\n{iber2d_content}"
+            # else:
+            #     iber2d_lines[1] = f"{result_iber_format}\n{iber2d_options}"
+            #     iber2d_content = '\n'.join(iber2d_lines)
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber2D.dat', iber2d_content)
             self.progress_changed.emit("Export files", tools_dr.lerp_progress(30, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
