@@ -147,6 +147,7 @@ ELSE PUMP P1 STATUS = OFF');
 INSERT INTO cat_curve (id, idval, curve_type, descript) VALUES(1, 'PUMP-02', 'PUMP2', NULL);
 INSERT INTO cat_curve (id, idval, curve_type, descript) VALUES(2, 'OUTLET_DEMO', 'RATING', NULL);
 INSERT INTO cat_curve (id, idval, curve_type, descript) VALUES(3, 'EBAR-02', 'STORAGE', NULL);
+INSERT INTO cat_curve (id, idval, curve_type, descript) VALUES(4, 'SHAPE_DEMO', 'SHAPE', NULL);
 
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(1, 'PUMP-02', 10.0, 0.045);
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(2, 'PUMP-02', 20.0, 0.038);
@@ -158,7 +159,12 @@ INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(7, 'OUTLET_DEMO',
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(8, 'OUTLET_DEMO', 3.0, 1.0);
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(9, 'EBAR-02', 0.0, 15.0);
 INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(10, 'EBAR-02', 10.0, 15.0);
-
+INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(11, 'SHAPE_DEMO', 0.0, 0.0);
+INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(12, 'SHAPE_DEMO', 0.1, 0.5);
+INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(13, 'SHAPE_DEMO', 0.4, 1.0);
+INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(14, 'SHAPE_DEMO', 0.6, 1.0);
+INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(15, 'SHAPE_DEMO', 0.9, 0.5);
+INSERT INTO cat_curve_value (id, curve, xcoord, ycoord) VALUES(16, 'SHAPE_DEMO', 1.0, 0.0);
 
 INSERT INTO cat_pattern (id, idval, pattern_type, descript) VALUES(1, 'DAILY_PATTERN', 'DAILY', NULL);
 INSERT INTO cat_pattern (id, idval, pattern_type, descript) VALUES(2, 'HOURLY_PATTERN', 'HOURLY', NULL);
@@ -537,7 +543,7 @@ INSERT INTO inp_storage (elev, ymax, y0, ysur, storage_type, curve, geom) VALUES
 
 INSERT INTO inp_pump (curve, state, startup, shutoff, geom) VALUES('PUMP-02', 'ON', 2.0, 0.4, ST_GeomFromText('LINESTRING(418716.023346 4577601.812087, 418717.966225 4577602.212749)', <SRID_VALUE>));
 
-INSERT INTO inp_divider (elev, y0, ysur, apond, divert_arc, divider_type, qmin, geom) VALUES(28.0, 0.0, 0.0, 0.0, 'C55', 'CUTOFF', 0.0, ST_GeomFromText('POINT (418532.967222 4578069.811764)', <SRID_VALUE>));
+INSERT INTO inp_divider (elev, y0, ysur, ymax, apond, divert_arc, divider_type, qmin, geom) VALUES(28.0, 0.0, 0.0, 0.0, 0.0, 'C55', 'CUTOFF', 0.0, ST_GeomFromText('POINT (418532.967222 4578069.811764)', <SRID_VALUE>));
 
 INSERT INTO inp_outlet (flap, outlet_type, offsetval, cd1, cd2, curve, geom) VALUES('NO', 'TABULAR/DEPTH', 1.0, 1.0, 1.0, 'OUTLET_DEMO', ST_GeomFromText('LINESTRING (418439.367287 4578023.011796, 418438.58008409 4578027.703742279)', <SRID_VALUE>));
 
