@@ -220,13 +220,14 @@ class DrGo2IberButton(DrAction):
             try:
                 message = "The specified file already exists. Do you want to overwrite it?"
                 response = tools_qt.show_question(message, True)
-                if response:
-                    os.remove(self.export_file_path)                                             
+                if not response:
+                    return
+                os.remove(self.export_file_path)
             except:
                 if os.path.isdir(self.export_file_path):
                     message = "The specified path is a directory. Please, set a valid file name"
-                    tools_qt.show_info_box(message)                    
-                return False
+                    tools_qt.show_info_box(message)
+                return
 
         tools_dr.set_tabs_enabled(self.dlg_go2epa)
         self.dlg_go2epa.mainTab.setCurrentIndex(1)
