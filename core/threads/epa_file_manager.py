@@ -65,7 +65,7 @@ class DrEpaFileManager(DrTask):
         self.timer = timer
         self.feedback = feedback
         self.initialize_variables()
-        self.set_variables_from_params()        
+        self.set_variables_from_params()
 
         # If enabled it will: add the output layers to your project, save the .xlsx files and the generated .inp file
         self.debug_mode = False
@@ -158,7 +158,7 @@ class DrEpaFileManager(DrTask):
         self.process = GenerateSwmmInpFile()
         self.process.initAlgorithm(None)
         params = self._manage_params()
-        context = QgsProcessingContext()        
+        context = QgsProcessingContext()
         self.output = self.process.processAlgorithm(params, context, self.feedback)
 
         if self.output is not None:
@@ -201,6 +201,7 @@ class DrEpaFileManager(DrTask):
         FILE_INFLOWS = self._create_inflows_file()
         FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'vi_transects'
         FILE_STREETS = None
+        USE_Z_BOOL = self.params.get('use_z_bool', False)
         params = {
             'QGIS_OUT_INP_FILE': self.QGIS_OUT_INP_FILE,
             'FILE_CONDUITS': FILE_CONDUITS,
@@ -219,7 +220,8 @@ class DrEpaFileManager(DrTask):
             'FILE_CONTROLS': FILE_CONTROLS,
             'FILE_TIMESERIES': FILE_TIMESERIES,
             'FILE_INFLOWS': FILE_INFLOWS,
-            'FILE_TRANSECTS': FILE_TRANSECTS
+            'FILE_TRANSECTS': FILE_TRANSECTS,
+            'USE_Z_BOOL': USE_Z_BOOL
         }
 
         if self.debug_mode:
