@@ -556,13 +556,16 @@ class DrExecuteModel(DrTask):
         self.generate_inp_task = DrEpaFileManager("Go2Epa", go2epa_params, self.feedback, None)
         self.generate_inp_task.debug_mode = False
         self.generate_inp_task.progress_changed.connect(self._generate_inp_progress_changed)
+        self.feedback.progress_changed.connect(self._generate_inp_progress_changed)
         result = self.generate_inp_task._export_inp()
         return result
 
-    def _generate_inp_progress_changed(self, progress, text):
-
-        self.progress_changed.emit("Generate INP algorithm", tools_dr.lerp_progress(progress, self.PROGRESS_RAIN, self.PROGRESS_INP), text, True)
-        self.generate_inp_infolog = text
+    def _generate_inp_progress_changed(self, process, progress, text, new_line):
+        if progress:
+            self.progress_changed.emit("Generate INP", tools_dr.lerp_progress(progress, self.PROGRESS_INP, self.PROGRESS_RAIN), text, new_line)
+        else:
+            self.progress_changed.emit("Generate INP", progress, self.PROGRESS_INP, text, new_line)
+            self.generate_inp_infolog = text
 
     def _run_iber(self):
         iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"

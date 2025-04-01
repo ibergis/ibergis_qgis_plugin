@@ -151,7 +151,7 @@ class DrExecuteModelButton(DrAction):
         # TextEdit log
         txt_infolog = self.execute_dlg.findChild(QTextEdit, 'txt_infolog')
         cur_text = tools_qt.get_text(self.execute_dlg, txt_infolog, return_string_null=False)
-        if process and process not in (self.cur_process, "Generate INP algorithm"):
+        if process and process != self.cur_process:
             cur_text = f"{cur_text}\n" \
                        f"--------------------\n" \
                        f"{process}\n" \
@@ -159,15 +159,14 @@ class DrExecuteModelButton(DrAction):
             self.cur_process = process
             self.cur_text = None
 
-        # Generate INP log is cumulative, so it's saved until the process ends
-        if process == "Generate INP algorithm" and not self.cur_text:
-            self.cur_text = cur_text
-
         if self.cur_text:
             cur_text = self.cur_text
 
         end_line = '\n' if new_line else ''
-        txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        if text:
+            txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        else:
+            txt_infolog.setText(f"{cur_text}{end_line}")
         txt_infolog.show()
         # Scroll to the bottom
         scrollbar = txt_infolog.verticalScrollBar()
