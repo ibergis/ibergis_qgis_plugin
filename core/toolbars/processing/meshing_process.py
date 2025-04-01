@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import shapely
 import numpy as np
 import time
-import gmsh
+from packages.gmsh import gmsh
 
 # From pandamesh
 def get_vertices():

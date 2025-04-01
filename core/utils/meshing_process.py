@@ -24,7 +24,7 @@ from pathlib import Path
 from ... import global_vars
 
 try:
-    import gmsh
+    from packages.gmsh import gmsh
     import pandamesh.common
     import pandamesh.gmsh_geometry
 
