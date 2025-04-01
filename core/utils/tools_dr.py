@@ -253,6 +253,10 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_wi
     if hide_config_widgets:
         hide_widgets_form(dlg, dlg_name)
 
+    # Create btn_help
+    #TODO Create lyt_buttons on all dialogs
+    # add_btn_help(dlg)
+
     # Open dialog
     if issubclass(type(dlg), DrDialog):
         dlg.open()
@@ -2651,6 +2655,54 @@ def reset_position_dialog(show_message=False, plugin='core', file_name='session'
     except Exception as e:
         tools_log.log_warning(f"set_config_parser exception [{type(e).__name__}]: {e}")
         return
+
+def add_btn_help(dlg):
+    """ Create and add btn_help in all dialogs """
+    if tools_qt.get_widget(dlg, 'btn_help') is not None:
+        return
+
+    btn_help = QPushButton("Help")
+    btn_help.setObjectName("btn_help")
+    btn_help.setToolTip("Help")
+    dlg.lyt_buttons.addWidget(btn_help, 0, dlg.lyt_buttons.columnCount())
+
+    # Get formtype, formname & tabname
+    context = dlg.property('context')
+    uiname = dlg.property('uiname')
+    tabname = 'tab_none'
+    tab_widgets = dlg.findChildren(QTabWidget, "")
+    if tab_widgets:
+        tab_widget = tab_widgets[0]
+        index_tab = tab_widget.currentIndex()
+        tabname = tab_widget.widget(index_tab).objectName()
+
+    btn_help.clicked.connect(partial(open_help_link, context, uiname, tabname))
+
+def open_help_link(context, uiname, tabname=None):
+    """ Opens the help link for the given dialog, or a default link if not found. """
+
+    # Base URL for the documentation
+    domain = "https://docs.giswater.org" #TODO Change to drain domain
+    language = "es_CR" # TODO: get dynamic language
+    plugin_version = "testing" # TODO: get dynamic version
+
+    if plugin_version == "":
+        plugin_version = "latest"
+
+    base_url = f"{domain}/{plugin_version}/{language}/docs/giswater/for-users" #TODO Change to drain path
+
+    uiname = uiname.replace("_", "-").replace(" ", "-").lower() + ".html" # sanitize uiname
+
+    # Construct the path dynamically
+    if uiname:
+        file_path = f"{base_url}/dialogs/{uiname}"
+        if tabname != 'tab_none':
+            file_path += f"#{tabname}"  # Append tabname as an anchor if provided
+    else:
+        # Fallback to the general manual link if context and uiname are missing
+        file_path = f"{base_url}/index.html"
+
+    tools_os.open_file(file_path)
 
 
 # region private functions
