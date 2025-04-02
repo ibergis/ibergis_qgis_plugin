@@ -90,10 +90,18 @@ def get_options_from_table(options_df):
     """
     options_df['Value'] = [adjust_options_dtypes(k, v, 'table') for k, v in zip(options_df['Option'], options_df['Value'])]
     if 'INFILTRATION' in options_df['Option'].values:
-        main_infiltration_method = options_df.loc[options_df['Option'] == 'INFILTRATION', 'Value']
+        main_infiltration_method = list(
+            options_df.loc[options_df['Option'] == 'INFILTRATION', 'Value']
+        )[0]
     else:
         main_infiltration_method = None
-    return options_df, main_infiltration_method
+    if 'LINK_OFFSETS' in options_df['Option'].values:
+        link_offsets = list(
+            options_df.loc[options_df['Option'] == 'LINK_OFFSETS', 'Value']
+        )[0]
+    else:
+        main_infiltration_method = None
+    return options_df, main_infiltration_method, link_offsets
 
 
 # import from inp file

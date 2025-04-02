@@ -52,9 +52,9 @@ class DrEpaFileManager(DrTask):
     """ This shows how to subclass QgsTask """
 
     fake_progress = pyqtSignal()
-    progress_changed = pyqtSignal(int, str)
+    progress_changed = pyqtSignal(str, int, str, bool)  # (Process, Progress, Text, '\n')
 
-    def __init__(self, description, params, timer=None):
+    def __init__(self, description, params, feedback, timer=None):
 
         super().__init__(description)
         self.params = params
@@ -63,6 +63,7 @@ class DrEpaFileManager(DrTask):
         self.fid = 140
         self.function_name = None
         self.timer = timer
+        self.feedback = feedback
         self.initialize_variables()
         self.set_variables_from_params()
 
@@ -158,8 +159,6 @@ class DrEpaFileManager(DrTask):
         self.process.initAlgorithm(None)
         params = self._manage_params()
         context = QgsProcessingContext()
-        self.feedback = QgsProcessingFeedback()
-        self.feedback.progressChanged.connect(self._progress_changed)
         self.output = self.process.processAlgorithm(params, context, self.feedback)
 
         if self.output is not None:
@@ -168,6 +167,7 @@ class DrEpaFileManager(DrTask):
             if self.export_file_path:
                 try:
                     shutil.copy(self.QGIS_OUT_INP_FILE, f"{self.export_file_path}")
+                    self.progress_changed.emit("Exported File", None, f"File saved on: {self.export_file_path}", True)
                 except Exception as e:
                     print(e)
             if self.debug_mode:
@@ -177,11 +177,6 @@ class DrEpaFileManager(DrTask):
                     print(e)
 
         return True
-
-    def _progress_changed(self, progress):
-
-        text = f"{self.feedback.textLog()}"
-        self.progress_changed.emit(progress, text)
 
 
     def _manage_params(self):
@@ -206,6 +201,7 @@ class DrEpaFileManager(DrTask):
         FILE_INFLOWS = self._create_inflows_file()
         FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'vi_transects'
         FILE_STREETS = None
+        USE_Z_BOOL = self.params.get('use_z_bool', False)
         params = {
             'QGIS_OUT_INP_FILE': self.QGIS_OUT_INP_FILE,
             'FILE_CONDUITS': FILE_CONDUITS,
@@ -224,7 +220,8 @@ class DrEpaFileManager(DrTask):
             'FILE_CONTROLS': FILE_CONTROLS,
             'FILE_TIMESERIES': FILE_TIMESERIES,
             'FILE_INFLOWS': FILE_INFLOWS,
-            'FILE_TRANSECTS': FILE_TRANSECTS
+            'FILE_TRANSECTS': FILE_TRANSECTS,
+            'USE_Z_BOOL': USE_Z_BOOL
         }
 
         if self.debug_mode:
@@ -298,6 +295,7 @@ class DrEpaFileManager(DrTask):
 
 
     def _create_curves_file(self):
+        from ..utils.generate_swmm_inp.g_s_defaults import def_tables_dict
         # Use pandas to read the SQL table into a DataFrame
         query = """SELECT
                     cc.curve_type,
@@ -319,7 +317,6 @@ class DrEpaFileManager(DrTask):
         file_path = temp_file.name
         # Create a new Excel writer
         with pd.ExcelWriter(file_path) as writer:
-            headers = ["Name", "Depth", "Area", "Annotation"]  # TODO: maybe use respective x-value/y-value columns depending on curve_type
             # Iterate over each group and save it to a separate sheet
             for curve_type, data in grouped_data:
                 # Concatenate all curves of the same curve_type, with curve_name separated by semicolon
@@ -327,6 +324,8 @@ class DrEpaFileManager(DrTask):
                 # Track the current row position
                 current_row = 1
                 sheet_name = f"{curve_type[0].capitalize()}"
+
+                headers = list(def_tables_dict['CURVES']['tables'][sheet_name].keys()) + ['Annotation']
 
                 for curve_name, curve_data in grouped_by_curve_name:
                     # Remove the 'curve_type' columns from the individual sheets
@@ -419,7 +418,7 @@ class DrEpaFileManager(DrTask):
             df.to_excel(writer, sheet_name=sheet_name, index=False)
 
         return file_path
-    
+
     def _create_report_file(self):
         query = """SELECT
                     Option,
@@ -541,6 +540,12 @@ class DrEpaFileManager(DrTask):
         conn = self.dao.conn
         df_dwf = pd.read_sql_query(query, conn)
 
+        # FAKE Hydrographs
+        df_hydrographs = pd.DataFrame(columns=['Name', 'Rain_Gage', 'Months', 'R_ShortTerm', 'T_ShortTerm', 'K_ShortTerm', 'D_max_ShortTerm', 'D_recovery_ShortTerm', 'D_init_ShortTerm', 'R_MediumTerm', 'T_MediumTerm', 'K_MediumTerm', 'D_max_MediumTerm', 'D_recovery_MediumTerm', 'D_init_MediumTerm', 'R_LongTerm', 'T_LongTerm', 'K_LongTerm', 'D_max_LongTerm', 'D_recovery_LongTerm', 'D_init_LongTerm'])
+
+        # FAKE RDII
+        df_rdii = pd.DataFrame(columns=['Node', 'UnitHydrograph', 'SewerArea'])
+
         temp_file = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
         file_path = temp_file.name
         # Create a new Excel writer
@@ -549,6 +554,10 @@ class DrEpaFileManager(DrTask):
             df_direct.to_excel(writer, sheet_name="Direct", index=False)
             # Write Dry Weather inflows to its sheet
             df_dwf.to_excel(writer, sheet_name="Dry_Weather", index=False)
+            # Write Hydrographs inflows to its sheet
+            df_hydrographs.to_excel(writer, sheet_name="Hydrographs", index=False)
+            # Write RDII inflows to its sheet
+            df_rdii.to_excel(writer, sheet_name="RDII", index=False)
 
         return file_path
 

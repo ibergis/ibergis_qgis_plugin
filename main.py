@@ -26,13 +26,13 @@ try:
             raise ImportError()
     except TypeError:
         pass
-    import gmsh
+    from packages.gmsh import gmsh
     import pandamesh
     import openpyxl
     import xlsxwriter
 except ImportError:
     if tools_qt.show_question(
-        "It appears that certain dependencies required for the DRAIN plugin are not installed. " 
+        "It appears that certain dependencies required for the DRAIN plugin are not installed. "
         "Would you like to proceed with their installation now?"
     ):
         subprocess.run(["python", "-m", "ensurepip"])

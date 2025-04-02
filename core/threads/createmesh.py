@@ -247,7 +247,7 @@ class DrCreateMeshTask(DrTask):
                         return landuses_df.loc[landuses_df['idval'] == row["landuse"], 'manning'].values[0]
                     else:
                         return row["custom_roughness"]
-                
+
                 # TODO: Try to not use apply
                 # ground_triangles_df["roughness"] = ground_triangles_df["custom_roughness"].fillna()
                 ground_triangles_df["roughness"] = ground_triangles_df.apply(get_roughness, axis=1)
@@ -309,7 +309,7 @@ class DrCreateMeshTask(DrTask):
                     return val if res else 0
 
                 ground_vertices_df["z"] = ground_vertices_df.apply(lambda row: get_z(row["x"], row["y"]), axis=1)
-            
+
             print("Validating landuses... ", end="")
             start = time.time()
             self.feedback.setProgressText("Creating roof mesh...")
@@ -319,15 +319,18 @@ class DrCreateMeshTask(DrTask):
             if self.feedback.isCanceled() or roof_triangulation_result is None:
                 self.message = "Task canceled."
                 return False
-            
+
             roof_vertices_df, roof_triangles_df = roof_triangulation_result
 
-            roof_triangles_df["v1"] += len(ground_vertices_df)
-            roof_triangles_df["v2"] += len(ground_vertices_df)
-            roof_triangles_df["v3"] += len(ground_vertices_df)
-            roof_triangles_df["v4"] += len(ground_vertices_df)
+            if not roof_vertices_df.empty and not roof_triangles_df.empty:
+                roof_triangles_df["v1"] += len(ground_vertices_df)
+                roof_triangles_df["v2"] += len(ground_vertices_df)
+                roof_triangles_df["v3"] += len(ground_vertices_df)
+                roof_triangles_df["v4"] += len(ground_vertices_df)
 
-            ground_triangles_df["roof_id"] = -1 # To avoid changing the type of the column when concatenating
+            # To avoid changing the type of the column when concatenating,
+            # if not, the nan's change the datatype of the column to object
+            ground_triangles_df["roof_id"] = -1
 
             print(f"Done! {time.time() - start}s")
 
@@ -356,8 +359,9 @@ class DrCreateMeshTask(DrTask):
                 "code", "fid", "slope", "width", "roughness", "isconnected",
                 "outlet_code", "outlet_vol", "street_vol", "infiltr_vol"
             ])
-            roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
-            roofs_df.index = roofs_df["fid"] # type: ignore
+            if not roofs_df.empty:
+                roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
+                roofs_df.index = roofs_df["fid"] # type: ignore
 
             self.mesh = mesh_parser.Mesh(
                 polygons=triangles_df,
@@ -389,7 +393,7 @@ class DrCreateMeshTask(DrTask):
                 self.feedback.setProgressText("Getting ground losses from raster...")
                 print("Getting ground losses from raster... ", end="")
                 start = time.time()
-                
+
                 fids, scs_cn = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
                 triangles_df.loc[fids, "scs_cn"] = scs_cn
 

@@ -253,6 +253,10 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_wi
     if hide_config_widgets:
         hide_widgets_form(dlg, dlg_name)
 
+    # Create btn_help
+    #TODO Create lyt_buttons on all dialogs
+    # add_btn_help(dlg)
+
     # Open dialog
     if issubclass(type(dlg), DrDialog):
         dlg.open()
@@ -993,10 +997,10 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
                     widget.setDisplayFormat('yyyy/MM/dd')
                     if global_vars.date_format in ("dd/MM/yyyy", "dd-MM-yyyy", "yyyy/MM/dd", "yyyy-MM-dd"):
                         widget.setDisplayFormat(global_vars.date_format)
-                    date = QDate.currentDate()
+                    widget.clear()
                     if field.get('value') not in ('', None, 'null'):
                         date = QDate.fromString(field['value'].replace('/', '-'), 'yyyy-MM-dd')
-                    widget.setDate(date)
+                        widget.setDate(date)
                     widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
                     widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
                 elif field['widgettype'] == 'spinbox':
@@ -1805,39 +1809,20 @@ def execute_procedure(function_name, parameters=None, schema_name=None, commit=T
             tools_qgis.show_warning("Function not found in tools_fct", parameter=function_name)
             return None
 
-    if type(parameters) == str:
+    if type(parameters) is str:
         parameters = json.loads(parameters)
+    msg = f"tools_fct.{function_name}({parameters})"
+    tools_log.log_db(msg, bold='b')
     json_result = getattr(tools_fct, function_name)(parameters)
     if commit:
         global_vars.gpkg_dao_data.commit()
 
-    # Manage schema_name and parameters
-    # if schema_name:
-    #     sql = f"SELECT {schema_name}.{function_name}("
-    # elif schema_name is None and global_vars.schema_name:
-    #     sql = f"SELECT {global_vars.schema_name}.{function_name}("
-    # else:
-    #     sql = f"SELECT {function_name}("
-    # if parameters:
-    #     sql += f"{parameters}"
-    # sql += f");"
+    # # Get log_sql for developers
+    # dev_log_sql = get_config_parser('log', 'log_sql', "user", "init", False)
+    # if dev_log_sql in ("True", "False"):
+    #     log_sql = tools_os.set_boolean(dev_log_sql)
 
-    # Get log_sql for developers
-    dev_log_sql = get_config_parser('log', 'log_sql', "user", "init", False)
-    if dev_log_sql in ("True", "False"):
-        log_sql = tools_os.set_boolean(dev_log_sql)
-
-    # # Execute database function
-    # row = tools_db.get_row(sql, commit=commit, log_sql=log_sql, aux_conn=aux_conn)
-    # if not row or not row[0]:
-    #     tools_log.log_warning(f"Function error: {function_name}")
-    #     tools_log.log_warning(sql)
-    #     return None
-    #
-    # # Get json result
-    # json_result = row[0]
-    # if log_sql:
-    #     tools_log.log_db(json_result, header="SERVER RESPONSE")
+    tools_log.log_db(json_result, header="SERVER RESPONSE")
 
     # All functions called from python should return 'status', if not, something has probably failed in postrgres
     if 'status' not in json_result:
@@ -2513,6 +2498,12 @@ def set_epsg():
     global_vars.project_epsg = epsg
 
 
+def lerp_progress(subtask_progress: int, global_min: int, global_max: int) -> int:
+    global_progress = global_min + ((subtask_progress - 0) / (100 - 0)) * (global_max - global_min)
+
+    return int(global_progress)
+
+
 def manage_current_selections_docker(result, open=False):
     """
     Manage labels for the current_selections docker
@@ -2664,6 +2655,54 @@ def reset_position_dialog(show_message=False, plugin='core', file_name='session'
     except Exception as e:
         tools_log.log_warning(f"set_config_parser exception [{type(e).__name__}]: {e}")
         return
+
+def add_btn_help(dlg):
+    """ Create and add btn_help in all dialogs """
+    if tools_qt.get_widget(dlg, 'btn_help') is not None:
+        return
+
+    btn_help = QPushButton("Help")
+    btn_help.setObjectName("btn_help")
+    btn_help.setToolTip("Help")
+    dlg.lyt_buttons.addWidget(btn_help, 0, dlg.lyt_buttons.columnCount())
+
+    # Get formtype, formname & tabname
+    context = dlg.property('context')
+    uiname = dlg.property('uiname')
+    tabname = 'tab_none'
+    tab_widgets = dlg.findChildren(QTabWidget, "")
+    if tab_widgets:
+        tab_widget = tab_widgets[0]
+        index_tab = tab_widget.currentIndex()
+        tabname = tab_widget.widget(index_tab).objectName()
+
+    btn_help.clicked.connect(partial(open_help_link, context, uiname, tabname))
+
+def open_help_link(context, uiname, tabname=None):
+    """ Opens the help link for the given dialog, or a default link if not found. """
+
+    # Base URL for the documentation
+    domain = "https://docs.giswater.org" #TODO Change to drain domain
+    language = "es_CR" # TODO: get dynamic language
+    plugin_version = "testing" # TODO: get dynamic version
+
+    if plugin_version == "":
+        plugin_version = "latest"
+
+    base_url = f"{domain}/{plugin_version}/{language}/docs/giswater/for-users" #TODO Change to drain path
+
+    uiname = uiname.replace("_", "-").replace(" ", "-").lower() + ".html" # sanitize uiname
+
+    # Construct the path dynamically
+    if uiname:
+        file_path = f"{base_url}/dialogs/{uiname}"
+        if tabname != 'tab_none':
+            file_path += f"#{tabname}"  # Append tabname as an anchor if provided
+    else:
+        # Fallback to the general manual link if context and uiname are missing
+        file_path = f"{base_url}/index.html"
+
+    tools_os.open_file(file_path)
 
 
 # region private functions
