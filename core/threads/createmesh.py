@@ -309,7 +309,7 @@ class DrCreateMeshTask(DrTask):
                     return val if res else 0
 
                 ground_vertices_df["z"] = ground_vertices_df.apply(lambda row: get_z(row["x"], row["y"]), axis=1)
-            
+
             print("Validating landuses... ", end="")
             start = time.time()
             self.feedback.setProgressText("Creating roof mesh...")
@@ -319,13 +319,14 @@ class DrCreateMeshTask(DrTask):
             if self.feedback.isCanceled() or roof_triangulation_result is None:
                 self.message = "Task canceled."
                 return False
-            
+
             roof_vertices_df, roof_triangles_df = roof_triangulation_result
 
-            roof_triangles_df["v1"] += len(ground_vertices_df)
-            roof_triangles_df["v2"] += len(ground_vertices_df)
-            roof_triangles_df["v3"] += len(ground_vertices_df)
-            roof_triangles_df["v4"] += len(ground_vertices_df)
+            if not roof_vertices_df.empty and not roof_triangles_df.empty:
+                roof_triangles_df["v1"] += len(ground_vertices_df)
+                roof_triangles_df["v2"] += len(ground_vertices_df)
+                roof_triangles_df["v3"] += len(ground_vertices_df)
+                roof_triangles_df["v4"] += len(ground_vertices_df)
 
             # To avoid changing the type of the column when concatenating,
             # if not, the nan's change the datatype of the column to object
@@ -358,8 +359,9 @@ class DrCreateMeshTask(DrTask):
                 "code", "fid", "slope", "width", "roughness", "isconnected",
                 "outlet_code", "outlet_vol", "street_vol", "infiltr_vol"
             ])
-            roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
-            roofs_df.index = roofs_df["fid"] # type: ignore
+            if not roofs_df.empty:
+                roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
+                roofs_df.index = roofs_df["fid"] # type: ignore
 
             self.mesh = mesh_parser.Mesh(
                 polygons=triangles_df,

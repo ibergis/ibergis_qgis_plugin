@@ -87,7 +87,7 @@ def triangulate_roof(
         vertices_dfs.append(vertices_df)
         triangles_dfs.append(triangles_df)
 
-    vertices_df = pd.concat(vertices_dfs, ignore_index=True)
-    triangles_df = pd.concat(triangles_dfs, ignore_index=True)
+    vertices_df = pd.concat(vertices_dfs, ignore_index=True) if len(vertices_dfs) > 0 else pd.DataFrame()
+    triangles_df = pd.concat(triangles_dfs, ignore_index=True) if len(triangles_dfs) > 0 else pd.DataFrame()
 
     return vertices_df, triangles_df
