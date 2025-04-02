@@ -48,6 +48,8 @@ class DrMeshManagerButton(DrAction):
 
         self._set_active_mesh_label()
 
+        btn_import_mesh.setToolTip("Import mesh from folder")
+
         # Signals
         txt_filter.textChanged.connect(partial(self._filter_table))
         btn_create_mesh.clicked.connect(partial(self._create_mesh))
@@ -189,8 +191,12 @@ class DrMeshManagerButton(DrAction):
             tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
             return
 
+        detected_files = [path.name for path in [mesh_path, roof_path, losses_path] if path.exists()]
+        detected_files = f"Detected files: {', '.join(detected_files)}"
+
         self.dlg_lineedit = DrLineeditUi()
         tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_title', 'Choose a name for the mesh')
+        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_subtitle', detected_files)
 
         self.dlg_lineedit.btn_accept.clicked.connect(partial(self._insert_mesh, mesh_path, roof_path, losses_path))
         self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_lineedit))
