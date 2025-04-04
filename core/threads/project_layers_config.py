@@ -98,7 +98,7 @@ class DrProjectLayersConfig(DrTask):
             layer = tools_qgis.get_layer_by_tablename(layer_name)
             if layer is None:
                 continue
-            if isinstance(layer, QgsRasterLayer):
+            if not hasattr(layer, 'editFormConfig'):
                 continue
             config = layer.editFormConfig()
             if Qgis.QGIS_VERSION_INT >= 33200:
