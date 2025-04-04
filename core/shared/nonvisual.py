@@ -22,6 +22,7 @@ from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTableWidget, QTa
 from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
+from qgis.PyQt.QtCore import QTime, QDate
 from ..ui.ui_manager import DrNonVisualManagerUi, DrNonVisualControlsUi, DrNonVisualCurveUi, DrNonVisualPatternUDUi, \
     DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualPrint, DrNonVisualRasterUi
 from ..utils.matplotlib_widget import MplCanvas
@@ -1465,6 +1466,15 @@ class DrNonVisual:
     def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, timeseries):
         """ Insert table values into cat_timeseries_value """
 
+        time_formats_list = ['HH:mm:ss', 'HH:mm', 'HH', 'H:mm', 'H']
+        date_formats_list = ['MM/dd/yyyy', 'M/dd/yyyy', 'MM/d/yyyy', 'M/d/yyyy',
+                             'MM.dd.yyyy', 'M.dd.yyyy', 'MM.d.yyyy', 'M.d.yyyy',
+                             'MM-dd-yyyy', 'M-dd-yyyy', 'MM-d-yyyy', 'M-d-yyyy']
+        invalid_times = list()
+        invalid_dates = list()
+        output_time_format = 'HH:mm'
+        output_date_format = 'MM/dd/yyyy'
+
         values = list()
         for y in range(0, tbl_timeseries_value.rowCount()):
             values.append(list())
@@ -1473,11 +1483,42 @@ class DrNonVisual:
                 item = tbl_timeseries_value.item(y, x)
                 if item is not None and item.data(0) not in (None, ''):
                     value = item.data(0)
-                    try:  # Try to convert to float, otherwise put quotes
-                        value = float(value)
-                    except ValueError:
-                        value = f"'{value}'"
+                    if x == 1 and type(value) == str:
+                        # Convert to HH:mm time format
+                        for i in range(0, len(time_formats_list)):
+                            value = QTime.fromString(item.data(0), time_formats_list[i]) # Try to convert
+                            if not value.isNull():
+                                value = value.toString(output_time_format if time_formats_list[i] != 'HH:mm:ss' else output_time_format+':ss') # Convert QTime to string
+                                break
+                        if type(value) != str and value.isNull():
+                            invalid_times.append(item.data(0))
+                    elif x == 0 and type(value) == str:
+                        # Convert to MM/dd/yyyy date format
+                        for i in range(0, len(date_formats_list)):
+                            value = QDate.fromString(item.data(0), date_formats_list[i]) # Try to convert
+                            if not value.isNull():
+                                value = value.toString(output_date_format) # Convert QDate to string
+                                break
+                        if type(value) != str and value.isNull():
+                            invalid_dates.append(item.data(0))
+                    else:
+                        try:  # Try to convert to float, otherwise put quotes
+                            value = float(value)
+                        except ValueError:
+                            value = f"'{value}'"
                 values[y].append(value)
+
+        if len(invalid_times) > 0:
+            msg = f"Invalid time format: {', '.join(invalid_times)}"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            global_vars.gpkg_dao_data.rollback()
+            return False
+
+        if len(invalid_dates) > 0:
+            msg = f"Invalid date format: {', '.join(invalid_dates)}"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            global_vars.gpkg_dao_data.rollback()
+            return False
 
         # Check if table is empty
         is_empty = True
@@ -1503,7 +1544,7 @@ class DrNonVisual:
                     return False
 
                 sql = f"INSERT INTO cat_timeseries_value (timeseries, date, time, value) "
-                sql += f"VALUES ('{timeseries}', {row[0]}, {row[1]}, {row[2]})"
+                sql += f"VALUES ('{timeseries}', '{row[0]}', '{row[1]}', {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
@@ -1523,7 +1564,7 @@ class DrNonVisual:
                     return False
 
                 sql = f"INSERT INTO cat_timeseries_value (timeseries, time, value) "
-                sql += f"VALUES ('{timeseries}', {row[1]}, {row[2]})"
+                sql += f"VALUES ('{timeseries}', '{row[1]}', {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:

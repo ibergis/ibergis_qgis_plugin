@@ -492,8 +492,8 @@ class DrEpaFileManager(DrTask):
         # Use pandas to read the SQL table into a DataFrame
         query = """SELECT
                     ct.idval AS timeseries_name,
-                    ctv.date,
-                    time(ctv.time),
+                    ctv.date,                    
+                    ctv.time,
                     ctv.value,
                     ct.fname,
                     ct.descript
