@@ -9,14 +9,13 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-import geopandas as gpd
 import threading
 import traceback
 
 from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
 from qgis.PyQt.QtWidgets import QTextEdit
 from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, \
-    QgsProject
+    QgsProject, QgsGeometry
 
 from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils.feedback import Feedback
@@ -451,19 +450,18 @@ class DrExecuteModel(DrTask):
             file_name.write_text("Hyetographs\n0\nEnd\n")
             return
 
-        gdf = gpd.read_file(global_vars.gpkg_dao_data.db_filepath, layer="hyetograph")
-        gdf['x'] = gdf.geometry.x
-        gdf['y'] = gdf.geometry.y
+        gdf = QgsVectorLayer(global_vars.gpkg_dao_data.db_filepath + "|layername=hyetograph", "hyetograph", "ogr")
+        gdf_features = gdf.getFeatures()
         self.progress_changed.emit("Export files", tools_dr.lerp_progress(10, self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
         with open(file_name, "w") as file:
             file.write("Hyetographs\n")
-            file.write(f"{len(gdf)}\n")
+            file.write(f"{gdf.featureCount()}\n")
 
-            for i, ht_row in enumerate(gdf.itertuples(), start=1):
+            for i, ht_row in enumerate(gdf_features, start=1):
                 file.write(f"{i}\n")
-                file.write(f"{ht_row.x} {ht_row.y}\n")
-                timeseries = timeseries_override if timeseries_override not in (None, '') else ht_row.timeseries
+                file.write(f"{ht_row.geometry().asPoint().x()} {ht_row.geometry().asPoint().y()}\n")
+                timeseries = timeseries_override if timeseries_override not in (None, '') else ht_row["timeseries"]
 
                 sql = f"""
                     SELECT time, value
@@ -477,9 +475,10 @@ class DrExecuteModel(DrTask):
                         hours, minutes = map(int, ts_row["time"].split(":"))
                         seconds = hours * 3600 + minutes * 60
                         file.write(f"{seconds} {ts_row['value']}\n")
-                self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, len(gdf)), self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
+                self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
             file.write("End\n")
+
 
     def _create_rain_file(self):
         file_name = Path(self.folder_path) / "Iber_Rain.dat"
