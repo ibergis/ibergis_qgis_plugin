@@ -254,8 +254,7 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_wi
         hide_widgets_form(dlg, dlg_name)
 
     # Create btn_help
-    #TODO Create lyt_buttons on all dialogs
-    # add_btn_help(dlg)
+    add_btn_help(dlg)
 
     # Open dialog
     if issubclass(type(dlg), DrDialog):
@@ -2660,6 +2659,10 @@ def add_btn_help(dlg):
     """ Create and add btn_help in all dialogs """
     if tools_qt.get_widget(dlg, 'btn_help') is not None:
         return
+    if not hasattr(dlg, 'lyt_buttons'):
+        return
+    if not hasattr(dlg.lyt_buttons, 'columnCount'):
+        return
 
     btn_help = QPushButton("Help")
     btn_help.setObjectName("btn_help")
@@ -2679,6 +2682,7 @@ def add_btn_help(dlg):
     btn_help.clicked.connect(partial(open_help_link, context, uiname, tabname))
 
 def open_help_link(context, uiname, tabname=None):
+    return #TODO use drain domain
     """ Opens the help link for the given dialog, or a default link if not found. """
 
     # Base URL for the documentation
