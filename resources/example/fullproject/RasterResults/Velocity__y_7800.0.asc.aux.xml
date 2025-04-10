@@ -1,0 +1,14 @@
+<PAMDataset>
+  <Metadata>
+    <MDI key="AREA_OR_POINT">Point</MDI>
+  </Metadata>
+  <PAMRasterBand band="1">
+    <Metadata>
+      <MDI key="STATISTICS_MINIMUM">-0.5031536</MDI>
+      <MDI key="STATISTICS_MAXIMUM">0.4582112</MDI>
+      <MDI key="STATISTICS_MEAN">0.018816996796635</MDI>
+      <MDI key="STATISTICS_STDDEV">0.087216494186181</MDI>
+      <MDI key="STATISTICS_VALID_PERCENT">1.631</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>
