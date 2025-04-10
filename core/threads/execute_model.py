@@ -567,7 +567,8 @@ class DrExecuteModel(DrTask):
             self.generate_inp_infolog = text
 
     def _run_iber(self):
-        iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"
+        # iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"  # TODO: Add checkbox to select between Iber and IberPlus
+        iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}Iber.exe"
 
         if not os.path.exists(iber_exe_path):
             self.error_msg = f"File not found: {iber_exe_path}"
