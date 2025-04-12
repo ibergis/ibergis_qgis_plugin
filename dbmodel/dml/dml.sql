@@ -108,7 +108,7 @@ insert into tables_nogeom (table_name, index_col) values
 ('vi_inflows', null),
 ('vi_transects', null),
 ('vi_report', null),
-('v_ui_file', null);
+('v_ui_file', null),
 ('inp_lid', 'idval'),
 ('inp_lid_value', 'id'),
 ('inp_lid_ground', 'id'),
