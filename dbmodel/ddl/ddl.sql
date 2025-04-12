@@ -474,6 +474,61 @@ create table inp_inflow (
     FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
 
+-------------
+-- lid tables
+-------------
+
+CREATE TABLE inp_lid (
+	id integer primary key,
+	idval text unique check (typeof(idval) = 'text' or idval = null),
+	lid_type text unique check (typeof(lid_type) = 'text' or lid_type = null),
+	observ text unique check (typeof(observ) = 'text' or observ = null)
+);
+
+CREATE TABLE inp_lid_value (
+	id integer primary key,
+	lid text unique check (typeof(lid) = 'text' or lid = null),
+	lidlayer text unique check (typeof(lidlayer) = 'text' or lidlayer = null),
+	value_2 real CHECK (typeof(value_2)='real' OR value_2 = NULL),
+	value_3 real CHECK (typeof(value_3)='real' OR value_3 = NULL),
+	value_4 real CHECK (typeof(value_4)='real' OR value_4 = NULL),
+	value_5 real CHECK (typeof(value_5)='real' OR value_5 = NULL),
+	value_6 text unique check (typeof(value_6) = 'text' or value_6 = null),
+	value_7 text unique check (typeof(value_7) = 'text' or value_7 = null),
+	value_8 text unique check (typeof(value_8) = 'text' or value_8 = null),
+    FOREIGN KEY (lid) references inp_lid(idval) on update cascade on delete restrict
+);
+
+CREATE TABLE inp_lid_roof (
+	id integer primary key,
+	lid text unique check (typeof(lid) = 'text' or lid = null),
+	roof text unique check (typeof(roof) = 'text' or roof = null),
+	numelem real CHECK (typeof(numelem)='real' OR numelem = NULL),
+	area real CHECK (typeof(area)='area' OR area = NULL),
+	width real CHECK (typeof(width)='real' OR width = NULL),
+	initsat real CHECK (typeof(initsat)='real' OR initsat = NULL),
+	fromimp real CHECK (typeof(fromimp)='real' OR fromimp = NULL),
+	toperv real CHECK (typeof(toperv)='real' OR toperv = NULL),
+	descript text unique check (typeof(descript) = 'text' or descript = null),
+    FOREIGN KEY (lid) references inp_lid(idval) on update cascade on delete restrict,
+	FOREIGN KEY (roof) references roof(code) on update cascade on delete restrict
+);
+
+CREATE TABLE inp_lid_ground (
+	id integer primary key,
+	lid text unique check (typeof(lid) = 'text' or lid = null),
+	ground text unique check (typeof(ground) = 'text' or ground = null),
+	numelem real CHECK (typeof(numelem)='real' OR numelem = NULL),
+	area real CHECK (typeof(area)='area' OR area = NULL),
+	width real CHECK (typeof(width)='real' OR width = NULL),
+	initsat real CHECK (typeof(initsat)='real' OR initsat = NULL),
+	fromimp real CHECK (typeof(fromimp)='real' OR fromimp = NULL),
+	toperv real CHECK (typeof(toperv)='real' OR toperv = NULL),
+	descript text unique check (typeof(descript) = 'text' or descript = null),
+    FOREIGN KEY (lid) references inp_lid(idval) on update cascade on delete restrict,
+	FOREIGN KEY (ground) references ground(code) on update cascade on delete restrict
+);
+
 
 -- ----------
 -- RPT_TABLES
