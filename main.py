@@ -10,7 +10,7 @@ import subprocess
 from distutils.version import LooseVersion
 
 from functools import partial
-from qgis.core import QgsProject
+from qgis.core import QgsApplication, QgsProject
 from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QApplication
@@ -56,6 +56,7 @@ from .core.utils import tools_dr
 from .core.utils.signal_manager import DrSignalManager
 from .core.ui.dialog import DrDialog
 from .core.ui.main_window import DrMainWindow
+from .core.toolbars.processing.provider import DrProcessingProvider
 
 
 class Drain(QObject):
@@ -74,6 +75,7 @@ class Drain(QObject):
         self.btn_add_layers = None
         self.action = None
         self.action_info = None
+        self.processing_provider: DrProcessingProvider | None = None
 
 
     def initGui(self):
@@ -84,6 +86,8 @@ class Drain(QObject):
             # Force project read (to work with PluginReloader)
             self._project_read(False, False)
 
+            self._init_processing()
+
 
     def unload(self, hide_gw_button=None):
         """
@@ -93,6 +97,11 @@ class Drain(QObject):
                                 is False when you want to show the admin button.
                                 is None when called from QGIS.
         """
+
+        try:
+            QgsApplication.processingRegistry().removeProvider(self.processing_provider)
+        except Exception as e:
+            tools_log.log_info(f"Couldn't unload the processing provder: {e}")
 
         try:
             # Reset values for global_vars.project_vars
@@ -205,7 +214,9 @@ class Drain(QObject):
 
 
     # region private functions
-
+    def _init_processing(self):
+        self.processing_provider = DrProcessingProvider()
+        QgsApplication.processingRegistry().addProvider(self.processing_provider)
 
     def _init_plugin(self):
         """ Plugin main initialization function """

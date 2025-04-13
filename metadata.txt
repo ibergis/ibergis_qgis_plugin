@@ -16,6 +16,7 @@ Changelog=Version 0.1.002
     - Make layers fields configurable via config_form_fields
 
 tags= urban drainage, flooding
+hasProcessingProvider=yes
 homepage=https://www.xxxxx.org
 repository=https//github.com/drain-iber/drain_qgis_plugin
 tracker=https//github.com/drain-iber/drain_qgis_plugin/issues
