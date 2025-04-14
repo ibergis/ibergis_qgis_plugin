@@ -24,6 +24,7 @@ from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
 from .task import DrTask
 from .epa_file_manager import DrEpaFileManager
+from ..admin.admin_btn import DrRptGpkgCreate
 
 
 class DrExecuteModel(DrTask):
@@ -94,6 +95,9 @@ class DrExecuteModel(DrTask):
         self.dialog.btn_accept.setVisible(False)
         self.dialog.btn_close.setVisible(True)
 
+        # Create report geopackage
+        self._create_report_gpkg()
+
         # self._close_file()
         if self.timer:
             self.timer.stop()
@@ -110,6 +114,14 @@ class DrExecuteModel(DrTask):
         tools_qgis.show_info(f"Task canceled - {self.description()}")
         # self._close_file()
         super().cancel()
+
+
+    def _create_report_gpkg(self):
+        """Create report geopackage"""
+
+        # Create report geopackage
+        self.rpt_result = DrRptGpkgCreate("report_gpkg", self.folder_path)
+        self.rpt_result.create_rpt_gpkg()
 
 
     def _close_dao(self, dao=None):
