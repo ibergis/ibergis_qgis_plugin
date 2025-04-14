@@ -6,15 +6,12 @@ This version of Giswater is provided by Giswater Association
 */
 
 
-INSERT INTO tables_geom (table_name, isgeom, index_col) values
+INSERT INTO tables_geom (table_name, isgeom, index_col) VALUES
 ('rpt_arc', 'LINESTRING', 'code'),
 ('rpt_arcflow_sum', 'LINESTRING', 'code'),
 ('rpt_condsurcharge_sum', 'LINESTRING', 'code'),
 ('rpt_flowclass_sum', 'LINESTRING', 'code'),
 ('rpt_flowrouting_cont', 'LINESTRING', 'code'),
-('arc', 'LINESTRING', 'code'),
-('arc', 'LINESTRING', 'code'),
-('arc', 'LINESTRING', 'code'),
 ('rpt_node', 'POINT', 'code'),
 ('rpt_nodedepth_sum', 'POINT', 'code'),
 ('rpt_nodeflooding_sum', 'POINT', 'code'),
@@ -22,4 +19,4 @@ INSERT INTO tables_geom (table_name, isgeom, index_col) values
 ('rpt_nodesurcharge_sum', 'POINT', 'code'),
 ('rpt_outfallflow_sum', 'POINT', 'code'),
 ('rpt_pumping_sum', 'POINT', 'code'),
-('rpt_storagevol_sum', 'POINT', 'code')
+('rpt_storagevol_sum', 'POINT', 'code');

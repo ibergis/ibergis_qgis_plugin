@@ -14,7 +14,7 @@ CREATE TABLE rpt_arc (
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
-	geom4 real check (typeof(geom4)='real' or geom4=null),	
+	geom4 real check (typeof(geom4)='real' or geom4=null),
 	resultdate text check (typeof(resultdate) = 'text' or resultdate = null),
     resulttime text check (typeof(resulttime) = 'text' or resulttime = null),
     flow real check (typeof(flow) = 'real' or flow = null),
@@ -31,7 +31,7 @@ CREATE TABLE rpt_arcflow_sum (
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
-	geom4 real check (typeof(geom4)='real' or geom4=null),	
+	geom4 real check (typeof(geom4)='real' or geom4=null),
     flow real check (typeof(flow) = 'real' or flow = null),
     arc_type text check (typeof(arc_type) = 'text' or arc_type = null),
     max_flow real check (typeof(max_flow) = 'real' or max_flow = null),
@@ -60,7 +60,7 @@ CREATE TABLE rpt_condsurcharge_sum (
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
-	geom4 real check (typeof(geom4)='real' or geom4=null),	
+	geom4 real check (typeof(geom4)='real' or geom4=null),
     flow real check (typeof(flow) = 'real' or flow = null),
     both_ends real check (typeof(both_ends) = 'real' or both_ends = null),
     upstream real check (typeof(upstream) = 'real' or upstream = null),
@@ -79,7 +79,7 @@ CREATE TABLE rpt_flowclass_sum (
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
-	geom4 real check (typeof(geom4)='real' or geom4=null),	
+	geom4 real check (typeof(geom4)='real' or geom4=null),
     flow real check (typeof(flow) = 'real' or flow = null),
     length real check (typeof(length) = 'real' or length = null),
     dry real check (typeof(dry) = 'real' or dry = null),
@@ -90,7 +90,7 @@ CREATE TABLE rpt_flowclass_sum (
     up_crit real check (typeof(up_crit) = 'real' or up_crit = null),
     down_crit real check (typeof(down_crit) = 'real' or down_crit = null),
     froud_numb real check (typeof(froud_numb) = 'real' or froud_numb = null),
-    flow_chang real check (typeof(flow_chang) = 'real' or flow_chang = null)
+    flow_chang real check (typeof(flow_chang) = 'real' or flow_chang = null),
     geom geometry
 );
 
@@ -102,7 +102,7 @@ CREATE TABLE rpt_flowrouting_cont (
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
-	geom4 real check (typeof(geom4)='real' or geom4=null),	
+	geom4 real check (typeof(geom4)='real' or geom4=null),
     flow real check (typeof(flow) = 'real' or flow = null),
     dryw_inf real check (typeof(dryw_inf) = 'real' or dryw_inf = null),
     wetw_inf real check (typeof(wetw_inf) = 'real' or wetw_inf = null),
@@ -127,7 +127,7 @@ CREATE TABLE rpt_node (
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
-	ysur real check (typeof(ysur)='real' or ysur=null),	
+	ysur real check (typeof(ysur)='real' or ysur=null),
     resultdate text check (typeof(resultdate) = 'text' or resultdate = null),
     resulttime text check (typeof(resulttime) = 'text' or resulttime = null),
     flooding real check (typeof(flooding) = 'real' or flooding = null),
@@ -144,7 +144,7 @@ CREATE TABLE rpt_nodedepth_sum (
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
-	ysur real check (typeof(ysur)='real' or ysur=null),	
+	ysur real check (typeof(ysur)='real' or ysur=null),
     swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
     aver_depth real check (typeof(aver_depth) = 'real' or aver_depth = null),
     max_depth real check (typeof(max_depth) = 'real' or max_depth = null),
@@ -162,7 +162,7 @@ CREATE TABLE rpt_nodeflooding_sum (
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
-	ysur real check (typeof(ysur)='real' or ysur=null),	
+	ysur real check (typeof(ysur)='real' or ysur=null),
     hour_flood real check (typeof(hour_flood) = 'real' or hour_flood = null),
     max_rate real check (typeof(max_rate) = 'real' or max_rate = null),
     time_days text check (typeof(time_days) = 'text' or time_days = null),
@@ -179,7 +179,7 @@ CREATE TABLE rpt_nodeinflow_sum (
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
-	ysur real check (typeof(ysur)='real' or ysur=null),	
+	ysur real check (typeof(ysur)='real' or ysur=null),
     swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
     max_latinf real check (typeof(max_latinf) = 'real' or max_latinf = null),
     max_totinf real check (typeof(max_totinf) = 'real' or max_totinf = null),
@@ -199,7 +199,7 @@ CREATE TABLE rpt_nodesurcharge_sum (
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
-	ysur real check (typeof(ysur)='real' or ysur=null),	
+	ysur real check (typeof(ysur)='real' or ysur=null),
     swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
     hour_surch real check (typeof(hour_surch) = 'real' or hour_surch = null),
     max_height real check (typeof(max_height) = 'real' or max_height = null),
@@ -214,7 +214,7 @@ CREATE TABLE rpt_outfallflow_sum (
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
-	ysur real check (typeof(ysur)='real' or ysur=null),	
+	ysur real check (typeof(ysur)='real' or ysur=null),
     flow_freq real check (typeof(flow_freq) = 'real' or flow_freq = null),
     avg_flow real check (typeof(avg_flow) = 'real' or avg_flow = null),
     max_flow real check (typeof(max_flow) = 'real' or max_flow = null),
@@ -246,7 +246,7 @@ CREATE TABLE rpt_storagevol_sum (
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
-	ysur real check (typeof(ysur)='real' or ysur=null),	
+	ysur real check (typeof(ysur)='real' or ysur=null),
     aver_vol real check (typeof(aver_vol) = 'real' or aver_vol = null),
     avg_full real check (typeof(avg_full) = 'real' or avg_full = null),
     ei_loss real check (typeof(ei_loss) = 'real' or ei_loss = null),
@@ -257,3 +257,36 @@ CREATE TABLE rpt_storagevol_sum (
     max_out real check (typeof(max_out) = 'real' or max_out = null),
     geom geometry
 );
+
+-- ----------------------------------------
+-- CREATE SYS GPKG REQUIREMENTS DYNAMICALLY
+-- ----------------------------------------
+create table tables_nogeom (table_name text primary key, index_col text);
+create table tables_geom (table_name text primary key, isgeom text NOT NULL, index_col text);
+
+
+create trigger "trigger_tables_nogeom" after insert on "tables_nogeom"
+BEGIN
+    select new.table_name from tables_nogeom;
+
+    INSERT INTO gpkg_ogr_contents (table_name, feature_count)
+    VALUES(new.table_name, 0);
+
+    insert into gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id)
+    values (new.table_name, 'attributes', new.table_name, '', 0, 0, 0, 0, 0, 0);
+END;
+
+
+create trigger trigger_tables_geom after insert on "tables_geom"
+BEGIN
+    select new.table_name, new.isgeom from tables_geom;
+
+    INSERT INTO gpkg_ogr_contents (table_name, feature_count)
+    VALUES(new.table_name, 0);
+
+    insert into gpkg_contents (table_name, data_type, identifier, description, last_change,  min_x, min_y, max_x, max_y, srs_id)
+    values (new.table_name, 'features', new.table_name, '', 0, 0, 0, 0, 0, <SRID_VALUE>);
+
+    insert into gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES(new.table_name, 'geom', new.isgeom, <SRID_VALUE>, 0, 0);
+
+END;
