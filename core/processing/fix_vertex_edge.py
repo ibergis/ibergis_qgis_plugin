@@ -2,8 +2,8 @@ from qgis.core import QgsFeature, QgsProcessingAlgorithm, QgsProcessingContext, 
 from shapely import GeometryType
 from typing import Any
 
-from lib.tools_gpkgdao import DrGpkgDao
-from .... import global_vars
+from ...lib.tools_gpkgdao import DrGpkgDao
+from ... import global_vars
 
 class DrFixEdgeVertexAlgorithm(QgsProcessingAlgorithm):
     GROUND_LAYER = 'GROUND_LAYER'
@@ -90,5 +90,3 @@ class DrFixEdgeVertexAlgorithm(QgsProcessingAlgorithm):
         points_layer.triggerRepaint()
 
         return {}
-
-

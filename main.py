@@ -34,7 +34,7 @@ from .core.utils import tools_dr
 from .core.utils.signal_manager import DrSignalManager
 from .core.ui.dialog import DrDialog
 from .core.ui.main_window import DrMainWindow
-from .core.toolbars.processing.provider import DrProcessingProvider
+from .core.processing.drain_provider import DrainProvider
 
 
 class Drain(QObject):
@@ -53,7 +53,7 @@ class Drain(QObject):
         self.btn_add_layers = None
         self.action = None
         self.action_info = None
-        self.processing_provider: DrProcessingProvider | None = None
+        self.provider = None
 
 
     def initGui(self):
@@ -63,8 +63,7 @@ class Drain(QObject):
         if self._init_plugin():
             # Force project read (to work with PluginReloader)
             self._project_read(False, False)
-
-            self._init_processing()
+            self._initProcessing()
 
 
     def unload(self, hide_gw_button=None):
@@ -75,11 +74,6 @@ class Drain(QObject):
                                 is False when you want to show the admin button.
                                 is None when called from QGIS.
         """
-
-        try:
-            QgsApplication.processingRegistry().removeProvider(self.processing_provider)
-        except Exception as e:
-            tools_log.log_info(f"Couldn't unload the processing provder: {e}")
 
         try:
             # Reset values for global_vars.project_vars
@@ -188,13 +182,21 @@ class Drain(QObject):
         except Exception as e:
             tools_log.log_info(f"Exception in unload when self._set_info_button(): {e}")
 
+        try:
+            # Unload processing provider
+            if hide_gw_button is None or False:
+                QgsApplication.processingRegistry().removeProvider(self.provider)
+        except Exception as e:
+            tools_log.log_info(f"Couldn't unload the processing provider: {e}")
+
         self.load_project = None
 
 
     # region private functions
-    def _init_processing(self):
-        self.processing_provider = DrProcessingProvider()
-        QgsApplication.processingRegistry().addProvider(self.processing_provider)
+    def _initProcessing(self):
+        """Init Processing provider"""
+        self.provider = DrainProvider(global_vars.plugin_dir)
+        QgsApplication.processingRegistry().addProvider(self.provider)
 
     def _init_plugin(self):
         """ Plugin main initialization function """
