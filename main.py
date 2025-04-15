@@ -6,8 +6,6 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-import subprocess
-from distutils.version import LooseVersion
 
 from functools import partial
 from qgis.core import QgsApplication, QgsProject
@@ -17,38 +15,18 @@ from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QAp
 
 from . import global_vars
 from .lib import tools_qgis, tools_os, tools_log, tools_qt
-install_args = ['python', '-m', 'pip', 'install', 'gmsh==4.11.1', 'pandamesh==0.1.2', 'openpyxl==3.1.2', 'xlsxwriter==3.1.9']
 try:
-    import geopandas
-    try:
-        if LooseVersion("0.14.1") > LooseVersion(geopandas.__version__):
-            install_args.append('geopandas==0.14.1')
-            raise ImportError()
-    except TypeError:
-        pass
-    from packages.gmsh import gmsh
-    import pandamesh
-    import openpyxl
-    import xlsxwriter
+    import geopandas  # noqa: F401
+    from packages.gmsh import gmsh  # noqa: F401
+    import pandamesh  # noqa: F401
+    import openpyxl  # noqa: F401
+    import xlsxwriter  # noqa: F401
 except ImportError:
-    if tools_qt.show_question(
-        "It appears that certain dependencies required for the DRAIN plugin are not installed. "
-        "Would you like to proceed with their installation now?"
-    ):
-        subprocess.run(["python", "-m", "ensurepip"])
-        install_dependencies = subprocess.run(
-            install_args
-        )
-        if install_dependencies.returncode:
-            tools_qt.show_info_box(
-                "Automatic installation of dependencies was unsuccessful. "
-                "Consult the DRAIN plugin documentation for guidance on manual installation."
-            )
-        else:
-            tools_qt.show_info_box(
-                "The dependencies have been installed successfully. "
-                "Restart QGIS to apply the changes."
-            )
+    tools_qt.show_question(
+        "It appears that certain dependencies required for the DRAIN plugin were not detected. "
+        "Please check if they are in the packages folder and restart QGIS."
+        "If the problem persists, please contact the plugin developers."
+    )
 
 from .core.admin.admin_btn import DrAdminButton
 from .core.load_project import DrLoadProject
