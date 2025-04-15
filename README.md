@@ -76,6 +76,10 @@ Drain uses the following third-party libraries:
   xlsxwriter is a Python module for writing files in the Excel 2007+ XLSX file format.
   The xlsxwriter license can be viewed in the [LICENSE](./packages/xlsxwriter/LICENCE) or in their [repository](https://github.com/jmcnamara/XlsxWriter/blob/RELEASE_3.1.9/LICENSE.txt).
 
+- **geopandas**: [geopandas GitHub](https://github.com/geopandas/geopandas)
+  geopandas extends the datatypes used by pandas to allow spatial operations on geometric types.
+  The geopandas license can be viewed in the [LICENSE](./packages/geopandas/LICENSE.txt) or in their [repository](https://github.com/geopandas/geopandas/blob/main/LICENSE.txt).
+
 ## LICENSE
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See LICENSE file for more information.
 
