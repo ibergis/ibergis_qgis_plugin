@@ -41,6 +41,7 @@ class DrExecuteModel(DrTask):
     PROGRESS_INLET = 35
     PROGRESS_HYETOGRAPHS = 40
     PROGRESS_RAIN = 50
+    PROGRESS_CULVERTS = 55
     PROGRESS_INP = 70
     PROGRESS_IBER = 97
     PROGRESS_END = 100
@@ -191,12 +192,17 @@ class DrExecuteModel(DrTask):
                 self._create_rain_file()
                 self.progress_changed.emit("Export files", self.PROGRESS_RAIN, "done!", True)
 
+                # Create culvert file
+                self.progress_changed.emit("Export files", self.PROGRESS_RAIN, "Creating culvert files...", False)
+                self._create_culvert_file()
+                self.progress_changed.emit("Export files", self.PROGRESS_CULVERTS, "done!", True)
+
             if self.isCanceled():
                 return False
 
             # INP file
             if self.do_generate_inp:
-                self.progress_changed.emit("Generate INP", self.PROGRESS_RAIN, "Generating INP...", False)
+                self.progress_changed.emit("Generate INP", self.PROGRESS_CULVERTS, "Generating INP...", False)
                 self._generate_inp()
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, "done!", True)
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, self.generate_inp_infolog, True)
@@ -561,6 +567,49 @@ class DrExecuteModel(DrTask):
             file.write(f"{len(times)}\n")
             for seconds, path in zip(times, paths):
                 file.write(f'{seconds} "{path.name}"\n')
+
+    def _create_culvert_file(self):
+        file_name = Path(self.folder_path) / "Iber_Culverts.dat"
+
+        gdf = QgsVectorLayer(global_vars.gpkg_dao_data.db_filepath + "|layername=culvert", "culvert", "ogr")
+        gdf_features = gdf.getFeatures()
+        self.progress_changed.emit("Export files", tools_dr.lerp_progress(10, self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
+
+        with open(file_name, "w") as file:
+            for i, ht_row in enumerate(gdf_features, start=1):
+                # 1 - fid
+                file.write(f"{ht_row.id()} ")
+
+                # 2 - iscalculate
+                if ht_row["iscalculate"] is True:
+                    file.write(f"{1} ")
+                else:
+                    file.write(f"{0} ")
+
+                # 3, 4, 5, 6 - geometry
+                file.write(f"{ht_row.geometry().asPolyline()[0].x()} {ht_row.geometry().asPolyline()[0].y()} ")
+                file.write(f"{ht_row.geometry().asPolyline()[1].x()} {ht_row.geometry().asPolyline()[1].y()} ")
+                # 7 - z_start
+                if ht_row["z_start"] is None or str(ht_row["z_start"]) == "NULL":
+                    file.write(f"0 ")
+                else:
+                    file.write(f"{ht_row["z_start"]} ")
+                # 8 - z_end
+                if ht_row["z_end"] is None or str(ht_row["z_end"]) == "NULL":
+                    file.write(f"0 ")
+                else:
+                    file.write(f"{ht_row["z_end"]} ")
+
+                # 9 - culvert type
+                if ht_row["culvert_type"] == "CIRCULAR":
+                    file.write("2 ")
+                else:
+                    file.write("1 ")
+
+                # 10, 11, 12, 13 - geom2(width), geom1(height), manning, code
+                file.write(f"{0 if str(ht_row["geom2"]) == "NULL" else ht_row["geom2"]} {0 if str(ht_row["geom1"]) == "NULL" else ht_row["geom1"]} {0 if str(ht_row["manning"]) == "NULL" else ht_row["manning"]} {ht_row["code"] }\n")
+
+                self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
 
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}

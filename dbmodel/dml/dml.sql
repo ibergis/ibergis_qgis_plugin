@@ -47,7 +47,8 @@ INSERT INTO tables_geom (table_name, isgeom, index_col) values
 ('vi_roof2junction', 'LINESTRING', null),
 ('vi_inlet2junction', 'LINESTRING', null),
 ('hyetograph', 'POINT', null),
-('vi_inlet', 'POINT', null);
+('vi_inlet', 'POINT', null),
+('culvert', 'LINESTRING', 'code');
 
 
 

@@ -227,6 +227,20 @@ create table boundary_conditions (
     FOREIGN KEY (timeseries) REFERENCES cat_timeseries(idval) on update cascade on delete restrict
 );
 
+create table culvert (
+    fid integer primary key,
+    code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
+    culvert_type text CHECK (typeof(culvert_type) in ('text', null) and culvert_type in ('CIRCULAR', 'RECTANGULAR')),
+    geom1 real CHECK (typeof(geom1)='real' OR geom1 = NULL),
+    geom2 real CHECK (typeof(geom2)='real' OR geom2 = NULL),
+    z_start real CHECK (typeof(z_start)='real' OR z_start = NULL),
+    z_end real CHECK (typeof(z_end)='real' OR z_end = NULL),
+    manning real CHECK (typeof(manning)='real' OR manning = NULL),
+    iscalculate boolean CHECK (typeof(iscalculate) IN (0,1,NULL)) DEFAULT  1,
+    geom geometry
+);
+
 
 -- ----------
 -- INP TABLES
