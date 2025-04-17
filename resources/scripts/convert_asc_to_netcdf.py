@@ -6,12 +6,11 @@ import rasterio
 import xarray as xr
 import rioxarray
 
-# --- Configuración ---
-input_folder = f'..{os.sep}example{os.sep}fullproject{os.sep}RasterResults{os.sep}.'  # Carpeta con los .asc
-output_file = f'.{os.sep}resultsNCDF{os.sep}modelo_resultados.nc'
+# --- Configuration ---
+input_folder = f'..{os.sep}example{os.sep}fullproject{os.sep}RasterResults{os.sep}.'  # Folder with .asc files
+output_file = f'.{os.sep}resultsNCDF{os.sep}result.nc'
 
-
-# Regex por variable
+# Regex patterns for each variable type
 regex_patterns = {
     "Depth": re.compile(r"Depth_+([\d.]+)\.asc$"),
     "Velocity": re.compile(r"Velocity_+([\d.]+)\.asc$"),
@@ -19,48 +18,48 @@ regex_patterns = {
     "Velocity_y": re.compile(r"Velocity__y_([\d.]+)\.asc$")
 }
 
-# --- Cargar los datos por variable ---
+# --- Load variable data ---
 datasets = {}
 
-for var, patron in regex_patterns.items():
-    archivos = []
-    tiempos = []
+for var, pattern in regex_patterns.items():
+    files = []
+    times = []
 
     for filepath in glob.glob(os.path.join(input_folder, "*.asc")):
         filename = os.path.basename(filepath)
-        match = patron.match(filename)
+        match = pattern.match(filename)
         if match:
-            tiempo = float(match.group(1))
-            archivos.append((tiempo, filepath))
-            tiempos.append(tiempo)
+            time_value = float(match.group(1))
+            files.append((time_value, filepath))
+            times.append(time_value)
 
-    archivos.sort()
-    tiempos.sort()
+    files.sort()
+    times.sort()
 
-    if not archivos:
-        print(f"[!] No se encontraron archivos para {var}")
+    if not files:
+        print(f"[!] No files found for {var}")
         continue
 
-    print(f"[+] Cargando {var} ({len(archivos)} archivos)...")
+    print(f"[+] Loading {var} ({len(files)} files)...")
 
     data_array = []
 
-    for i, (tiempo, filepath) in enumerate(archivos):
+    for i, (time_value, filepath) in enumerate(files):
         with rasterio.open(filepath) as src:
             array = src.read(1)
 
-            # Extraemos metadata del primero
+            # Extract metadata from the first file
             if i == 0:
                 transform = src.transform
-                crs = "EPSG:4326"  # ← aquí defines tu CRS manualmente
+                crs = "EPSG:25831"  # ← set your CRS manually here
                 height, width = array.shape
 
             data_array.append(array)
 
-    # Stack temporal (t, y, x)
+    # Temporal stack (t, y, x)
     stacked = np.stack(data_array, axis=0)
 
-    # Coordenadas espaciales
+    # Spatial coordinates
     y_coords = np.arange(height) * transform[4] + transform[5]
     x_coords = np.arange(width) * transform[0] + transform[2]
 
@@ -68,21 +67,21 @@ for var, patron in regex_patterns.items():
         stacked,
         dims=["time", "y", "x"],
         coords={
-            "time": [t for t, _ in archivos],
+            "time": [t for t, _ in files],
             "y": y_coords,
             "x": x_coords
         },
         name=var
     )
 
-    # Asignar sistema de coordenadas a cada variable
+    # Assign CRS to each variable
     da.rio.write_crs(crs, inplace=True)
 
     datasets[var] = da
 
-# --- Crear Dataset Final ---
+# --- Create final Dataset ---
 ds = xr.Dataset(datasets)
 
-# --- Guardar como NetCDF ---
+# --- Save as NetCDF ---
 ds.to_netcdf(output_file)
-print(f"[✓] NetCDF guardado como {output_file}")
+print(f"[✓] NetCDF saved as {output_file}")
