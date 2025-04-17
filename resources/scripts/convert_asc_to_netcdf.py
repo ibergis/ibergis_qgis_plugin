@@ -6,6 +6,8 @@ import rasterio
 import xarray as xr
 import rioxarray
 
+#TODO import proj.db from qgis or packages. if its not imported, the script will use the postgres one which is on a lower version
+
 # --- Configuration ---
 input_folder = f'..{os.sep}example{os.sep}fullproject{os.sep}RasterResults{os.sep}.'  # Folder with .asc files
 output_file = f'.{os.sep}resultsNCDF{os.sep}result.nc'
@@ -60,8 +62,11 @@ for var, pattern in regex_patterns.items():
     stacked = np.stack(data_array, axis=0)
 
     # Spatial coordinates
-    y_coords = np.arange(height) * transform[4] + transform[5]
-    x_coords = np.arange(width) * transform[0] + transform[2]
+    x_start = transform[2] - transform[0] / 2
+    y_start = transform[5] - transform[4] / 2
+
+    x_coords = x_start + np.arange(width) * transform[0]
+    y_coords = y_start + np.arange(height) * transform[4]
 
     da = xr.DataArray(
         stacked,
@@ -76,6 +81,7 @@ for var, pattern in regex_patterns.items():
 
     # Assign CRS to each variable
     da.rio.write_crs(crs, inplace=True)
+    da.rio.write_transform(transform, inplace=True)
 
     datasets[var] = da
 
