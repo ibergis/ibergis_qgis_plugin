@@ -36,6 +36,8 @@ from .core.ui.dialog import DrDialog
 from .core.ui.main_window import DrMainWindow
 from .core.processing.drain_provider import DrainProvider
 
+from typing import Optional
+
 
 class Drain(QObject):
 
@@ -53,7 +55,7 @@ class Drain(QObject):
         self.btn_add_layers = None
         self.action = None
         self.action_info = None
-        self.provider = None
+        self.provider: Optional[DrainProvider] = None
 
 
     def initGui(self):

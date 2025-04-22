@@ -13,12 +13,15 @@ from qgis.core import (
     QgsProcessingParameterField,
     QgsFeature,
     QgsProcessingParameterDefinition,
-    QgsProject
+    QgsProject,
+    QgsVectorLayer
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis, tools_gpkgdao
-from ...core.utils import tools_dr
+from ...lib.tools_gpkgdao import DrGpkgDao
+from ...core.utils import tools_dr, Feedback
 from ... import global_vars
+from typing import Optional
 import os
 
 
@@ -35,9 +38,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
     FIELD_CUSTOM_ROUGHNESS = 'FIELD_CUSTOM_ROUGHNESS'
     FIELD_SCS_CN = 'FIELD_SCS_CN'
 
-    GROU_TEST = 'GROU_TEST'
-
-    dao = tools_gpkgdao.DrGpkgDao()
+    dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
     def initAlgorithm(self, config):
         """
@@ -115,7 +116,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         self.addParameter(scs_cn)
 
 
-    def processAlgorithm(self, parameters, context, feedback):
+    def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
         main process algorithm of this tool
         """
@@ -124,7 +125,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         feedback.setProgressText(self.tr('Reading geodata and mapping fields:'))
         feedback.setProgress(1)
 
-        file_source = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
+        file_source: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
 
         field_map = {
             "custom_code": next(iter(self.parameterAsFields(parameters, self.FIELD_CUSTOM_CODE, context)), None),
@@ -140,7 +141,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         feedback.setProgress(12)
 
         # get ground layer
-        file_target = tools_qgis.get_layer_by_tablename('ground')
+        file_target: QgsVectorLayer = tools_qgis.get_layer_by_tablename('ground')
         if file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
             return
@@ -155,9 +156,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
         # import data
         feedback.setProgress(15)
-        unique_fields = {'custom_code':[]}
-        db_filepath = f"{global_vars.project_vars['project_gpkg']}"
-        db_filepath = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
+        unique_fields: dict = {'custom_code':[]}
+        db_filepath: str = f"{global_vars.project_vars['project_gpkg']}"
+        db_filepath: str = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
         self.dao.init_db(db_filepath)
         if not self._insert_data(file_source, file_target, field_map, unique_fields, feedback, batch_size=50000):
             feedback.reportError(self.tr('Error during import.'))
@@ -170,18 +171,18 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
 
 
-    def _insert_data(self, source_layer, target_layer, field_map, unique_fields, feedback, batch_size=1000):
+    def _insert_data(self, source_layer: QgsVectorLayer, target_layer: QgsVectorLayer, field_map: dict, unique_fields: dict, feedback: Feedback, batch_size: int = 1000):
         """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
 
-        num_features = source_layer.featureCount()
-        imported_features = 0
-        feature_index = 1
-        skiped_features = list()
+        num_features: int = source_layer.featureCount()
+        imported_features: int = 0
+        feature_index: int = 1
+        skiped_features: list[int] = list()
 
         # get landuse types
-        landuse_types = []
-        sql = "SELECT idval FROM cat_landuses;"
-        landuse_types_sql = self.dao.get_rows(sql)
+        landuse_types: list[str] = list()
+        sql: str = "SELECT idval FROM cat_landuses;"
+        landuse_types_sql: Optional[list] = self.dao.get_rows(sql)
         if not landuse_types_sql:
             feedback.setProgressText(self.tr("No landuses found."))
         else:
@@ -189,7 +190,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 for subItem in item:
                     landuse_types.append(subItem)
         # check landuse types on source layer
-        unexistent_landuses = []
+        unexistent_landuses: list[int] = list()
         if field_map['landuse'] is not None:
             for feature in source_layer.getFeatures():
                 if feature[field_map['landuse']] not in landuse_types and feature[field_map['landuse']] not in unexistent_landuses and feature[field_map['landuse']] is not None:
@@ -202,21 +203,21 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         feedback.setProgressText(self.tr(f"Importing {num_features} features from {source_layer.name()}..."))
 
         # Get the target field names in order
-        target_field_names = [field.name() for field in target_layer.fields()]
+        target_field_names: list[str] = [field.name() for field in target_layer.fields()]
 
         for feature in target_layer.getFeatures():
             for field in unique_fields.keys():
                 if field in target_field_names and str(feature[field]) != 'NULL':
                     unique_fields[field].append(feature[field])
 
-        features_to_add = []
+        features_to_add: list[QgsFeature] = list()
 
         for feature in source_layer.getFeatures():
-            repeated_params = False
-            new_feature = QgsFeature(target_layer.fields())
+            repeated_params: bool = False
+            new_feature: QgsFeature = QgsFeature(target_layer.fields())
 
             # Map attributes efficiently
-            attributes = [None] * len(target_field_names)
+            attributes: list = [None] * len(target_field_names)
             for tgt_field, src_field in field_map.items():
                 if src_field is None:
                     src_field = tgt_field
@@ -242,7 +243,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                         except KeyError as e:
                             src_value = None
                     attributes[target_field_names.index(tgt_field)] = src_value
-            feedback.setProgress(tools_dr.lerp_progress(feature_index*100/num_features, 16, 90))
+            feedback.setProgress(tools_dr.lerp_progress(int(feature_index*100/num_features), 16, 90))
             feature_index += 1
             if(repeated_params):
                 continue
@@ -307,17 +308,17 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 return False
         return True
 
-    def enable_triggers(self, feedback, enable):
+    def enable_triggers(self, feedback: Feedback, enable: bool):
         """Enable or disable triggers."""
-        trg_path = os.path.join(global_vars.plugin_dir, 'dbmodel', 'trg')
+        trg_path: str = os.path.join(global_vars.plugin_dir, 'dbmodel', 'trg')
         if enable:
-            f_to_read = os.path.join(trg_path, 'trg_create.sql')
+            f_to_read: str = os.path.join(trg_path, 'trg_create.sql')
             with open(f_to_read, 'r', encoding="utf8") as f:
-                sql = f.read()
+                sql: str = f.read()
         else:
-            f_to_read = os.path.join(trg_path, 'trg_delete.sql')
+            f_to_read: str = os.path.join(trg_path, 'trg_delete.sql')
             with open(f_to_read, 'r', encoding="utf8") as f:
-                sql = f.read()
+                sql: str = f.read()
         status = self.dao.execute_script_sql(str(sql))
         if not status:
             feedback.setProgressText(self.tr(f"Error {f_to_read} not executed"))
@@ -325,11 +326,11 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         feedback.setProgressText(self.tr(f"File {f_to_read} executed"))
         return True
 
-    def execute_after_import_fct(self, feedback):
+    def execute_after_import_fct(self, feedback: Feedback):
         """Execute the function after import."""
-        fct_path = os.path.join(global_vars.plugin_dir, 'dbmodel', 'fct', 'fct_after_import_ground_features.sql')
+        fct_path: str = os.path.join(global_vars.plugin_dir, 'dbmodel', 'fct', 'fct_after_import_ground_features.sql')
         with open(fct_path, 'r', encoding="utf8") as f:
-            sql = f.read()
+            sql: str = f.read()
         status = self.dao.execute_script_sql(str(sql))
         if not status:
             feedback.setProgressText(self.tr(f"Error {fct_path} not executed"))
@@ -355,7 +356,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
     def groupId(self):
         return ''
 
-    def tr(self, string):
+    def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)
 
     def createInstance(self):

@@ -22,9 +22,11 @@ from ..utils.feedback import Feedback
 from ..utils import tools_dr
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
+from ...lib.tools_gpkgdao import DrGpkgDao
 from .task import DrTask
 from .epa_file_manager import DrEpaFileManager
 from ..admin.admin_btn import DrRptGpkgCreate
+from typing import Optional
 
 
 class DrExecuteModel(DrTask):
@@ -60,7 +62,7 @@ class DrExecuteModel(DrTask):
         self.fid = 140
         self.function_name = None
         self.timer = timer
-        self.dao = None
+        self.dao: Optional[DrGpkgDao] = None
         self.init_params()
         self.generate_inp_infolog = None
         self.feedback = feedback
