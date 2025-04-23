@@ -11,8 +11,8 @@ from typing import List, Tuple
 #TODO import proj.db from qgis or packages. if its not imported, the script will use the postgres one which is on a lower version
 
 # --- Configuration ---
-input_folder = sys.argv[1]  # Folder with .asc files
-output_file = sys.argv[2]
+input_folder = r'C:\Users\Usuario\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\drain_qgis_plugin\resources\example\fullproject\RasterResults'  # Folder with .asc files
+output_file = r'C:\Users\Usuario\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\drain_qgis_plugin\resources\scripts\rasters.nc'
 
 # Regex patterns for each variable type
 regex_patterns = {
