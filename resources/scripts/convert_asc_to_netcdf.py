@@ -1,16 +1,18 @@
 import os
 import re
+import sys
 import glob
 import numpy as np
 import rasterio
 import xarray as xr
 import rioxarray
+from typing import List, Tuple
 
 #TODO import proj.db from qgis or packages. if its not imported, the script will use the postgres one which is on a lower version
 
 # --- Configuration ---
-input_folder = f'..{os.sep}example{os.sep}fullproject{os.sep}RasterResults{os.sep}.'  # Folder with .asc files
-output_file = f'.{os.sep}resultsNCDF{os.sep}result.nc'
+input_folder = sys.argv[1]  # Folder with .asc files
+output_file = sys.argv[2]
 
 # Regex patterns for each variable type
 regex_patterns = {
@@ -24,8 +26,8 @@ regex_patterns = {
 datasets = {}
 
 for var, pattern in regex_patterns.items():
-    files = []
-    times = []
+    files: List[Tuple[float, str]] = []
+    times: List[float] = []
 
     for filepath in glob.glob(os.path.join(input_folder, "*.asc")):
         filename = os.path.basename(filepath)
