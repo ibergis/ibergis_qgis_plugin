@@ -16,16 +16,23 @@ from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QAp
 from . import global_vars
 from .lib import tools_qgis, tools_os, tools_log, tools_qt
 try:
+    imported_packages = []
     import geopandas  # noqa: F401
+    imported_packages.append('geopandas')
     from packages.gmsh import gmsh  # noqa: F401
+    imported_packages.append('gmsh')
     import pandamesh  # noqa: F401
+    imported_packages.append('pandamesh')
     import openpyxl  # noqa: F401
+    imported_packages.append('openpyxl')
     import xlsxwriter  # noqa: F401
+    imported_packages.append('xlsxwriter')
 except ImportError:
     tools_qt.show_question(
         "It appears that certain dependencies required for the DRAIN plugin were not detected. "
         "Please check if they are in the packages folder and restart QGIS."
         "If the problem persists, please contact the plugin developers."
+        f"The following packages were correctly imported: {imported_packages}"
     )
 
 from .core.admin.admin_btn import DrAdminButton
