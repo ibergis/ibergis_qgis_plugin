@@ -6,49 +6,27 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-import subprocess
-from distutils.version import LooseVersion
 
 from functools import partial
-from qgis.core import QgsProject
+from qgis.core import QgsApplication, QgsProject
 from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QApplication
 
 from . import global_vars
 from .lib import tools_qgis, tools_os, tools_log, tools_qt
-install_args = ['python', '-m', 'pip', 'install', 'gmsh==4.11.1', 'pandamesh==0.1.2', 'openpyxl==3.1.2', 'xlsxwriter==3.1.9']
 try:
-    import geopandas
-    try:
-        if LooseVersion("0.14.1") > LooseVersion(geopandas.__version__):
-            install_args.append('geopandas==0.14.1')
-            raise ImportError()
-    except TypeError:
-        pass
-    from packages.gmsh import gmsh
-    import pandamesh
-    import openpyxl
-    import xlsxwriter
+    import geopandas  # noqa: F401
+    from packages.gmsh import gmsh  # noqa: F401
+    import pandamesh  # noqa: F401
+    import openpyxl  # noqa: F401
+    import xlsxwriter  # noqa: F401
 except ImportError:
-    if tools_qt.show_question(
-        "It appears that certain dependencies required for the DRAIN plugin are not installed. "
-        "Would you like to proceed with their installation now?"
-    ):
-        subprocess.run(["python", "-m", "ensurepip"])
-        install_dependencies = subprocess.run(
-            install_args
-        )
-        if install_dependencies.returncode:
-            tools_qt.show_info_box(
-                "Automatic installation of dependencies was unsuccessful. "
-                "Consult the DRAIN plugin documentation for guidance on manual installation."
-            )
-        else:
-            tools_qt.show_info_box(
-                "The dependencies have been installed successfully. "
-                "Restart QGIS to apply the changes."
-            )
+    tools_qt.show_question(
+        "It appears that certain dependencies required for the DRAIN plugin were not detected. "
+        "Please check if they are in the packages folder and restart QGIS."
+        "If the problem persists, please contact the plugin developers."
+    )
 
 from .core.admin.admin_btn import DrAdminButton
 from .core.load_project import DrLoadProject
@@ -56,6 +34,9 @@ from .core.utils import tools_dr
 from .core.utils.signal_manager import DrSignalManager
 from .core.ui.dialog import DrDialog
 from .core.ui.main_window import DrMainWindow
+from .core.processing.drain_provider import DrainProvider
+
+from typing import Optional
 
 
 class Drain(QObject):
@@ -74,6 +55,7 @@ class Drain(QObject):
         self.btn_add_layers = None
         self.action = None
         self.action_info = None
+        self.provider: Optional[DrainProvider] = None
 
 
     def initGui(self):
@@ -83,6 +65,7 @@ class Drain(QObject):
         if self._init_plugin():
             # Force project read (to work with PluginReloader)
             self._project_read(False, False)
+            self._initProcessing()
 
 
     def unload(self, hide_gw_button=None):
@@ -201,11 +184,21 @@ class Drain(QObject):
         except Exception as e:
             tools_log.log_info(f"Exception in unload when self._set_info_button(): {e}")
 
+        try:
+            # Unload processing provider
+            if hide_gw_button is None or False:
+                QgsApplication.processingRegistry().removeProvider(self.provider)
+        except Exception as e:
+            tools_log.log_info(f"Couldn't unload the processing provider: {e}")
+
         self.load_project = None
 
 
     # region private functions
-
+    def _initProcessing(self):
+        """Init Processing provider"""
+        self.provider = DrainProvider(global_vars.plugin_dir)
+        QgsApplication.processingRegistry().addProvider(self.provider)
 
     def _init_plugin(self):
         """ Plugin main initialization function """

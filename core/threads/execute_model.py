@@ -9,22 +9,24 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-import geopandas as gpd
 import threading
 import traceback
 
 from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
 from qgis.PyQt.QtWidgets import QTextEdit
 from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, \
-    QgsProject
+    QgsProject, QgsGeometry
 
 from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils.feedback import Feedback
 from ..utils import tools_dr
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
+from ...lib.tools_gpkgdao import DrGpkgDao
 from .task import DrTask
 from .epa_file_manager import DrEpaFileManager
+from ..admin.admin_btn import DrRptGpkgCreate
+from typing import Optional
 
 
 class DrExecuteModel(DrTask):
@@ -41,6 +43,7 @@ class DrExecuteModel(DrTask):
     PROGRESS_INLET = 35
     PROGRESS_HYETOGRAPHS = 40
     PROGRESS_RAIN = 50
+    PROGRESS_CULVERTS = 55
     PROGRESS_INP = 70
     PROGRESS_IBER = 97
     PROGRESS_END = 100
@@ -59,7 +62,7 @@ class DrExecuteModel(DrTask):
         self.fid = 140
         self.function_name = None
         self.timer = timer
-        self.dao = None
+        self.dao: Optional[DrGpkgDao] = None
         self.init_params()
         self.generate_inp_infolog = None
         self.feedback = feedback
@@ -95,6 +98,9 @@ class DrExecuteModel(DrTask):
         self.dialog.btn_accept.setVisible(False)
         self.dialog.btn_close.setVisible(True)
 
+        # Create report geopackage
+        self._create_report_gpkg()
+
         # self._close_file()
         if self.timer:
             self.timer.stop()
@@ -111,6 +117,14 @@ class DrExecuteModel(DrTask):
         tools_qgis.show_info(f"Task canceled - {self.description()}")
         # self._close_file()
         super().cancel()
+
+
+    def _create_report_gpkg(self):
+        """Create report geopackage"""
+
+        # Create report geopackage
+        self.rpt_result = DrRptGpkgCreate("report_gpkg", self.folder_path)
+        self.rpt_result.create_rpt_gpkg()
 
 
     def _close_dao(self, dao=None):
@@ -180,12 +194,17 @@ class DrExecuteModel(DrTask):
                 self._create_rain_file()
                 self.progress_changed.emit("Export files", self.PROGRESS_RAIN, "done!", True)
 
+                # Create culvert file
+                self.progress_changed.emit("Export files", self.PROGRESS_RAIN, "Creating culvert files...", False)
+                self._create_culvert_file()
+                self.progress_changed.emit("Export files", self.PROGRESS_CULVERTS, "done!", True)
+
             if self.isCanceled():
                 return False
 
             # INP file
             if self.do_generate_inp:
-                self.progress_changed.emit("Generate INP", self.PROGRESS_RAIN, "Generating INP...", False)
+                self.progress_changed.emit("Generate INP", self.PROGRESS_CULVERTS, "Generating INP...", False)
                 self._generate_inp()
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, "done!", True)
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, self.generate_inp_infolog, True)
@@ -451,19 +470,18 @@ class DrExecuteModel(DrTask):
             file_name.write_text("Hyetographs\n0\nEnd\n")
             return
 
-        gdf = gpd.read_file(global_vars.gpkg_dao_data.db_filepath, layer="hyetograph")
-        gdf['x'] = gdf.geometry.x
-        gdf['y'] = gdf.geometry.y
+        gdf = QgsVectorLayer(global_vars.gpkg_dao_data.db_filepath + "|layername=hyetograph", "hyetograph", "ogr")
+        gdf_features = gdf.getFeatures()
         self.progress_changed.emit("Export files", tools_dr.lerp_progress(10, self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
         with open(file_name, "w") as file:
             file.write("Hyetographs\n")
-            file.write(f"{len(gdf)}\n")
+            file.write(f"{gdf.featureCount()}\n")
 
-            for i, ht_row in enumerate(gdf.itertuples(), start=1):
+            for i, ht_row in enumerate(gdf_features, start=1):
                 file.write(f"{i}\n")
-                file.write(f"{ht_row.x} {ht_row.y}\n")
-                timeseries = timeseries_override if timeseries_override not in (None, '') else ht_row.timeseries
+                file.write(f"{ht_row.geometry().asPoint().x()} {ht_row.geometry().asPoint().y()}\n")
+                timeseries = timeseries_override if timeseries_override not in (None, '') else ht_row["timeseries"]
 
                 sql = f"""
                     SELECT time, value
@@ -477,9 +495,10 @@ class DrExecuteModel(DrTask):
                         hours, minutes = map(int, ts_row["time"].split(":"))
                         seconds = hours * 3600 + minutes * 60
                         file.write(f"{seconds} {ts_row['value']}\n")
-                self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, len(gdf)), self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
+                self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
             file.write("End\n")
+
 
     def _create_rain_file(self):
         file_name = Path(self.folder_path) / "Iber_Rain.dat"
@@ -551,6 +570,49 @@ class DrExecuteModel(DrTask):
             for seconds, path in zip(times, paths):
                 file.write(f'{seconds} "{path.name}"\n')
 
+    def _create_culvert_file(self):
+        file_name = Path(self.folder_path) / "Iber_Culverts.dat"
+
+        gdf = QgsVectorLayer(global_vars.gpkg_dao_data.db_filepath + "|layername=culvert", "culvert", "ogr")
+        gdf_features = gdf.getFeatures()
+        self.progress_changed.emit("Export files", tools_dr.lerp_progress(10, self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
+
+        with open(file_name, "w") as file:
+            for i, ht_row in enumerate(gdf_features, start=1):
+                # 1 - fid
+                file.write(f"{ht_row.id()} ")
+
+                # 2 - iscalculate
+                if ht_row["iscalculate"] is True:
+                    file.write(f"{1} ")
+                else:
+                    file.write(f"{0} ")
+
+                # 3, 4, 5, 6 - geometry
+                file.write(f"{ht_row.geometry().asPolyline()[0].x()} {ht_row.geometry().asPolyline()[0].y()} ")
+                file.write(f"{ht_row.geometry().asPolyline()[1].x()} {ht_row.geometry().asPolyline()[1].y()} ")
+                # 7 - z_start
+                if ht_row["z_start"] is None or str(ht_row["z_start"]) == "NULL":
+                    file.write(f"0 ")
+                else:
+                    file.write(f"{ht_row["z_start"]} ")
+                # 8 - z_end
+                if ht_row["z_end"] is None or str(ht_row["z_end"]) == "NULL":
+                    file.write(f"0 ")
+                else:
+                    file.write(f"{ht_row["z_end"]} ")
+
+                # 9 - culvert type
+                if ht_row["culvert_type"] == "CIRCULAR":
+                    file.write("2 ")
+                else:
+                    file.write("1 ")
+
+                # 10, 11, 12, 13 - geom2(width), geom1(height), manning, code
+                file.write(f"{0 if str(ht_row["geom2"]) == "NULL" else ht_row["geom2"]} {0 if str(ht_row["geom1"]) == "NULL" else ht_row["geom1"]} {0 if str(ht_row["manning"]) == "NULL" else ht_row["manning"]} {ht_row["code"] }\n")
+
+                self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
+
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}
         self.generate_inp_task = DrEpaFileManager("Go2Epa", go2epa_params, self.feedback, None)
@@ -568,7 +630,8 @@ class DrExecuteModel(DrTask):
             self.generate_inp_infolog = text
 
     def _run_iber(self):
-        iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"
+        # iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"  # TODO: Add checkbox to select between Iber and IberPlus
+        iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}Iber.exe"
 
         if not os.path.exists(iber_exe_path):
             self.error_msg = f"File not found: {iber_exe_path}"

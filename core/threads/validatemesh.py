@@ -101,11 +101,17 @@ def validate_vert_edge(
     layers_dict: dict, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
     layers = [layers_dict["ground"]]
-    data = pd.concat(map(layer_to_gdf, layers))
+    data = pd.concat(map(lambda l: layer_to_gdf(l, ["fid"]), layers))
 
     output_layer = QgsVectorLayer("Point", "Vertex-Edge Errors", "memory")
     output_layer.setCrs(layers_dict["ground"].crs())
     provider = output_layer.dataProvider()
+    assert provider is not None, "Provider is None"
+
+    provider.addAttributes([
+        QgsField("polygon_fid", QVariant.Int),
+    ])
+    output_layer.updateFields()
 
     # For each polygon
     for row in data.itertuples():
@@ -123,18 +129,22 @@ def validate_vert_edge(
             # and the distance from the vertex to the neighbors vertices is big
             # we have detected an error point
 
-            for poly in neighbors["geometry"]:
-                dist_to_poly = shapely.distance(shapely.Point(p), poly)
+            for neighbour in neighbors.itertuples():
+                neigh_poly = neighbour.geometry
+                dist_to_poly = shapely.distance(shapely.Point(p), neigh_poly)
                 if dist_to_poly < 0.1:
                     vertices = shapely.MultiPoint(
                         [
                             shapely.Point(*coords)
-                            for coords in get_polygon_vertices(poly)
+                            for coords in get_polygon_vertices(neigh_poly)
                         ]
                     )
                     dist_to_verts = shapely.distance(shapely.Point(p), vertices)
                     if dist_to_verts > 0.1:
                         feature = QgsFeature()
+                        feature.setAttributes([
+                            neighbour.fid
+                        ])
                         feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(*p)))
                         provider.addFeature(feature)
                         break

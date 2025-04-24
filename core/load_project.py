@@ -348,6 +348,10 @@ class DrLoadProject(QObject):
             list_actions = [list_actions]
 
         toolbar_name = tools_qt.tr(f'toolbar_{toolbar_id}_name')
+        if toolbar_id == 'main':
+            toolbar_name = 'Drain - Main'
+        elif toolbar_id == 'utilities':
+            toolbar_name = 'Drain - Utilities'
         plugin_toolbar = DrPluginToolbar(toolbar_id, toolbar_name, True)
 
         # If the toolbar is ToC, add it to the Layers docker toolbar, if not, create a new toolbar

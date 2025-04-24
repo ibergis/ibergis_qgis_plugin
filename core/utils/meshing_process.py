@@ -409,6 +409,8 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
     det = v1x * v2y - v1y * v2x
     optmized_df['is_ccw'] = det > 0
 
+    optmized_df['no_area'] = det < 1e-10
+
     def get_feature(row):
         geom = QgsTriangle(
             QgsPoint(row.x1, row.y1, row.z1),
@@ -423,7 +425,8 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
             row.v1, row.v2, row.v3, row.v4,
             row.roughness,
             row.scs_cn,
-            row.is_ccw
+            row.is_ccw,
+            row.no_area,
         ])
         return feature
 
@@ -442,6 +445,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
         QgsField("roughness", QVariant.Double),
         QgsField("scs_cn", QVariant.Double),
         QgsField("is_ccw", QVariant.Bool),
+        QgsField("no_area", QVariant.Bool),
     ]
     provider.addAttributes(fields)
     layer.updateFields()

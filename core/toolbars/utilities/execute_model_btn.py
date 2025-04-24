@@ -179,7 +179,7 @@ class DrExecuteModelButton(DrAction):
         # Mesh combo
         value = tools_dr.get_config_parser('btn_execute_model', 'cmb_mesh', "user", "session")
         if value:
-            tools_qt.set_combo_value(self.execute_dlg.cmb_mesh, value, 0)
+            tools_qt.set_combo_value(self.execute_dlg.cmb_mesh, value, 0, False)
 
         # Export file path
         value = tools_dr.get_config_parser('btn_execute_model', 'txt_folder_path', "user", "session")

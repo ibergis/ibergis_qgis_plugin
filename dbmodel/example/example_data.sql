@@ -723,6 +723,19 @@ UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_
 UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM vi_roof2junction)a WHERE table_name = 'vi_roof2junction';
 UPDATE gpkg_contents SET min_x = a.min_x, min_y = a.min_y, max_x = a.max_x, max_y = a.max_y FROM (SELECT MIN(st_minx(geom)) AS min_x, MIN(st_miny(geom)) AS min_y, MAX(st_maxx(geom)) AS max_x, MAX(st_maxy(geom)) AS max_y FROM vi_inlet2junction)a WHERE table_name = 'vi_inlet2junction';
 
+-- -------------
+-- POST - update
+-- ------------
+
+UPDATE inp_conduit SET shape='CIRCULAR', curve_transect=null WHERE code IN ('C31','C34','C37','C44','C54');
+UPDATE inp_dwf SET pattern1 = 'DAILY_PATTERN', pattern2='MONTHLY_PATTERN', pattern3='HOURLY_PATTERN', pattern4='WEEKEND_PATTERN';
+UPDATE inp_inflow  SET type = 'FLOW', pattern ='WEEKEND_PATTERN';
+UPDATE config_param_user SET value=1 where parameter= 'options_rain_class';
+UPDATE config_param_user SET isconflictive = 'YES' where value ='inp_report_input';
+UPDATE config_param_user SET isconflictive = '1' where value  = 'result_results_raster';
+UPDATE config_param_user SET isconflictive = '5' where value  = 'result_results_raster_cell';
+
+
 -- -------------------
 -- ENABLE FOREIGN KEYS
 -- -------------------

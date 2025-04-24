@@ -310,6 +310,9 @@ class DrEpaFileManager(DrTask):
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
 
+        if df.empty:
+            return
+
         # Group the data by the 'curve_type' column
         grouped_data = df.groupby(['curve_type'])
 
@@ -360,6 +363,9 @@ class DrEpaFileManager(DrTask):
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
 
+        if df.empty:
+            return
+
         # Group the data by the 'pattern_type' column
         grouped_data = df.groupby(['pattern_type'])
 
@@ -407,6 +413,9 @@ class DrEpaFileManager(DrTask):
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
 
+        if df.empty:
+            return
+
         # Apply the desired transformation to the 'Option' column
         df['Option'] = df['Option'].str.replace('inp_options_', '').str.upper()
 
@@ -428,6 +437,9 @@ class DrEpaFileManager(DrTask):
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
 
+        if df.empty:
+            return
+
         # Apply the desired transformation to the 'Option' column
         df['Option'] = df['Option'].str.replace('inp_report_', '').str.upper()
 
@@ -448,6 +460,9 @@ class DrEpaFileManager(DrTask):
                     vi_controls;"""
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
+
+        if df.empty:
+            return
 
         # Split the text into separate lines
         df['text'] = df['text'].str.split('\n')
@@ -477,8 +492,8 @@ class DrEpaFileManager(DrTask):
         # Use pandas to read the SQL table into a DataFrame
         query = """SELECT
                     ct.idval AS timeseries_name,
-                    ctv.date,
-                    time(ctv.time),
+                    ctv.date,                    
+                    ctv.time,
                     ctv.value,
                     ct.fname,
                     ct.descript
@@ -490,6 +505,9 @@ class DrEpaFileManager(DrTask):
                     timser_type NOT IN ('BC ELEVATION', 'BC FLOW');"""
         conn = self.dao.conn
         df = pd.read_sql_query(query, conn)
+
+        if df.empty:
+            return
 
         # Group the data by the 'timeseries_name' column
         grouped_data = df.groupby(['timeseries_name'])

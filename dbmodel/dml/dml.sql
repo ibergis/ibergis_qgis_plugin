@@ -47,7 +47,8 @@ INSERT INTO tables_geom (table_name, isgeom, index_col) values
 ('vi_roof2junction', 'LINESTRING', null),
 ('vi_inlet2junction', 'LINESTRING', null),
 ('hyetograph', 'POINT', null),
-('vi_inlet', 'POINT', null);
+('vi_inlet', 'POINT', null),
+('culvert', 'LINESTRING', 'code');
 
 
 
@@ -108,4 +109,8 @@ insert into tables_nogeom (table_name, index_col) values
 ('vi_inflows', null),
 ('vi_transects', null),
 ('vi_report', null),
-('v_ui_file', null);
+('v_ui_file', null),
+('inp_lid', 'idval'),
+('inp_lid_value', 'id'),
+('inp_lid_ground', 'id'),
+('inp_lid_roof', 'id');
