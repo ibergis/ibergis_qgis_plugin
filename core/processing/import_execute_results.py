@@ -134,7 +134,7 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
         feedback.setProgress(15)
 
         # Set layer names
-        layer_names: list[str] = ["Depth", "Velocity", "Velocity_x", "Velocity_y"]
+        layer_names: list[str] = ["Depth", "Velocity"]
 
         project: QgsProject = QgsProject.instance()
 
