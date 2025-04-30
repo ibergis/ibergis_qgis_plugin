@@ -33,13 +33,14 @@ class DrGpkgBase:
         self.error_count = 0
         self.plugin_dir = global_vars.plugin_dir
         self.sql_dir = os.path.normpath(os.path.join(self.plugin_dir, 'dbmodel'))
+        self.gpkg_dao_data = None
 
     def _check_database_connection(self, db_filepath, database_name):
         """Set database connection to Geopackage file"""
 
         # Create object to manage GPKG database connection
         gpkg_dao_data = tools_gpkgdao.DrGpkgDao()
-        global_vars.gpkg_dao_data = gpkg_dao_data
+        self.gpkg_dao_data = gpkg_dao_data
 
         # Check if file path exists
         if not os.path.exists(db_filepath):
@@ -48,15 +49,15 @@ class DrGpkgBase:
 
         # Set DB connection
         tools_log.log_info(f"Set database connection")
-        status = global_vars.gpkg_dao_data.init_db(db_filepath)
+        status = self.gpkg_dao_data.init_db(db_filepath)
         if not status:
-            last_error = global_vars.gpkg_dao_data.last_error
+            last_error = self.gpkg_dao_data.last_error
             tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
             return False
 
-        status, global_vars.db_qsql_data = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
+        status, self.db_qsql_data = self.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
         if not status:
-            last_error = global_vars.gpkg_dao_data.last_error
+            last_error = self.gpkg_dao_data.last_error
             tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
             return False
 
@@ -74,10 +75,10 @@ class DrGpkgBase:
                 sql_content = f.read()
                 if project_epsg:
                     sql_content = sql_content.replace("<SRID_VALUE>", project_epsg)
-                status = global_vars.gpkg_dao_data.execute_script_sql(sql_content)
+                status = self.gpkg_dao_data.execute_script_sql(sql_content)
                 if status is False:
                     self.error_count += 1
-                    msg = f"Error executing file: {os.path.basename(filepath)}\nDatabase error: {global_vars.gpkg_dao_data.last_error}"
+                    msg = f"Error executing file: {os.path.basename(filepath)}\nDatabase error: {self.gpkg_dao_data.last_error}"
                     tools_log.log_warning(msg)
                     tools_qt.show_info_box(msg)
                     return False
@@ -99,57 +100,57 @@ class DrGpkgBase:
 
         # Geom tables
         sql = "SELECT table_name, index_col FROM tables_geom;"
-        rows = tools_db.get_rows(sql)
+        rows = tools_db.get_rows(sql, dao=self.gpkg_dao_data)
         list_tbl_geom = [(row[0], row[1]) for row in rows] if rows else []
 
         for tablename, index_col in list_tbl_geom:
             if index_col:
                 sql = f"""CREATE INDEX idx_{index_col}_{tablename} ON {tablename} ({index_col});"""
-                tools_db.execute_sql(sql, commit=False)
+                tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
 
             aux_str = "AFTER"
             if 'v_' in tablename or 'vi_' in tablename:
                 aux_str = "INSTEAD OF"
             sql = f"""CREATE VIRTUAL TABLE rtree_{tablename}_geom USING rtree(id, minx, maxx, miny, maxy);"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
             sql = f"""CREATE TRIGGER trigger_delete_feature_count_{tablename} {aux_str} DELETE ON {tablename} BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
             sql = f"""CREATE TRIGGER trigger_insert_feature_count_{tablename} {aux_str} INSERT ON {tablename} BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_delete {aux_str} DELETE ON {tablename} WHEN (old.geom NOT NULL) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; END;"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_insert {aux_str} INSERT ON {tablename} WHEN (new.geom NOT NULL AND NOT ST_IsEmpty(NEW.geom)) BEGIN INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW."geom") ); END;"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update1 {aux_str} UPDATE OF geom ON {tablename} WHEN OLD.fid = NEW.fid AND (NEW.geom NOTNULL AND NOT ST_IsEmpty(NEW.geom) ) BEGIN INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW.geom)); END;"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update2 {aux_str} UPDATE OF geom ON {tablename} WHEN OLD.fid = NEW.fid AND (NEW.geom ISNULL OR ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; END;"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update3 {aux_str} UPDATE ON {tablename} WHEN OLD.fid != NEW.fid AND (NEW.geom NOTNULL AND NOT ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW.geom)); END;"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update4 {aux_str} UPDATE ON {tablename} WHEN OLD.fid != NEW.fid AND (NEW.geom ISNULL OR ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id IN (OLD.fid, NEW.fid); END;"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
 
-            global_vars.gpkg_dao_data.commit()
+            self.gpkg_dao_data.commit()
 
         # No-geom tables
         sql = "SELECT table_name, index_col FROM tables_nogeom;"
-        rows = tools_db.get_rows(sql)
+        rows = tools_db.get_rows(sql, dao=self.gpkg_dao_data)
 
         list_tbl_nogeom = [(row[0], row[1]) for row in rows] if rows else []
 
         for tablename, index_col in list_tbl_nogeom:
             if index_col:
                 sql = f"""CREATE INDEX idx_{index_col}_{tablename} ON {tablename} ({index_col});"""
-                tools_db.execute_sql(sql, commit=False)
+                tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
 
             aux_str = "AFTER"
             if 'v_' in tablename or 'vi_' in tablename:
                 aux_str = "INSTEAD OF"
             sql = f"""CREATE TRIGGER "trigger_delete_feature_count_{tablename}" {aux_str} DELETE ON "{tablename}" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False)
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
             sql = f"""CREATE TRIGGER "trigger_insert_feature_count_{tablename}" {aux_str} INSERT ON "{tablename}" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False)
-            global_vars.gpkg_dao_data.commit()
+            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.commit()
 
 
 class DrAdminButton(DrGpkgBase):
