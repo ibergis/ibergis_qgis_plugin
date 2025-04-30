@@ -19,7 +19,7 @@ def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed:
         if progress_changed:
             progress_changed.emit('Export results', None, f"Error: The rasters folder does not exist.", True)
         print("Error: The rasters folder does not exist.")
-        exit("Error: The rasters folder does not exist.")
+        return
 
     # Regex patterns for each variable type
     regex_patterns = {
@@ -102,7 +102,7 @@ def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed:
         if progress_changed:
             progress_changed.emit('Export results', None, f"Error: No data found in the dataset.", True)
         print("Error: No data found in the dataset.")
-        exit("Error: No data found in the dataset.")
+        return
 
     # --- Create final Dataset ---
     ds = xr.Dataset(datasets)
@@ -114,7 +114,7 @@ def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed:
         if progress_changed:
             progress_changed.emit('Export results', None, f"Error: Error saving NetCDF file: {e}", True)
         print(f"Error: Error saving NetCDF file: {e}")
-        exit(f"Error: Error saving NetCDF file: {e}")
+        return
     if progress_changed:
             progress_changed.emit('Export results', None, f"NetCDF file created successfully: {output_file}", True)
     print(f"NetCDF file created successfully: {output_file}")
