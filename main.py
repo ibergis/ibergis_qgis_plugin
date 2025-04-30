@@ -27,6 +27,12 @@ try:
     imported_packages.append('openpyxl')
     import xlsxwriter  # noqa: F401
     imported_packages.append('xlsxwriter')
+    import rasterio  # noqa: F401
+    imported_packages.append('rasterio')
+    import xarray  # noqa: F401
+    imported_packages.append('xarray')
+    import rioxarray  # noqa: F401
+    imported_packages.append('rioxarray')
 except ImportError:
     tools_qt.show_question(
         "It appears that certain dependencies required for the DRAIN plugin were not detected. "

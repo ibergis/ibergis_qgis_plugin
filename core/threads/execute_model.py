@@ -26,6 +26,8 @@ from ...lib.tools_gpkgdao import DrGpkgDao
 from .task import DrTask
 from .epa_file_manager import DrEpaFileManager
 from ..admin.admin_btn import DrRptGpkgCreate
+from ..processing.import_execute_results import ImportExecuteResults
+from ...resources.scripts.convert_asc_to_netcdf import convert_asc_to_netcdf
 from typing import Optional
 
 
@@ -46,6 +48,7 @@ class DrExecuteModel(DrTask):
     PROGRESS_CULVERTS = 55
     PROGRESS_INP = 70
     PROGRESS_IBER = 97
+    EXPORT_RESULTS = 99
     PROGRESS_END = 100
 
     def __init__(self, description: str, params: dict, feedback, timer=None):
@@ -66,6 +69,9 @@ class DrExecuteModel(DrTask):
         self.init_params()
         self.generate_inp_infolog = None
         self.feedback = feedback
+        self.process: Optional[ImportExecuteResults] = None
+        self.output = None
+        self.import_results_infolog = None
 
 
     def init_params(self):
@@ -99,7 +105,8 @@ class DrExecuteModel(DrTask):
         self.dialog.btn_close.setVisible(True)
 
         # Create report geopackage
-        self._create_report_gpkg()
+        if not self.isCanceled():
+            self._create_results_folder()
 
         # self._close_file()
         if self.timer:
@@ -119,12 +126,66 @@ class DrExecuteModel(DrTask):
         super().cancel()
 
 
-    def _create_report_gpkg(self):
-        """Create report geopackage"""
+    def _create_results_folder(self):
+        """Create results folder and generate results GPKG and NetCDF files"""
+
+        self.progress_changed.emit("Export results", None, "Exporting results", True)
+
+        if not os.path.exists(f'{self.folder_path}{os.sep}DrainResults'):
+            os.mkdir(f'{self.folder_path}{os.sep}DrainResults')
 
         # Create report geopackage
-        self.rpt_result = DrRptGpkgCreate("report_gpkg", self.folder_path)
+        self.rpt_result = DrRptGpkgCreate("results", f'{self.folder_path}{os.sep}DrainResults')
         self.rpt_result.create_rpt_gpkg()
+        self.progress_changed.emit("Export results", None, f'GPKG file created', True)
+
+        # Create NetCDF file
+        created_netcdf: bool = False
+        raster_files: str = f'{self.folder_path}{os.sep}RasterResults'
+        netcdf_file: str = f'{self.folder_path}{os.sep}DrainResults{os.sep}rasters.nc'
+        try:
+            convert_asc_to_netcdf(raster_files, netcdf_file, self.progress_changed)
+        except Exception as e:
+            self.progress_changed.emit("Export results", None, "Error creating NetCDF file", True)
+        if os.path.exists(netcdf_file):
+            self.progress_changed.emit("Export results", None, "NetCDF file created", True)
+            self.progress_changed.emit("Export results", self.EXPORT_RESULTS, "Exported results", True)
+            created_netcdf = True
+        else:
+            self.progress_changed.emit("Export results", None, "Error creating NetCDF file", True)
+
+        if self.isCanceled():
+            return
+
+        if created_netcdf:
+            result: Optional[bool] = tools_qt.show_question('Do you want to import the results into the project?',
+                                'Import results', force_action=True)
+            if result is not None and result:
+                # Execute ImportExecuteResults algorithm
+                self.progress_changed.emit("Import results", None, "Importing results", True)
+                self.feedback = Feedback()
+                self.feedback.progress_changed.connect(self._import_results_progress_changed)
+                self.process = ImportExecuteResults()
+                self.process.initAlgorithm(None)
+                params: dict = {'FOLDER_RESULTS':f'{self.folder_path}','CUSTOM_NAME':f'{os.path.basename(str(self.folder_path))}'}
+                context: QgsProcessingContext = QgsProcessingContext()
+                self.output = self.process.processAlgorithm(params, context, self.feedback)
+                if not bool(self.output):
+                    self.progress_changed.emit("Import results", None, "Error importing results", True)
+                    return
+                else:
+                    self.output = self.process.postProcessAlgorithm(context, self.feedback)
+                    if not bool(self.output):
+                        self.progress_changed.emit("Import results", None, "Error importing results", True)
+                        return
+                self.progress_changed.emit("Import results", None, "Imported results", True)
+        self.progress_changed.emit(None, self.PROGRESS_END, None, False)
+
+
+    def _import_results_progress_changed(self, process, progress, text, new_line):
+        self.progress_changed.emit("Import results", None, text, new_line)
+        self.import_results_infolog = text
+
 
 
     def _close_dao(self, dao=None):
@@ -220,7 +281,6 @@ class DrExecuteModel(DrTask):
             if self.isCanceled():
                 return False
 
-            self.progress_changed.emit("", self.PROGRESS_END, "", True)
         except Exception as e:
             print(f"Exception in ExecuteModel thread: {e}")
             self.progress_changed.emit("ERROR", None, f"Exception in ExecuteModel thread: {e}\n {traceback.format_exc()}", True)
