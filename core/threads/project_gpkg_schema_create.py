@@ -111,6 +111,7 @@ class DrGpkgCreateSchemaTask(DrTask):
 
         tools_log.log_info(f"Create schema: Executing function '_check_database_connection'")
         connection_status = self.admin._check_database_connection(self.admin.gpkg_full_path, self.admin.gpkg_name)
+        global_vars.gpkg_dao_data = self.admin.gpkg_dao_data
         if not connection_status:
             tools_log.log_info("Function '_check_database_connection' returned False")
             return False
@@ -188,4 +189,3 @@ class DrGpkgCreateSchemaTask(DrTask):
             dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_trg)] = 0
 
         return dict_folders
-
