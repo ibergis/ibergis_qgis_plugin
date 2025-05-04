@@ -986,7 +986,7 @@ def show_warning_open_file(text, inf_text, file_path, context_name=None):
     iface.messageBar().pushWidget(widget, 1)
 
 
-def show_question(text, title=None, inf_text=None, context_name=None, parameter=None, force_action=False):
+def show_question(text, title=None, inf_text=None, context_name=None, parameter=None, force_action=False) -> bool:
     """ Ask question to the user """
 
     # Expert mode does not ask and accept all actions
@@ -1017,6 +1017,7 @@ def show_question(text, title=None, inf_text=None, context_name=None, parameter=
         return True
     elif ret == QMessageBox.Discard:
         return False
+    return False
 
 
 def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=None):

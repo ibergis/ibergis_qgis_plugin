@@ -164,6 +164,43 @@ class DrCreateMeshButton(DrAction):
             if not tools_qt.show_question(message):
                 return
 
+        features = self.ground_layer.getFeatures()
+        num_triangles = 0
+        for feature in features:
+            geom = feature.geometry()
+            cellsize = feature["cellsize"]
+
+            # sqrt(3)/4 * cellsize^2 = area of equilateral triangle
+            triangle_area = 0.43301270189 * cellsize**2
+
+            num_triangles += geom.area() / triangle_area
+
+
+        print(f"Estimated number of triangles: {num_triangles}")
+        # self.feedback.setProgressText(f"Estimated number of triangles: >{num_triangles}")
+
+        # Warin the user if the number of triangles is too high with a dialog
+        message = ""
+        if num_triangles > 10_000_000:
+            message = (
+                # "Tens or hundreds of millions of records possible massive data generation, may impact performance."
+                "The estimated number of triangles is extremely high (> 10M).\n"
+                "This may take a long time to process.\n"
+                "Check your memory, disk and cpu capabilties\n"
+                "Do you want to continue?"
+            )
+            if not tools_qt.show_question(message):
+                return
+        elif num_triangles > 1_000_000:
+            message = (
+                "The estimated number of triangles is high (> 1M).\n"
+                "This may take a long time to process.\n"
+                "Make sure you have enough memory, disk and cpu capabilties\n"
+                "Do you want to continue?"
+            )
+            if not tools_qt.show_question(message):
+                return
+
         # Reset txt_infolog
         tools_qt.set_widget_text(dlg, 'txt_infolog', "")
 
