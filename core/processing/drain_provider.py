@@ -13,6 +13,7 @@ from qgis.PyQt.QtGui import QIcon
 from .import_ground_geometries import ImportGroundGeometries
 from .fix_vertex_edge import DrFixEdgeVertexAlgorithm
 from .import_execute_results import ImportExecuteResults
+from .check_project import DrCheckProjectAlgorithm
 
 class DrainProvider(QgsProcessingProvider):
 
@@ -37,6 +38,7 @@ class DrainProvider(QgsProcessingProvider):
         self.addAlgorithm(ImportGroundGeometries())
         self.addAlgorithm(DrFixEdgeVertexAlgorithm())
         self.addAlgorithm(ImportExecuteResults())
+        self.addAlgorithm(DrCheckProjectAlgorithm())
 
 
     def id(self):
