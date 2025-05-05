@@ -25,18 +25,23 @@ from typing import Optional
 import os
 
 
-class ImportGroundGeometries(QgsProcessingAlgorithm):
+class ImportRoofGeometries(QgsProcessingAlgorithm):
     """
-    Class to import ground geometries from another layer.
+    Class to import roof geometries from another layer.
     """
     FILE_SOURCE = 'FILE_SOURCE'
     FIELD_CUSTOM_CODE = 'FIELD_CUSTOM_CODE'
     FIELD_DESCRIPT = 'FIELD_DESCRIPT'
-    FIELD_CELLSIZE = 'FIELD_CELLSIZE'
+    FIELD_SLOPE = 'FIELD_SLOPE'
+    FIELD_WIDTH = 'FIELD_WIDTH'
+    FIELD_ROUGHNESS = 'FIELD_ROUGHNESS'
+    FIELD_ISCONNECTED = 'FIELD_ISCONNECTED'
+    FIELD_OUTLET_TYPE = 'FIELD_OUTLET_TYPE'
+    FIELD_OUTLET_CODE = 'FIELD_OUTLET_CODE'
+    FIELD_OUTLET_VOL = 'FIELD OUTLET_VOL'
+    FIELD_STREET_VOL = 'FIELD_STREET_VOL'
+    FIELD_INFILTR_VOL = 'FIELD_INFILTR_VOL'
     FIELD_ANNOTATION = 'FIELD_ANNOTATION'
-    FIELD_LANDUSE = 'FIELD_LANDUSE'
-    FIELD_CUSTOM_ROUGHNESS = 'FIELD_CUSTOM_ROUGHNESS'
-    FIELD_SCS_CN = 'FIELD_SCS_CN'
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -59,6 +64,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 optional=True
             )
         custom_code.setFlags(custom_code.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
         descript = QgsProcessingParameterField(
                 self.FIELD_DESCRIPT,
                 self.tr('Select *descript* reference'),
@@ -67,14 +73,88 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 optional=True
             )
         descript.setFlags(descript.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
-        cellsize = QgsProcessingParameterField(
-                self.FIELD_CELLSIZE,
-                self.tr('Select *cell size* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.Numeric,
-                optional=True
-            )
-        cellsize.setFlags(cellsize.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+        slope= QgsProcessingParameterField(
+            self.FIELD_SLOPE,
+            self.tr('Select *slope* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        slope.setFlags(slope.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+        width= QgsProcessingParameterField(
+            self.FIELD_WIDTH,
+            self.tr('Select *width* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        width.setFlags(width.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+        roughness=QgsProcessingParameterField(
+            self.FIELD_ROUGHNESS,
+            self.tr('Select *roughness* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional= True
+        )
+        roughness.setFlags(roughness.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+        isconnected=QgsProcessingParameterField(
+            self.FIELD_ISCONNECTED,
+            self.tr('Select *isconnected* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional= True
+        )
+        isconnected.setFlags(isconnected.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+        outlet_type=QgsProcessingParameterField(
+            self.FIELD_OUTLET_TYPE,
+            self.tr('Select *outlet_type* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional= True
+        )
+        outlet_type.setFlags(outlet_type.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+        outlet_code=QgsProcessingParameterField(
+            self.FIELD_OUTLET_CODE,
+            self.tr('Select *outlet_code* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional= True
+        )
+        outlet_code.setFlags(outlet_code.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+        outlet_vol=QgsProcessingParameterField(
+            self.FIELD_OUTLET_VOL,
+            self.tr('Select *outlet_vol* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional= True
+        )
+        outlet_vol.setFlags(outlet_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+        street_vol=QgsProcessingParameterField(
+            self.FIELD_STREET_VOL,
+            self.tr('Select *street_vol* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional= True
+        )
+        street_vol.setFlags(street_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+        infiltr_vol=QgsProcessingParameterField(
+            self.FIELD_INFILTR_VOL,
+            self.tr('Select *Infiltr_vol* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional= True
+        )
+        infiltr_vol.setFlags(infiltr_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
         annotation = QgsProcessingParameterField(
                 self.FIELD_ANNOTATION,
                 self.tr('Select *annotation* reference'),
@@ -83,37 +163,20 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 optional=True
             )
         annotation.setFlags(annotation.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
-        landuse = QgsProcessingParameterField(
-                self.FIELD_LANDUSE,
-                self.tr('Select *landuse* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
-        landuse.setFlags(landuse.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
-        custom_roughness = QgsProcessingParameterField(
-                self.FIELD_CUSTOM_ROUGHNESS,
-                self.tr('Select *custom roughness* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.Numeric,
-                optional=True
-            )
-        custom_roughness.setFlags(custom_roughness.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
-        scs_cn = QgsProcessingParameterField(
-                self.FIELD_SCS_CN,
-                self.tr('Select *scs_cn* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.Numeric,
-                optional=True
-            )
-        scs_cn.setFlags(scs_cn.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+
+
         self.addParameter(custom_code)
         self.addParameter(descript)
-        self.addParameter(cellsize)
+        self.addParameter(slope)
+        self.addParameter(width)
+        self.addParameter(roughness)
+        self.addParameter(isconnected)
+        self.addParameter(outlet_type)
+        self.addParameter(outlet_code)
+        self.addParameter(outlet_vol)
+        self.addParameter(street_vol)
+        self.addParameter(infiltr_vol)
         self.addParameter(annotation)
-        self.addParameter(landuse)
-        self.addParameter(custom_roughness)
-        self.addParameter(scs_cn)
 
 
     def processAlgorithm(self, parameters, context, feedback: Feedback):
@@ -130,18 +193,23 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         field_map = {
             "custom_code": next(iter(self.parameterAsFields(parameters, self.FIELD_CUSTOM_CODE, context)), None),
             "descript": next(iter(self.parameterAsFields(parameters, self.FIELD_DESCRIPT, context)), None),
-            "cellsize": next(iter(self.parameterAsFields(parameters, self.FIELD_CELLSIZE, context)), None),
-            "annotation": next(iter(self.parameterAsFields(parameters, self.FIELD_ANNOTATION, context)), None),
-            "landuse": next(iter(self.parameterAsFields(parameters, self.FIELD_LANDUSE, context)), None),
-            "custom_roughness": next(iter(self.parameterAsFields(parameters, self.FIELD_CUSTOM_ROUGHNESS, context)), None),
-            "scs_cn": next(iter(self.parameterAsFields(parameters, self.FIELD_SCS_CN, context)), None)
+            "slope": next(iter(self.parameterAsFields(parameters, self.FIELD_SLOPE, context)), None),
+            "width": next(iter(self.parameterAsFields(parameters, self.FIELD_WIDTH, context)), None),
+            "roughness": next(iter(self.parameterAsFields(parameters, self.FIELD_ROUGHNESS, context)), None),
+            "isconnected": next(iter(self.parameterAsFields(parameters, self.FIELD_ISCONNECTED, context)), None),
+            "outlet_type": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_TYPE, context)), None),
+            "outlet_code": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_CODE, context)), None),
+            "outlet_vol": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_VOL, context)), None),
+            "street_vol": next(iter(self.parameterAsFields(parameters, self.FIELD_STREET_VOL, context)), None),
+            "infiltr_vol": next(iter(self.parameterAsFields(parameters, self.FIELD_INFILTR_VOL, context)), None),
+            "annotation": next(iter(self.parameterAsFields(parameters, self.FIELD_ANNOTATION, context)), None)
         }
 
         feedback.setProgressText(self.tr('done \n'))
         feedback.setProgress(12)
 
-        # get ground layer
-        file_target: QgsVectorLayer = tools_qgis.get_layer_by_tablename('ground')
+        # get roof layer
+        file_target: QgsVectorLayer = tools_qgis.get_layer_by_tablename('roof')
         if file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
             return
@@ -178,27 +246,6 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         imported_features: int = 0
         feature_index: int = 1
         skiped_features: list[int] = list()
-
-        # get landuse types
-        landuse_types: list[str] = list()
-        sql: str = "SELECT idval FROM cat_landuses;"
-        landuse_types_sql: Optional[list] = self.dao.get_rows(sql)
-        if not landuse_types_sql:
-            feedback.setProgressText(self.tr("No landuses found."))
-        else:
-            for item in landuse_types_sql:
-                for subItem in item:
-                    landuse_types.append(subItem)
-        # check landuse types on source layer
-        unexistent_landuses: list[int] = list()
-        if field_map['landuse'] is not None:
-            for feature in source_layer.getFeatures():
-                if feature[field_map['landuse']] not in landuse_types and feature[field_map['landuse']] not in unexistent_landuses and feature[field_map['landuse']] is not None:
-                    unexistent_landuses.append(feature[field_map['landuse']])
-        # check if there are unexistent landuses
-        if len(unexistent_landuses) > 0:
-            feedback.reportError(self.tr(f"Landuse types not found in database: {unexistent_landuses}."))
-            return False
 
         feedback.setProgressText(self.tr(f"Importing {num_features} features from {source_layer.name()}..."))
 
@@ -258,7 +305,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
             # Commit in batches
             if len(features_to_add) >= batch_size:
                 try:
-                    # disable ground triggers
+                    # disable roof triggers
                     if not self.enable_triggers(feedback, False):
                         return
                     # add features
@@ -270,7 +317,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                     # update code
                     if not self.execute_after_import_fct(feedback):
                         return False
-                    # enable ground triggers
+                    # enable roof triggers
                     if not self.enable_triggers(feedback, True):
                         return False
                     feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}."))
@@ -284,7 +331,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         # Commit any remaining features
         if features_to_add:
             try:
-                # disable ground triggers
+                # disable roof triggers
                 if not self.enable_triggers(feedback, False):
                     return
                 # add features
@@ -296,7 +343,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 # update code
                 if not self.execute_after_import_fct(feedback):
                     return False
-                # enable ground triggers
+                # enable roof triggers
                 if not self.enable_triggers(feedback, True):
                     return False
                 feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}."))
@@ -328,7 +375,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
     def execute_after_import_fct(self, feedback: Feedback):
         """Execute the function after import."""
-        fct_path: str = os.path.join(global_vars.plugin_dir, 'dbmodel', 'fct', 'fct_after_import_ground_geometries.sql')
+        fct_path: str = os.path.join(global_vars.plugin_dir, 'dbmodel', 'fct', 'fct_after_import_roof_geometries.sql')
         with open(fct_path, 'r', encoding="utf8") as f:
             sql: str = f.read()
         status = self.dao.execute_script_sql(str(sql))
@@ -339,16 +386,16 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         return True
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to import features from a source polygon layer into the Drain-Ground layer of your project.\n
-        You must first select the source layer and the target Ground layer. Optionally, you can map fields from the source layer to specific fields in the target layer, such as custom code, land use, annotation, or roughness.\n
+        return self.tr("""This tool allows you to import features from a source polygon layer into the Drain-Roof layer of your project.\n
+        You must first select the source layer and the target Roof layer. Optionally, you can map fields from the source layer to specific fields in the target layer, such as custom code, annotation, or roughness.\n
         Only features with geometry will be copied. If a source field value already exists in the target layer, it will be skipped to avoid duplicates.\n
         The tool performs the import in batches to optimize performance.""")
 
     def name(self):
-        return 'ImportGroundGeometries'
+        return 'ImportRoofGeometries'
 
     def displayName(self):
-        return self.tr('Import Ground geometries')
+        return self.tr('Import Roof geometries')
 
     def group(self):
         return self.tr(self.groupId())
@@ -360,4 +407,4 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         return QCoreApplication.translate('Processing', string)
 
     def createInstance(self):
-        return ImportGroundGeometries()
+        return ImportRoofGeometries()

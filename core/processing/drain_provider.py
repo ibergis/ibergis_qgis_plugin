@@ -11,6 +11,7 @@ import os
 from qgis.core import QgsProcessingProvider
 from qgis.PyQt.QtGui import QIcon
 from .import_ground_geometries import ImportGroundGeometries
+from .import_roof_geometries import ImportRoofGeometries
 from .fix_vertex_edge import DrFixEdgeVertexAlgorithm
 from .import_execute_results import ImportExecuteResults
 from .check_project import DrCheckProjectAlgorithm
@@ -36,6 +37,7 @@ class DrainProvider(QgsProcessingProvider):
         Loads all algorithms belonging to this provider.
         """
         self.addAlgorithm(ImportGroundGeometries())
+        self.addAlgorithm(ImportRoofGeometries())
         self.addAlgorithm(DrFixEdgeVertexAlgorithm())
         self.addAlgorithm(ImportExecuteResults())
         self.addAlgorithm(DrCheckProjectAlgorithm())
