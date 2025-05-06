@@ -23,6 +23,7 @@ from ...core.utils import tools_dr, Feedback
 from ... import global_vars
 from typing import Optional
 import os
+import processing
 
 
 class ImportGroundGeometries(QgsProcessingAlgorithm):
@@ -160,7 +161,12 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         db_filepath: str = f"{global_vars.project_vars['project_gpkg']}"
         db_filepath: str = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
         self.dao.init_db(db_filepath)
-        if not self._insert_data(file_source, file_target, field_map, unique_fields, feedback, batch_size=50000):
+
+        # delete innecesary values from geometry
+        result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True,'OUTPUT':'memory:'})
+        converted_geometries_layer: QgsVectorLayer = result['OUTPUT']
+
+        if not self._insert_data(converted_geometries_layer, file_target, field_map, unique_fields, feedback, batch_size=50000):
             feedback.reportError(self.tr('Error during import.'))
             self.dao.close_db()
             return {}
