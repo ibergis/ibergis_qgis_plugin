@@ -26,6 +26,7 @@ class DrMeshManagerButton(DrAction):
         self.dlg_bc = None
         self.dlg_ms = None
         self.last_mesh = None
+        self.dao = None
 
     def clicked_event(self):
         self.manage_meshes()
@@ -278,5 +279,9 @@ class DrMeshManagerButton(DrAction):
                     return
 
             # Commit & refresh table
-            global_vars.gpkg_dao_data.commit()
+            self.dao = global_vars.gpkg_dao_data
+            if self.dao:
+                self.dao.commit()
+                sql = f"vacuum;"
+                self.dao.execute_sql(sql)
             self._reload_manager_table()
