@@ -11,15 +11,16 @@ import subprocess
 from pathlib import Path
 import threading
 import traceback
+import processing
 
 from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
 from qgis.PyQt.QtWidgets import QTextEdit
 from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, \
-    QgsProject, QgsGeometry
+    QgsMeshLayer
 
 from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils.feedback import Feedback
-from ..utils import tools_dr
+from ..utils import tools_dr, mesh_parser
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
 from ...lib.tools_gpkgdao import DrGpkgDao
@@ -28,7 +29,8 @@ from .epa_file_manager import DrEpaFileManager
 from ..admin.admin_btn import DrRptGpkgCreate
 from ..processing.import_execute_results import ImportExecuteResults
 from ...resources.scripts.convert_asc_to_netcdf import convert_asc_to_netcdf
-from typing import Optional
+from typing import Optional, List
+from ..utils.meshing_process import create_temp_mesh_layer
 
 
 class DrExecuteModel(DrTask):
@@ -236,7 +238,7 @@ class DrExecuteModel(DrTask):
 
                 # Create inlet file
                 self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "Creating inlet files...", False)
-                self._create_inlet_file()
+                self._create_inlet_file(mesh_id)
                 self.progress_changed.emit("Export files", self.PROGRESS_INLET, "done!", True)
 
                 if self.isCanceled():
@@ -488,11 +490,14 @@ class DrExecuteModel(DrTask):
             shutil.copy(folder / file_name, self.folder_path)
             self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 0, len(file_names)), self.PROGRESS_MESH_FILES, self.PROGRESS_STATIC_FILES), '', False)
 
-    def _create_inlet_file(self):
+    def _create_inlet_file(self, selected_mesh: Optional[QgsMeshLayer] = None):
         file_name = Path(self.folder_path) / "Iber_SWMM_inlet_info.dat"
 
+        # Convert pinlets into inlets
+        converted_inlets: Optional[List[QgsFeature]] = self._convert_pinlets_into_inlets(selected_mesh)
+
         sql = "SELECT gully_id, outlet_type, node_id, xcoord, ycoord, zcoord, width, length, depth, method, weir_cd, " \
-              "orifice_cd, a_param, b_param, efficiency FROM vi_inlet"
+              "orifice_cd, a_param, b_param, efficiency FROM vi_inlet ORDER BY gully_id;"
         rows = self.dao.get_rows(sql)
 
         # Fetch column names
@@ -505,7 +510,7 @@ class DrExecuteModel(DrTask):
             # Write column headers
             header_str = f"{' '.join(column_names)}\n"
             dat_file.write(header_str)
-            transform_dict = {None: -9999, 'TO NETWORK': 'To_network', 'SINK': 'Sink'}
+            transform_dict = {None: -9999, 'TO NETWORK': 'To_network', 'SINK': 'Sink', 'NULL': -9999}
             for row in rows:
                 values = []
                 for value in row:
@@ -513,6 +518,130 @@ class DrExecuteModel(DrTask):
                     values.append(value_str)
                 values_str = f"{' '.join(values)}\n"
                 dat_file.write(values_str)
+            if converted_inlets:
+                # Write converted inlets
+                ordered_keys =['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
+                for feature in converted_inlets:
+                    values = []
+                    for value in ordered_keys:
+                        value_str = str(transform_dict.get(str(feature[value]), feature[value]))
+                        values.append(value_str)
+                    values.insert(0, str(feature['code']))
+                    values.insert(3, str(feature.geometry().asPoint().x()))
+                    values.insert(4, str(feature.geometry().asPoint().y()))
+                    values_str = f"{' '.join(values)}\n"
+                    dat_file.write(values_str)
+
+
+    def _convert_pinlets_into_inlets(self, selected_mesh: Optional[int] = None,  gometry_layer_name: Optional[str] = 'pinlet', minimum_size: Optional[float] = 2) -> Optional[List[QgsFeature]]:
+        """Convert pinlets into inlets"""
+        if selected_mesh is None:
+            return None
+
+        # Get pinlet layer
+        pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename(gometry_layer_name)
+        if pinlet_layer is None:
+            return None
+
+        # Get mesh layer data
+        sql = f"SELECT name, iber2d, roof, losses FROM cat_file WHERE id = {selected_mesh};"
+        if not self.dao:
+            return None
+        row = self.dao.get_row(sql)
+
+        if not row:
+            return None
+
+        # Create mesh layer
+        mesh = mesh_parser.loads(row["iber2d"], row["roof"], row["losses"])
+        mesh_layer = create_temp_mesh_layer(mesh)
+
+        if mesh_layer is None:
+            return None
+
+        # Split pinlet polygons by lines into a layer using QGIS processing algorithm: Split with lines
+        splited_pinlets = processing.run(
+            "native:splitwithlines", {
+            'INPUT':pinlet_layer,
+            'LINES':mesh_layer,
+            'OUTPUT':f'memory:'}
+        )
+        splited_pinlets_layer: QgsVectorLayer = splited_pinlets['OUTPUT']
+        if splited_pinlets_layer is None:
+            return None
+        splited_polygons = splited_pinlets_layer.getFeatures()
+
+        # Group splited polygons by pinlet
+        converted_inlets: List[QgsFeature] = []
+        grouped_splited_polygons: dict[str,List[QgsFeature]] = {}
+        for feature in splited_polygons:
+            if feature['code'] in grouped_splited_polygons.keys():
+                grouped_splited_polygons[f'{feature['code']}'].append(feature)
+            else:
+                grouped_splited_polygons[f'{feature['code']}'] = [feature]
+
+        # Get valid polygons and get its centroids
+        for pinlet_code in grouped_splited_polygons.keys():
+            # Get pinlet and its area
+            pinlet_layer_features = pinlet_layer.getFeatures()
+            pinlet_perimeter: Optional[float] = None
+            parent_pinlet: QgsFeature = None
+            minimum_size_area: Optional[float] = None
+            for pinlet_feature in pinlet_layer_features:
+                if pinlet_feature['code'] == pinlet_code:
+                    minimum_size_area = pinlet_feature.geometry().area()/100*minimum_size
+                    pinlet_perimeter = pinlet_feature.geometry().length()
+                    parent_pinlet = pinlet_feature
+                    break
+            if minimum_size_area is None or parent_pinlet is None or pinlet_perimeter is None:
+                continue
+
+            # Get total perimeter of the pinlet(sum of all splited polygon perimeters)
+            total_perimeter: float = 0
+            for feature in grouped_splited_polygons[pinlet_code]:
+                # Check if the polygon is valid
+                if feature.geometry().area() < minimum_size_area:
+                    continue
+                total_perimeter += feature.geometry().length()
+            if total_perimeter is None or total_perimeter == 0:
+                continue
+
+            # Create inlets and calculate its length/width
+            test_perimeter = 0
+            last_id = 1
+            for feature in grouped_splited_polygons[pinlet_code]:
+                # Check if the polygon is valid
+                if feature.geometry().area() < minimum_size_area:
+                    continue
+
+                # Create new inlet with the centroid of the polygon and copy its attributes from parent pinlet
+                geom = feature.geometry()
+                new_inlet = QgsFeature(feature.fields())
+                new_inlet.setGeometry(geom.centroid())
+
+                attrs = {}
+                for field in feature.fields():
+                    field_name = field.name()
+                    attrs[field_name] = feature[field_name]
+                new_inlet.setAttributes([attrs[field.name()] for field in feature.fields()])
+                new_inlet['code'] = f'{parent_pinlet.id()}_{last_id}'
+                last_id += 1
+
+                # Calculate length/width
+                length_width = 0
+                length_width = (feature.geometry().length() * pinlet_perimeter / (total_perimeter)) / 4
+                new_inlet['length'] = length_width
+                new_inlet['width'] = length_width
+                test_perimeter += (length_width * 4)
+
+                # Add to list
+                converted_inlets.append(new_inlet)
+
+        if len(converted_inlets) == 0:
+            return None
+
+        return converted_inlets
+
 
     def _create_hyetograph_file(self):
         file_name = Path(self.folder_path) / "Iber_Hyetograph.dat"

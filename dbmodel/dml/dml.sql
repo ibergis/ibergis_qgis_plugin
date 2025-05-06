@@ -48,7 +48,8 @@ INSERT INTO tables_geom (table_name, isgeom, index_col) values
 ('vi_inlet2junction', 'LINESTRING', null),
 ('hyetograph', 'POINT', null),
 ('vi_inlet', 'POINT', null),
-('culvert', 'LINESTRING', 'code');
+('culvert', 'LINESTRING', 'code'),
+('pinlet', 'MULTIPOLYGON', 'code');
 
 
 

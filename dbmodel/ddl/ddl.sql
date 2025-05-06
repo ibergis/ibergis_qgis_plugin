@@ -241,6 +241,28 @@ create table culvert (
     geom geometry
 );
 
+CREATE TABLE pinlet (
+    fid integer primary key,
+    code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
+    descript text check (typeof(descript) = 'text' or descript = null),
+   	outlet_node text check (typeof(outlet_node) = 'text' or outlet_node = null),
+    outlet_type text check (typeof(outlet_type) in ('text', null) and outlet_type in ('SINK', 'TO NETWORK')),
+    top_elev real check (typeof(top_elev) = 'real' or top_elev = null),
+  	width real check (typeof(width) = 'real' or width = null),
+    length real check (typeof(length) = 'real' or length = null),
+    depth real check (typeof(depth) = 'real' or depth = null),
+    method text check (typeof(method) in ('text', null) and method in ('UPC', 'W_O')),
+    weir_cd real check (typeof(weir_cd) = 'real' or weir_cd = null),
+    orifice_cd real check (typeof(orifice_cd) = 'real' or orifice_cd = null),
+    a_param real check (typeof(a_param) = 'real' or a_param = null),
+    b_param real check (typeof(b_param) = 'real' or b_param = null),
+    efficiency real check (typeof(efficiency) = 'real' or efficiency = null),
+    annotation text check (typeof(annotation) = 'text' or annotation = null),
+    geom geometry,
+    FOREIGN KEY (outlet_node) references node (code) on update cascade on delete restrict
+);
+
 
 -- ----------
 -- INP TABLES
