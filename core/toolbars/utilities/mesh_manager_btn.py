@@ -14,6 +14,8 @@ from ...threads.create_temp_layer import DrCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
 from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
+from ....lib.tools_gpkgdao import DrGpkgDao
+from typing import Optional
 
 
 class DrMeshManagerButton(DrAction):
@@ -26,7 +28,7 @@ class DrMeshManagerButton(DrAction):
         self.dlg_bc = None
         self.dlg_ms = None
         self.last_mesh = None
-        self.dao = None
+        self.dao: Optional[DrGpkgDao] = None
 
     def clicked_event(self):
         self.manage_meshes()

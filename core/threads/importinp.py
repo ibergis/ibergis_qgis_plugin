@@ -14,7 +14,7 @@ from .epa_file_manager import _tables_dict
 from .task import DrTask
 from ..utils.generate_swmm_inp.generate_swmm_import_inp_file import ImportInpFile
 from ..utils import tools_dr
-from ...lib import tools_qgis, tools_db
+from ...lib import tools_qgis, tools_db, tools_log
 from ... import global_vars
 
 
@@ -54,16 +54,6 @@ class DrImportInpTask(DrTask):
             self._enable_triggers(False)
             if self.isCanceled():
                 return
-            # Get data from gpkg and import it to existing layers (changing the column names)
-            self._import_gpkgs_to_project()
-            if self.isCanceled():
-                return
-            # Execute the after import fct
-            self._execute_after_import_fct()
-            if self.isCanceled():
-                return
-            # Enable triggers
-            self._enable_triggers(True)
             return True
         except Exception:
             self.exception = traceback.format_exc()
@@ -74,8 +64,25 @@ class DrImportInpTask(DrTask):
 
         super().finished(result)
 
+        if self.dao is not None:
+            self.dao.close_db()
+
+        if self.isCanceled() or not result:
+            return
+
+        self.dao = global_vars.gpkg_dao_data
+
+        # Get data from gpkg and import it to existing layers (changing the column names)
+        self._import_gpkgs_to_project()
         if self.isCanceled():
             return
+        # Execute the after import fct
+        self._execute_after_import_fct()
+        if self.isCanceled():
+            return
+        # Enable triggers
+        self._enable_triggers(True)
+
 
     def _import_file(self):
 
@@ -97,7 +104,7 @@ class DrImportInpTask(DrTask):
         status = self.dao.execute_script_sql(str(sql))
         if not status:
             print(f"Error {fct_path} not executed")
-            print(self.dao.last_error)
+            tools_log.log_error(self.dao.last_error)
             self.progress_changed.emit("Execute after import fct", self.PROGRESS_IMPORT_GPKGS, f"Error {fct_path} not executed", True)
 
     def _manage_params(self) -> dict:
