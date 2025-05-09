@@ -15,12 +15,12 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis, tools_gpkgdao
 from ...lib.tools_gpkgdao import DrGpkgDao
-from ...core.utils import Feedback
+from ..utils import Feedback
 from typing import Optional, List
 import processing
 
 
-class SetOutletToInlets(QgsProcessingAlgorithm):
+class SetOutletForInlets(QgsProcessingAlgorithm):
     """
     Class to import ground geometries from another layer.
     """
@@ -278,10 +278,10 @@ class SetOutletToInlets(QgsProcessingAlgorithm):
         There are some attributes that cannot be None from Inlet(code, top_elev), Pinlet(code, top_elev) and Junction(code, elev).""")
 
     def name(self):
-        return 'SetOutletToInlets'
+        return 'SetOutletForInlets'
 
     def displayName(self):
-        return self.tr('Set Outlet to Inlets')
+        return self.tr('Set Outlet for Inlets')
 
     def group(self):
         return self.tr(self.groupId())
@@ -293,4 +293,4 @@ class SetOutletToInlets(QgsProcessingAlgorithm):
         return QCoreApplication.translate('Processing', string)
 
     def createInstance(self):
-        return SetOutletToInlets()
+        return SetOutletForInlets()

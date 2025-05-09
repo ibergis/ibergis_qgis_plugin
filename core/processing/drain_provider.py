@@ -15,7 +15,7 @@ from .import_roof_geometries import ImportRoofGeometries
 from .fix_vertex_edge import DrFixEdgeVertexAlgorithm
 from .import_execute_results import ImportExecuteResults
 from .check_project import DrCheckProjectAlgorithm
-from .set_outlet_to_inlets import SetOutletToInlets
+from .set_outlet_for_inlets import SetOutletForInlets
 
 class DrainProvider(QgsProcessingProvider):
 
@@ -42,7 +42,7 @@ class DrainProvider(QgsProcessingProvider):
         self.addAlgorithm(DrFixEdgeVertexAlgorithm())
         self.addAlgorithm(ImportExecuteResults())
         self.addAlgorithm(DrCheckProjectAlgorithm())
-        self.addAlgorithm(SetOutletToInlets())
+        self.addAlgorithm(SetOutletForInlets())
 
 
     def id(self):
