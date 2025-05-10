@@ -17,6 +17,7 @@ from .import_execute_results import ImportExecuteResults
 from .check_project import DrCheckProjectAlgorithm
 from .set_outlet_for_inlets import SetOutletForInlets
 from .mesh_validations import DrMeshValidationsAlgorithm
+from .remove_duplicate_vertices import DrRemoveDuplicateVertices
 
 class DrainProvider(QgsProcessingProvider):
 
@@ -45,6 +46,7 @@ class DrainProvider(QgsProcessingProvider):
         self.addAlgorithm(DrCheckProjectAlgorithm())
         self.addAlgorithm(SetOutletForInlets())
         self.addAlgorithm(DrMeshValidationsAlgorithm())
+        self.addAlgorithm(DrRemoveDuplicateVertices())
 
     def id(self):
         """
