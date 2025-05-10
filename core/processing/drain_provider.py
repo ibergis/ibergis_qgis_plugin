@@ -16,6 +16,7 @@ from .fix_vertex_edge import DrFixEdgeVertexAlgorithm
 from .import_execute_results import ImportExecuteResults
 from .check_project import DrCheckProjectAlgorithm
 from .set_outlet_for_inlets import SetOutletForInlets
+from .mesh_validations import DrMeshValidationsAlgorithm
 
 class DrainProvider(QgsProcessingProvider):
 
@@ -43,7 +44,7 @@ class DrainProvider(QgsProcessingProvider):
         self.addAlgorithm(ImportExecuteResults())
         self.addAlgorithm(DrCheckProjectAlgorithm())
         self.addAlgorithm(SetOutletForInlets())
-
+        self.addAlgorithm(DrMeshValidationsAlgorithm())
 
     def id(self):
         """
