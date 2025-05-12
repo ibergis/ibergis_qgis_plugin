@@ -331,6 +331,27 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>gpkg_name</tabstop>
+  <tabstop>txt_description</tabstop>
+  <tabstop>data_path</tabstop>
+  <tabstop>btn_push_path</tabstop>
+  <tabstop>cmb_locale</tabstop>
+  <tabstop>srid_id</tabstop>
+  <tabstop>tbl_srid</tabstop>
+  <tabstop>rdb_data</tabstop>
+  <tabstop>rdb_sample</tabstop>
+  <tabstop>btn_gpkg_accept</tabstop>
+  <tabstop>btn_gpkg_close</tabstop>
+  <tabstop>btn_qgis_close</tabstop>
+  <tabstop>btn_qgis_accept</tabstop>
+  <tabstop>txt_gis_file</tabstop>
+  <tabstop>txt_gis_gpkg</tabstop>
+  <tabstop>btn_gis_folder</tabstop>
+  <tabstop>btn_gis_gpkg</tabstop>
+  <tabstop>txt_gis_folder</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
