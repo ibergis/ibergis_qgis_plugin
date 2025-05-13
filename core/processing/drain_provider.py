@@ -18,6 +18,7 @@ from .check_project import DrCheckProjectAlgorithm
 from .set_outlet_for_inlets import SetOutletForInlets
 from .mesh_validations import DrMeshValidationsAlgorithm
 from .remove_duplicate_vertices import DrRemoveDuplicateVertices
+from .set_outlet_for_roofs import SetOutletForRoofs
 
 class DrainProvider(QgsProcessingProvider):
 
@@ -45,6 +46,7 @@ class DrainProvider(QgsProcessingProvider):
         self.addAlgorithm(ImportExecuteResults())
         self.addAlgorithm(DrCheckProjectAlgorithm())
         self.addAlgorithm(SetOutletForInlets())
+        self.addAlgorithm(SetOutletForRoofs())
         self.addAlgorithm(DrMeshValidationsAlgorithm())
         self.addAlgorithm(DrRemoveDuplicateVertices())
 
