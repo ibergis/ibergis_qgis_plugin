@@ -148,14 +148,14 @@ class DrBCScenarioManagerButton(DrAction):
             message = "Select only one scenario to save to mesh"
             tools_qgis.show_warning(message, dialog=self.dlg_manager)
             return
-        
+
         # Get selected object IDs
         col = 'idval'
         col_idx = tools_qt.get_col_index_by_col_name(table, col)
         if not col_idx:
             col_idx = 0
         idval = selected_list[0].sibling(selected_list[0].row(), col_idx).data()
-        
+
         # TODO: Check for empty scenarios
 
         sql = "SELECT name FROM cat_file"
@@ -179,7 +179,7 @@ class DrBCScenarioManagerButton(DrAction):
 
         mesh_names = [row[0] for row in rows]
         tools_qt.fill_combo_box_list(None, dlg.cmb_mesh, mesh_names)
-        
+
         tools_dr.open_dialog(dlg)
 
     def _set_current_scenario(self):
@@ -468,8 +468,8 @@ class DrBCScenarioManagerButton(DrAction):
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
 
-        sql = f"""INSERT INTO {self.tablename_value} (code, descript, tin_id, edge_id, boundary_type, geom) 
-            SELECT {idval}, descript, tin_id, edge_id, boundary_type, geom FROM {self.tablename_value} WHERE code = '{code_from}' """
+        sql = f"""INSERT INTO {self.tablename_value} (code, custom_code, descript, bscenario, boundary_type, timeseries, other1, other2, geom) 
+            SELECT {idval}, custom_code, descript, bscenario, boundary_type, timeseries, other1, other2, geom FROM {self.tablename_value} WHERE code = '{code_from}' """
         status = tools_db.execute_sql(sql, commit=False)
         if status is False:
             msg = f"There was an error inserting the scenario geometries"
@@ -569,5 +569,5 @@ class DrBCScenarioManagerButton(DrAction):
         )
         sb = self.dlg_ms.txt_infolog.verticalScrollBar()
         sb.setValue(sb.maximum())
-        
+
     # endregion
