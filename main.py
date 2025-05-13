@@ -16,7 +16,10 @@ from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QAp
 from . import global_vars
 from .lib import tools_qgis, tools_os, tools_log, tools_qt
 try:
+    required_packages = ['geopandas', 'gmsh', 'pandamesh', 'openpyxl', 'xlsxwriter', 'rasterio', 'xarray', 'rioxarray']
     imported_packages = []
+    not_imported = []
+
     import geopandas  # noqa: F401
     imported_packages.append('geopandas')
     from packages.gmsh import gmsh  # noqa: F401
@@ -34,11 +37,12 @@ try:
     import rioxarray  # noqa: F401
     imported_packages.append('rioxarray')
 except ImportError:
+    not_imported = [pkg for pkg in required_packages if pkg not in imported_packages]
     tools_qt.show_question(
         "It appears that certain dependencies required for the DRAIN plugin were not detected. "
-        "Please check if they are in the packages folder and restart QGIS."
-        "If the problem persists, please contact the plugin developers."
-        f"The following packages were correctly imported: {imported_packages}"
+        "Please check if they are in the packages folder and restart QGIS. "
+        "If the problem persists, please contact the plugin developers. "
+        f"The following packages could not be imported: {not_imported}"
     )
 
 from .core.admin.admin_btn import DrAdminButton
