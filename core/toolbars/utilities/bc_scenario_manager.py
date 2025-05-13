@@ -228,6 +228,7 @@ class DrBCScenarioManagerButton(DrAction):
 
         # Signals
         self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_create_scenario))
+        self.dlg_bc.btn_cancel.clicked.connect(partial(self._close_bcScenarioUi))
 
         # Open dialog
         tools_dr.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
@@ -268,9 +269,13 @@ class DrBCScenarioManagerButton(DrAction):
 
         # Signals
         self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_duplicate_scenario, idval))
+        self.dlg_bc.btn_cancel.clicked.connect(partial(self._close_bcScenarioUi))
 
         # Open dialog
         tools_dr.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
+
+    def _close_bcScenarioUi(self):
+        tools_dr.close_dialog(self.dlg_bc)
 
     def _edit_scenario(self):
         # Variables
@@ -318,6 +323,7 @@ class DrBCScenarioManagerButton(DrAction):
 
         # Signals
         self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_edit_scenario))
+        self.dlg_bc.btn_cancel.clicked.connect(partial(self._close_bcScenarioUi))
 
         # Open dialog
         tools_dr.open_dialog(self.dlg_bc, dlg_name="bc_scenario")
