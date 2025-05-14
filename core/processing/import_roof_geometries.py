@@ -46,6 +46,11 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
+    converted_geometries_layer: Optional[QgsVectorLayer] = None
+    file_target: Optional[QgsVectorLayer] = None
+    field_map: Optional[dict] = None
+    unique_fields: Optional[dict] = None
+
     def initAlgorithm(self, config):
         """
         inputs and output of the algorithm
@@ -115,7 +120,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
             self.FIELD_OUTLET_TYPE,
             self.tr('Select *outlet_type* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
-            type=QgsProcessingParameterField.Numeric,
+            type=QgsProcessingParameterField.String,
             optional= True
         )
         outlet_type.setFlags(outlet_type.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
@@ -191,7 +196,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
 
         file_source: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
 
-        field_map = {
+        self.field_map = {
             "custom_code": next(iter(self.parameterAsFields(parameters, self.FIELD_CUSTOM_CODE, context)), None),
             "descript": next(iter(self.parameterAsFields(parameters, self.FIELD_DESCRIPT, context)), None),
             "slope": next(iter(self.parameterAsFields(parameters, self.FIELD_SLOPE, context)), None),
@@ -210,8 +215,8 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         feedback.setProgress(12)
 
         # get roof layer
-        file_target: QgsVectorLayer = tools_qgis.get_layer_by_tablename('roof')
-        if file_target is None:
+        self.file_target = tools_qgis.get_layer_by_layername('Roof')
+        if self.file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
             return
         feedback.setProgressText(self.tr('Target layer found.'))
@@ -219,22 +224,31 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         # check layer types
         feedback.setProgressText(self.tr('Checking layer types.'))
         feedback.setProgress(13)
-        if file_source.geometryType() != file_target.geometryType():
+        if file_source.geometryType() != self.file_target.geometryType():
             feedback.reportError(self.tr('Layer types do not match.'))
             return
 
-        # import data
+        # set unique fields
         feedback.setProgress(15)
-        unique_fields: dict = {'custom_code':[]}
+        self.unique_fields = {'custom_code':[]}
+
+        # delete innecesary values from geometry
+        result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True,'OUTPUT':'memory:'})
+        self.converted_geometries_layer = result['OUTPUT']
+
+        return {}
+
+    def postProcessAlgorithm(self, context, feedback: Feedback):
+        """ Import features """
+
+        if self.converted_geometries_layer is None or self.file_target is None or self.field_map is None or self.unique_fields is None:
+            return {}
+
         db_filepath: str = f"{global_vars.project_vars['project_gpkg']}"
         db_filepath: str = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
         self.dao.init_db(db_filepath)
 
-        # delete innecesary values from geometry
-        result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True,'OUTPUT':'memory:'})
-        converted_geometries_layer: QgsVectorLayer = result['OUTPUT']
-
-        if not self._insert_data(converted_geometries_layer, file_target, field_map, unique_fields, feedback, batch_size=50000):
+        if not self._insert_data(self.converted_geometries_layer, self.file_target, self.field_map, self.unique_fields, feedback, batch_size=50000):
             feedback.reportError(self.tr('Error during import.'))
             self.dao.close_db()
             return {}
@@ -242,8 +256,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         feedback.setProgressText(self.tr(f"Importing process finished."))
         feedback.setProgress(100)
         return {}
-
-
 
     def _insert_data(self, source_layer: QgsVectorLayer, target_layer: QgsVectorLayer, field_map: dict, unique_fields: dict, feedback: Feedback, batch_size: int = 1000):
         """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
