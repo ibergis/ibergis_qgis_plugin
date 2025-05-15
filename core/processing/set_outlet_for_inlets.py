@@ -12,14 +12,21 @@ from qgis.core import (
     QgsProcessingParameterVectorLayer,
     QgsVectorLayer,
     QgsProcessingParameterBoolean,
-    QgsProject
+    QgsProject,
+    QgsField,
+    QgsSymbol,
+    QgsRendererCategory,
+    QgsCategorizedSymbolRenderer,
+    QgsFeature
 )
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtGui import QColor
+from qgis.PyQt.QtCore import QCoreApplication, QVariant
 from ...lib import tools_qgis, tools_gpkgdao
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ..utils import Feedback
 from typing import Optional, List
-import processing
+from ... import global_vars
+import processing, os
 
 
 class SetOutletForInlets(QgsProcessingAlgorithm):
@@ -29,13 +36,20 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
     FILE_INLETS = 'FILE_INLETS'
     FILE_PINLETS = 'FILE_PINLETS'
     FILE_OUTLETS = 'FILE_OUTLETS'
-    BOOL_SET_NONES = 'BOOL_SET_NONES'
+    BOOL_FORCE_BELOWS = 'BOOL_FORCE_BELOWS'
 
     nearest_valid_inlet_outlets: Optional[dict[str,Optional[str]]] = None
     nearest_valid_pinlet_outlets: Optional[dict[str,Optional[str]]] = None
 
     file_inlets: QgsVectorLayer = None
     file_pinlets: QgsVectorLayer = None
+    bool_force_belows: bool = False
+    skipped_inlets: list[str] = []
+    skipped_pinlets: list[str] = []
+    below_inlets: list[str] = []
+    below_pinlets: list[str] = []
+    skipped_from_near_inlet: int = 0
+    skipped_from_near_pinlet: int = 0
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -77,15 +91,20 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         self.addParameter(outlet_layer_param)
 
         self.addParameter(QgsProcessingParameterBoolean(
-            name=self.BOOL_SET_NONES,
-            description=self.tr('Set none on inlets/pinlets without a valid outlet'),
-            defaultValue=True
+            name=self.BOOL_FORCE_BELOWS,
+            description=self.tr('Force the inlets/pinlets which are below'),
+            defaultValue=False
         ))
 
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
         main process algorithm of this tool
         """
+
+        self.skipped_inlets = []
+        self.skipped_pinlets = []
+        self.below_inlets = []
+        self.below_pinlets = []
 
         # reading geodata
         feedback.setProgressText(self.tr('Reading geodata and mapping fields:'))
@@ -94,7 +113,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         self.file_inlets: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_INLETS, context)
         self.file_pinlets: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_PINLETS, context)
         file_outlets: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_OUTLETS, context)
-        self.bool_set_nones: bool = self.parameterAsBoolean(parameters, self.BOOL_SET_NONES, context)
+        self.bool_force_belows: bool = self.parameterAsBoolean(parameters, self.BOOL_FORCE_BELOWS, context)
         feedback.setProgress(10)
 
         neighbor_limit: int = 10
@@ -111,7 +130,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                     'INPUT_2': file_outlets,
                     'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
                     'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
-                self.nearest_valid_inlet_outlets = self.getNearestValidOutlets(nearest_inlet_outlets, feedback)
+                self.nearest_valid_inlet_outlets = self.getNearestValidOutlets(nearest_inlet_outlets, feedback, True)
             except:
                 self.nearest_valid_inlet_outlets = None
         if self.file_pinlets:
@@ -121,7 +140,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                     'INPUT_2': file_outlets,
                     'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
                     'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
-                self.nearest_valid_pinlet_outlets = self.getNearestValidOutlets(nearest_pinlet_outlets, feedback)
+                self.nearest_valid_pinlet_outlets = self.getNearestValidOutlets(nearest_pinlet_outlets, feedback, False)
             except:
                 self.nearest_valid_pinlet_outlets = None
         if feedback.isCanceled():
@@ -148,8 +167,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         return {}
 
     def postProcessAlgorithm(self, context, feedback: Feedback):
-        skipped_inlets: List[str] = []
-        skipped_pinlets: List[str] = []
+        """ Update features and create temporal layers """
         # Set outlet code for inlet and pinlet
         if self.nearest_valid_inlet_outlets is not None:
             self.file_inlets.startEditing()
@@ -158,7 +176,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                     self.file_inlets.rollBack()
                     return {}
                 if outlet_code is None:
-                    skipped_inlets.append(str(inlet_code))
+                    self.skipped_inlets.append(str(inlet_code))
                     continue
                 # Update outlet code in inlet layer
                 for feature in self.file_inlets.getFeatures():
@@ -170,11 +188,15 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                     except Exception as e:
                         self.file_inlets.rollBack()
                         feedback.pushWarning(self.tr(f"Error updating inlet {inlet_code}: {str(e)}"))
-                        skipped_inlets.append(str(inlet_code))
+                        self.skipped_inlets.append(str(inlet_code))
             if self.file_inlets.isEditable():
                 self.file_inlets.commitChanges()
-            feedback.setProgressText(self.tr(f"Inlets skipped[{len(skipped_inlets)}]: {skipped_inlets}"))
-            feedback.setProgressText(self.tr(f"Inlets updated[{len(self.nearest_valid_inlet_outlets)-len(skipped_inlets)}/{len(self.nearest_valid_inlet_outlets)}]"))
+            self.skipped_inlets = list(dict.fromkeys(self.skipped_inlets))
+            self.below_inlets = list(dict.fromkeys(self.below_inlets))
+            feedback.setProgressText(self.tr(f"Inlets skipped[{len(self.skipped_inlets)}]: {self.skipped_inlets}"))
+            feedback.setProgressText(self.tr(f"Inlets setted below[{len(self.below_inlets)}]: {self.below_inlets}"))
+            feedback.setProgressText(self.tr(f"Inlets updated[{len(self.nearest_valid_inlet_outlets)-len(self.skipped_inlets)}/{len(self.nearest_valid_inlet_outlets)}]"))
+            feedback.setProgressText(self.tr(f"Outlets assigned for inlets."))
 
         if self.nearest_valid_pinlet_outlets is not None:
             self.file_pinlets.startEditing()
@@ -183,7 +205,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                     self.file_pinlets.rollBack()
                     return {}
                 if outlet_code is None:
-                    skipped_pinlets.append(str(pinlet_code))
+                    self.skipped_pinlets.append(str(pinlet_code))
                     continue
                 # Update outlet code in inlet layer
                 for feature in self.file_pinlets.getFeatures():
@@ -195,60 +217,114 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                     except Exception as e:
                         self.file_pinlets.rollBack()
                         feedback.pushWarning(self.tr(f"Error updating pinlet {pinlet_code}: {str(e)}"))
+                        self.skipped_pinlets.append(str(pinlet_code))
             if self.file_pinlets.isEditable():
                 self.file_pinlets.commitChanges()
-            feedback.setProgressText(self.tr(f"Pinlets skipped({len(skipped_pinlets)}): {skipped_pinlets}"))
-            feedback.setProgressText(self.tr(f"Pinlets updated({len(self.nearest_valid_pinlet_outlets)-len(skipped_pinlets)}/{len(self.nearest_valid_pinlet_outlets)})"))
+            self.skipped_pinlets = list(dict.fromkeys(self.skipped_pinlets))
+            self.below_pinlets = list(dict.fromkeys(self.below_pinlets))
+            feedback.setProgressText(self.tr(f"Pinlets skipped[{len(self.skipped_pinlets)}]: {self.skipped_pinlets}"))
+            feedback.setProgressText(self.tr(f"Pinlets setted below[{len(self.below_pinlets)}]: {self.below_pinlets}"))
+            feedback.setProgressText(self.tr(f"Pinlets updated[{len(self.nearest_valid_pinlet_outlets)-len(self.skipped_pinlets)}/{len(self.nearest_valid_pinlet_outlets)}]"))
+            feedback.setProgressText(self.tr(f"Outlets assigned for pinlets."))
 
-        feedback.setProgressText(self.tr(f"Outlets assigned for inlets and pinlets."))
         feedback.setProgress(90)
 
-        if len(skipped_inlets) > 0:
-            # Create a temporal layer with skipped features and load it on QGIS (inlet)
-            skipped_features_layer: QgsVectorLayer = QgsVectorLayer("Point?crs=EPSG:25831", "skipped_inlet_features", "memory")
-            skipped_features_layer.dataProvider().addAttributes(self.file_inlets.fields())
-            skipped_features_layer.updateFields()
-            skipped_features_layer.startEditing()
+        if len(self.skipped_inlets) > 0 or len(self.below_inlets) > 0:
+            # Create a temporal layer with skipped features and load it on QGIS
+            temporal_features_layer: QgsVectorLayer = QgsVectorLayer("Point?crs=EPSG:25831", "inlet_features", "memory")
+            temporal_features_layer.dataProvider().addAttributes(self.file_inlets.fields())
+            temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
+            temporal_features_layer.updateFields()
+            temporal_features_layer.startEditing()
             for feature in self.file_inlets.getFeatures():
-                if feature['code'] in skipped_inlets:
-                    skipped_features_layer.addFeature(feature)
-            skipped_features_layer.commitChanges()
+                if feature['code'] in self.skipped_inlets:
+                    new_feature = QgsFeature(temporal_features_layer.fields())
+                    new_feature.setGeometry(feature.geometry())
+                    attrs = feature.attributes()
+                    extra_value = "SKIPPED"
+                    attrs.append(extra_value)
+                    new_feature.setAttributes(attrs)
+                    temporal_features_layer.addFeature(new_feature)
+                elif feature['code'] in self.below_inlets:
+                    new_feature = QgsFeature(temporal_features_layer.fields())
+                    new_feature.setGeometry(feature.geometry())
+                    attrs = feature.attributes()
+                    extra_value = "BELOW"
+                    attrs.append(extra_value)
+                    new_feature.setAttributes(attrs)
+                    temporal_features_layer.addFeature(new_feature)
+            temporal_features_layer.commitChanges()
+
+            symbol_skipped = QgsSymbol.defaultSymbol(temporal_features_layer.geometryType())
+            symbol_skipped.setColor(QColor("purple"))
+
+            symbol_below = QgsSymbol.defaultSymbol(temporal_features_layer.geometryType())
+            symbol_below.setColor(QColor("red"))
+
+            category_skipped = QgsRendererCategory("SKIPPED", symbol_skipped, "skipped_inlets")
+            category_below = QgsRendererCategory("BELOW", symbol_below, "below_inlets")
+
+            renderer = QgsCategorizedSymbolRenderer("action", [category_skipped, category_below])
+            temporal_features_layer.setRenderer(renderer)
 
             group_name = "TEMPORAL"
             group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
             if group is None:
                 QgsProject.instance().layerTreeRoot().addGroup(group_name)
-            QgsProject.instance().addMapLayer(skipped_features_layer, False)
-            group.addLayer(skipped_features_layer)
+                group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+            QgsProject.instance().addMapLayer(temporal_features_layer, False)
+            group.addLayer(temporal_features_layer)
 
-            for feature in skipped_features_layer.getFeatures():
-                print(feature.geometry())
-
-        if len(skipped_pinlets) > 0:
-            # Create a temporal layer with skipped features and load it on QGIS (pinlet)
-            skipped_features_layer: QgsVectorLayer = QgsVectorLayer("MultiPolygon?crs=EPSG:25831", "skipped_pinlet_features", "memory")
-            skipped_features_layer.dataProvider().addAttributes(self.file_pinlets.fields())
-            skipped_features_layer.updateFields()
-            skipped_features_layer.startEditing()
+        if len(self.skipped_pinlets) > 0 or len(self.below_pinlets) > 0:
+            # Create a temporal layer with skipped features and load it on QGIS
+            temporal_features_layer: QgsVectorLayer = QgsVectorLayer("MultiPolygon?crs=EPSG:25831", "pinlet_features", "memory")
+            temporal_features_layer.dataProvider().addAttributes(self.file_pinlets.fields())
+            temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
+            temporal_features_layer.updateFields()
+            temporal_features_layer.startEditing()
             for feature in self.file_pinlets.getFeatures():
-                if feature['code'] in skipped_pinlets:
-                    skipped_features_layer.addFeature(feature)
-            skipped_features_layer.commitChanges()
+                if feature['code'] in self.skipped_pinlets:
+                    new_feature = QgsFeature(temporal_features_layer.fields())
+                    new_feature.setGeometry(feature.geometry())
+                    attrs = feature.attributes()
+                    extra_value = "SKIPPED"
+                    attrs.append(extra_value)
+                    new_feature.setAttributes(attrs)
+                    temporal_features_layer.addFeature(new_feature)
+                elif feature['code'] in self.below_pinlets:
+                    new_feature = QgsFeature(temporal_features_layer.fields())
+                    new_feature.setGeometry(feature.geometry())
+                    attrs = feature.attributes()
+                    extra_value = "BELOW"
+                    attrs.append(extra_value)
+                    new_feature.setAttributes(attrs)
+                    temporal_features_layer.addFeature(new_feature)
+            temporal_features_layer.commitChanges()
+
+            symbol_skipped = QgsSymbol.defaultSymbol(temporal_features_layer.geometryType())
+            symbol_skipped.setColor(QColor("purple"))
+
+            symbol_below = QgsSymbol.defaultSymbol(temporal_features_layer.geometryType())
+            symbol_below.setColor(QColor("red"))
+
+            category_skipped = QgsRendererCategory("SKIPPED", symbol_skipped, "skipped_pinlets")
+            category_below = QgsRendererCategory("BELOW", symbol_below, "below_pinlets")
+
+            renderer = QgsCategorizedSymbolRenderer("action", [category_skipped, category_below])
+            temporal_features_layer.setRenderer(renderer)
 
             group_name = "TEMPORAL"
             group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
             if group is None:
                 QgsProject.instance().layerTreeRoot().addGroup(group_name)
-            QgsProject.instance().addMapLayer(skipped_features_layer, False)
-            group.addLayer(skipped_features_layer)
-
-            for feature in skipped_features_layer.getFeatures():
-                print(feature.geometry())
+                group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+            QgsProject.instance().addMapLayer(temporal_features_layer, False)
+            group.addLayer(temporal_features_layer)
 
         feedback.setProgress(100)
         return {}
 
-    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback) -> Optional[dict[str,Optional[str]]]:
+    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback, isInlet: bool = True) -> Optional[dict[str,Optional[str]]]:
         """
         Get nearest valid outlet for each inlet/pinlet from nearest layer.
         """
@@ -257,7 +333,9 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         # Group nearest outlets by inlet/pinlet code
         necessary_fields: List[str] = ['code', 'code_2', 'elev', 'top_elev', 'distance']
+        skipped_near_features: list[str] = []
         for feature in nearest_layer.getFeatures():
+            valid_attributes = True
             if feedback.isCanceled():
                 return None
             # Check if fields are None
@@ -266,9 +344,24 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                     feedback.pushWarning(self.tr(f"Field {field} not found in inlet, pinlet or outlet."))
                     return None
                 if str(feature[field]) == 'NULL' or feature[field] is None:
-                    feedback.pushWarning(self.tr(f"Field {field} is None in inlet, pinlet or outlet."))
-                    return None
-            if str(feature['outlet_node']) != 'NULL':
+                    if field == 'code':
+                        return None
+                    else:
+                        if feature['code'] in skipped_near_features:
+                            valid_attributes = False
+                            break
+                        else:
+                            feedback.pushWarning(self.tr(f"Field {field} is None in inlet, pinlet or outlet."))
+                            skipped_near_features.append(feature['code'])
+                            if isInlet:
+                                self.skipped_inlets.remove(str(feature['code']))
+                                self.skipped_from_near_inlet += 1
+                            else:
+                                self.skipped_pinlets.remove(str(feature['code']))
+                                self.skipped_from_near_pinlet += 1
+                        valid_attributes = False
+                        break
+            if str(feature['outlet_node']) != 'NULL' or not valid_attributes:
                 continue
 
             inlet_code: str = feature['code']
@@ -278,6 +371,14 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                 nearest_outlets_list[inlet_code]['outlets'].append(outlet_values)
             else:
                 nearest_outlets_list[inlet_code] = {'elev' : feature['top_elev'], 'outlets': [outlet_values]}
+            if inlet_code in skipped_near_features and inlet_code in nearest_outlets_list:
+                if nearest_outlets_list[inlet_code] is not None:
+                    if isInlet:
+                        self.skipped_inlets.remove(str(feature['code']))
+                        self.skipped_from_near_inlet -= 1
+                    else:
+                        self.skipped_pinlets.remove(str(feature['code']))
+                        self.skipped_from_near_pinlet -= 1
 
         # Get nearest valid outlet for each inlet/pinlet
         for inlet_code, values in nearest_outlets_list.items():
@@ -290,21 +391,25 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                 values['outlets'].sort(key=lambda x: x['distance'])
                 min_outlet = None
                 for outlet in values['outlets']:
-                    if outlet['elev'] >= values['elev'] and self.bool_set_nones:
-                        continue
-                    elif not self.bool_set_nones:
+                    if outlet['elev'] >= values['elev'] and self.bool_force_belows:
                         if min_outlet is None or min_outlet['elev'] > outlet['elev']:
                             min_outlet = outlet
+                        continue
+                    elif outlet['elev'] >= values['elev'] and not self.bool_force_belows:
                         continue
                     else:
                         nearest_outlets[inlet_code] = outlet['code']
                         break
                 if inlet_code not in nearest_outlets.keys():
                     # Set outlet as None or set the minimum one. Depends on checkbox parameter "bool_set_nones"
-                    if self.bool_set_nones:
-                        nearest_outlets[inlet_code] = None
-                    elif min_outlet is not None:
+                    if self.bool_force_belows and min_outlet != None:
                         nearest_outlets[inlet_code] = min_outlet['code']
+                        if isInlet:
+                            self.below_inlets.append(inlet_code)
+                        else:
+                            self.below_pinlets.append(inlet_code)
+                    else:
+                        nearest_outlets[inlet_code] = None
         if not nearest_outlets:
             return {'result': 'blank'}
         return nearest_outlets
@@ -321,6 +426,12 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             return False, 'Is required at least one layer selected to Inlet or Pinlet.'
 
         expected_inlet_layer = tools_qgis.get_layer_by_tablename('inlet')
+        if expected_inlet_layer is not None and global_vars.gpkg_dao_data is not None:
+            expected_schema_path: str = expected_inlet_layer.source().split('|')[0]
+            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
+                error_message += self.tr(f'Wrong inlet layer schema name: {expected_inlet_layer.source()}\n\n')
+        else:
+            error_message += self.tr(f'Error getting expected inlet layer.\n\n')
         if expected_inlet_layer and inlet_layer != expected_inlet_layer.id():
             error_message += self.tr(f'Wrong inlet layer selected. \nExpected layer: {expected_inlet_layer.name()} - Path: {expected_inlet_layer.source()}\n\n')
         elif expected_inlet_layer is None:
@@ -328,12 +439,24 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
 
         expected_pinlet_layer = tools_qgis.get_layer_by_tablename('pinlet')
+        if expected_pinlet_layer is not None and global_vars.gpkg_dao_data is not None:
+            expected_schema_path: str = expected_pinlet_layer.source().split('|')[0]
+            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
+                error_message += self.tr(f'Wrong pinlet layer schema name: {expected_pinlet_layer.source()}\n\n')
+        else:
+            error_message += self.tr(f'Error getting expected pinlet layer.\n\n')
         if expected_pinlet_layer and pinlet_layer != expected_pinlet_layer.id():
             error_message += self.tr(f'Wrong pinlet layer selected. \nExpected layer: {expected_pinlet_layer.name()} - Path: {expected_pinlet_layer.source()}\n\n')
         elif expected_pinlet_layer is None:
             error_message += self.tr(f'Wrong pinlet layer selected. Expected layer not found\n')
 
         expected_outlet_layer = tools_qgis.get_layer_by_tablename('inp_junction')
+        if expected_outlet_layer is not None and global_vars.gpkg_dao_data is not None:
+            expected_schema_path: str = expected_outlet_layer.source().split('|')[0]
+            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
+                error_message += self.tr(f'Wrong outlet layer schema name: {expected_outlet_layer.source()}\n\n')
+        else:
+            error_message += self.tr(f'Error getting expected outlet layer.\n\n')
         if expected_outlet_layer and outlet_layer != expected_outlet_layer.id():
             error_message += self.tr(f'Wrong outlet layer selected. \nExpected layer: {expected_outlet_layer.name()} - Path: {expected_outlet_layer.source()}\n\n')
         elif expected_outlet_layer is None:
@@ -348,6 +471,9 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         This algorithm will only work if the inlet, pinlet and outlet layers are valid.\n
         The last parameter is a checkbox which let you decide if the inlet/pinlet features with no valid outlet have to be setted as none or with the minor outlet ignoring if its valid or not.\n
         There are some attributes that cannot be None from Inlet(code, top_elev), Pinlet(code, top_elev) and Outlet(code, elev).""")
+
+    def helpUrl(self):
+        return "https://github.com/drain-iber"
 
     def name(self):
         return 'SetOutletForInlets'
