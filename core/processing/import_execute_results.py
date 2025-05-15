@@ -320,7 +320,13 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
 
 
     def shortHelpString(self):
-        return self.tr("""WIP Process""")
+        return self.tr("""This tool allows you to import raster results from the results folder created on execute model.\n
+        The tool creates a raster layer with a gradient color representation from 0 to 2.\n
+        It also configures the QGIS Temporal Controller to display the created raster layer values on its time.\n                       
+        You can introduce a custom name for the created layer.""")
+
+    def helpUrl(self):
+        return "https://github.com/drain-iber"
 
     def name(self):
         return 'ImportExecuteResults'

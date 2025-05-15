@@ -215,10 +215,18 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         feedback.setProgress(12)
 
         # get roof layer
-        self.file_target = tools_qgis.get_layer_by_layername('Roof')
+        self.file_target = tools_qgis.get_layer_by_tablename('roof')
+        if self.file_target is not None and global_vars.gpkg_dao_data is not None:
+            expected_schema_path: str = self.file_target.source().split('|')[0]
+            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
+                feedback.pushWarning(self.tr(f'Wrong Roof layer found: {self.file_target.source()}'))
+                return {}
+        else:
+            feedback.pushWarning(self.tr(f'Error getting expected roof layer'))
+            return {}
         if self.file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
-            return
+            return {}
         feedback.setProgressText(self.tr('Target layer found.'))
 
         # check layer types
@@ -409,6 +417,9 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         You must first select the source layer and the target Roof layer. Optionally, you can map fields from the source layer to specific fields in the target layer, such as custom code, annotation, or roughness.\n
         Only features with geometry will be copied. If a source field value already exists in the target layer, it will be skipped to avoid duplicates.\n
         The tool performs the import in batches to optimize performance.""")
+
+    def helpUrl(self):
+        return "https://github.com/drain-iber"
 
     def name(self):
         return 'ImportRoofGeometries'
