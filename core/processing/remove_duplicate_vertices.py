@@ -20,6 +20,9 @@ class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
     def displayName(self) -> str:
         return tools_qt.tr('Remove duplicate vertices')
 
+    def helpUrl(self):
+        return "https://github.com/drain-iber"
+
     def createInstance(self) -> QgsProcessingAlgorithm:
         return DrRemoveDuplicateVertices()
 
@@ -74,4 +77,3 @@ class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
                     lyr.dataProvider().forceReload()
 
         return {}
-

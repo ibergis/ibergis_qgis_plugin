@@ -33,6 +33,9 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
     def displayName(self) -> str:
         return tools_qt.tr('Mesh Validations')
 
+    def helpUrl(self):
+        return "https://github.com/drain-iber"
+
     def createInstance(self) -> QgsProcessingAlgorithm:
         return DrMeshValidationsAlgorithm()
 
@@ -75,4 +78,3 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
             # self.iface.layerTreeView().model().sourceModel().modelReset.emit()
 
         return {}
-

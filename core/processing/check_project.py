@@ -53,3 +53,6 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                     feedback.setProgressText(f"{query.description}: {result} geometries")
 
         return {}
+
+    def helpUrl(self):
+        return "https://github.com/drain-iber"
