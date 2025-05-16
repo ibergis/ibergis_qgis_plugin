@@ -177,8 +177,11 @@ class DrCreateBCFromPolygon(DrAction):
 
         self.dlg.rejected.connect(bc_layer.rollBack)
         self.dlg.rejected.connect(self.rubber_band.reset)
-        self.dlg.buttonBox.accepted.connect(
+        self.dlg.btn_accept.clicked.connect(
             partial(self._validate_and_save, bc_layer, feat)
+        )
+        self.dlg.btn_cancel.clicked.connect(
+            partial(self.dlg.reject)
         )
 
         iface.mapCanvas().setMapTool(self.lastMapTool)
@@ -237,6 +240,7 @@ class DrCreateBCFromPolygon(DrAction):
         if canvas.mapTool() != self.feature_identifier:
             self.action.setChecked(False)
             canvas.mapToolSet.disconnect(self._uncheck)
+
 
     def _validate_and_save(self, layer, feature):
         layer.changeAttributeValue
