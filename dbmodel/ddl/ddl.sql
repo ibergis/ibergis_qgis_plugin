@@ -263,6 +263,27 @@ CREATE TABLE pinlet (
     FOREIGN KEY (outlet_node) references node (code) on update cascade on delete restrict
 );
 
+create table bridge (
+    fid integer primary key,
+    code text unique check (typeof(code) = 'text' or code = null),
+    deck_cd real CHECK (typeof(deck_cd)='real' OR deck_cd = NULL),
+    freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL),
+    sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL),
+    gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL),
+    descript text unique check (typeof(descript) = 'text' or descript = null),
+    geom geometry
+);
+
+create table bridge_value (
+    id integer primary key,
+    bridge_code text CHECK (typeof(bridge_code)='text' OR bridge_code = NULL),
+    distance float unique check (typeof(distance) = 'float' or distance = null),
+    topelev real CHECK (typeof(topelev)='real' OR topelev = NULL),
+    lowelev real CHECK (typeof(lowelev)='real' OR lowelev = NULL),
+    openingval real CHECK (typeof(openingval)='real' OR openingval = NULL),
+    FOREIGN KEY (bridge_code) references bridge(code) on update cascade on delete restrict
+);
+
 
 -- ----------
 -- INP TABLES
