@@ -143,6 +143,7 @@ class DrCreateBCFromPolygon(DrAction):
         feat = QgsFeature(bc_layer.fields())
         feat.setGeometry(geometry)
         feat["fid"] = "Autogenerate"
+        feat["code"] = "Autogenerate"
         self.rubber_band = QgsRubberBand(iface.mapCanvas())
         self.rubber_band.setWidth(3)
         self.rubber_band.setColor(QColor(255, 0, 0, 255))
@@ -162,6 +163,7 @@ class DrCreateBCFromPolygon(DrAction):
         scenario_name = row["idval"]
 
         self.dlg.txt_fid.setText(feat["fid"])
+        self.dlg.txt_code.setText(feat["code"])
         self.dlg.txt_bscenario_id.setText(str(scenario_name))
         tools_qt.double_validator(self.dlg.txt_other1)
         tools_qt.double_validator(self.dlg.txt_other2)
@@ -216,7 +218,7 @@ class DrCreateBCFromPolygon(DrAction):
                 if config["timeseries"]:
                     rows = tools_db.get_rows(
                         f"""
-                        SELECT id, idval FROM cat_timeseries 
+                        SELECT idval as id, idval FROM cat_timeseries 
                         WHERE timser_type = '{config['timser_type']}'
                         """
                     )
@@ -254,6 +256,7 @@ class DrCreateBCFromPolygon(DrAction):
             timeseries = tools_qt.get_combo_value(
                 self.dlg, self.dlg.cmb_timeseries
             )
+            if timeseries == '': timeseries = None
             feature.setAttribute("timeseries", timeseries)
         if config["other1"]:
             other1_str = self.dlg.txt_other1.text()
