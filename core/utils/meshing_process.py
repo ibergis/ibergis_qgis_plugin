@@ -8,7 +8,8 @@ from qgis.core import (
     QgsProject,
     QgsPoint,
     QgsFeedback,
-    QgsGeometry
+    QgsGeometry,
+    QgsPointXY
 )
 
 from qgis.PyQt.QtCore import QVariant
@@ -511,22 +512,28 @@ def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer
             SELECT distance 
             FROM bridge_value
             WHERE bridge_code = '{feature["code"]}'
+            ORDER BY distance
         """)
         distances = [row["distance"] for row in rows]
 
-        # Create a new line with vertices at specified distances
-        line_geom = feature.geometry()
-        points = []
-
         # Get all vertices from original geometry
-        for i in range(line_geom.numPoints()):
-            points.append(line_geom.vertexAt(i))
+        points = []
+        vertex_distances = []
+        total_length = feature.geometry().length()
+
+        for vertex in feature.geometry().vertices():
+            point = QgsPointXY(vertex)
+            points.append(point)
+            # Calculate percentage distance along the line (0 to 1)
+            distance = feature.geometry().lineLocatePoint(QgsGeometry.fromPointXY(point))
+            percentage = distance / total_length
+            vertex_distances.append(percentage)
 
         # Add vertices at specified distances from bridge_value
         for distance in sorted(distances):
             if distance in (0, 1):  # Skip start and end points
                 continue
-            point = line_geom.interpolate(distance * line_geom.length())
+            point = feature.geometry().interpolate(distance * feature.geometry().length())
             point_xy = point.asPoint()
 
             # Check if point is too close to existing points (within 1mm)
@@ -538,14 +545,22 @@ def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer
 
             if not is_duplicate:
                 points.append(point_xy)
+                # Calculate percentage for the new point
+                distance = feature.geometry().lineLocatePoint(QgsGeometry.fromPointXY(point_xy))
+                percentage = distance / total_length
+                vertex_distances.append(percentage)
 
-        # Create new line geometry with all points
+        # Order points based on their percentage distance
+        sorted_pairs = sorted(zip(points, vertex_distances), key=lambda x: x[1])
+        points = [point for point, _ in sorted_pairs]
+
+        # Create new line geometry with ordered points
         new_geom = QgsGeometry.fromPolylineXY(points)
 
         new_feature = QgsFeature()
         new_feature.setGeometry(new_geom)
         # TODO: Adjust cellsize?
-        new_feature.setAttributes([0.5, "bridge"])
+        new_feature.setAttributes([10, "bridge"])
         features.append(new_feature)
 
     provider.addFeatures(features)
