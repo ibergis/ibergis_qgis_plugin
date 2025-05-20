@@ -8,8 +8,12 @@ from qgis.core import (
     QgsProject,
     QgsRasterLayer,
     QgsVectorLayer,
+    QgsGeometry,
+    QgsFeature,
+    QgsField,
 )
 from qgis.utils import iface
+from qgis.PyQt.QtCore import QVariant
 
 from . import createmesh_core as core
 from .validatemesh import validate_input_layers, validate_inlets_in_triangles
@@ -40,6 +44,8 @@ class DrCreateMeshTask(DrTask):
         losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
         mesh_name: str,
         feedback: QgsFeedback,
+        point_anchor_layer: Optional[QgsVectorLayer] = None,
+        line_anchor_layer: Optional[QgsVectorLayer] = None,
     ):
         super().__init__(description)
         self.execute_validations = execute_validations
@@ -54,6 +60,8 @@ class DrCreateMeshTask(DrTask):
         self.losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None] = losses_layer
         self.mesh_name = mesh_name
         self.feedback = feedback
+        self.point_anchor_layer = point_anchor_layer
+        self.line_anchor_layer = line_anchor_layer
         self.error_layers = None
         self.warning_layers = None
 
@@ -79,7 +87,7 @@ class DrCreateMeshTask(DrTask):
             self.dao = global_vars.gpkg_dao_data.clone()
             path = f"{self.dao.db_filepath}|layername="
 
-            layers_to_select = ["ground", "roof", "mesh_anchor_points", "inlet"]
+            layers_to_select = ["ground", "roof", "mesh_anchor_points", "inlet", "bridge"]
 
             layers: dict[str, Union[QgsVectorLayer, QgsRasterLayer]] = {}
             for layer in layers_to_select:
@@ -208,10 +216,12 @@ class DrCreateMeshTask(DrTask):
             gt_feedback = QgsFeedback()
             gt_progress = lambda x: self.feedback.setProgress(x / 100 * (30 - 15) + 15)
             gt_feedback.progressChanged.connect(gt_progress)
+
             ground_triangulation_result = triangulate_custom(
                 layers["ground"],
                 ["custom_roughness", "landuse", "scs_cn"],
-                point_anchor_layer=layers["mesh_anchor_points"],
+                point_anchor_layer=self.point_anchor_layer,
+                line_anchor_layer=self.line_anchor_layer,
                 do_clean_up=self.clean_geometries,
                 clean_tolerance=self.clean_tolerance,
                 enable_transition=self.enable_transition,

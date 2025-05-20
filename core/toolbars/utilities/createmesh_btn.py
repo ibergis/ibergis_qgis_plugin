@@ -3,8 +3,8 @@ from functools import partial
 from pathlib import Path
 from time import time
 
-from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
-from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer, QgsGeometry, QgsFeature, QgsField
+from qgis.PyQt.QtCore import Qt, QTimer, QVariant
 from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox, QTextEdit
 
 from ..dialog import DrAction
@@ -12,6 +12,7 @@ from ...threads.createmesh import DrCreateMeshTask
 from ...threads.validatemesh import validations_dict
 from ...ui.ui_manager import DrCreateMeshUi
 from ...utils import Feedback, tools_dr, mesh_parser
+from ...utils.meshing_process import create_anchor_layers
 from .... import global_vars
 from ....lib import tools_qt, tools_os
 
@@ -201,6 +202,16 @@ class DrCreateMeshButton(DrAction):
             if not tools_qt.show_question(message):
                 return
 
+        # Create anchor layers combining mesh anchor points and bridge features
+        mesh_anchor_points_lyr = self._get_layer(self.dao, "mesh_anchor_points")
+        bridge_lyr = self._get_layer(self.dao, "bridge")
+        point_anchor_layer, line_anchor_layer = create_anchor_layers(
+            mesh_anchor_points_lyr,
+            bridge_lyr,
+            self.dao
+        )
+        tools_qt.add_layer_to_toc(point_anchor_layer, "Mesh anchors", create_groups=True)
+        tools_qt.add_layer_to_toc(line_anchor_layer, "Mesh anchors", create_groups=True)
         # Reset txt_infolog
         tools_qt.set_widget_text(dlg, 'txt_infolog', "")
 
@@ -218,6 +229,8 @@ class DrCreateMeshButton(DrAction):
             roughness_layer,
             losses_layer,
             mesh_name,
+            point_anchor_layer=point_anchor_layer,
+            line_anchor_layer=line_anchor_layer,
             feedback=self.feedback,
         )
         thread = self.thread_triangulation

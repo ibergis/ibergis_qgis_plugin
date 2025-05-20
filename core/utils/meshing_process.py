@@ -7,7 +7,8 @@ from qgis.core import (
     QgsTriangle,
     QgsProject,
     QgsPoint,
-    QgsFeedback
+    QgsFeedback,
+    QgsGeometry
 )
 
 from qgis.PyQt.QtCore import QVariant
@@ -154,7 +155,7 @@ try:
             if field_index == -1:
                 raise ValueError(f"Layer `{layer.name()}` has no field `{field}`")
             data[field] = []
-        
+
         for feature in layer.getFeatures():
             wkt = feature.geometry().asWkt()
             try:
@@ -462,6 +463,95 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
 
     return layer
 
+
+def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer: QgsVectorLayer, dao) -> tuple[QgsVectorLayer, QgsVectorLayer]:
+    """Create virtual layers for point and line anchors combining mesh anchor points and bridge features."""
+    # Create virtual layer for point anchors
+    point_anchor_layer = QgsVectorLayer("Point", "Point Anchors", "memory")
+    point_anchor_layer.setCrs(mesh_anchor_points_layer.crs())
+
+    # Add fields
+    provider = point_anchor_layer.dataProvider()
+    fields = [
+        QgsField("cellsize", QVariant.Double),
+        QgsField("source", QVariant.String)  # To track where the point came from
+    ]
+    provider.addAttributes(fields)
+    point_anchor_layer.updateFields()
+
+    # Add features from mesh anchor points
+    features = []
+    for feature in mesh_anchor_points_layer.getFeatures():
+        new_feature = QgsFeature()
+        new_feature.setGeometry(feature.geometry())
+        new_feature.setAttributes([feature["cellsize"], "mesh_anchor"])
+        features.append(new_feature)
+
+    provider.addFeatures(features)
+    point_anchor_layer.updateExtents()
+
+    # Create virtual layer for line anchors
+    line_anchor_layer = QgsVectorLayer("LineString", "Line Anchors", "memory")
+    line_anchor_layer.setCrs(bridges_layer.crs())
+
+    # Add fields
+    provider = line_anchor_layer.dataProvider()
+    fields = [
+        QgsField("cellsize", QVariant.Double),
+        QgsField("source", QVariant.String)
+    ]
+    provider.addAttributes(fields)
+    line_anchor_layer.updateFields()
+
+    # Add bridge lines as anchor lines with additional vertices
+    features = []
+    for feature in bridges_layer.getFeatures():
+        # Get vertices from bridge_value table
+        rows = dao.get_rows(f"""
+            SELECT distance 
+            FROM bridge_value
+            WHERE bridge_code = '{feature["code"]}'
+        """)
+        distances = [row["distance"] for row in rows]
+
+        # Create a new line with vertices at specified distances
+        line_geom = feature.geometry()
+        points = []
+
+        # Get all vertices from original geometry
+        for i in range(line_geom.numPoints()):
+            points.append(line_geom.vertexAt(i))
+
+        # Add vertices at specified distances from bridge_value
+        for distance in sorted(distances):
+            if distance in (0, 1):  # Skip start and end points
+                continue
+            point = line_geom.interpolate(distance * line_geom.length())
+            point_xy = point.asPoint()
+
+            # Check if point is too close to existing points (within 1mm)
+            is_duplicate = False
+            for existing_point in points:
+                if point_xy.distance(existing_point) < 0.001:
+                    is_duplicate = True
+                    break
+
+            if not is_duplicate:
+                points.append(point_xy)
+
+        # Create new line geometry with all points
+        new_geom = QgsGeometry.fromPolylineXY(points)
+
+        new_feature = QgsFeature()
+        new_feature.setGeometry(new_geom)
+        # TODO: Adjust cellsize?
+        new_feature.setAttributes([0.5, "bridge"])
+        features.append(new_feature)
+
+    provider.addFeatures(features)
+    line_anchor_layer.updateExtents()
+
+    return point_anchor_layer, line_anchor_layer
 
 
 @alg(
