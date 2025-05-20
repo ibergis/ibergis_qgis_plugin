@@ -125,6 +125,7 @@ class DrCreateMeshButton(DrAction):
                 for validation_id, validation in self.validations.items()
                 if validation["list_item"].checkState() == Qt.Checked
             ]
+        only_selected_features = dlg.chk_only_selected.isChecked()
         clean_geometries = dlg.chk_clean_geometries.isChecked()
         clean_tolerance = float(dlg.txt_tolerance.text())
         enable_transition = dlg.chk_transition.isChecked()
@@ -225,6 +226,7 @@ class DrCreateMeshButton(DrAction):
             execute_validations,
             clean_geometries,
             clean_tolerance,
+            only_selected_features,
             enable_transition,
             transition_slope,
             transition_start,

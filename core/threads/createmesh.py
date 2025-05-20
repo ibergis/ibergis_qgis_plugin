@@ -35,6 +35,7 @@ class DrCreateMeshTask(DrTask):
         execute_validations: list[str],
         clean_geometries: bool,
         clean_tolerance: float,
+        only_selected_features: bool,
         enable_transition: bool,
         transition_slope: float,
         transition_start: float,
@@ -51,6 +52,7 @@ class DrCreateMeshTask(DrTask):
         self.execute_validations = execute_validations
         self.clean_geometries = clean_geometries
         self.clean_tolerance = clean_tolerance
+        self.only_selected_features = only_selected_features
         self.enable_transition = enable_transition
         self.transition_slope = transition_slope
         self.transition_start = transition_start
@@ -85,11 +87,32 @@ class DrCreateMeshTask(DrTask):
 
             # Load input layers
             self.dao = global_vars.gpkg_dao_data.clone()
-            path = f"{self.dao.db_filepath}|layername="
+            db_path = self.dao.db_filepath.replace('\\', '/')
+            path = f"{db_path}|layername="
 
-            layers_to_select = ["ground", "roof", "mesh_anchor_points", "inlet", "bridge"]
 
             layers: dict[str, Union[QgsVectorLayer, QgsRasterLayer]] = {}
+
+            # Load ground and roof layers from the QGIS project
+            for layer in ["ground", "roof"]:
+                layer_path = f"{path}{layer}"
+                lyrs = []
+                for lyr in QgsProject.instance().mapLayers().values():
+                    if lyr.source() == layer_path:
+                        print(f"Layer: {lyr.name()} - {lyr.source()}")
+                        lyrs.append(lyr)
+
+                if len(lyrs) == 0:
+                    self.message = f"Layer '{layer}' not found in the QGIS project."
+                    return False
+                elif len(lyrs) > 1:
+                    self.message = f"Layer '{layer}' found multiple times in the QGIS project."
+                    return False
+                else:
+                    layers[layer] = lyrs[0]
+
+            # Load other layers from the GPKG file
+            layers_to_select = ["mesh_anchor_points", "inlet", "bridge"]
             for layer in layers_to_select:
                 if self.feedback.isCanceled():
                     self.message = "Task canceled."
@@ -223,6 +246,7 @@ class DrCreateMeshTask(DrTask):
                 point_anchor_layer=self.point_anchor_layer,
                 line_anchor_layer=self.line_anchor_layer,
                 do_clean_up=self.clean_geometries,
+                only_selected_features=self.only_selected_features,
                 clean_tolerance=self.clean_tolerance,
                 enable_transition=self.enable_transition,
                 transition_slope=self.transition_slope,
@@ -324,7 +348,7 @@ class DrCreateMeshTask(DrTask):
             start = time.time()
             self.feedback.setProgressText("Creating roof mesh...")
             self.feedback.setProgress(30)
-            roof_triangulation_result = core.triangulate_roof(layers["roof"], self.feedback)
+            roof_triangulation_result = core.triangulate_roof(layers["roof"], self.only_selected_features, self.feedback)
 
             if self.feedback.isCanceled() or roof_triangulation_result is None:
                 self.message = "Task canceled."

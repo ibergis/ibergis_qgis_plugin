@@ -147,7 +147,7 @@ try:
         data = data[~data.is_empty] # type: ignore
         return data
 
-    def layer_to_gdf(layer: QgsVectorLayer, fields: list = []) -> gpd.GeoDataFrame:
+    def layer_to_gdf(layer: QgsVectorLayer, fields: list = [], only_selected: bool = False) -> gpd.GeoDataFrame:
         geoms = []
 
         data: dict[str, list] = {}
@@ -157,7 +157,11 @@ try:
                 raise ValueError(f"Layer `{layer.name()}` has no field `{field}`")
             data[field] = []
 
-        for feature in layer.getFeatures():
+        features_iterator = layer.getFeatures()
+        if only_selected:
+            features_iterator = layer.getSelectedFeatures()
+
+        for feature in features_iterator:
             wkt = feature.geometry().asWkt()
             try:
                 geoms.append(shapely.wkt.loads(wkt))
@@ -193,6 +197,7 @@ try:
         line_anchor_layer: Optional[QgsVectorLayer] = None,
         point_anchor_layer: Optional[QgsVectorLayer] = None,
         do_clean_up: bool = True,
+        only_selected_features: bool = False,
         clean_tolerance: float = 0.5,
         algorithm: int = ALGORITHMS["Frontal-Delaunay"],
         enable_transition: bool = True,
@@ -209,11 +214,11 @@ try:
         print("Getting data... ", end="")
 
         fields = ["cellsize"]
-        data = layer_to_gdf(source_layer, fields + extra_fields)
+        data = layer_to_gdf(source_layer, fields + extra_fields, only_selected_features)
 
         line_anchors = None
         if line_anchor_layer is not None:
-            line_anchors = layer_to_gdf(line_anchor_layer, fields)
+            line_anchors = layer_to_gdf(line_anchor_layer, fields, only_selected_features)
         else:
             line_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": []}, crs=data.crs
@@ -221,7 +226,7 @@ try:
 
         point_anchors = None
         if point_anchor_layer is not None:
-            point_anchors = layer_to_gdf(point_anchor_layer, fields)
+            point_anchors = layer_to_gdf(point_anchor_layer, fields, only_selected_features)
         else:
             point_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": []}, crs=data.crs
