@@ -167,9 +167,12 @@ class DrCreateMeshButton(DrAction):
 
         features = self.ground_layer.getFeatures()
         num_triangles = 0
+        lowest_cellsize = float('inf')
         for feature in features:
             geom = feature.geometry()
             cellsize = feature["cellsize"]
+            if cellsize < lowest_cellsize:
+                lowest_cellsize = cellsize
 
             # sqrt(3)/4 * cellsize^2 = area of equilateral triangle
             triangle_area = 0.43301270189 * cellsize**2
@@ -208,7 +211,8 @@ class DrCreateMeshButton(DrAction):
         point_anchor_layer, line_anchor_layer = create_anchor_layers(
             mesh_anchor_points_lyr,
             bridge_lyr,
-            self.dao
+            self.dao,
+            lowest_cellsize
         )
         tools_qt.add_layer_to_toc(point_anchor_layer, "Mesh anchors", create_groups=True)
         tools_qt.add_layer_to_toc(line_anchor_layer, "Mesh anchors", create_groups=True)

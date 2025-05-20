@@ -465,7 +465,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
     return layer
 
 
-def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer: QgsVectorLayer, dao) -> tuple[QgsVectorLayer, QgsVectorLayer]:
+def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer: QgsVectorLayer, dao, bridge_cellsize: float = 10) -> tuple[QgsVectorLayer, QgsVectorLayer]:
     """Create virtual layers for point and line anchors combining mesh anchor points and bridge features."""
     # Create virtual layer for point anchors
     point_anchor_layer = QgsVectorLayer("Point", "Point Anchors", "memory")
@@ -559,8 +559,7 @@ def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer
 
         new_feature = QgsFeature()
         new_feature.setGeometry(new_geom)
-        # TODO: Adjust cellsize?
-        new_feature.setAttributes([10, "bridge"])
+        new_feature.setAttributes([bridge_cellsize, "bridge"])
         features.append(new_feature)
 
     provider.addFeatures(features)
