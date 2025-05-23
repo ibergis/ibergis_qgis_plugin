@@ -180,8 +180,8 @@ class DrNonVisual:
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
         if len(selected_list) == 0:
-            message = "Any record selected"
-            tools_qgis.show_warning(message, dialog=dialog)
+            msg = "Any record selected"
+            tools_qgis.show_warning(msg, dialog=dialog)
             return
 
         # Get selected workspace id
@@ -208,8 +208,8 @@ class DrNonVisual:
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
         if len(selected_list) == 0:
-            message = "Any record selected"
-            tools_qgis.show_warning(message, dialog=dialog)
+            msg = "Any record selected"
+            tools_qgis.show_warning(msg, dialog=dialog)
             return
 
         # Get selected object IDs
@@ -223,8 +223,9 @@ class DrNonVisual:
             value = idx.sibling(idx.row(), col_idx).data()
             id_list.append(value)
 
-        message = "Are you sure you want to delete these records?"
-        answer = tools_qt.show_question(message, "Delete records", id_list)
+        msg = "Are you sure you want to delete these records?"
+        title = "Delete records"
+        answer = tools_qt.show_question(msg, title, id_list)
         if answer:
             # Add quotes to id if not inp_controls/inp_rules
             if tablename not in ('inp_controls', 'inp_rules'):
@@ -1509,14 +1510,16 @@ class DrNonVisual:
                 values[y].append(value)
 
         if len(invalid_times) > 0:
-            msg = f"Invalid time format: {', '.join(invalid_times)}"
-            tools_qgis.show_warning(msg, dialog=dialog)
+            msg = "Invalid time format: {0}"
+            msg_params = (', '.join(invalid_times),)
+            tools_qgis.show_warning(msg, dialog=dialog, msg_params=msg_params)
             global_vars.gpkg_dao_data.rollback()
             return False
 
         if len(invalid_dates) > 0:
-            msg = f"Invalid date format: {', '.join(invalid_dates)}"
-            tools_qgis.show_warning(msg, dialog=dialog)
+            msg = "Invalid date format: {0}"
+            msg_params = (', '.join(invalid_dates),)
+            tools_qgis.show_warning(msg, dialog=dialog, msg_params=msg_params)
             global_vars.gpkg_dao_data.rollback()
             return False
 
@@ -1538,8 +1541,9 @@ class DrNonVisual:
                 if row == (['null'] * tbl_timeseries_value.columnCount()):
                     continue
                 if 'null' in (row[0], row[1], row[2]):
-                    msg = "You have to fill in 'date', 'time' and 'value' fields!"
-                    tools_qgis.show_warning(msg, dialog=dialog)
+                    msg = "You have to fill in '{0}', '{1}' and '{2}' fields!"
+                    msg_params = ("date", "time", "value",)
+                    tools_qgis.show_warning(msg, dialog=dialog, msg_params=msg_params)
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
@@ -1559,7 +1563,8 @@ class DrNonVisual:
                     continue
                 if 'null' in (row[1], row[2]):
                     msg = "You have to fill in 'time' and 'value' fields!"
-                    tools_qgis.show_warning(msg, dialog=dialog)
+                    msg_params = ("time", "value",)
+                    tools_qgis.show_warning(msg, dialog=dialog, msg_params=msg_params)
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
@@ -1948,7 +1953,9 @@ class DrNonVisual:
                     # Control values that cannot be 0
                     if widget.objectName() in control_values[lidco_type] and value == "'0'":
                         dialog.tab_lidlayers.setCurrentWidget(dialog.tab_lidlayers.widget(i))
-                        tools_qt.show_info_box("Marked values must be greater than 0", "LIDS")
+                        msg = "Marked values must be greater than 0"
+                        title = "LIDS"
+                        tools_qt.show_info_box(msg, title)
                         tools_qt.set_stylesheet(widget)
 
                         return False

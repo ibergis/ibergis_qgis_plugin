@@ -31,7 +31,9 @@ class DrTask(QgsTask, QObject):
 
         global_vars.session_vars['threads'].append(self)
         # self.aux_conn = global_vars.dao.get_aux_conn()
-        tools_log.log_info(f"Started task {self.description()}")
+        msg = "Started task {0}"
+        msg_params = (self.description(),)
+        tools_log.log_info(msg, msg_params=msg_params)
         iface.actionOpenProject().setEnabled(False)
         iface.actionNewProject().setEnabled(False)
         return True
@@ -47,15 +49,25 @@ class DrTask(QgsTask, QObject):
         iface.actionOpenProject().setEnabled(True)
         iface.actionNewProject().setEnabled(True)
         if result:
-            tools_log.log_info(f"Task '{self.description()}' completed")
+            msg = "Task '{0}' completed"
+            msg_params = (self.description(),)
+            tools_log.log_info(msg, msg_params=msg_params)
+
         else:
             if self.exception is None:
-                tools_log.log_info(f"Task '{self.description()}' not successful but without exception")
+                msg = "Task '{0}' not successful but without exception"
+                msg_params = (self.description(),)
+                tools_log.log_info(msg, msg_params=msg_params)
+
             else:
-                tools_log.log_info(f"Task '{self.description()}' Exception: {self.exception}")
+                msg = "Task '{0}' Exception: {1}"
+                msg_params = (self.description(), self.exception,)
+                tools_log.log_info(msg, msg_params=msg_params)
 
 
     def cancel(self):
-
-        tools_log.log_info(f"Task '{self.description()}' was cancelled")
+        
+        msg = "Task '{0}' was cancelled"
+        msg_params = (self.description(),)
+        tools_log.log_info(msg, msg_params=msg_params)
         super().cancel()

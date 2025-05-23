@@ -73,8 +73,8 @@ class DrToolBoxButton(DrAction):
         self.function_selected = f"{tools_db.get_row(sql)[0]}"
         status = self._populate_functions_dlg(self.dlg_functions, json_result['body']['data'])
         if not status:
-            message = "Function not found"
-            tools_qgis.show_message(message, parameter=self.function_selected)
+            msg = "Function not found"
+            tools_qgis.show_message(msg, parameter=self.function_selected)
             return
 
         # Disable tab log
@@ -125,7 +125,8 @@ class DrToolBoxButton(DrAction):
         layer_name = tools_qt.get_combo_value(dialog, combo, 1)
         layer = tools_qgis.get_layer_by_tablename(layer_name)
         if layer is None:
-            tools_qgis.show_warning("Layer not found", parameter=layer_name)
+            msg = "Layer not found"
+            tools_qgis.show_warning(msg, parameter=layer_name)
             return None
         global_vars.iface.setActiveLayer(layer)
         return layer
@@ -166,7 +167,8 @@ class DrToolBoxButton(DrAction):
         function_name = "gw_fct_gettoolbox"
         row = tools_db.check_function(function_name)
         if not row:
-            tools_qgis.show_warning("Function not found in database", parameter=function_name)
+            msg = "Function not found in database"
+            tools_qgis.show_warning(msg, parameter=function_name)
             return
 
         self.dlg_toolbox = DrToolboxUi('toolbox')
@@ -286,8 +288,8 @@ class DrToolBoxButton(DrAction):
             status = self._populate_functions_dlg(self.dlg_functions, json_result['body']['data'])
             if not status:
                 self.function_selected = index.sibling(index.row(), 1).data()
-                message = "Function not found"
-                tools_qgis.show_message(message, parameter=self.function_selected)
+                msg = "Function not found"
+                tools_qgis.show_message(msg, parameter=self.function_selected)
                 return
 
             # Disable tab log
@@ -561,8 +563,8 @@ class DrToolBoxButton(DrAction):
         if hasattr(self, 'toolbox_task') and self.toolbox_task is not None:
             try:
                 if self.toolbox_task.isActive():
-                    message = "Toolbox task is already active!"
-                    tools_qgis.show_warning(message)
+                    msg = "Toolbox task is already active!"
+                    tools_qgis.show_warning(msg)
                     return
             except RuntimeError:
                 pass
@@ -856,7 +858,8 @@ class DrToolBoxButton(DrAction):
         try:
             if os.path.exists(folder_path):
                 msg = "Are you sure you want to overwrite this file?"
-                answer = tools_qt.show_question(msg, "Overwrite")
+                title = "Overwrite"
+                answer = tools_qt.show_question(msg, title)
                 if answer:
                     self._write_to_csv(folder_path, all_rows)
             else:
@@ -871,7 +874,7 @@ class DrToolBoxButton(DrAction):
         with open(folder_path, "w") as output:
             writer = csv.writer(output, delimiter=';', lineterminator='\n')
             writer.writerows(all_rows)
-        message = "The csv file has been successfully exported"
-        tools_qgis.show_info(message)
+        msg = "The csv file has been successfully exported"
+        tools_qgis.show_info(msg)
 
     # endregion

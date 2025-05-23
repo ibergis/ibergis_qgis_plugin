@@ -38,7 +38,8 @@ class DrLoadProject(QObject):
 
         global_vars.project_loaded = False
         if show_warning:
-            tools_log.log_info("Project read started")
+            msg = "Project read started" 
+            tools_log.log_info(msg)
 
         self._get_user_variables()
         # Get variables from qgis project
@@ -114,8 +115,8 @@ class DrLoadProject(QObject):
         tools_dr.connect_signal(self.iface.layerTreeView().currentLayerChanged, tools_dr.current_layer_changed,
                                 'load_project', 'currentLayerChanged')
 
-        message = f"Project read finished. Plugin version: {plugin_version}"
-        tools_log.log_info(message)
+        msg = f"Project read finished. Plugin version: {plugin_version}"
+        tools_log.log_info(msg)
 
         # Reset dialogs position
         tools_dr.reset_position_dialog()
@@ -165,21 +166,27 @@ class DrLoadProject(QObject):
         db_filepath = os.path.join(global_vars.plugin_dir, "config", filename)
         tools_log.log_info(db_filepath)
         if not os.path.exists(db_filepath):
-            tools_log.log_info(f"File not found: {db_filepath}")
+            msg = "File not found"
+            tools_log.log_info(msg, parameter=db_filepath)
             return False
 
         # Set DB connection
-        tools_log.log_info(f"Set database connection")
+        msg = "Set database connection"
+        tools_log.log_info(msg)
         database_name = f"{global_vars.plugin_name}_config"
         status, global_vars.db_qsql_config = global_vars.gpkg_dao_config.init_qsql_db(db_filepath, database_name)
         if not status:
             last_error = global_vars.gpkg_dao_config.last_error
-            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            msg = "Error connecting to database (QSqlDatabase): {0}\n{1}"
+            msg_params = (db_filepath, last_error)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
         status = global_vars.gpkg_dao_config.init_db(db_filepath)
         if not status:
             last_error = global_vars.gpkg_dao_config.last_error
-            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
+            msg = "Error connecting to database (sqlite3): {0}\n{1}"
+            msg_params = (db_filepath, last_error)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
         # Create object to manage GPKG database connection
@@ -197,26 +204,32 @@ class DrLoadProject(QObject):
 
         tools_log.log_info(db_filepath)
         if not os.path.exists(db_filepath):
-            tools_log.log_info(f"File not found: {db_filepath}")
+            msg = "File not found"
+            tools_log.log_info(msg, parameter=db_filepath)
             return False
 
         # Set DB connection
-        tools_log.log_info(f"Set database connection")
+        msg = "Set database connection"
+        tools_log.log_info(msg)
         database_name = f"{global_vars.plugin_name}_data"
         status, global_vars.db_qsql_data = global_vars.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
         if not status:
             last_error = global_vars.gpkg_dao_data.last_error
-            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            msg = "Error connecting to database (QSqlDatabase): {0}\n{1}"
+            msg_params = (db_filepath, last_error)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
         status = global_vars.gpkg_dao_data.init_db(db_filepath)
         if not status:
             last_error = global_vars.gpkg_dao_data.last_error
-            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
+            msg = "Error connecting to database (sqlite3): {0}\n{1}"
+            msg_params = (db_filepath, last_error)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
 
-
-        tools_log.log_info(f"Database connection successful")
+        msg = "Database connection successful"
+        tools_log.log_info(msg)
         return True
 
 
@@ -232,7 +245,9 @@ class DrLoadProject(QObject):
             buttons_to_hide = [int(x) for x in row.split(',')]
 
         except Exception as e:
-            tools_log.log_warning(f"{type(e).__name__}: {e}")
+            msg = "{0}: {1}"
+            msg_params = (type(e).__name__, str(e),)
+            tools_log.log_warning(msg, msg_params=msg_params)
         finally:
             return buttons_to_hide
 
@@ -243,12 +258,16 @@ class DrLoadProject(QObject):
         # Dynamically get list of toolbars from config file
         toolbar_names = tools_dr.get_config_parser('toolbars', 'list_toolbars', "project", "drain")
         if toolbar_names in (None, 'None'):
-            tools_log.log_info("Parameter 'toolbar_names' is None")
+            msg = "Parameter '{0}' is None"
+            msg_params = ("toolbar_names",)
+            tools_log.log_info(msg, msg_params=msg_params)
             return
 
         toolbars_order = tools_dr.get_config_parser('toolbars_position', 'toolbars_order', 'user', 'init')
         if toolbars_order in (None, 'None'):
-            tools_log.log_info("Parameter 'toolbars_order' is None")
+            msg = "Parameter '{0}' is None"
+            msg_params = ("toolbars_order",)
+            tools_log.log_info(msg, msg_params=msg_params)
             return
 
         # Call each of the functions that configure the toolbars 'def toolbar_xxxxx(self, toolbar_id, x=0, y=0):'
@@ -322,8 +341,9 @@ class DrLoadProject(QObject):
         if hasattr(self, 'task_get_layers') and self.task_get_layers is not None:
             try:
                 if self.task_get_layers.isActive():
-                    message = "ConfigLayerFields task is already active!"
-                    tools_qgis.show_warning(message)
+                    msg = "{0} task is already active!"
+                    msg_params = ("ConfigLayerFields")
+                    tools_qgis.show_warning(msg, msg_params=msg_params)
                     return
             except RuntimeError:
                 pass
@@ -376,7 +396,8 @@ class DrLoadProject(QObject):
                 if plugin_toolbar.enabled:
                     plugin_toolbar.toolbar.setVisible(visible)
         except Exception as e:
-            tools_log.log_warning(str(e))
+            msg = str(e)
+            tools_log.log_warning(msg)
 
 
     def _enable_all_buttons(self, enable=True):

@@ -167,7 +167,9 @@ def manage_pg_service(section):
         return None
 
     if not os.path.exists(service_file):
-        tools_log.log_warning(f"File defined in environment variable 'PGSERVICEFILE' not found: {service_file}")
+        msg = "File defined in environment variable '{0}' not found: {1}"
+        msg_params = ("PGSERVICEFILE", service_file,)
+        tools_log.log_warning(msg, msg_params=msg_params)
         return None
 
     config_parser = configparser.ConfigParser(strict=False)
@@ -177,15 +179,19 @@ def manage_pg_service(section):
         if config_parser.has_section(section):
             params = config_parser.items(section)
             if not params:
-                tools_log.log_warning(f"No parameters found in section {section}")
+                msg = "No parameters found in section {0}"
+                msg_params = (section,)
+                tools_log.log_warning(msg, msg_params=msg_params)
                 return None
             else:
                 for param in params:
                     credentials[param[0]] = param[1]
         else:
-            tools_log.log_warning(f"Section '{section}' not found in the file {service_file}")
+            msg = "Section '{0}' not found in the file {1}"
+            msg_params = (section, service_file)
+            tools_log.log_warning(msg, msg_params=msg_params)
     except configparser.DuplicateSectionError as e:
-        tools_log.log_warning(e)
+        tools_log.log_warning(str(e))
     finally:
         return credentials
 

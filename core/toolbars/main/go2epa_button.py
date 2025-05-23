@@ -150,7 +150,8 @@ class DrGo2IberButton(DrAction):
         if result_name == '':
             self.dlg_go2epa.txt_file_path.setStyleSheet("border: 1px solid red")
             msg = "This parameter is mandatory. Please, set a value"
-            tools_qt.show_details(msg, title="Rpt fail", inf_text=None)
+            title = "Rpt fail"
+            tools_qt.show_details(msg, title=title, inf_text=None)
             return False
 
         self.dlg_go2epa.txt_file_path.setStyleSheet(None)
@@ -200,8 +201,8 @@ class DrGo2IberButton(DrAction):
         if hasattr(self, 'go2epa_task') and self.go2epa_task is not None:
             try:
                 if self.go2epa_task.isActive():
-                    message = "Go2Epa task is already active!"
-                    tools_qgis.show_warning(message)
+                    msg = "Go2Epa task is already active!"
+                    tools_qgis.show_warning(msg)
                     return
             except RuntimeError:
                 pass

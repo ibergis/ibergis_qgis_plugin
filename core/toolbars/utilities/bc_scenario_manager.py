@@ -32,8 +32,9 @@ def set_bc_filter():
     cur_scenario = row['idval']
 
     if bc_layer is None:
-        msg = f"Tried to set filter to '{layer_name}' but layer was not found."
-        tools_qgis.show_warning(msg)
+        msg = "Tried to set filter to '{0}' but layer was not found."
+        msg_params = (layer_name,)
+        tools_qgis.show_warning(msg, msg_params=msg_params)
         return
     bc_layer.setSubsetString(f"bscenario = '{cur_scenario}'")
 
@@ -145,8 +146,8 @@ class DrBCScenarioManagerButton(DrAction):
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
         if len(selected_list) != 1:
-            message = "Select only one scenario to save to mesh"
-            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            msg = "Select only one scenario to save to mesh"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
 
         # Get selected object IDs
@@ -161,11 +162,11 @@ class DrBCScenarioManagerButton(DrAction):
         sql = "SELECT name FROM cat_file"
         rows = dao.get_rows(sql)
         if not rows:
-            message = (
+            msg = (
                 "No meshes found in GPKG file. Create a mesh with "
                 "Create Mesh button before saving the boundary conditions to it."
             )
-            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
 
         self.dlg_ms = DrMeshSelectorUi()
@@ -189,8 +190,8 @@ class DrBCScenarioManagerButton(DrAction):
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
         if len(selected_list) == 0:
-            message = "Any record selected"
-            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            msg = "Any record selected"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
 
         # Get selected object IDs
@@ -204,7 +205,7 @@ class DrBCScenarioManagerButton(DrAction):
         sql = f"""UPDATE {self.tablename} SET active = 0"""
         status = tools_db.execute_sql(sql)
         if status is False:
-            msg = f"There was an error setting the scenario as active"
+            msg = "There was an error setting the scenario as active"
             tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
 
@@ -212,7 +213,7 @@ class DrBCScenarioManagerButton(DrAction):
         sql = f"""UPDATE {self.tablename} SET active = 1 WHERE {col} = '{idval}'"""
         status = tools_db.execute_sql(sql)
         if status is False:
-            msg = f"There was an error setting the scenario as active"
+            msg = "There was an error setting the scenario as active"
             tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
         self._set_lbl_current_scenario(idval)
@@ -240,8 +241,8 @@ class DrBCScenarioManagerButton(DrAction):
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
         if len(selected_list) == 0:
-            message = "Any record selected"
-            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            msg = "Any record selected"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
 
         # Get selected object IDs
@@ -254,7 +255,7 @@ class DrBCScenarioManagerButton(DrAction):
         sql = f"""SELECT idval FROM {self.tablename} WHERE {col} = '{idval}'"""
         row = tools_db.get_row(sql)
         if not row:
-            msg = f"There was an error getting the scenario information"
+            msg = "There was an error getting the scenario information"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
 
@@ -281,8 +282,8 @@ class DrBCScenarioManagerButton(DrAction):
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
         if len(selected_list) == 0:
-            message = "Any record selected"
-            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            msg = "Any record selected"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
 
         # Get selected object IDs
@@ -296,7 +297,7 @@ class DrBCScenarioManagerButton(DrAction):
         print(sql)
         row = tools_db.get_row(sql)
         if not row:
-            msg = f"There was an error getting the scenario information"
+            msg = "There was an error getting the scenario information"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
 
@@ -332,8 +333,8 @@ class DrBCScenarioManagerButton(DrAction):
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
         if len(selected_list) == 0:
-            message = "Any record selected"
-            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            msg = "Any record selected"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
 
         # Get selected object IDs
@@ -347,8 +348,8 @@ class DrBCScenarioManagerButton(DrAction):
             value = idx.sibling(idx.row(), col_idx).data()
             id_list.append(value)
 
-        message = "Are you sure you want to delete these records?"
-        answer = tools_qt.show_question(message, "Delete records", id_list)
+        msg = "Are you sure you want to delete these records?"
+        answer = tools_qt.show_question(msg, "Delete records", id_list)
         if answer:
             for value in id_list:
                 values.append(f"'{value}'")
@@ -418,7 +419,7 @@ class DrBCScenarioManagerButton(DrAction):
         sql = f"""INSERT INTO {self.tablename} (idval, name, descript, active) VALUES ({idval}, {name}, {descript}, 0)"""
         status = tools_db.execute_sql(sql)
         if status is False:
-            msg = f"There was an error inserting the scenario"
+            msg = "There was an error inserting the scenario"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
         tools_dr.close_dialog(self.dlg_bc)
@@ -444,7 +445,7 @@ class DrBCScenarioManagerButton(DrAction):
         print(sql)
         status = tools_db.execute_sql(sql)
         if status is False:
-            msg = f"There was an error updating the scenario"
+            msg = "There was an error updating the scenario"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
         tools_dr.close_dialog(self.dlg_bc)
@@ -467,7 +468,7 @@ class DrBCScenarioManagerButton(DrAction):
         sql = f"""INSERT INTO {self.tablename} (idval, name, descript, active) VALUES ({idval}, {name}, {descript}, 0)"""
         status = tools_db.execute_sql(sql, commit=False)
         if status is False:
-            msg = f"There was an error inserting the scenario"
+            msg = "There was an error inserting the scenario"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
 
@@ -475,7 +476,7 @@ class DrBCScenarioManagerButton(DrAction):
             SELECT {idval}, custom_code, descript, bscenario, boundary_type, timeseries, other1, other2, geom FROM {self.tablename_value} WHERE code = '{code_from}' """
         status = tools_db.execute_sql(sql, commit=False)
         if status is False:
-            msg = f"There was an error inserting the scenario geometries"
+            msg = "There was an error inserting the scenario geometries"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             global_vars.gpkg_dao_data.rollback()
             return
@@ -498,8 +499,8 @@ class DrBCScenarioManagerButton(DrAction):
         mesh = mesh_parser.loads(mesh_str, roof_str, losses_str)
 
         if mesh.boundary_conditions:
-            message = "This process will override the boundary conditions of this mesh. Are you sure?"
-            answer = tools_qt.show_question(message, "Override boundary conditions")
+            msg = "This process will override the boundary conditions of this mesh. Are you sure?"
+            answer = tools_qt.show_question(msg, "Override boundary conditions")
             if not answer:
                 return
 

@@ -101,8 +101,9 @@ class DrOptions:
                         row = int(lyt_row) - 1
                         col = int(lyt_col) - 1
                     except:
-                        msg = f"Layout '{lyt[0]}' has an invalid name. It has to end with _<row>_<column> indicating where in the dialog it should go."
-                        tools_qgis.show_warning(msg)
+                        msg = "Layout '{0}' has an invalid name. It has to end with {1} indicating where in the dialog it should go."
+                        msg_params = (lyt[0], " _<row>_<column>",)
+                        tools_qgis.show_warning(msg, msg_params=msg_params)
                         continue
 
                     layout.addWidget(groupBox, row, col)
@@ -141,8 +142,8 @@ class DrOptions:
 
         tools_dr.manage_current_selections_docker(json_result)
 
-        message = "Values has been updated"
-        tools_qgis.show_info(message)
+        msg = "Values has been updated"
+        tools_qgis.show_info(msg)
         # Close dialog
         tools_dr.close_dialog(self.dlg_go2epa_options)
 

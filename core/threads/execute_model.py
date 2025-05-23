@@ -90,7 +90,9 @@ class DrExecuteModel(DrTask):
         super().run()
         print(f"{self.description()} -> {threading.get_ident()}")
         self.dao = global_vars.gpkg_dao_data.clone()
-        tools_log.log_info(f"Task 'Execute model' execute function 'def _execute_model(self)'")
+        msg = "Task 'Execute model' execute function '{0}'"
+        msg_params = ("_execute_model(self)")
+        tools_log.log_info(msg, msg_params=msg_params)
         status = self._execute_model()
 
         # self._close_dao()
@@ -123,7 +125,9 @@ class DrExecuteModel(DrTask):
 
     def cancel(self):
 
-        tools_qgis.show_info(f"Task canceled - {self.description()}")
+        msg = "Task canceled - {0}"
+        msg_params = (self.description(),)
+        tools_qgis.show_info(msg, msg_params=msg_params)
         # self._close_file()
         super().cancel()
 

@@ -17,7 +17,8 @@ def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_th
     if dao is None:
         dao = global_vars.gpkg_dao_data
     if dao is None:
-        tools_log.log_warning("The connection to the database is broken.", parameter=sql)
+        msg = "The connection to the database is broken"
+        tools_log.log_warning(msg, parameter=sql)
         return None
     if log_sql:
         tools_log.log_db(sql, bold='b', stack_level_increase=2)
@@ -29,7 +30,8 @@ def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_th
         if global_vars.session_vars['last_error'] and not is_thread:
             tools_qt.manage_exception_db(global_vars.session_vars['last_error'], sql)
         elif global_vars.session_vars['last_error'] is None and log_info:
-            tools_log.log_info("Any record found", parameter=sql, stack_level_increase=1)
+            msg = "Any record found"
+            tools_log.log_info(msg, parameter=sql, stack_level_increase=1)
 
     return row
 
@@ -40,7 +42,8 @@ def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False
     if dao is None:
         dao = global_vars.gpkg_dao_data
     if dao is None:
-        tools_log.log_warning("The connection to the database is broken.", parameter=sql)
+        msg = "The connection to the database is broken"
+        tools_log.log_warning(msg, parameter=sql)
         return None
     if log_sql:
         tools_log.log_db(sql, bold='b', stack_level_increase=2)
@@ -52,7 +55,8 @@ def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False
         if global_vars.session_vars['last_error'] and not is_thread:
             tools_qt.manage_exception_db(global_vars.session_vars['last_error'], sql)
         elif global_vars.session_vars['last_error'] is None and log_info:
-            tools_log.log_info("Any record found", parameter=sql, stack_level_increase=1)
+            msg = "Any record found"
+            tools_log.log_info(msg, parameter=sql, stack_level_increase=1)
     else:
         if add_empty_row:
             rows = [('', '')]

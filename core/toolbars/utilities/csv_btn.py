@@ -132,7 +132,8 @@ class DrCSVButton(DrAction):
                 csvfile.close()
                 del csvfile
         except Exception as e:
-            tools_qgis.show_warning("EXCEPTION: " + str(e), dialog=dialog)
+            msg = "EXCEPTION"
+            tools_qgis.show_warning(msg, parameter=str(e), dialog=dialog)
 
         if insert_status is False:
             return
@@ -331,12 +332,12 @@ class DrCSVButton(DrAction):
 
         path = tools_qt.get_text(dialog, dialog.txt_file_csv)
         if path is None or path == 'null' or not os.path.exists(path):
-            message = "Please choose a valid path"
-            tools_qgis.show_message(message, message_level=0, dialog=dialog)
+            msg = "Please choose a valid path"
+            tools_qgis.show_message(msg, message_level=0, dialog=dialog)
             return None
         if path.find('.csv') == -1:
-            message = "Please choose a csv file"
-            tools_qgis.show_message(message, message_level=0, dialog=dialog)
+            msg = "Please choose a csv file"
+            tools_qgis.show_message(msg, message_level=0, dialog=dialog)
             return None
 
         return path

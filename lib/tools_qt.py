@@ -636,8 +636,8 @@ def check_expression_filter(expr_filter, log_info=False):
         tools_log.log_info(expr_filter)
     expr = QgsExpression(expr_filter)
     if expr.hasParserError():
-        message = "Expression Error"
-        tools_log.log_warning(message, parameter=expr_filter)
+        msg = "Expression Error"
+        tools_log.log_warning(msg, parameter=expr_filter)
         return False, expr
 
     return True, expr
@@ -666,7 +666,9 @@ def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableMode
 
     # Check for errors
     if model.lastError().isValid():
-        tools_log.log_warning(f"fill_table: {model.lastError().text()}")
+        msg = "{fill_table}: {1}"
+        msg_params = ("fill_table", model.lastError().text(),)
+        tools_log.log_warning(msg, msg_params=msg_params)
 
     # Attach model to tableview
     qtable.setModel(model)
@@ -867,18 +869,18 @@ def set_status(qtable, combo, pos_x, combo_pos, col_update):
 def document_open(qtable, field_name):
     """ Open selected document """
 
-    message = None
+    msg = None
 
     # Get selected rows
     field_index = qtable.model().fieldIndex(field_name)
     selected_list = qtable.selectionModel().selectedRows(field_index)
     if not selected_list:
-        message = "Any record selected"
+        msg = "Any record selected"
     elif len(selected_list) > 1:
-        message = "More then one document selected. Select just one document."
+        msg = "More then one document selected. Select just one document."
 
-    if message:
-        tools_qgis.show_warning(message)
+    if msg:
+        tools_qgis.show_warning(msg)
         return
     path = selected_list[0].data()
     # Check if file exist
@@ -907,9 +909,9 @@ def delete_rows_tableview(qtable):
     for index in selected_list:
         doc_id = index.data()
         selected_id.append(str(doc_id))
-    message = "Are you sure you want to delete these records?"
+    msg = "Are you sure you want to delete these records?"
     title = "Delete records"
-    answer = show_question(message, title, ','.join(selected_id))
+    answer = show_question(msg, title, ','.join(selected_id))
     if answer:
         # Get current editStrategy
         edit_strategy = qtable.model().editStrategy()
@@ -926,8 +928,8 @@ def delete_rows_tableview(qtable):
 
         if not status:
             error = qtable.model().lastError().text()
-            message = "Error deleting data"
-            tools_qgis.show_warning(message, parameter=error)
+            msg = "Error deleting data"
+            tools_qgis.show_warning(msg, parameter=error)
         else:
             msg = "Record deleted"
             tools_qgis.show_info(msg)
@@ -957,14 +959,14 @@ def get_feature_by_id(layer, id, field_id=None):
     return False
 
 
-def show_details(detail_text, title=None, inf_text=None):
+def show_details(detail_text, title=None, inf_text=None, title_params=None):
     """ Shows a message box with detail information """
 
     iface.messageBar().clearWidgets()
     msg_box = QMessageBox()
     msg_box.setText(detail_text)
     if title:
-        title = tr(title)
+        title = tr(title, list_params=title_params)
         msg_box.setWindowTitle(title)
     if inf_text:
         inf_text = tr(inf_text)
@@ -975,10 +977,10 @@ def show_details(detail_text, title=None, inf_text=None):
     msg_box.exec_()
 
 
-def show_warning_open_file(text, inf_text, file_path, context_name=None):
+def show_warning_open_file(text, inf_text, file_path, context_name=None, msg_params=None):
     """ Show warning message with a button to open @file_path """
 
-    widget = iface.messageBar().createMessage(tr(text, context_name), tr(inf_text))
+    widget = iface.messageBar().createMessage(tr(text, context_name, list_params=msg_params), tr(inf_text))
     button = QPushButton(widget)
     button.setText(tr("Open file"))
     button.clicked.connect(partial(tools_os.open_file, file_path))
@@ -986,7 +988,8 @@ def show_warning_open_file(text, inf_text, file_path, context_name=None):
     iface.messageBar().pushWidget(widget, 1)
 
 
-def show_question(text, title=None, inf_text=None, context_name=None, parameter=None, force_action=False) -> bool:
+def show_question(text, title=None, inf_text=None, context_name=None, parameter=None, force_action=False,
+                  msg_params=None, title_params=None, inf_text_params=None):
     """ Ask question to the user """
 
     # Expert mode does not ask and accept all actions
@@ -995,17 +998,17 @@ def show_question(text, title=None, inf_text=None, context_name=None, parameter=
             return True
 
     msg_box = QMessageBox()
-    msg = tr(text, context_name)
+    msg = tr(text, context_name, list_params=msg_params)
     if parameter:
         msg += ": " + str(parameter)
     if len(msg) > 750:
         msg = msg[:750] + "\n[...]"
     msg_box.setText(msg)
     if title:
-        title = tr(title, context_name)
+        title = tr(title, context_name, list_params=title_params)
         msg_box.setWindowTitle(title)
     if inf_text:
-        inf_text = tr(inf_text, context_name)
+        inf_text = tr(inf_text, context_name, list_params=inf_text_params)
         if len(inf_text) > 500:
             inf_text = inf_text[:500] + "\n[...]"
         msg_box.setInformativeText(inf_text)
@@ -1020,7 +1023,7 @@ def show_question(text, title=None, inf_text=None, context_name=None, parameter=
     return False
 
 
-def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=None):
+def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=None, msg_params=None):
     """ Show information box to the user """
 
     msg = ""
@@ -1035,7 +1038,7 @@ def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=
     msg_box.setText(msg)
     msg_box.setWindowFlags(Qt.WindowStaysOnTopHint)
     if title:
-        title = tr(title, context_name)
+        title = tr(title, context_name, list_params=msg_params)
         msg_box.setWindowTitle(title)
     if inf_text:
         inf_text = tr(inf_text, context_name)
@@ -1075,7 +1078,7 @@ def set_stylesheet(widget, style="border: 2px solid red"):
     widget.setStyleSheet(style)
 
 
-def tr(message, context_name=None, aux_context='ui_message'):
+def tr(message, context_name=None, aux_context='ui_message', default=None, list_params=None):
     """ Translate @message looking it in @context_name """
 
     if context_name is None:
@@ -1084,14 +1087,25 @@ def tr(message, context_name=None, aux_context='ui_message'):
     value = None
     try:
         value = QCoreApplication.translate(context_name, message)
-    except TypeError:
+    except TypeError as e:
         value = QCoreApplication.translate(context_name, str(message))
     finally:
-        # If not translation has been found, check into context @aux_context
+        # If not translation has been found, check into context @aux_context and @default
         if value == message:
             value = QCoreApplication.translate(aux_context, message)
+        if default is not None and value == message:
+            value = default
+
+    # Format the value with named or positional parameters
+    if list_params:
+        try:
+            value = value.format(*list_params)
+        except (IndexError, KeyError):
+            # Optional: Log this or ignore formatting failure
+            pass
 
     return value
+
 
 
 def manage_translation(context_name, dialog=None, log_info=False):
@@ -1103,13 +1117,15 @@ def manage_translation(context_name, dialog=None, log_info=False):
     locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_{locale}.qm')
     if not os.path.exists(locale_path):
         if log_info:
-            tools_log.log_info("Locale not found", parameter=locale_path)
+            msg = "Locale not found"
+            tools_log.log_info(msg, parameter=locale_path)
         locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_en_US.qm')
         # If English locale file not found, exit function
         # It means that probably that form has not been translated yet
         if not os.path.exists(locale_path):
             if log_info:
-                tools_log.log_info("Locale not found", parameter=locale_path)
+                msg = "Locale not found"
+                tools_log.log_info(msg, parameter=locale_path)
             return
 
     # Add translation file
@@ -1149,16 +1165,16 @@ def manage_exception_db(exception=None, sql=None, stack_level=2, stack_level_inc
 
         # Set exception message details
         msg = ""
-        msg += f"File name: {file_name}\n"
-        msg += f"Function name: {function_name}\n"
-        msg += f"Line number: {function_line}\n"
+        msg += f"{tr("File name")}: {file_name}\n"
+        msg += f"{tr("Function name")}: {function_name}\n"
+        msg += f"{tr("Line number")}: {function_line}\n"
         if exception:
-            msg += f"Description:\n{description}\n"
+            msg += f"{tr("Description")}:\n{str(exception)}\n"
         if filepath:
-            msg += f"SQL file:\n{filepath}\n\n"
+            msg += f"{tr("SQL File")}:\n{filepath}\n\n"
         if sql:
-            msg += f"SQL:\n {sql}\n\n"
-        msg += f"Schema name: {schema_name}"
+            msg += f"{tr("SQL")}:\n {sql}\n\n"
+        msg += f"{tr("Schema name")}: {schema_name}"
 
         global_vars.session_vars['last_error_msg'] = msg
 
@@ -1167,14 +1183,17 @@ def manage_exception_db(exception=None, sql=None, stack_level=2, stack_level_inc
             title = "Database error"
             show_exception_message(title, msg)
         else:
-            tools_log.log_warning("Exception message not shown to user")
+            message = "Exception message not shown to user"
+            tools_log.log_warning(message)
         tools_log.log_warning(msg, stack_level_increase=2)
 
     except Exception:
-        manage_exception("Unhandled Error")
+        msg = "Unhandled Error"
+        manage_exception(msg)
 
 
-def show_exception_message(title=None, msg="", window_title="Information about exception", pattern=None):
+def show_exception_message(title=None, msg="", window_title="Information about exception", pattern=None,
+                           title_params=None, msg_params=None):
     """ Show exception message in dialog """
 
     # Show dialog only if we are not in a task process
@@ -1184,7 +1203,15 @@ def show_exception_message(title=None, msg="", window_title="Information about e
     global_vars.session_vars['last_error_msg'] = None
     dlg_text.btn_accept.setVisible(False)
     dlg_text.btn_close.clicked.connect(lambda: dlg_text.close())
-    dlg_text.setWindowTitle(window_title)
+    dlg_text.setWindowTitle(tr(window_title))
+
+    # Translate
+    if title:
+        title = tr(title, list_params=title_params)
+    if msg:
+        msg = tr(msg, list_params=msg_params)
+
+    # Write the dialog
     if title:
         dlg_text.lbl_text.setText(title)
     set_widget_text(dlg_text, dlg_text.txt_infolog, msg)
@@ -1198,7 +1225,7 @@ def show_exception_message(title=None, msg="", window_title="Information about e
     dlg_text.show()
 
 
-def manage_exception(title=None, description=None, sql=None, schema_name=None):
+def manage_exception(title=None, description=None, sql=None, schema_name=None, title_params=None):
     """ Manage exception and show information to the user """
 
     # Get traceback
@@ -1209,19 +1236,21 @@ def manage_exception(title=None, description=None, sql=None, schema_name=None):
 
     # Set exception message details
     msg = ""
-    msg += f"Error type: {exc_type}\n"
-    msg += f"File name: {file_name}\n"
-    msg += f"Line number: {exc_tb.tb_lineno}\n"
+    msg += f"{tr("Error type")}: {exc_type}\n"
+    msg += f"{tr("File name")}: {file_name}\n"
+    msg += f"{tr("Line number")}: {exc_tb.tb_lineno}\n"
     msg += f"{trace}\n"
     if description:
-        msg += f"Description: {description}\n"
+        msg += f"{tr("Description")}: {description}\n"
     if sql:
-        msg += f"SQL:\n {sql}\n\n"
-    msg += f"Schema name: {schema_name}"
+        msg += f"{tr("SQL")}:\n {sql}\n\n"
+    msg += f"{tr("Schema name")}: {schema_name}"
+
+    if title:
+        title = tr(title, list_params=title_params)
 
     # Show exception message in dialog and log it
     show_exception_message(title, msg)
-    tools_log.log_warning(msg)
 
     # Log exception message
     tools_log.log_warning(msg)
@@ -1317,10 +1346,12 @@ def _add_translator(locale_path, log_info=False):
         translator.load(locale_path)
         QCoreApplication.installTranslator(translator)
         if log_info:
-            tools_log.log_info("Add translator", parameter=locale_path)
+            msg = "Add translator"
+            tools_log.log_info(msg, parameter=locale_path)
     else:
         if log_info:
-            tools_log.log_info("Locale not found", parameter=locale_path)
+            msg = "Locale not found"
+            tools_log.log_info(msg, parameter=locale_path)
 
 
 def _translate_form(dialog, context_name, aux_context='ui_message'):
@@ -1341,65 +1372,24 @@ def _translate_form(dialog, context_name, aux_context='ui_message'):
 def _translate_widget(context_name, widget, aux_context='ui_message'):
     """ Translate widget text """
 
-    if not widget:
+    if widget is None:
         return
 
     widget_name = ""
     try:
         if type(widget) is QTabWidget:
-            num_tabs = widget.count()
-            for i in range(0, num_tabs):
-                widget_name = widget.widget(i).objectName()
-                text = tr(widget_name, context_name, aux_context)
-                if text not in (widget_name, None, 'None'):
-                    widget.setTabText(i, text)
-                else:
-                    widget_text = widget.tabText(i)
-                    text = tr(widget_text, context_name, aux_context)
-                    if text != widget_text:
-                        widget.setTabText(i, text)
-                _translate_tooltip(context_name, widget, i, aux_context=aux_context)
+            _translate_tab_widget(widget, context_name, aux_context)
         elif type(widget) is QToolBox:
-            num_tabs = widget.count()
-            for i in range(0, num_tabs):
-                widget_name = widget.widget(i).objectName()
-                text = tr(widget_name, context_name, aux_context)
-                if text not in (widget_name, None, 'None'):
-                    widget.setItemText(i, text)
-                else:
-                    widget_text = widget.itemText(i)
-                    text = tr(widget_text, context_name, aux_context)
-                    if text != widget_text:
-                        widget.setItemText(i, text)
-                _translate_tooltip(context_name, widget.widget(i), aux_context=aux_context)
+            _translate_tool_box(widget, context_name, aux_context)
         elif type(widget) is QGroupBox:
-            widget_name = widget.objectName()
-            text = tr(widget_name, context_name, aux_context)
-            if text not in (widget_name, None, 'None'):
-                widget.setTitle(text)
-            else:
-                widget_title = widget.title()
-                text = tr(widget_title, context_name, aux_context)
-                if text != widget_title:
-                    widget.setTitle(text)
-            _translate_tooltip(context_name, widget, aux_context=aux_context)
-        elif type(widget) is QLineEdit or type(widget) is QTextEdit:
+            _translate_group_box(widget, context_name, aux_context)
+        elif type(widget) in (QLineEdit, QTextEdit):
             _translate_tooltip(context_name, widget, aux_context=aux_context)
         else:
-            widget_name = widget.objectName()
-            text = tr(widget_name, context_name, aux_context)
-            if text not in (widget_name, None, 'None'):
-                widget.setText(text)
-            else:
-                widget_text = widget.text()
-                text = tr(widget_text, context_name, aux_context)
-                if text != widget_text:
-                    widget.setText(text)
-            _translate_tooltip(context_name, widget, aux_context=aux_context)
+            _translate_standard_widget(widget, context_name, aux_context)
 
     except Exception as e:
         tools_log.log_info(f"{widget_name} --> {type(e).__name__} --> {e}")
-
 
 def _translate_tooltip(context_name, widget, idx=None, aux_context='ui_message'):
     """ Translate tooltips widgets of the form to current language
@@ -1422,8 +1412,66 @@ def _translate_tooltip(context_name, widget, idx=None, aux_context='ui_message')
         elif widget.toolTip() in ("", None):
             if type(widget) is QGroupBox:
                 widget.setToolTip(widget.title())
+            elif type(widget) is QWidget:
+                 widget.setToolTip("")
             else:
                 widget.setToolTip(widget.text())
+
+def _translate_tab_widget(widget, context_name, aux_context):
+    """Helper function to translate QTabWidget"""
+    num_tabs = widget.count()
+    for i in range(0, num_tabs):
+        widget_name = widget.widget(i).objectName()
+        text = tr(widget_name, context_name, aux_context)
+        if text not in (widget_name, None, 'None'):
+            widget.setTabText(i, text)
+        else:
+            widget_text = widget.tabText(i)
+            text = tr(widget_text, context_name, aux_context)
+            if text != widget_text:
+                widget.setTabText(i, text)
+        _translate_tooltip(context_name, widget, i, aux_context=aux_context)
+
+def _translate_tool_box(widget, context_name, aux_context):
+    """Helper function to translate QToolBox"""
+    num_tabs = widget.count()
+    for i in range(0, num_tabs):
+        widget_name = widget.widget(i).objectName()
+        text = tr(widget_name, context_name, aux_context)
+        if text not in (widget_name, None, 'None'):
+            widget.setItemText(i, text)
+        else:
+            widget_text = widget.itemText(i)
+            text = tr(widget_text, context_name, aux_context)
+            if text != widget_text:
+                widget.setItemText(i, text)
+        _translate_tooltip(context_name, widget.widget(i), aux_context=aux_context)
+
+def _translate_group_box(widget, context_name, aux_context):
+    """Helper function to translate QGroupBox"""
+    widget_name = widget.objectName()
+    text = tr(widget_name, context_name, aux_context)
+    if text not in (widget_name, None, 'None'):
+        widget.setTitle(text)
+    else:
+        widget_title = widget.title()
+        text = tr(widget_title, context_name, aux_context)
+        if text != widget_title:
+            widget.setTitle(text)
+    _translate_tooltip(context_name, widget, aux_context=aux_context)
+
+def _translate_standard_widget(widget, context_name, aux_context):
+    """Helper function to translate standard widgets"""
+    widget_name = widget.objectName()
+    text = tr(widget_name, context_name, aux_context)
+    if text not in (widget_name, None, 'None'):
+        widget.setText(text)
+    else:
+        widget_text = widget.text()
+        text = tr(widget_text, context_name, aux_context)
+        if text != widget_text:
+            widget.setText(text)
+    _translate_tooltip(context_name, widget, aux_context=aux_context)
 
 
 def _set_model_by_list(string_list, widget, proxy_model):

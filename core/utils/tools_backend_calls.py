@@ -47,8 +47,8 @@ def add_object(**kwargs):
     # Get values from dialog
     object_id = tools_qt.get_text(dialog, f"{func_params['sourcewidget']}")
     if object_id == 'null':
-        message = "You need to insert data"
-        tools_qgis.show_warning(message, parameter=func_params['sourcewidget'])
+        msg = "You need to insert data"
+        tools_qgis.show_warning(msg, parameter=func_params['sourcewidget'])
         return
 
     # Check if this object exists
@@ -57,7 +57,8 @@ def add_object(**kwargs):
            " WHERE id = '" + object_id + "'")
     row = tools_db.get_row(sql, log_sql=True)
     if not row:
-        tools_qgis.show_warning("Object id not found", parameter=object_id)
+        msg = "Object id not found"
+        tools_qgis.show_warning(msg, parameter=object_id)
         return
 
     # Check if this object is already associated to current feature
@@ -70,8 +71,8 @@ def add_object(**kwargs):
 
     # If object already exist show warning message
     if row:
-        message = "Object already associated with this feature"
-        tools_qgis.show_warning(message)
+        msg = "Object already associated with this feature"
+        tools_qgis.show_warning(msg)
     # If object not exist perform an INSERT
     else:
         sql = ("INSERT INTO " + tablename + " "
@@ -119,8 +120,8 @@ def delete_object(**kwargs):
     # Get selected rows
     selected_list = qtable.selectionModel().selectedRows()
     if len(selected_list) == 0:
-        message = "Any record selected"
-        tools_qgis.show_warning(message)
+        msg = "Any record selected"
+        tools_qgis.show_warning(msg)
         return
 
     inf_text = ""
@@ -142,8 +143,8 @@ def delete_object(**kwargs):
 
     list_object_id = list_object_id[:-2]
     list_id = list_id[:-2]
-    message = "Are you sure you want to delete these records?"
-    answer = tools_qt.show_question(message, "Delete records", list_object_id)
+    msg = "Are you sure you want to delete these records?"
+    answer = tools_qt.show_question(msg, "Delete records", list_object_id)
     if answer:
         sql = ("DELETE FROM " + tablename + ""
                " WHERE id::integer IN (" + list_id + ")")
@@ -163,12 +164,12 @@ def open_selected_path(**kwargs):
     # Get selected rows
     selected_list = qtable.selectionModel().selectedRows()
     if len(selected_list) == 0:
-        message = "Any record selected"
-        tools_qgis.show_warning(message)
+        msg = "Any record selected"
+        tools_qgis.show_warning(msg)
         return
     elif len(selected_list) > 1:
-        message = "Select just one document"
-        tools_qgis.show_warning(message)
+        msg = "Select just one document"
+        tools_qgis.show_warning(msg)
         return
 
     # Get document path (can be relative or absolute)
@@ -301,8 +302,9 @@ def refresh_attribute_table(**kwargs):
     for layer_name in layers_name_list:
         layer = tools_qgis.get_layer_by_tablename(layer_name)
         if not layer:
-            msg = f"Layer {layer_name} does not found, therefore, not configured"
-            tools_log.log_info(msg)
+            msg = "Layer {0} does not found, therefore, not configured"
+            msg_params = (layer_name)
+            tools_log.log_info(msg, msg_params=msg_params)
             continue
 
         # Get sys variale
@@ -398,7 +400,9 @@ def set_column_visibility(**kwargs):
         col_name = kwargs["field"]
         hidden = kwargs["hidden"]
     except Exception as e:
-        tools_log.log_info(f"{kwargs}-->{type(e).__name__} --> {e}")
+        msg = "{0}-->{1} --> {2}"
+        msg_params = (kwargs, type(e).__name__, e)
+        tools_log.log_info(msg, msg_params=msg_params)
         return
 
     config = layer.attributeTableConfig()
@@ -421,7 +425,9 @@ def set_column_multiline(**kwargs):
             layer = tools_qgis.get_layer_by_tablename(layer)
         field_index = kwargs["fieldIndex"]
     except Exception as e:
-        tools_log.log_info(f"{type(e).__name__} --> {e}")
+        msg = "{0}-->{1}"
+        msg_params = (type(e).__name__, e)
+        tools_log.log_info(msg, msg_params=msg_params)
         return
 
     if field['widgettype'] == 'text':
@@ -441,7 +447,9 @@ def set_read_only(**kwargs):
             layer = tools_qgis.get_layer_by_tablename(layer)
         field_index = kwargs["fieldIndex"]
     except Exception as e:
-        tools_log.log_info(f"{type(e).__name__} --> {e}")
+        msg = "{0}-->{1}"
+        msg_params = (type(e).__name__, e)
+        tools_log.log_info(msg, msg_params=msg_params)
         return
     # Get layer config
     config = layer.editFormConfig()
@@ -471,11 +479,13 @@ def load_qml(**kwargs):
     qml_path = kwargs.get('qmlPath')
 
     if not os.path.exists(qml_path):
-        tools_log.log_warning("File not found", parameter=qml_path)
+        msg = "File not found"
+        tools_log.log_warning(msg, parameter=qml_path)
         return False
 
     if not qml_path.endswith(".qml"):
-        tools_log.log_warning("File extension not valid", parameter=qml_path)
+        msg = "File extension not valid"
+        tools_log.log_warning(msg, parameter=qml_path)
         return False
 
     layer.loadNamedStyle(qml_path)
@@ -488,9 +498,9 @@ def open_url(widget):
     """ Function called in def add_hyperlink(field): -->
         widget.clicked.connect(partial(getattr(tools_backend_calls, func_name), widget)) """
 
-    status, message = tools_os.open_file(widget.text())
-    if status is False and message is not None:
-        tools_qgis.show_warning(message, parameter=widget.text())
+    status, msg = tools_os.open_file(widget.text())
+    if status is False and msg is not None:
+        tools_qgis.show_warning(msg, parameter=widget.text())
 
 
 def fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields):
@@ -616,10 +626,12 @@ def _reload_table(**kwargs):
         columnname = table.property('columnname')
         if columnname is None:
             if no_tabs:
-                msg = f"widget {widgetname} has not columnname and cant be configured"
+                msg = "widget {0} has not columnname and cant be configured"
+                msg_params = (widgetname,)
             else:
-                msg = f"widget {widgetname} in tab {dialog.tab_main.widget(index_tab).objectName()} has not columnname and cant be configured"
-            tools_qgis.show_info(msg, 1)
+                msg = "widget {0} in tab {1} has not columnname and cant be configured"
+                msg_params = (widgetname, dialog.tab_main.widget(index_tab).objectName())
+            tools_qgis.show_info(msg, 1, msg_params=msg_params)
             continue
 
         # Get value from filter widgets
