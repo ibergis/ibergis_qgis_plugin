@@ -131,17 +131,15 @@ class DrToolBoxTask(DrTask):
                         extras += f'"{param_name}":"{value}", '
 
         if widget_is_void:
-            msg = "This param is mandatory. Please, set a value"
-            tools_log.log_info(msg, parameter='')
+            message = "This param is mandatory. Please, set a value"
+            tools_log.log_info(message, parameter='')
             return False
 
         if len(widget_list) > 0:
             extras = extras[:-2]
         extras += '}'
         self.body = tools_dr.create_body(feature=feature_field, extras=extras)
-        msg = "Task 'Toolbox execute' execute procedure '{0}' with parameters: '{1}', '{2}', '{3}'"
-        msg_params = (self.function_name, self.body, f"aux_conn={self.aux_conn}", "is_thread=True")
-        tools_log.log_info(msg, msg_params=msg_params)
+        tools_log.log_info(f"Task 'Toolbox execute' execute procedure '{self.function_name}' with parameters: '{self.body}', 'aux_conn={self.aux_conn}', 'is_thread=True'")
         self.json_result = tools_dr.execute_procedure(self.function_name, self.body,
                                                       aux_conn=self.aux_conn, is_thread=True)
 
@@ -163,9 +161,7 @@ class DrToolBoxTask(DrTask):
         if self.body:
             sql += f"{self.body}"
         sql += f");"
-        msg = "Task 'Toolbox execute' manage json response with parameters: '{0}', '{1}', '{3}'"
-        msg_params = (self.json_result, sql, "None")
-        tools_log.log_info(msg, msg_params=msg_params)
+        tools_log.log_info(f"Task 'Toolbox execute' manage json response with parameters: '{self.json_result}', '{sql}', 'None'")
         tools_dr.manage_json_response(self.json_result, sql, None)
 
         self.dialog.btn_cancel.hide()
@@ -177,12 +173,11 @@ class DrToolBoxTask(DrTask):
             return
 
         if result is False and self.exception is not None:
-            msg = f"<b>{tools_qt.tr("Key")}: </b>{self.exception}<br>"
-            msg += f"<b>{tools_qt.tr("Key container")}: </b>'body/data/ <br>"
-            msg += f"<b>{tools_qt.tr("Python file")}: </b>{__name__} <br>"
-            msg += f"<b>{tools_qt.tr("Python function")}:</b> {self.__class__.__name__} <br>"
-            title = "Key on returned json from ddbb is missed."
-            tools_qt.show_exception_message(title, msg)
+            msg = f"<b>Key: </b>{self.exception}<br>"
+            msg += f"<b>key container: </b>'body/data/ <br>"
+            msg += f"<b>Python file: </b>{__name__} <br>"
+            msg += f"<b>Python function:</b> {self.__class__.__name__} <br>"
+            tools_qt.show_exception_message("Key on returned json from ddbb is missed.", msg)
         # If database fail
         elif result is False and global_vars.session_vars['last_error_msg'] is not None:
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
@@ -190,9 +185,8 @@ class DrToolBoxTask(DrTask):
             tools_dr.fill_tab_log(self.dialog, self.json_result['body']['data'], True, True, 1, False, False)
         # If sql function return null
         elif result is False:
-            msg = "Database returned null. Check postgres function '{0}'"
-            msg_params = ("gw_fct_getinfofromid",)
-            tools_log.log_warning(msg, msg_params=msg_params)
+            msg = f"Database returned null. Check postgres function 'gw_fct_getinfofromid'"
+            tools_log.log_warning(msg)
 
 
     def cancel(self):

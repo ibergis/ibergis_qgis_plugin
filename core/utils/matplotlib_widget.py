@@ -19,16 +19,15 @@ except ImportError:
     matplotlib = None
     FigureCanvasQTAgg = None
     Figure = None
-    msg = "Matplotlib Python package not found. Do you want to install Matplotlib?"
-    if tools_qt.show_question(msg):
+    if tools_qt.show_question("Matplotlib Python package not found. Do you want to install Matplotlib?"):
         subprocess.run(["python", "-m", "ensurepip"])
         install_matplotlib = subprocess.run(['python', '-m', 'pip', 'install', '-U', 'matplotlib'])
         if install_matplotlib.returncode:
-            msg = "Matplotlib cannot be installed automatically. Please install Matplotlib manually."
-            tools_qt.show_info_box(msg)
+            tools_qt.show_info_box(
+                "Matplotlib cannot be installed automatically. Please install Matplotlib manually."
+            )
         else:
-            msg = "Matplotlib installed successfully. Please restart QGIS."
-            tools_qt.show_info_box(msg)
+            tools_qt.show_info_box("Matplotlib installed successfully. Please restart QGIS.")
 
 
 

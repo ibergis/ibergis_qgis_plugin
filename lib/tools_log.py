@@ -173,38 +173,34 @@ def set_logger(logger_name, min_log_level=20):
         global_vars.logger.min_message_level = values.get(int(min_log_level), 0)
 
 
-def log_debug(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None,
-              msg_params=None):
+def log_debug(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None):
     """ Write debug message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name, msg_params=msg_params)
+    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name)
     if global_vars.logger and logger_file:
         global_vars.logger.debug(msg, stack_level_increase=stack_level_increase)
 
 
-def log_info(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None,
-             msg_params=None):
+def log_info(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None):
     """ Write information message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name, msg_params=msg_params)
+    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name)
     if global_vars.logger and logger_file:
         global_vars.logger.info(msg, stack_level_increase=stack_level_increase)
 
 
-def log_warning(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None,
-                msg_params=None):
+def log_warning(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None):
     """ Write warning message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 1, context_name, parameter, tab_name, msg_params=msg_params)
+    msg = _qgis_log_message(text, 1, context_name, parameter, tab_name)
     if global_vars.logger and logger_file:
         global_vars.logger.warning(msg, stack_level_increase=stack_level_increase)
 
 
-def log_error(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None,
-              msg_params=None):
+def log_error(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None):
     """ Write error message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 2, context_name, parameter, tab_name, msg_params=msg_params)
+    msg = _qgis_log_message(text, 2, context_name, parameter, tab_name)
     if global_vars.logger and logger_file:
         global_vars.logger.error(msg, stack_level_increase=stack_level_increase)
 
@@ -216,23 +212,23 @@ def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message
     if type(text) is dict:
         text = json.dumps(text)
 
-    msg_ = (f'<font color="blue"><{bold}>{header}: </font>'
+    msg = (f'<font color="blue"><{bold}>{header}: </font>'
            f'<font color="{color}"><{bold}>{text}</font>')
     limit = 200
     if global_vars.logger and global_vars.logger.log_db_limit_characters:
         limit = global_vars.logger.log_db_limit_characters
-    msg_ = (msg_[:limit] + '...') if len(msg_) > limit and bold == '' else msg_
+    msg = (msg[:limit] + '...') if len(msg) > limit and bold == '' else msg
 
     # Check session parameter 'min_message_level' to know if we need to log message in QGIS Log Messages Panel
     if global_vars.logger and message_level >= global_vars.logger.min_message_level:
-        QgsMessageLog.logMessage(msg_, global_vars.logger.tab_db, message_level)
+        QgsMessageLog.logMessage(msg, global_vars.logger.tab_db, message_level)
 
     # Log same message into logger file
     if global_vars.logger and logger_file:
         global_vars.logger.info(text, stack_level_increase=stack_level_increase)
 
 
-def _qgis_log_message(text=None, message_level=0, context_name=None, parameter=None, tab_name=None, msg_params=None):
+def _qgis_log_message(text=None, message_level=0, context_name=None, parameter=None, tab_name=None):
     """
     Write message into QGIS Log Messages Panel with selected message level
         :param message_level: {INFO = 0, WARNING = 1, CRITICAL = 2, SUCCESS = 3, NONE = 4}
@@ -240,7 +236,7 @@ def _qgis_log_message(text=None, message_level=0, context_name=None, parameter=N
 
     msg = None
     if text:
-        msg = tools_qt.tr(text, context_name, list_params=msg_params)
+        msg = tools_qt.tr(text, context_name)
         if parameter:
             msg += f": {parameter}"
 

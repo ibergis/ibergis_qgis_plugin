@@ -49,14 +49,11 @@ class DrProjectCheckTask(DrTask):
         layers = self.params['layers']
         init_project = self.params['init_project']
         self.dlg_audit_project = self.params['dialog']
-        msg = "Task 'Check project' execute function '{0}'"
-        msg_params = ("check_project_execution",)
-        tools_log.log_info(msg, msg_params=msg_params)
+        tools_log.log_info(f"Task 'Check project' execute function 'check_project_execution'")
         # Call functions
         status, self.result = self.check_project_execution(layers, init_project)
         if not status:
-            msg = "Function {0} returned False. Reason"
-            tools_log.log_info(msg, parameter=self.result, msg_params=msg_params)
+            tools_log.log_info("Function check_project_execution returned False. Reason:", parameter=self.result)
             return False
 
         return True
@@ -76,12 +73,11 @@ class DrProjectCheckTask(DrTask):
 
         # Handle exception
         if self.exception is not None:
-            msg = f"<b>{tools_qt.tr("Key")}: </b>{self.exception}<br>"
-            msg += f"<b>{tools_qt.tr("Key container")}: </b>'body/data/ <br>"
-            msg += f"<b>{tools_qt.tr("Python file")}: </b>{__name__} <br>"
-            msg += f"<b>{tools_qt.tr("Python function")}:</b> {self.__class__.__name__} <br>"
-            title = "Key on returned json from ddbb is missed."
-            tools_qt.show_exception_message(title, msg)
+            msg = f"<b>Key: </b>{self.exception}<br>"
+            msg += f"<b>key container: </b>'body/data/ <br>"
+            msg += f"<b>Python file: </b>{__name__} <br>"
+            msg += f"<b>Python function:</b> {self.__class__.__name__} <br>"
+            tools_qt.show_exception_message("Key on returned json from ddbb is missed.", msg)
             return
 
         # Show dialog with audit check project result

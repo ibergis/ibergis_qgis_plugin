@@ -60,23 +60,18 @@ class DrProjectLayersConfig(DrTask):
         if result:
             if self.exception:
                 if self.message:
-                    msg = str(self.message)
-                    tools_log.log_warning(msg)
+                    tools_log.log_warning(f"{self.message}")
             return
 
         # If sql function return null
         if result is False:
-            msg = "Task failed: {0}. This is probably a DB error, check postgres function '{1}'."
-            msg_params = (self.description(), "gw_fct_getinfofromid",)
-            tools_log.log_warning(msg, msg_params=msg_params)
+            msg = f"Task failed: {self.description()}. This is probably a DB error, check postgres function" \
+                  f" 'gw_fct_getinfofromid'."
+            tools_log.log_warning(msg)
 
         if self.exception:
-            msg = "Task aborted: {0}"
-            msg_params = (self.description(),)
-            tools_log.log_info(msg, msg_params=msg_params)
-            msg = "Exception: {0}"
-            msg_params = (self.exception(),)
-            tools_log.log_info(msg, msg_params=msg_params)
+            tools_log.log_info(f"Task aborted: {self.description()}")
+            tools_log.log_warning(f"Exception: {self.exception}")
 
 
     # region private functions
@@ -122,9 +117,7 @@ class DrProjectLayersConfig(DrTask):
         function_name = 'getinfofromid'
         exists = tools_os.check_python_function(tools_fct, function_name)
         if not exists:
-            msg = "Function not found in {0}: {1}"
-            msg_params = ("tools_fct", function_name,)
-            tools_qgis.show_warning(msg, msg_params=msg_params)
+            tools_qgis.show_warning("Function not found in tools_fct", parameter=function_name)
             return None
 
         msg_failed = ""
@@ -153,25 +146,19 @@ class DrProjectLayersConfig(DrTask):
             if self.json_result['status'] == 'Failed':
                 continue
             if 'body' not in self.json_result:
-                msg = "Not '{0}'"
-                msg_params = ("body",)
-                tools_log.log_info(msg, msg_params=msg_params)
+                tools_log.log_info("Not 'body'")
                 continue
             if 'data' not in self.json_result['body']:
-                msg = "Not '{0}'"
-                msg_params = ("data",)
-                tools_log.log_info(msg, msg_params=msg_params)
+                tools_log.log_info("Not 'data'")
                 continue
 
             print(f"{layer_name=}")
             tools_dr.config_layer_attributes(self.json_result, layer, layer_name, thread=self)
 
         if msg_failed != "":
-            msg = "Execute failed."
-            tools_qt.show_exception_message(msg, msg_failed)
+            tools_qt.show_exception_message("Execute failed.", msg_failed)
 
         if msg_key != "":
-            msg = "Key on returned json from ddbb is missed."
-            tools_qt.show_exception_message(msg, msg_key)
+            tools_qt.show_exception_message("Key on returned json from ddbb is missed.", msg_key)
 
     # endregion

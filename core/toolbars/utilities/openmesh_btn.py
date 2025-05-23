@@ -31,9 +31,7 @@ class DrOpenMeshButton(DrAction):
         mesh_path = Path(folder_path) / MESH_FILE
 
         if not mesh_path.exists():
-            msg = "File {0} not found in this folder."
-            msg_params = ("Iber2D.dat",)
-            tools_qt.show_info_box(msg, msg_params=msg_params)
+            tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
             return
 
         self.thread = DrOpenMeshTask("Open mesh file", folder_path)

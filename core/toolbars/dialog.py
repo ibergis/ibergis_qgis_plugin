@@ -46,8 +46,6 @@ class DrAction:
 
 
     def clicked_event(self):
-        
-        msg = "Action has no function!!"
-        title = "INFO"
-        tools_qgis.show_message(msg, title=title)
+
+        tools_qgis.show_message("Action has no function!!", "INFO")
 

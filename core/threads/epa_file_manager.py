@@ -98,9 +98,7 @@ class DrEpaFileManager(DrTask):
         super().run()
 
         self.initialize_variables()
-        msg = "Task 'Generate INP file' execute function '{0}'"
-        msg_params = ("_export_inp(self)",)
-        tools_log.log_info(msg, msg_params=msg_params)
+        tools_log.log_info(f"Task 'Generate INP file' execute function 'def _export_inp(self)'")
         status = self._export_inp()
 
         self._close_dao()
@@ -130,9 +128,7 @@ class DrEpaFileManager(DrTask):
 
     def cancel(self):
 
-        msg = "Task canceled - {0}"
-        msg_params = (self.description(),)
-        tools_qgis.show_info(msg, msg_params=msg_params)
+        tools_qgis.show_info(f"Task canceled - {self.description()}")
         # self._close_file()
         super().cancel()
 
@@ -157,8 +153,7 @@ class DrEpaFileManager(DrTask):
         if self.isCanceled():
             return False
 
-        msg = "Export INP file"
-        tools_log.log_info(msg)
+        tools_log.log_info(f"Export INP file")
 
         self.process = GenerateSwmmInpFile()
         self.process.initAlgorithm(None)

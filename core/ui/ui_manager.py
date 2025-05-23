@@ -9,8 +9,6 @@ import os
 
 from qgis.core import QgsProject
 from qgis.PyQt import uic, QtCore
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QLineEdit
 
 from .dialog import DrDialog
 from .main_window import DrMainWindow
@@ -89,19 +87,6 @@ class DrCreateMeshUi(DrDialog, FORM_CLASS):
 FORM_CLASS = _get_ui_class('admin_ui.ui', 'admin')
 class DrAdminUi(DrMainWindow, FORM_CLASS):
     dlg_closed = QtCore.pyqtSignal()
-
-FORM_CLASS = _get_ui_class('admin_translation.ui', 'admin')
-class DrAdminTranslationUi(DrDialog, FORM_CLASS):
-    pass
-
-FORM_CLASS = _get_ui_class('admin_update_translation.ui', 'admin')
-class DrSchemaI18NUpdateUi(DrDialog, FORM_CLASS):
-    pass
-
-
-FORM_CLASS = _get_ui_class('admin_i18n_manager.ui', 'admin')
-class DrSchemaI18NManagerUi(DrDialog, FORM_CLASS):
-    pass
 
 FORM_CLASS = _get_ui_class('toolbox.ui', 'utilities')
 class DrToolboxUi(DrDialog, FORM_CLASS):

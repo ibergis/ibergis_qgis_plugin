@@ -32,15 +32,13 @@ class DrGisFileCreate:
 
         # If QGIS template locale folder not found, use English one
         if not os.path.exists(gis_locale_path):
-            msg = "Locale gis folder not found"
-            tools_log.log_info(msg, parameter=gis_locale_path)
+            tools_log.log_info("Locale gis folder not found", parameter=gis_locale_path)
             gis_locale_path = os.path.join(gis_folder, "en_US")
 
         # Check if template_path and folder_path exists
         template_path = os.path.join(gis_locale_path, f"{roletype}.{gis_extension}")
         if not os.path.exists(template_path):
-            msg = "Template GIS file not found"
-            tools_qgis.show_warning(msg, parameter=template_path, duration=20)
+            tools_qgis.show_warning("Template GIS file not found", parameter=template_path, duration=20)
             return False, None
 
         # Manage default parameters
@@ -53,16 +51,13 @@ class DrGisFileCreate:
         # Set QGS file path
         qgs_path = folder_path + os.sep + filename + "." + gis_extension
         if os.path.exists(qgs_path):
-            msg = "Do you want to overwrite file?"
-            title = "Overwrite file"
-            answer = tools_qt.show_question(msg, title, force_action=True)
+            message = "Do you want to overwrite file?"
+            answer = tools_qt.show_question(message, "overwrite file", force_action=True)
             if not answer:
                 return False, qgs_path
 
         # Create destination file from template file
-        msg = "Creating GIS file... {0}"
-        msg_params = (qgs_path)
-        tools_log.log_info(msg, msg_params=msg_params)
+        tools_log.log_info(f"Creating GIS file... {qgs_path}")
         shutil.copyfile(template_path, qgs_path)
 
         # Set layer source parameters
@@ -85,17 +80,15 @@ class DrGisFileCreate:
         try:
             with open(qgs_path, "w") as f:
                 f.write(content)
-            msg = "GIS file generated successfully"
-            tools_qgis.show_info(msg, parameter=qgs_path)
-            msg = "Do you want to open GIS project?"
-            title = "GIS file generated successfully"
-            answer = tools_qt.show_question(msg, title, force_action=True)
+            tools_qgis.show_info("GIS file generated successfully", parameter=qgs_path)
+            message = "Do you want to open GIS project?"
+            answer = tools_qt.show_question(message, "GIS file generated successfully", force_action=True)
             if answer:
                 return True, qgs_path
             return False, qgs_path
         except IOError:
-            msg = "File cannot be created. Check if it is already opened"
-            tools_qgis.show_warning(msg, parameter=qgs_path)
+            message = "File cannot be created. Check if it is already opened"
+            tools_qgis.show_warning(message, parameter=qgs_path)
 
 
     # region private functions
@@ -112,8 +105,7 @@ class DrGisFileCreate:
             aux = aux.replace("__SRID__", str(row[0]))
             aux = aux.replace("__AUTHID__", row[1])
         else:
-            msg = "Database error"
-            tools_log.log_info(msg, parameter=global_vars.gpkg_dao_config.last_error)
+            tools_log.log_info(f"Database error: {global_vars.gpkg_dao_config.last_error}")
 
         return aux
 
@@ -148,8 +140,7 @@ class DrGisFileCreate:
             aux = aux.replace("__YMIN__", str(valor))
 
         else:
-            msg = "Database error"
-            tools_log.log_info(msg, parameter=global_vars.gpkg_dao_data.last_error)
+            tools_log.log_info(f"Database error: {global_vars.gpkg_dao_data.last_error}")
 
         return aux
 
