@@ -479,6 +479,7 @@ def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, mesh_anchor_l
     # Add fields
     provider = point_anchor_layer.dataProvider()
     fields = [
+        QgsField("cellsize", QVariant.Double),
         QgsField("z_value", QVariant.Double),
         QgsField("source", QVariant.String)  # To track where the point came from
     ]
@@ -490,7 +491,7 @@ def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, mesh_anchor_l
     for feature in mesh_anchor_points_layer.getFeatures():
         new_feature = QgsFeature()
         new_feature.setGeometry(feature.geometry())
-        new_feature.setAttributes([feature["z_value"], "mesh_anchor"])
+        new_feature.setAttributes([feature["cellsize"], feature["z_value"], "mesh_anchor"])
         features.append(new_feature)
 
     provider.addFeatures(features)
