@@ -3,7 +3,7 @@ from functools import partial
 from pathlib import Path
 from time import time
 
-from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer, QgsGeometry, QgsFeature, QgsField
+from qgis.core import Qgis, QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer, QgsGeometry, QgsFeature, QgsField
 from qgis.PyQt.QtCore import Qt, QTimer, QVariant
 from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox, QTextEdit
 
@@ -41,6 +41,18 @@ class DrCreateMeshButton(DrAction):
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
+        dlg.cmb_mesh_qgis_layer.setFilters(Qgis.LayerFilter.MeshLayer)
+
+        # Hide grb_cleanup
+        dlg.grb_cleanup_data.setVisible(False)
+
+        # Disable widgets of the radio buttons
+        dlg.txt_mesh_qgis_path.setEnabled(False)
+        dlg.btn_mesh_qgis_path.setEnabled(False)
+        dlg.cmb_mesh_qgis_layer.setEnabled(False)
+        # Temporary disable the iber_from_qgis radio button
+        dlg.rb_mesh_qgis.setEnabled(False)  # TODO: enable when code is done
+        dlg.rb_mesh_iber_from_qgis.setEnabled(False)
 
         # Fill raster layers combos
         project = QgsProject.instance()
@@ -83,6 +95,17 @@ class DrCreateMeshButton(DrAction):
         dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_start.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
+        # Radio button IBER mesh
+        dlg.rb_mesh_iber.toggled.connect(dlg.grb_roughness.setEnabled)
+        dlg.rb_mesh_iber.toggled.connect(dlg.grb_losses.setEnabled)
+        # Radio button QGIS mesh
+        dlg.rb_mesh_qgis.toggled.connect(dlg.txt_mesh_qgis_path.setEnabled)
+        dlg.rb_mesh_qgis.toggled.connect(dlg.btn_mesh_qgis_path.setEnabled)
+        # Radio button IBER mesh from QGIS mesh
+        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.cmb_mesh_qgis_layer.setEnabled)
+        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.grb_roughness.setEnabled)
+        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.grb_losses.setEnabled)
+        # Dialog buttons
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.rejected.connect(self._save_widget_values)
