@@ -19,7 +19,7 @@ from . import createmesh_core as core
 from .validatemesh import validate_input_layers, validate_inlets_in_triangles
 from .task import DrTask
 from ..utils import mesh_parser
-from ..utils.meshing_process import triangulate_custom, create_temp_mesh_layer
+from ..utils.meshing_process import triangulate_custom, create_temp_mesh_layer, layer_to_gdf
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt
 
@@ -331,6 +331,7 @@ class DrCreateMeshTask(DrTask):
             ground_vertices_df = pd.DataFrame(vertices, columns=["x", "y"])
             ground_vertices_df["category"] = "ground"
 
+            # Get z-values from DEM
             if self.dem_layer is None:
                 ground_vertices_df["z"] = 0
             else:
@@ -343,6 +344,14 @@ class DrCreateMeshTask(DrTask):
                     return val if res else 0
 
                 ground_vertices_df["z"] = ground_vertices_df.apply(lambda row: get_z(row["x"], row["y"]), axis=1)
+
+            # Get z-values from point anchors
+            if self.point_anchor_layer is not None:
+                point_anchor_df = layer_to_gdf(self.point_anchor_layer, ["z_value"])
+                for _, anchor in point_anchor_df.iterrows():
+                    x, y = anchor.geometry.x, anchor.geometry.y
+                    mask = (ground_vertices_df["x"] == x) & (ground_vertices_df["y"] == y)
+                    ground_vertices_df.loc[mask, "z"] = anchor["z_value"]
 
             print("Validating landuses... ", end="")
             start = time.time()

@@ -226,10 +226,10 @@ try:
 
         point_anchors = None
         if point_anchor_layer is not None:
-            point_anchors = layer_to_gdf(point_anchor_layer, fields, only_selected_features)
+            point_anchors = layer_to_gdf(point_anchor_layer, fields + ["z_value"], only_selected_features)
         else:
             point_anchors = gpd.GeoDataFrame(
-                geometry=[], data={"cellsize": []}, crs=data.crs
+                geometry=[], data={"cellsize": [], "z_value": []}, crs=data.crs
             ) # type: ignore
         print(f"Done! {time.time() - start}s")
 
@@ -470,7 +470,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
     return layer
 
 
-def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer: QgsVectorLayer, dao, bridge_cellsize: float = 10) -> tuple[QgsVectorLayer, QgsVectorLayer]:
+def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, mesh_anchor_lines_layer: QgsVectorLayer, bridges_layer: QgsVectorLayer, dao, bridge_cellsize: float = 10) -> tuple[QgsVectorLayer, QgsVectorLayer]:
     """Create virtual layers for point and line anchors combining mesh anchor points and bridge features."""
     # Create virtual layer for point anchors
     point_anchor_layer = QgsVectorLayer("Point", "Point Anchors", "memory")
@@ -479,7 +479,7 @@ def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer
     # Add fields
     provider = point_anchor_layer.dataProvider()
     fields = [
-        QgsField("cellsize", QVariant.Double),
+        QgsField("z_value", QVariant.Double),
         QgsField("source", QVariant.String)  # To track where the point came from
     ]
     provider.addAttributes(fields)
@@ -490,7 +490,7 @@ def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer
     for feature in mesh_anchor_points_layer.getFeatures():
         new_feature = QgsFeature()
         new_feature.setGeometry(feature.geometry())
-        new_feature.setAttributes([feature["cellsize"], "mesh_anchor"])
+        new_feature.setAttributes([feature["z_value"], "mesh_anchor"])
         features.append(new_feature)
 
     provider.addFeatures(features)
@@ -508,6 +508,17 @@ def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, bridges_layer
     ]
     provider.addAttributes(fields)
     line_anchor_layer.updateFields()
+
+    # Add features from mesh anchor lines
+    features = []
+    for feature in mesh_anchor_lines_layer.getFeatures():
+        new_feature = QgsFeature()
+        new_feature.setGeometry(feature.geometry())
+        new_feature.setAttributes([feature["cellsize"], "mesh_anchor"])
+        features.append(new_feature)
+
+    provider.addFeatures(features)
+    line_anchor_layer.updateExtents()
 
     # Add bridge lines as anchor lines with additional vertices
     features = []
