@@ -208,9 +208,11 @@ class DrCreateMeshButton(DrAction):
 
         # Create anchor layers combining mesh anchor points and bridge features
         mesh_anchor_points_lyr = self._get_layer(self.dao, "mesh_anchor_points")
+        mesh_anchor_lines_lyr = self._get_layer(self.dao, "mesh_anchor_lines")
         bridge_lyr = self._get_layer(self.dao, "bridge")
         point_anchor_layer, line_anchor_layer = create_anchor_layers(
             mesh_anchor_points_lyr,
+            mesh_anchor_lines_lyr,
             bridge_lyr,
             self.dao,
             lowest_cellsize
