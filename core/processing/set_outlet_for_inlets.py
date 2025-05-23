@@ -422,45 +422,19 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         pinlet_layer = parameters[self.FILE_PINLETS]
         outlet_layer = parameters[self.FILE_OUTLETS]
 
+        if inlet_layer is None:
+            error_message += self.tr(f'Inlet layer not found in this schema.\n\n')
+
+        if pinlet_layer is None:
+            error_message += self.tr(f'Pinlet layer not found in this schema.\n\n')
+
+        if outlet_layer is None:
+            error_message += self.tr(f'Outlet layer not found in this schema.\n\n')
+
         if inlet_layer is None and pinlet_layer is None:
             return False, 'Is required at least one layer selected to Inlet or Pinlet.'
-
-        expected_inlet_layer = tools_qgis.get_layer_by_tablename('inlet')
-        if expected_inlet_layer is not None and global_vars.gpkg_dao_data is not None:
-            expected_schema_path: str = expected_inlet_layer.source().split('|')[0]
-            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
-                error_message += self.tr(f'Wrong inlet layer schema name: {expected_inlet_layer.source()}\n\n')
-        else:
-            error_message += self.tr(f'Error getting expected inlet layer.\n\n')
-        if expected_inlet_layer and inlet_layer != expected_inlet_layer.id():
-            error_message += self.tr(f'Wrong inlet layer selected. \nExpected layer: {expected_inlet_layer.name()} - Path: {expected_inlet_layer.source()}\n\n')
-        elif expected_inlet_layer is None:
-            error_message += self.tr(f'Wrong inlet layer selected. Expected layer not found\n')
-
-
-        expected_pinlet_layer = tools_qgis.get_layer_by_tablename('pinlet')
-        if expected_pinlet_layer is not None and global_vars.gpkg_dao_data is not None:
-            expected_schema_path: str = expected_pinlet_layer.source().split('|')[0]
-            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
-                error_message += self.tr(f'Wrong pinlet layer schema name: {expected_pinlet_layer.source()}\n\n')
-        else:
-            error_message += self.tr(f'Error getting expected pinlet layer.\n\n')
-        if expected_pinlet_layer and pinlet_layer != expected_pinlet_layer.id():
-            error_message += self.tr(f'Wrong pinlet layer selected. \nExpected layer: {expected_pinlet_layer.name()} - Path: {expected_pinlet_layer.source()}\n\n')
-        elif expected_pinlet_layer is None:
-            error_message += self.tr(f'Wrong pinlet layer selected. Expected layer not found\n')
-
-        expected_outlet_layer = tools_qgis.get_layer_by_tablename('inp_junction')
-        if expected_outlet_layer is not None and global_vars.gpkg_dao_data is not None:
-            expected_schema_path: str = expected_outlet_layer.source().split('|')[0]
-            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
-                error_message += self.tr(f'Wrong outlet layer schema name: {expected_outlet_layer.source()}\n\n')
-        else:
-            error_message += self.tr(f'Error getting expected outlet layer.\n\n')
-        if expected_outlet_layer and outlet_layer != expected_outlet_layer.id():
-            error_message += self.tr(f'Wrong outlet layer selected. \nExpected layer: {expected_outlet_layer.name()} - Path: {expected_outlet_layer.source()}\n\n')
-        elif expected_outlet_layer is None:
-            error_message += self.tr(f'Wrong outlet layer selected. Expected layer not found\n')
+        elif (inlet_layer is not None or pinlet_layer is not None) and outlet_layer is not None:
+            error_message = ''
 
         if len(error_message) > 0:
             return False, error_message

@@ -317,7 +317,7 @@ def find_toc_group(root, group, case_sensitive=False):
 
     if group is None:
         return None
-    
+
     for grp in root.findGroups():
         group1 = grp.name()
         group2 = group
@@ -399,13 +399,10 @@ def get_layer_schema(layer):
         return None
 
     table_schema = None
-    uri = layer.dataProvider().dataSourceUri().lower()
 
-    pos_ini = uri.find('table=')
-    pos_end_schema = uri.rfind('.')
-    pos_fi = uri.find('" ')
-    if pos_ini != -1 and pos_fi != -1:
-        table_schema = uri[pos_ini + 7:pos_end_schema - 1]
+    expected_schema_path: str = layer.source().split('|')[0]
+    if expected_schema_path:
+        table_schema = os.path.normpath(expected_schema_path)
 
     return table_schema
 
@@ -435,12 +432,16 @@ def get_layer_by_tablename(tablename, show_warning_=False, log_info=False, schem
     if len(layers) == 0:
         return None
 
+    if schema_name is None:
+        schema_name = os.path.normpath(global_vars.gpkg_dao_data.db_filepath)
+
     # Iterate over all layers
     layer = None
     for cur_layer in layers:
         cur_layer_tablename = get_tablename_from_layer(cur_layer)
+        cur_layer_schema_name = get_layer_schema(cur_layer)
 
-        if cur_layer_tablename == tablename:
+        if cur_layer_tablename == tablename and cur_layer_schema_name == schema_name:
             layer = cur_layer
             break
 

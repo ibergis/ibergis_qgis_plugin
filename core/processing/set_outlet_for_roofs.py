@@ -335,32 +335,14 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         elev_raster_layer = parameters[self.FILE_ELEV_RASTER]
         outlet_layer = parameters[self.FILE_OUTLETS]
 
-        expected_roof_layer = tools_qgis.get_layer_by_tablename('roof')
-        if expected_roof_layer is not None and global_vars.gpkg_dao_data is not None:
-            expected_schema_path: str = expected_roof_layer.source().split('|')[0]
-            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
-                error_message += self.tr(f'Wrong roof layer schema name: {expected_roof_layer.source()}\n\n')
-        else:
-            error_message += self.tr(f'Error getting expected roof layer.\n\n')
-        if expected_roof_layer and roof_layer != expected_roof_layer.id():
-            error_message += self.tr(f'Wrong roof layer selected. \nExpected layer: {expected_roof_layer.name()} - Path: {expected_roof_layer.source()}\n\n')
-        elif expected_roof_layer is None:
-            error_message += self.tr(f'Wrong roof layer selected. Expected layer not found\n')
+        if roof_layer is None:
+            error_message += self.tr(f'Roof layer not found in this schema.\n\n')
 
         if elev_raster_layer is None:
             error_message += self.tr(f'Missing raster layer\n')
 
-        expected_outlet_layer = tools_qgis.get_layer_by_tablename('inp_junction')
-        if expected_outlet_layer is not None and global_vars.gpkg_dao_data is not None:
-            expected_schema_path: str = expected_outlet_layer.source().split('|')[0]
-            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
-                error_message += self.tr(f'Wrong outlet layer schema name: {expected_outlet_layer.source()}\n\n')
-        else:
-            error_message += self.tr(f'Error getting expected outlet layer.\n\n')
-        if expected_outlet_layer and outlet_layer != expected_outlet_layer.id():
-            error_message += self.tr(f'Wrong outlet layer selected. \nExpected layer: {expected_outlet_layer.name()} - Path: {expected_outlet_layer.source()}\n\n')
-        elif expected_outlet_layer is None:
-            error_message += self.tr(f'Wrong outlet layer selected. Expected layer not found\n')
+        if outlet_layer is None:
+            error_message += self.tr(f'Outlet layer not found in this schema.\n\n')
 
         if len(error_message) > 0:
             return False, error_message
