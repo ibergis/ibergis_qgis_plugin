@@ -271,6 +271,7 @@ create table bridge (
     freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL),
     sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL),
     gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL),
+	length real CHECK (typeof(gaugenumber)='real' OR gaugenumber = NULL),
     descript text unique check (typeof(descript) = 'text' or descript = null),
     geom geometry
 );
