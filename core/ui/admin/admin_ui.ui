@@ -403,7 +403,7 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>tabWidget</tabstop>
+  <tabstop>tab_main</tabstop>
   <tabstop>gpkg_name</tabstop>
   <tabstop>txt_description</tabstop>
   <tabstop>data_path</tabstop>

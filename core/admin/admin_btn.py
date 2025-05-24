@@ -243,7 +243,7 @@ class DrAdminButton(DrGpkgBase):
 
     def change_tab(self):
 
-        self.dlg_readsql.tabWidget.setCurrentIndex(1)
+        self.dlg_readsql.tab_main.setCurrentIndex(1)
         gpkg_name = tools_dr.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
                                                False, force_reload=True)
         gpkg_path = tools_dr.get_config_parser('btn_admin', 'project_path', "user", "session",
