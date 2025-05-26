@@ -240,8 +240,6 @@ class DrCreateMeshButton(DrAction):
             self.dao,
             lowest_cellsize
         )
-        tools_qt.add_layer_to_toc(point_anchor_layer, "Mesh anchors", create_groups=True)
-        tools_qt.add_layer_to_toc(line_anchor_layer, "Mesh anchors", create_groups=True)
         # Reset txt_infolog
         tools_qt.set_widget_text(dlg, 'txt_infolog', "")
 
