@@ -957,17 +957,17 @@ def get_feature_by_id(layer, id, field_id=None):
     return False
 
 
-def show_details(detail_text, title=None, inf_text=None):
+def show_details(detail_text, title=None, inf_text=None, msg_params=None, title_params=None, inf_text_params=None):
     """ Shows a message box with detail information """
 
     iface.messageBar().clearWidgets()
     msg_box = QMessageBox()
-    msg_box.setText(detail_text)
+    msg_box.setText(detail_text, list_params=msg_params)
     if title:
-        title = tr(title)
+        title = tr(title, list_params=title_params)
         msg_box.setWindowTitle(title)
     if inf_text:
-        inf_text = tr(inf_text)
+        inf_text = tr(inf_text, list_params=inf_text_params)
         msg_box.setInformativeText(inf_text)
     msg_box.setWindowFlags(Qt.WindowStaysOnTopHint)
     msg_box.setStandardButtons(QMessageBox.Ok)
@@ -975,8 +975,11 @@ def show_details(detail_text, title=None, inf_text=None):
     msg_box.exec_()
 
 
-def show_warning_open_file(text, inf_text, file_path, context_name=None):
+def show_warning_open_file(text, inf_text, file_path, context_name=None, msg_params=None, inf_text_params=None):
     """ Show warning message with a button to open @file_path """
+    
+    text = tr(text, context_name, list_params=msg_params)
+    inf_text = tr(inf_text, context_name, list_params=inf_text_params)
 
     widget = iface.messageBar().createMessage(tr(text, context_name), tr(inf_text))
     button = QPushButton(widget)
@@ -986,7 +989,8 @@ def show_warning_open_file(text, inf_text, file_path, context_name=None):
     iface.messageBar().pushWidget(widget, 1)
 
 
-def show_question(text, title=None, inf_text=None, context_name=None, parameter=None, force_action=False) -> bool:
+def show_question(text, title=None, inf_text=None, context_name=None, parameter=None, force_action=False,
+                  msg_params=None, title_params=None, inf_text_params=None) -> bool:
     """ Ask question to the user """
 
     # Expert mode does not ask and accept all actions
@@ -995,17 +999,17 @@ def show_question(text, title=None, inf_text=None, context_name=None, parameter=
             return True
 
     msg_box = QMessageBox()
-    msg = tr(text, context_name)
+    msg = tr(text, context_name, list_params=msg_params)
     if parameter:
         msg += ": " + str(parameter)
     if len(msg) > 750:
         msg = msg[:750] + "\n[...]"
     msg_box.setText(msg)
     if title:
-        title = tr(title, context_name)
+        title = tr(title, context_name, list_params=title_params)
         msg_box.setWindowTitle(title)
     if inf_text:
-        inf_text = tr(inf_text, context_name)
+        inf_text = tr(inf_text, context_name, list_params=inf_text_params)
         if len(inf_text) > 500:
             inf_text = inf_text[:500] + "\n[...]"
         msg_box.setInformativeText(inf_text)
@@ -1020,12 +1024,13 @@ def show_question(text, title=None, inf_text=None, context_name=None, parameter=
     return False
 
 
-def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=None):
+def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=None, 
+                  msg_params=None, title_params=None, inf_text_params=None):
     """ Show information box to the user """
 
     msg = ""
     if text:
-        msg = tr(text, context_name)
+        msg = tr(text, context_name, list_params=msg_params)
         if parameter:
             msg += ": " + str(parameter)
 
@@ -1035,10 +1040,10 @@ def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=
     msg_box.setText(msg)
     msg_box.setWindowFlags(Qt.WindowStaysOnTopHint)
     if title:
-        title = tr(title, context_name)
+        title = tr(title, context_name, list_params=title_params)
         msg_box.setWindowTitle(title)
     if inf_text:
-        inf_text = tr(inf_text, context_name)
+        inf_text = tr(inf_text, context_name, list_params=inf_text_params)
         if len(inf_text) > 500:
             inf_text = inf_text[:500] + "\n[...]"
         msg_box.setInformativeText(inf_text)
@@ -1075,7 +1080,7 @@ def set_stylesheet(widget, style="border: 2px solid red"):
     widget.setStyleSheet(style)
 
 
-def tr(message, context_name=None, aux_context='ui_message'):
+def tr(message, context_name=None, aux_context='ui_message', default=None, list_params=None):
     """ Translate @message looking it in @context_name """
 
     if context_name is None:
@@ -1087,9 +1092,18 @@ def tr(message, context_name=None, aux_context='ui_message'):
     except TypeError:
         value = QCoreApplication.translate(context_name, str(message))
     finally:
-        # If not translation has been found, check into context @aux_context
+        # If not translation has been found, check into context @aux_context and @default
         if value == message:
             value = QCoreApplication.translate(aux_context, message)
+        if default is not None and value == message:
+            value = default
+
+    # Format the value with named or positional parameters
+    if list_params:
+        try:
+            value = value.format(*list_params)
+        except (IndexError, KeyError):
+            pass
 
     return value
 
@@ -1174,7 +1188,8 @@ def manage_exception_db(exception=None, sql=None, stack_level=2, stack_level_inc
         manage_exception("Unhandled Error")
 
 
-def show_exception_message(title=None, msg="", window_title="Information about exception", pattern=None):
+def show_exception_message(title=None, msg="", window_title="Information about exception", pattern=None,
+                           title_params=None, msg_params=None):
     """ Show exception message in dialog """
 
     # Show dialog only if we are not in a task process
@@ -1186,7 +1201,9 @@ def show_exception_message(title=None, msg="", window_title="Information about e
     dlg_text.btn_close.clicked.connect(lambda: dlg_text.close())
     dlg_text.setWindowTitle(window_title)
     if title:
+        title = tr(title, list_params=title_params)
         dlg_text.lbl_text.setText(title)
+    msg = tr(msg, list_params=msg_params)
     set_widget_text(dlg_text, dlg_text.txt_infolog, msg)
     dlg_text.setWindowFlags(Qt.WindowStaysOnTopHint)
     if pattern is None:

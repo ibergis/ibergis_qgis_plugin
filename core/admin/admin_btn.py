@@ -20,6 +20,9 @@ from qgis.utils import reloadPlugin
 
 from .gis_file_create import DrGisFileCreate
 from ..ui.ui_manager import DrAdminUi
+from ..i18n.i18n_generator import DrI18NGenerator
+from ..i18n.schema_i18n_update import DrSchemaI18NUpdate
+from ..i18n.i18n_manager import DrSchemaI18NManager
 from ..utils import tools_dr
 from ..threads.project_gpkg_schema_create import DrGpkgCreateSchemaTask
 from ... import global_vars
@@ -371,6 +374,10 @@ class DrAdminButton(DrGpkgBase):
         self.dlg_readsql = DrAdminUi()
         tools_dr.load_settings(self.dlg_readsql)
 
+        # Set transations tabs only visible for advanced users
+        if global_vars.user_level['level'] not in global_vars.user_level['showadminadvanced']:
+            tools_qt.remove_tab(self.dlg_readsql.tab_main, "tab_i18n")
+
         # Get widgets form
         self.cmb_connection = self.dlg_readsql.findChild(QComboBox, 'cmb_connection')
 
@@ -532,6 +539,31 @@ class DrAdminButton(DrGpkgBase):
         self.cmb_locale.currentIndexChanged.connect(partial(self._update_locale))
         self.dlg_readsql.btn_push_path.clicked.connect(partial(self._select_path))
         self.filter_srid.textChanged.connect(partial(self._filter_srid_changed))
+
+        # i18n
+        self.dlg_readsql.btn_i18n.clicked.connect(partial(self._i18n_manager))
+        self.dlg_readsql.btn_update_translation.clicked.connect(partial(self._update_translations))
+        self.dlg_readsql.btn_translation.clicked.connect(partial(self._manage_translations))
+
+    def _manage_translations(self):
+        """ Initialize the translation functionalities """
+        
+        qm_gen = DrI18NGenerator()
+        qm_gen.init_dialog()
+
+
+    def _update_translations(self):
+        """ Initialize the translation functionalities """
+
+        qm_i18n_up = DrSchemaI18NUpdate()
+        qm_i18n_up.init_dialog()
+
+
+    def _i18n_manager(self):
+        """ Initialize the i18n functionalities """
+
+        qm_i18n_manager = DrSchemaI18NManager()
+        qm_i18n_manager.init_dialog()
 
 
     def _select_path(self):

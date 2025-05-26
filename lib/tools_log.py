@@ -173,44 +173,52 @@ def set_logger(logger_name, min_log_level=20):
         global_vars.logger.min_message_level = values.get(int(min_log_level), 0)
 
 
-def log_debug(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None):
+def log_debug(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None,
+              msg_params=None):
     """ Write debug message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name)
+    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name, msg_params=msg_params)
     if global_vars.logger and logger_file:
         global_vars.logger.debug(msg, stack_level_increase=stack_level_increase)
 
 
-def log_info(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None):
+def log_info(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None,
+             msg_params=None):
     """ Write information message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name)
+    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name, msg_params=msg_params)
     if global_vars.logger and logger_file:
         global_vars.logger.info(msg, stack_level_increase=stack_level_increase)
 
 
-def log_warning(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None):
+def log_warning(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None,
+                msg_params=None):
     """ Write warning message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 1, context_name, parameter, tab_name)
+    msg = _qgis_log_message(text, 1, context_name, parameter, tab_name, msg_params=msg_params)
     if global_vars.logger and logger_file:
         global_vars.logger.warning(msg, stack_level_increase=stack_level_increase)
 
 
-def log_error(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None):
+def log_error(text=None, context_name=None, parameter=None, logger_file=True, stack_level_increase=0, tab_name=None,
+              msg_params=None):
     """ Write error message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 2, context_name, parameter, tab_name)
+    msg = _qgis_log_message(text, 2, context_name, parameter, tab_name, msg_params=msg_params)
     if global_vars.logger and logger_file:
         global_vars.logger.error(msg, stack_level_increase=stack_level_increase)
 
 
 def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message_level=0, logger_file=True,
-        stack_level_increase=0):
+        stack_level_increase=0, header_params=None):
     """ Write information message into QGIS Log Messages Panel (tab Drain DB) """
 
     if type(text) is dict:
         text = json.dumps(text)
+        text = tools_qt.tr(text)
+    
+    if header:
+        header = tools_qt.tr(header, list_params=header_params)
 
     msg = (f'<font color="blue"><{bold}>{header}: </font>'
            f'<font color="{color}"><{bold}>{text}</font>')
@@ -228,7 +236,7 @@ def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message
         global_vars.logger.info(text, stack_level_increase=stack_level_increase)
 
 
-def _qgis_log_message(text=None, message_level=0, context_name=None, parameter=None, tab_name=None):
+def _qgis_log_message(text=None, message_level=0, context_name=None, parameter=None, tab_name=None, msg_params=None):
     """
     Write message into QGIS Log Messages Panel with selected message level
         :param message_level: {INFO = 0, WARNING = 1, CRITICAL = 2, SUCCESS = 3, NONE = 4}
@@ -236,7 +244,7 @@ def _qgis_log_message(text=None, message_level=0, context_name=None, parameter=N
 
     msg = None
     if text:
-        msg = tools_qt.tr(text, context_name)
+        msg = tools_qt.tr(text, context_name, list_params=msg_params)
         if parameter:
             msg += f": {parameter}"
 
