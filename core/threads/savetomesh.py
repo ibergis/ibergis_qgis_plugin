@@ -217,7 +217,7 @@ class DrSaveToMeshTask(DrTask):
                     (feature["pol_id"], feature["side"])
                 ] = bc_dict[feature["bc_fid"]]
 
-            new_mesh_str, new_roof_str, new_losses_str = mesh_parser.dumps(self.mesh)
+            new_mesh_str, new_roof_str, new_losses_str, new_bridges_str = mesh_parser.dumps(self.mesh)
 
             if self.feedback.isCanceled():
                 self.message = "Task canceled."

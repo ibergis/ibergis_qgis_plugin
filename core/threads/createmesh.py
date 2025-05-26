@@ -414,13 +414,15 @@ class DrCreateMeshTask(DrTask):
                 roofs_df.index = roofs_df["fid"] # type: ignore
 
             bridges_df = self._create_bridges_df(triangles_df, vertices_df)
+            print(f"Bridges: {bridges_df}")
 
             self.mesh = mesh_parser.Mesh(
                 polygons=triangles_df,
                 vertices=vertices_df,
                 roofs=roofs_df,
                 losses=losses_data,
-                boundary_conditions={}
+                boundary_conditions={},
+                bridges=bridges_df
             )
 
             # Create temp layer
@@ -467,7 +469,7 @@ class DrCreateMeshTask(DrTask):
 
             print("Dumping mesh data... ", end="")
             start = time.time()
-            mesh_str, roof_str, losses_str = mesh_parser.dumps(self.mesh)
+            mesh_str, roof_str, losses_str, bridges_str = mesh_parser.dumps(self.mesh)
             print(f"Done! {time.time() - start}s")
 
             self.dao.execute_sql(f"""
@@ -504,7 +506,7 @@ class DrCreateMeshTask(DrTask):
     def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame):
         context = QgsProcessingContext()
         # Create mesh edges layer
-        mesh_edges_layer = self._create_mesh_edges_layer(polygons_df, vertices_df)
+        mesh_edges_layer = self._create_mesh_edges_layer(polygons_df, vertices_df)  # FIXME: This takes too long
         # Create buffer for each bridge
         bridge_layer = tools_qgis.get_layer_by_tablename("bridge")
         buffer_layer = self._create_bridge_buffer(bridge_layer, context)
@@ -529,6 +531,7 @@ class DrCreateMeshTask(DrTask):
             # Convert to relative distance (0 to 1)
             relative_distance = absolute_distance / total_length
 
+            relative_distance = round(relative_distance, 2)
             element_id = feature['pol_id']
             side = feature['side']
 
@@ -596,10 +599,10 @@ class DrCreateMeshTask(DrTask):
             'JOIN': buffer_layer,
             'METHOD': 0,  # Create separate feature for each matching feature (one-to-many)
             'PREDICATE': [5],  # are within
-            'PREFIX': 'bc_',
+            'PREFIX': '',
             'OUTPUT': 'memory:'
         }
-        valid_edges_layer = processing.run('qgis:joinattributesbylocation', alg_params, context=context, is_child_algorithm=True)['OUTPUT']
+        valid_edges_layer: QgsVectorLayer = processing.run('qgis:joinattributesbylocation', alg_params, context=context)['OUTPUT']
         return valid_edges_layer
 
     def _create_bridge_buffer(self, layer: QgsVectorLayer, context: QgsProcessingContext):
@@ -614,7 +617,7 @@ class DrCreateMeshTask(DrTask):
             'SEGMENTS': 5,
             'OUTPUT': 'memory:'
         }
-        buffer_layer = processing.run('native:buffer', alg_params, context=context, is_child_algorithm=True)['OUTPUT']
+        buffer_layer: QgsVectorLayer = processing.run('native:buffer', alg_params, context=context)['OUTPUT']
         return buffer_layer
 
     def _create_mesh_edges_layer(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame):
