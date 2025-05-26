@@ -48,6 +48,7 @@ class DrExecuteModel(DrTask):
     PROGRESS_HYETOGRAPHS = 40
     PROGRESS_RAIN = 50
     PROGRESS_CULVERTS = 55
+    PROGRESS_BRIDGES = 60
     PROGRESS_INP = 70
     PROGRESS_IBER = 97
     EXPORT_RESULTS = 99
@@ -262,12 +263,17 @@ class DrExecuteModel(DrTask):
                 self._create_culvert_file()
                 self.progress_changed.emit("Export files", self.PROGRESS_CULVERTS, "done!", True)
 
+                # Create bridge file
+                self.progress_changed.emit("Export files", self.PROGRESS_CULVERTS, "Creating bridge files...", False)
+                self._create_bridge_file(mesh_id)
+                self.progress_changed.emit("Export files", self.PROGRESS_BRIDGES, "done!", True)
+
             if self.isCanceled():
                 return False
 
             # INP file
             if self.do_generate_inp:
-                self.progress_changed.emit("Generate INP", self.PROGRESS_CULVERTS, "Generating INP...", False)
+                self.progress_changed.emit("Generate INP", self.PROGRESS_BRIDGES, "Generating INP...", False)
                 self._generate_inp()
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, "done!", True)
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, self.generate_inp_infolog, True)
@@ -801,6 +807,10 @@ class DrExecuteModel(DrTask):
                 file.write(f"{0 if str(ht_row["geom2"]) == "NULL" else ht_row["geom2"]} {0 if str(ht_row["geom1"]) == "NULL" else ht_row["geom1"]} {0 if str(ht_row["manning"]) == "NULL" else ht_row["manning"]} {ht_row["code"] }\n")
 
                 self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
+
+    def _create_bridge_file(self, mesh_id: int):
+        file_name = Path(self.folder_path) / "Iber_Internal_cond.dat"
+
 
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}

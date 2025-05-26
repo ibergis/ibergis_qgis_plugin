@@ -1,5 +1,6 @@
 import traceback
 from pathlib import Path
+from itertools import chain, tee
 
 from qgis.core import (
     QgsCoordinateTransform,
@@ -11,6 +12,11 @@ from qgis.core import (
     QgsGeometry,
     QgsFeature,
     QgsField,
+    QgsPoint,
+    QgsCoordinateReferenceSystem,
+    QgsFields,
+    QgsProcessingContext,
+    QgsProcessing
 )
 from qgis.utils import iface
 from qgis.PyQt.QtCore import QVariant
@@ -27,6 +33,7 @@ from typing import Union, Optional, Literal
 import time
 import numpy as np
 import pandas as pd
+import processing
 
 class DrCreateMeshTask(DrTask):
     def __init__(
@@ -406,6 +413,8 @@ class DrCreateMeshTask(DrTask):
                 roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
                 roofs_df.index = roofs_df["fid"] # type: ignore
 
+            bridges_df = self._create_bridges_df(triangles_df, vertices_df)
+
             self.mesh = mesh_parser.Mesh(
                 polygons=triangles_df,
                 vertices=vertices_df,
@@ -491,3 +500,165 @@ class DrCreateMeshTask(DrTask):
                 "Task failed. See the Log Messages Panel for more information."
             )
             return False
+
+    def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame):
+        context = QgsProcessingContext()
+        # Create mesh edges layer
+        mesh_edges_layer = self._create_mesh_edges_layer(polygons_df, vertices_df)
+        # Create buffer for each bridge
+        bridge_layer = tools_qgis.get_layer_by_tablename("bridge")
+        buffer_layer = self._create_bridge_buffer(bridge_layer, context)
+        # Join buffer with mesh edges
+        valid_edges_layer = self._create_valid_edges_layer(buffer_layer, mesh_edges_layer, context)
+
+        bridges_values_dict = self.get_bridges_values_dict()
+
+        bridge_list = []
+        for feature in valid_edges_layer.getFeatures():
+            relative_distance = 0
+            total_length = 0
+            bridge_feature = None
+            for bridge in bridge_layer.getFeatures():
+                if bridge["code"] == feature["code"]:
+                    total_length = bridge.geometry().length()
+                    bridge_feature = bridge
+                    break
+            line_last_vertex = feature.geometry().asPolyline()[-1]
+            # Get the absolute distance along the line to the point
+            absolute_distance = bridge_feature.geometry().lineLocatePoint(QgsGeometry.fromPointXY(line_last_vertex))
+            # Convert to relative distance (0 to 1)
+            relative_distance = absolute_distance / total_length
+
+            element_id = feature['pol_id']
+            side = feature['side']
+
+            # Get bridge values based on code and distance
+            bridge_values = None
+            if feature["code"] in bridges_values_dict:
+                # Get values with distance >= relative_distance
+                matching_values = [v for v in bridges_values_dict[feature["code"]]
+                                 if v["distance"] >= relative_distance]
+                if matching_values:
+                    # Take the first matching value (smallest distance >= relative_distance)
+                    bridge_values = matching_values[0]
+
+            # Set values from bridge_values if found, otherwise use defaults
+            lowerdeckelev = bridge_values["lowelev"] if bridge_values else None
+            bridgeopeningpercent = bridge_values["openingval"] if bridge_values else None
+            topelevn = bridge_values["topelev"] if bridge_values else None
+
+            freepressureflowcd = feature['freeflow_cd']
+            deckcd = feature['deck_cd']
+            sumergeflowcd = feature['sumergeflow_cd']
+            gaugenumber = feature['gaugenumber']
+
+            feature_list = [
+                element_id,
+                side,
+                1,
+                -999,
+                lowerdeckelev,
+                bridgeopeningpercent,
+                freepressureflowcd,
+                topelevn,
+                100,
+                deckcd,
+                sumergeflowcd,
+                gaugenumber,
+                0,
+                0,
+                0,
+                0,
+                0
+            ]
+            bridge_list.append(feature_list)
+
+        bridges_df = pd.DataFrame(bridge_list, columns=["element_id", "side", "num1", "num2", "lowerdeckelev", "bridgeopeningpercent", "freepressureflowcd", "topelevn", "num3", "deckcd", "sumergeflowcd", "gaugenumber", "num4", "num5", "num6", "num7", "num8"])
+
+        return bridges_df
+
+    def get_bridges_values_dict(self):
+        bridge_values_dict = {}
+        rows = self.dao.get_rows("SELECT * FROM bridge_value ORDER BY bridge_code, distance ASC")
+        for value in rows:
+            if value["bridge_code"] not in bridge_values_dict.keys():
+                bridge_values_dict[value["bridge_code"]] = []
+            bridge_values_dict[value["bridge_code"]].append({"distance": value["distance"], "topelev": value["topelev"]
+                                                             , "lowelev": value["lowelev"], "openingval": value["openingval"]})
+        return bridge_values_dict
+
+
+    def _create_valid_edges_layer(self, buffer_layer: QgsVectorLayer, mesh_edges_layer: QgsVectorLayer, context: QgsProcessingContext):
+        # Join buffer with mesh edges
+        alg_params = {
+            'DISCARD_NONMATCHING': True,
+            'INPUT': mesh_edges_layer,
+            'JOIN': buffer_layer,
+            'METHOD': 0,  # Create separate feature for each matching feature (one-to-many)
+            'PREDICATE': [5],  # are within
+            'PREFIX': 'bc_',
+            'OUTPUT': 'memory:'
+        }
+        valid_edges_layer = processing.run('qgis:joinattributesbylocation', alg_params, context=context, is_child_algorithm=True)['OUTPUT']
+        return valid_edges_layer
+
+    def _create_bridge_buffer(self, layer: QgsVectorLayer, context: QgsProcessingContext):
+        # Buffer
+        alg_params = {
+            'DISSOLVE': False,
+            'DISTANCE': 0.1,
+            'END_CAP_STYLE': 0,  # Round
+            'INPUT': layer,
+            'JOIN_STYLE': 0,  # Round
+            'MITER_LIMIT': 2,
+            'SEGMENTS': 5,
+            'OUTPUT': 'memory:'
+        }
+        buffer_layer = processing.run('native:buffer', alg_params, context=context, is_child_algorithm=True)['OUTPUT']
+        return buffer_layer
+
+    def _create_mesh_edges_layer(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame):
+        poly_df = polygons_df
+        feature_edges = {}
+        for pol in poly_df[poly_df["category"] == "ground"].itertuples():
+            vert = [pol.v1, pol.v2, pol.v3, pol.v4]
+            # Add last and first vertices as a edge if they are distinct
+            last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
+            edges = chain(self.pairwise(vert), last_edge)
+            for side, verts in enumerate(edges, start=1):
+                #edge = frozenset(verts)
+                feature_edges[verts] = (pol.Index, side)
+
+            if self.feedback.isCanceled():
+                self.message = "Task canceled."
+                return False
+
+        layer = QgsVectorLayer("LineString", "mesh_edges", "memory")
+        layer.setCrs(QgsCoordinateReferenceSystem(f"EPSG:{global_vars.data_epsg}"))
+        provider = layer.dataProvider()
+
+        fields = QgsFields()
+        fields.append(QgsField("pol_id", QVariant.String))
+        fields.append(QgsField("side", QVariant.Int))
+        provider.addAttributes(fields)
+        layer.updateFields()
+
+        features = []
+        for edge, (pol_id, side) in feature_edges.items():
+            coords = [vertices_df.loc[vert, ["x", "y"]].to_numpy() for vert in edge]
+            feature = QgsFeature()
+            feature.setGeometry(
+                QgsGeometry.fromPolyline([QgsPoint(*coord) for coord in coords])
+            )
+            feature.setAttributes([pol_id, side])
+            features.append(feature)
+        provider.addFeatures(features)
+        layer.updateExtents()
+
+        return layer
+
+    def pairwise(self, iterable):
+        # pairwise('ABCDEFG') --> AB BC CD DE EF FG
+        a, b = tee(iterable)
+        next(b, None)
+        return zip(a, b)
