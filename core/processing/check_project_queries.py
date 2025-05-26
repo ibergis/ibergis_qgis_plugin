@@ -61,4 +61,3 @@ def get_queries() -> list[Query]:
             show_layer=True,
         )
     ]
-

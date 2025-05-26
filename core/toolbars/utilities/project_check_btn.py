@@ -10,15 +10,16 @@ from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.core import QgsApplication
+from qgis.core import QgsApplication, QgsProcessingContext
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QLabel, QTextEdit
 
 from ..dialog import DrAction
 from ...threads.project_check import DrProjectCheckTask
+from ...processing.check_project import DrCheckProjectAlgorithm
 from ...ui.ui_manager import DrProjectCheckUi
 
-from ...utils import tools_dr
+from ...utils import tools_dr, Feedback
 from ....lib import tools_qgis, tools_qt
 
 
@@ -28,6 +29,8 @@ class DrProjectCheckButton(DrAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
 
         super().__init__(icon_path, action_name, text, toolbar, action_group)
+        self.cur_process = None
+        self.cur_text = None
 
 
     def clicked_event(self):
@@ -42,7 +45,7 @@ class DrProjectCheckButton(DrAction):
         self._open_dialog()
 
         # Return layers in the same order as listed in TOC
-        layers = tools_qgis.get_project_layers()
+        #layers = tools_qgis.get_project_layers()
 
         # Create timer
         self.t0 = time()
@@ -50,19 +53,64 @@ class DrProjectCheckButton(DrAction):
         self.timer.timeout.connect(partial(self._calculate_elapsed_time, self.dlg_audit_project))
         self.timer.start(1000)
 
-        params = {"layers": layers, "init_project": "false", "dialog": self.dlg_audit_project}
-        self.project_check_task = DrProjectCheckTask('check_project', params, timer=self.timer)
-        self.project_check_task.progressUpdate.connect(partial(self._progress_update, self.dlg_audit_project))
-        QgsApplication.taskManager().addTask(self.project_check_task)
-        QgsApplication.taskManager().triggerTask(self.project_check_task)
+        # Execute CheckProjectAlgorithm
+        self._progress_update(None, 0, "\nCheck Project Algorithm\n", True)
+        self.feedback = Feedback()
+        self.feedback.progress_changed.connect(self._progress_update)
+        self.process = DrCheckProjectAlgorithm()
+        self.process.initAlgorithm(None)
+        context: QgsProcessingContext = QgsProcessingContext()
+        self.output = self.process.processAlgorithm({}, context, self.feedback)
+        if self.output:
+            return
+        self._progress_update(None, 60, None, False)
+        # Load temporal layers
+        self.output = self.process.postProcessAlgorithm(context, self.feedback)
+        if self.output:
+            return
+        self._progress_update(None, 100, None, True)
+        self._progress_update(None, None, "Check Project Algorithm.....Executed", True)
+        self.dlg_audit_project.btn_accept.setEnabled(True)
+
+        self.timer.stop()
 
 
-    def _progress_update(self, dialog, text):
-        txt_infolog = dialog.findChild(QTextEdit, 'txt_infolog')
+    def _progress_update(self, process, progress, text, new_line):
+        # Progress bar
+        if progress is not None:
+            self.dlg_audit_project.progressBar.setValue(progress)
+
+        # TextEdit log
+        txt_infolog = self.dlg_audit_project.findChild(QTextEdit, 'txt_infolog')
         cur_text = tools_qt.get_text(self.dlg_audit_project, txt_infolog, return_string_null=False)
-        text = f"{cur_text}{text}"
-        txt_infolog.setText(text)
+        if process and process != self.cur_process:
+            cur_text = f"{cur_text}\n" \
+                       f"--------------------\n" \
+                       f"{process}\n" \
+                       f"--------------------\n\n"
+            self.cur_process = process
+            self.cur_text = None
+
+        if self.cur_text:
+            cur_text = self.cur_text
+
+        end_line = '\n' if new_line else ''
+        if text:
+            txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        else:
+            txt_infolog.setText(f"{cur_text}{end_line}")
         txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
+
+    # def _progress_update(self, process, progress, text, new_line):
+    #     txt_infolog = dialog.findChild(QTextEdit, 'txt_infolog')
+    #     cur_text = tools_qt.get_text(self.dlg_audit_project, txt_infolog, return_string_null=False)
+    #     text = f"{cur_text}{text}"
+    #     txt_infolog.setText(text)
+    #     txt_infolog.show()
         # tools_qt.set_widget_text(self.dlg_audit_project, txt_infolog, text)
 
 
