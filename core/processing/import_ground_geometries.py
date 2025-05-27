@@ -204,7 +204,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         if field_map['landuse'] is not None:
             field_map_name = field_map['landuse']
         for feature in source_layer.getFeatures():
-            if feature[field_map_name] not in landuse_types and feature[field_map_name] not in unexistent_landuses and feature[field_map_name] is not None:
+            if feature[field_map_name] not in landuse_types and feature[field_map_name] not in unexistent_landuses and feature[field_map_name] not in ['NULL', None, 'null']:
                 unexistent_landuses.append(feature[field_map_name])
 
         # check if there are unexistent landuses
