@@ -1843,7 +1843,7 @@ def execute_procedure(function_name, parameters=None, schema_name=None, commit=T
         parameters = json.loads(parameters)
     msg = "{0}.{1}({2})"
     msg_params = ("tools_fct", function_name, parameters,)
-    tools_log.log_db(msg, bold='b')  # TODO: , msg_params=msg_params
+    tools_log.log_db(msg, bold='b', msg_params=msg_params)
     json_result = getattr(tools_fct, function_name)(parameters)
     if commit:
         global_vars.gpkg_dao_data.commit()
