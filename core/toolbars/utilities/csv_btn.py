@@ -132,7 +132,9 @@ class DrCSVButton(DrAction):
                 csvfile.close()
                 del csvfile
         except Exception as e:
-            tools_qgis.show_warning("EXCEPTION: " + str(e), dialog=dialog)
+            msg = "EXCEPTION: {0}"
+            msg_params = (str(e),)
+            tools_qgis.show_warning(msg, msg_params=msg_params, dialog=dialog)
 
         if insert_status is False:
             return
@@ -160,16 +162,22 @@ class DrCSVButton(DrAction):
         try:
             dialog.lbl_info.setText(tools_qt.get_combo_value(self.dlg_csv, self.dlg_csv.cmb_import_type, 2))
         except Exception as e:
-            tools_log.log_warning(str(e))
+            msg = "Error updating info: {0}"
+            msg_params = (str(e),)
+            tools_log.log_warning(msg, msg_params=msg_params)
 
 
     def _get_function_name(self):
 
         try:
             self.func_name = tools_qt.get_combo_value(self.dlg_csv, self.dlg_csv.cmb_import_type, 3)
-            tools_log.log_info(str(self.func_name))
+            msg = "Function name: {0}"
+            msg_params = (self.func_name,)
+            tools_log.log_info(msg, msg_params=msg_params)
         except Exception as e:
-            tools_log.log_warning(str(e))
+            msg = "Error getting function name: {0}"
+            msg_params = (str(e),)
+            tools_log.log_warning(msg, msg_params=msg_params)
 
 
     def _select_file_csv(self):
@@ -210,7 +218,9 @@ class DrCSVButton(DrAction):
             with open(path, "r", encoding=_unicode) as file_input:
                 self._read_csv_file(model, file_input, delimiter, _unicode, _ignoreheader)
         except Exception as e:
-            tools_qgis.show_warning(str(e), dialog=dialog)
+            msg = "EXCEPTION: {0}"
+            msg_params = (str(e),)
+            tools_qgis.show_warning(msg, msg_params=msg_params, dialog=dialog)
 
 
     def _load_settings_values(self):
@@ -331,12 +341,12 @@ class DrCSVButton(DrAction):
 
         path = tools_qt.get_text(dialog, dialog.txt_file_csv)
         if path is None or path == 'null' or not os.path.exists(path):
-            message = "Please choose a valid path"
-            tools_qgis.show_message(message, message_level=0, dialog=dialog)
+            msg = "Please choose a valid path"
+            tools_qgis.show_message(msg, message_level=0, dialog=dialog)
             return None
         if path.find('.csv') == -1:
-            message = "Please choose a csv file"
-            tools_qgis.show_message(message, message_level=0, dialog=dialog)
+            msg = "Please choose a csv file"
+            tools_qgis.show_message(msg, message_level=0, dialog=dialog)
             return None
 
         return path

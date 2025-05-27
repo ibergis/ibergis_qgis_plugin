@@ -50,8 +50,8 @@ class DrImportINPButton(DrAction):
         self._save_user_values()
         save_folder = Path(self.input_file).parent / (Path(self.input_file).stem + "_temp_files")
         if os.path.exists(str(save_folder)):
-            text = "Import files folder already exists. Do you want to overwrite it?"
-            response = tools_qt.show_question(text)
+            msg = "Import files folder already exists. Do you want to overwrite it?"
+            response = tools_qt.show_question(msg)
             if not response:
                 return
             self._delete_folder(str(save_folder))
@@ -216,7 +216,8 @@ class DrImportINPButton(DrAction):
 
         input_file = dlg.data_inp_input_file.toPlainText()
         if not input_file or not Path(input_file).exists():
-            tools_qt.show_info_box("You should select an input INP file!")
+            msg = "You should select an input INP file!"
+            tools_qt.show_info_box(msg)
             return False
 
         self.input_file = input_file

@@ -633,11 +633,14 @@ def check_expression_filter(expr_filter, log_info=False):
     """ Check if expression filter @expr is valid """
 
     if log_info:
-        tools_log.log_info(expr_filter)
+        msg = "Expression filter: {0}"
+        msg_params = (expr_filter,)
+        tools_log.log_info(msg, msg_params=msg_params)
     expr = QgsExpression(expr_filter)
     if expr.hasParserError():
-        message = "Expression Error"
-        tools_log.log_warning(message, parameter=expr_filter)
+        msg = "Expression Error: {0}"
+        msg_params = (expr_filter,)
+        tools_log.log_warning(msg, msg_params=msg_params)
         return False, expr
 
     return True, expr
@@ -666,7 +669,9 @@ def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableMode
 
     # Check for errors
     if model.lastError().isValid():
-        tools_log.log_warning(f"fill_table: {model.lastError().text()}")
+        msg = "Error filling table: {0}"
+        msg_params = (model.lastError().text(),)
+        tools_log.log_warning(msg, msg_params=msg_params)
 
     # Attach model to tableview
     qtable.setModel(model)
@@ -867,18 +872,18 @@ def set_status(qtable, combo, pos_x, combo_pos, col_update):
 def document_open(qtable, field_name):
     """ Open selected document """
 
-    message = None
+    msg = None
 
     # Get selected rows
     field_index = qtable.model().fieldIndex(field_name)
     selected_list = qtable.selectionModel().selectedRows(field_index)
     if not selected_list:
-        message = "Any record selected"
+        msg = "Any record selected"
     elif len(selected_list) > 1:
-        message = "More then one document selected. Select just one document."
+        msg = "More then one document selected. Select just one document."
 
-    if message:
-        tools_qgis.show_warning(message)
+    if msg:
+        tools_qgis.show_warning(msg)
         return
     path = selected_list[0].data()
     # Check if file exist
@@ -899,17 +904,17 @@ def delete_rows_tableview(qtable):
     # Get selected rows. 0 is the column of the pk 0 'id'
     selected_list = qtable.selectionModel().selectedRows(0)
     if len(selected_list) == 0:
-        message = "Any record selected"
-        show_info_box(message)
+        msg = "Any record selected"
+        show_info_box(msg)
         return
 
     selected_id = []
     for index in selected_list:
         doc_id = index.data()
         selected_id.append(str(doc_id))
-    message = "Are you sure you want to delete these records?"
+    msg = "Are you sure you want to delete these records?"
     title = "Delete records"
-    answer = show_question(message, title, ','.join(selected_id))
+    answer = show_question(msg, title, ','.join(selected_id))
     if answer:
         # Get current editStrategy
         edit_strategy = qtable.model().editStrategy()
@@ -926,8 +931,8 @@ def delete_rows_tableview(qtable):
 
         if not status:
             error = qtable.model().lastError().text()
-            message = "Error deleting data"
-            tools_qgis.show_warning(message, parameter=error)
+            msg = "Error deleting data"
+            tools_qgis.show_warning(msg, parameter=error)
         else:
             msg = "Record deleted"
             tools_qgis.show_info(msg)
@@ -1116,14 +1121,16 @@ def manage_translation(context_name, dialog=None, log_info=False):
 
     locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_{locale}.qm')
     if not os.path.exists(locale_path):
-        if log_info:
-            tools_log.log_info("Locale not found", parameter=locale_path)
+        msg = "Locale not found: {0}"
+        msg_params = (locale_path,)
+        tools_log.log_info(msg, msg_params=msg_params)
         locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_en_US.qm')
         # If English locale file not found, exit function
         # It means that probably that form has not been translated yet
         if not os.path.exists(locale_path):
-            if log_info:
-                tools_log.log_info("Locale not found", parameter=locale_path)
+            msg = "Locale not found: {0}"
+            msg_params = (locale_path,)
+            tools_log.log_info(msg, msg_params=msg_params)
             return
 
     # Add translation file
@@ -1163,16 +1170,16 @@ def manage_exception_db(exception=None, sql=None, stack_level=2, stack_level_inc
 
         # Set exception message details
         msg = ""
-        msg += f"File name: {file_name}\n"
-        msg += f"Function name: {function_name}\n"
-        msg += f"Line number: {function_line}\n"
+        msg += f"{tr('File name')}: {file_name}\n"
+        msg += f"{tr('Function name')}: {function_name}\n"
+        msg += f"{tr('Line number')}: {function_line}\n"
         if exception:
-            msg += f"Description:\n{description}\n"
+            msg += f"{tr('Description')}:\n{description}\n"
         if filepath:
-            msg += f"SQL file:\n{filepath}\n\n"
+            msg += f"{tr('SQL file')}:\n{filepath}\n\n"
         if sql:
-            msg += f"SQL:\n {sql}\n\n"
-        msg += f"Schema name: {schema_name}"
+            msg += f"{tr('SQL')}:\n {sql}\n\n"
+        msg += f"{tr('Schema name')}: {schema_name}"
 
         global_vars.session_vars['last_error_msg'] = msg
 
@@ -1181,7 +1188,8 @@ def manage_exception_db(exception=None, sql=None, stack_level=2, stack_level_inc
             title = "Database error"
             show_exception_message(title, msg)
         else:
-            tools_log.log_warning("Exception message not shown to user")
+            msg = "Exception message not shown to user"
+            tools_log.log_warning(msg)
         tools_log.log_warning(msg, stack_level_increase=2)
 
     except Exception:
@@ -1226,15 +1234,15 @@ def manage_exception(title=None, description=None, sql=None, schema_name=None):
 
     # Set exception message details
     msg = ""
-    msg += f"Error type: {exc_type}\n"
-    msg += f"File name: {file_name}\n"
-    msg += f"Line number: {exc_tb.tb_lineno}\n"
+    msg += f"{tr('Error type')}: {exc_type}\n"
+    msg += f"{tr('File name')}: {file_name}\n"
+    msg += f"{tr('Line number')}: {exc_tb.tb_lineno}\n"
     msg += f"{trace}\n"
     if description:
-        msg += f"Description: {description}\n"
+        msg += f"{tr('Description')}: {description}\n"
     if sql:
-        msg += f"SQL:\n {sql}\n\n"
-    msg += f"Schema name: {schema_name}"
+        msg += f"{tr('SQL')}:\n {sql}\n\n"
+    msg += f"{tr('Schema name')}: {schema_name}"
 
     # Show exception message in dialog and log it
     show_exception_message(title, msg)
@@ -1292,8 +1300,8 @@ def set_table_model(dialog, table_object, table_name, expr_filter):
     if type(table_object) is str:
         widget = get_widget(dialog, table_object)
         if not widget:
-            message = "Widget not found"
-            tools_log.log_info(message, parameter=table_object)
+            msg = "Widget not found"
+            tools_log.log_info(msg, parameter=table_object)
             return expr
     elif type(table_object) is QTableView:
         widget = table_object
@@ -1333,11 +1341,13 @@ def _add_translator(locale_path, log_info=False):
     if os.path.exists(locale_path):
         translator.load(locale_path)
         QCoreApplication.installTranslator(translator)
-        if log_info:
-            tools_log.log_info("Add translator", parameter=locale_path)
+        msg = "Add translator: {0}"
+        msg_params = (locale_path,)
+        tools_log.log_info(msg, msg_params=msg_params)
     else:
-        if log_info:
-            tools_log.log_info("Locale not found", parameter=locale_path)
+        msg = "Locale not found: {0}"
+        msg_params = (locale_path,)
+        tools_log.log_info(msg, msg_params=msg_params)
 
 
 def _translate_form(dialog, context_name, aux_context='ui_message'):
@@ -1415,7 +1425,9 @@ def _translate_widget(context_name, widget, aux_context='ui_message'):
             _translate_tooltip(context_name, widget, aux_context=aux_context)
 
     except Exception as e:
-        tools_log.log_info(f"{widget_name} --> {type(e).__name__} --> {e}")
+        msg = "{0} --> {1} --> {2}"
+        msg_params = (widget_name, type(e).__name__, e,)
+        tools_log.log_info(msg, msg_params=msg_params)
 
 
 def _translate_tooltip(context_name, widget, idx=None, aux_context='ui_message'):

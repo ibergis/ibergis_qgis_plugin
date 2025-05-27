@@ -90,7 +90,9 @@ class DrExecuteModel(DrTask):
         super().run()
         print(f"{self.description()} -> {threading.get_ident()}")
         self.dao = global_vars.gpkg_dao_data.clone()
-        tools_log.log_info(f"Task 'Execute model' execute function 'def _execute_model(self)'")
+        msg = "Task '{0}' execute function '{1}'"
+        msg_params = ("Execute model", "_execute_model(self)",)
+        tools_log.log_info(msg, msg_params=msg_params)
         status = self._execute_model()
 
         # self._close_dao()
@@ -123,7 +125,9 @@ class DrExecuteModel(DrTask):
 
     def cancel(self):
 
-        tools_qgis.show_info(f"Task canceled - {self.description()}")
+        msg = "Task canceled - {0}"
+        msg_params = (self.description(),)
+        tools_qgis.show_info(msg, msg_params=msg_params)
         # self._close_file()
         super().cancel()
 
@@ -160,8 +164,9 @@ class DrExecuteModel(DrTask):
             return
 
         if created_netcdf:
-            result: Optional[bool] = tools_qt.show_question('Do you want to import the results into the project?',
-                                'Import results', force_action=True)
+            msg = "Do you want to import the results into the project?"
+            title = 'Import results'
+            result: Optional[bool] = tools_qt.show_question(msg, title, force_action=True)
             if result is not None and result:
                 # Execute ImportExecuteResults algorithm
                 self.progress_changed.emit("Import results", None, "Importing results", True)

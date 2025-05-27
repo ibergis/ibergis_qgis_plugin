@@ -200,8 +200,8 @@ class DrGo2IberButton(DrAction):
         if hasattr(self, 'go2epa_task') and self.go2epa_task is not None:
             try:
                 if self.go2epa_task.isActive():
-                    message = "Go2Epa task is already active!"
-                    tools_qgis.show_warning(message)
+                    msg = "Go2Epa task is already active!"
+                    tools_qgis.show_warning(msg)
                     return
             except RuntimeError:
                 pass
@@ -218,15 +218,15 @@ class DrGo2IberButton(DrAction):
         self.export_file_path = tools_qt.get_text(self.dlg_go2epa, 'txt_file_path')
         if os.path.exists(self.export_file_path):
             try:
-                message = "The specified file already exists. Do you want to overwrite it?"
-                response = tools_qt.show_question(message, True)
+                msg = "The specified file already exists. Do you want to overwrite it?"
+                response = tools_qt.show_question(msg, True)
                 if not response:
                     return
                 os.remove(self.export_file_path)
             except:
                 if os.path.isdir(self.export_file_path):
-                    message = "The specified path is a directory. Please, set a valid file name"
-                    tools_qt.show_info_box(message)
+                    msg = "The specified path is a directory. Please, set a valid file name"
+                    tools_qt.show_info_box(msg)
                 return
 
         tools_dr.set_tabs_enabled(self.dlg_go2epa)
@@ -241,7 +241,7 @@ class DrGo2IberButton(DrAction):
         self.timer.start(1000)
 
         # Set background task 'Go2Epa'
-        description = f"Go2Epa"
+        description = f"{tools_qt.tr('Go2Epa')}"
         params = {"dialog": self.dlg_go2epa, "export_file_path": self.export_file_path}
         self.feedback = Feedback()
         self.go2epa_task = DrEpaFileManager(description, params, self.feedback, timer=self.timer)

@@ -47,24 +47,32 @@ class DrGpkgBase:
 
         # Check if file path exists
         if not os.path.exists(db_filepath):
-            tools_log.log_info(f"File not found: {db_filepath}")
+            msg = "File not found: {0}"
+            msg_params = (db_filepath,)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
         # Set DB connection
-        tools_log.log_info(f"Set database connection")
+        msg = "Set database connection"
+        tools_log.log_info(msg)
         status = self.gpkg_dao_data.init_db(db_filepath)
         if not status:
             last_error = self.gpkg_dao_data.last_error
-            tools_log.log_info(f"Error connecting to database (sqlite3): {db_filepath}\n{last_error}")
+            msg = "Error connecting to database ({0}): {1}\n{2}"
+            msg_params = ("sqlite3", db_filepath, last_error,)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
         status, self.db_qsql_data = self.gpkg_dao_data.init_qsql_db(db_filepath, database_name)
         if not status:
             last_error = self.gpkg_dao_data.last_error
-            tools_log.log_info(f"Error connecting to database (QSqlDatabase): {db_filepath}\n{last_error}")
+            msg = "Error connecting to database ({0}): {1}\n{2}"
+            msg_params = ("QSqlDatabase", db_filepath, last_error,)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
-        tools_log.log_info(f"Database connection successful")
+        msg = "Database connection successful"
+        tools_log.log_info(msg)
         return True
 
     def _read_execute_file(self, filepath, project_epsg=None):
@@ -81,15 +89,17 @@ class DrGpkgBase:
                 status = self.gpkg_dao_data.execute_script_sql(sql_content)
                 if status is False:
                     self.error_count += 1
-                    msg = f"Error executing file: {os.path.basename(filepath)}\nDatabase error: {self.gpkg_dao_data.last_error}"
-                    tools_log.log_warning(msg)
+                    msg = "Error executing file: {0}\nDatabase error: {1}"
+                    msg_params = (os.path.basename(filepath), self.gpkg_dao_data.last_error,)
+                    tools_log.log_warning(msg, msg_params=msg_params)
                     tools_qt.show_info_box(msg)
                     return False
 
         except Exception as e:
             self.error_count += 1
-            msg = f"Error executing file: {os.path.basename(filepath)}\n{str(e)}"
-            tools_log.log_warning(msg)
+            msg = "Error executing file: {0}\n{1}"
+            msg_params = (os.path.basename(filepath), str(e),)
+            tools_log.log_warning(msg, msg_params=msg_params)
             tools_qt.show_info_box(msg)
             status = False
 
@@ -194,7 +204,8 @@ class DrAdminButton(DrGpkgBase):
         project_locale = tools_qt.get_combo_value(self.dlg_readsql, self.cmb_locale, 0)
 
         if not gpkg_name or not project_path or not project_descript:
-            tools_qt.show_info_box("Please fill all empty fields.")
+            msg = "Please fill all empty fields."
+            tools_qt.show_info_box(msg)
             return
 
         # Set class variables
@@ -207,8 +218,8 @@ class DrAdminButton(DrGpkgBase):
 
         self.gpkg_full_path = project_path + "/" + gpkg_name + ".gpkg"
         if os.path.exists(self.gpkg_full_path):
-            text = "Geopackage already exists. Do you want to overwrite it?"
-            response = tools_qt.show_question(text)
+            msg = "Geopackage already exists. Do you want to overwrite it?"
+            response = tools_qt.show_question(msg)
             if not response:
                 return False
             if global_vars.gpkg_dao_data:
@@ -229,7 +240,8 @@ class DrAdminButton(DrGpkgBase):
         # Check if srid value is valid
         if self.last_srids is None:
             msg = "This SRID value does not exist on Database. Please select a diferent one."
-            tools_qt.show_info_box(msg, "Info")
+            title = "Info"
+            tools_qt.show_info_box(msg, title)
             return
 
         # Timer
@@ -264,8 +276,10 @@ class DrAdminButton(DrGpkgBase):
         if not status:
             # Reset count error variable to 0
             self.error_count = 0
-            tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
-            tools_qgis.show_info("A rollback on schema will be done.")
+            msg = global_vars.session_vars['last_error_msg']
+            tools_qt.show_exception_message(msg=msg)
+            msg = "A rollback on schema will be done."
+            tools_qgis.show_info(msg)
             if dlg:
                 tools_dr.close_dialog(dlg)
             return
@@ -315,7 +329,9 @@ class DrAdminButton(DrGpkgBase):
                 msg = self.gpkg_dao_config.last_error
                 tools_log.log_warning(msg)
         else:
-            tools_log.log_warning(f"Database not found: {db_filepath}")
+            msg = "Database not found: {0}"
+            msg_params = (db_filepath,)
+            tools_log.log_warning(msg, msg_params=msg_params)
 
         # Set shortcut keys
         self.dlg_readsql.key_escape.connect(
@@ -353,7 +369,9 @@ class DrAdminButton(DrGpkgBase):
         # Get SQL folder and check if exists
         self.sql_dir = os.path.normpath(os.path.join(global_vars.plugin_dir, 'dbmodel'))
         if not os.path.exists(self.sql_dir):
-            tools_qgis.show_message(f"SQL folder not found: {self.sql_dir}")
+            msg = "SQL folder not found: {0}"
+            msg_params = (self.sql_dir,)
+            tools_qgis.show_message(msg, msg_params=msg_params)
             return
 
         self.project_version = '0'
@@ -407,12 +425,14 @@ class DrAdminButton(DrGpkgBase):
         # Get gis folder, gis file, project type and schema
         gis_folder = tools_qt.get_text(self.dlg_readsql, 'txt_gis_folder')
         if gis_folder is None or gis_folder == 'null':
-            tools_qgis.show_warning("GIS folder not set")
+            msg = "GIS folder not set"
+            tools_qgis.show_warning(msg)
             return
 
         gpkg_file = tools_qt.get_text(self.dlg_readsql, "txt_gis_gpkg")
         if gpkg_file is None or gpkg_file == 'null':
-            tools_qgis.show_warning("GKPG file path name not set")
+            msg = "GKPG file path name not set"
+            tools_qgis.show_warning(msg)
             return
 
         tools_dr.set_config_parser('btn_admin', 'qgis_file_path', gis_folder, prefix=False)
@@ -420,7 +440,8 @@ class DrAdminButton(DrGpkgBase):
 
         gis_file = tools_qt.get_text(self.dlg_readsql, 'txt_gis_file')
         if gis_file is None or gis_file == 'null':
-            tools_qgis.show_warning("GIS file name not set")
+            msg = "GIS file name not set"
+            tools_qgis.show_warning(msg)
             return
 
         # Generate QGIS project
@@ -603,10 +624,14 @@ class DrAdminButton(DrGpkgBase):
         """"""
 
         if not os.path.exists(filedir):
-            tools_log.log_info(f"Folder not found: {filedir}")
+            msg = "Folder not found: {0}"
+            msg_params = (filedir,)
+            tools_log.log_info(msg, msg_params=msg_params)
             return True
 
-        tools_log.log_info(f"Processing folder: {filedir}")
+        msg = "Processing folder: {0}"
+        msg_params = (filedir,)
+        tools_log.log_info(msg, msg_params=msg_params)
         filelist = sorted(os.listdir(filedir))
         status = True
 
@@ -631,9 +656,13 @@ class DrAdminButton(DrGpkgBase):
     def create_schema_main_execution(self):
         """ Main common execution """
 
-        tools_log.log_info(f"Create schema: Executing function calculate_number_of_files")
+        msg = "Create schema: Executing function {0}"
+        msg_params = ("calculate_number_of_files",)
+        tools_log.log_info(msg, msg_params=msg_params)
         self.total_sql_files = self.calculate_number_of_files()
-        tools_log.log_info(f"Number of SQL files 'TOTAL': {self.total_sql_files}")
+        msg = "Number of SQL files '{0}': {1}"
+        msg_params = ("TOTAL", self.total_sql_files,)
+        tools_log.log_info(msg, msg_params=msg_params)
         status = self.load_base(self.dict_folders_process['load_base'])
         return status
 
@@ -642,14 +671,18 @@ class DrAdminButton(DrGpkgBase):
         """ Custom execution """
 
         if self.rdb_sample.isChecked():
-            tools_log.log_info("Execute 'custom_execution' (example data)")
+            msg = "Execute '{0}' (example data)"
+            msg_params = ("load_sample_data",)
+            tools_log.log_info(msg, msg_params=msg_params)
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
             load_sample = self.load_sample_data()
             if not load_sample:
                 return
             return self.populate_config_params(config_dao)
         elif self.rdb_data.isChecked():
-            tools_log.log_info("Execute 'custom_execution' (empty data)")
+            msg = "Execute '{0}' (empty data)"
+            msg_params = ("load_sample_data",)
+            tools_log.log_info(msg, msg_params=msg_params)
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
             return self.populate_config_params(config_dao)
 
@@ -671,8 +704,9 @@ class DrAdminButton(DrGpkgBase):
             try:
                 global_vars.gpkg_dao_data.execute_sql_placeholder(sql_insert, data)
             except Exception as e:
-                msg = f"Error executing SQL: {sql_insert}\nDatabase error: {global_vars.gpkg_dao_data.last_error}"
-                tools_log.log_warning(msg)
+                msg = "Error executing SQL: {0}\nDatabase error: {1}"
+                msg_params = (sql_insert, global_vars.gpkg_dao_data.last_error,)
+                tools_log.log_warning(msg, msg_params=msg_params)
                 tools_qt.show_info_box(msg)
                 return False
 
@@ -689,8 +723,9 @@ class DrAdminButton(DrGpkgBase):
             try:
                 global_vars.gpkg_dao_data.execute_sql(sql)
             except Exception as e:
-                msg = f"Error executing SQL: {sql}\nDatabase error: {global_vars.gpkg_dao_data.last_error}"
-                tools_log.log_warning(msg)
+                msg = "Error executing SQL: {0}\nDatabase error: {1}"
+                msg_params = (sql, global_vars.gpkg_dao_data.last_error,)
+                tools_log.log_warning(msg, msg_params=msg_params)
                 tools_qt.show_info_box(msg)
                 return False
 
@@ -721,10 +756,14 @@ class DrAdminButton(DrGpkgBase):
         list_process = ['load_base']
 
         for process_name in list_process:
-            tools_log.log_info(f"Create schema: Executing function get_number_of_files_process('{process_name}')")
+            msg = "Create schema: Executing function {0}"
+            msg_params = (f"get_number_of_files_process('{process_name}')",)
+            tools_log.log_info(msg, msg_params=msg_params)
             dict_folders, total = self.get_number_of_files_process(process_name)
             total_sql_files += total
-            tools_log.log_info(f"Number of SQL files '{process_name}': {total}")
+            msg = "Number of SQL files '{0}': {1}"
+            msg_params = (process_name, total,)
+            tools_log.log_info(msg, msg_params=msg_params)
             dict_process[process_name] = total
             self.dict_folders_process[process_name] = dict_folders
 
@@ -734,7 +773,9 @@ class DrAdminButton(DrGpkgBase):
     def get_number_of_files_process(self, process_name: str):
         """ Calculate number of files of all folders of selected @process_name """
 
-        tools_log.log_info(f"Create schema: Executing function get_folders_process('{process_name}')")
+        msg = "Create schema: Executing function {0}"  
+        msg_params = (f"get_folders_process('{process_name}')",)
+        tools_log.log_info(msg, msg_params=msg_params)
         dict_folders = self.get_folders_process(process_name)
         if dict_folders is None:
             return dict_folders, 0
@@ -830,7 +871,9 @@ class DrRptGpkgCreate(DrGpkgBase):
 
         rpt_gpkg_dir = os.path.join(self.sql_dir, "rpt_gpkg")
         if not os.path.exists(rpt_gpkg_dir):
-            tools_log.log_info(f"Report GPKG directory not found: {rpt_gpkg_dir}")
+            msg = "Report GPKG directory not found: {0}"
+            msg_params = (rpt_gpkg_dir,)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
         # Execute files in order: ddl.sql first, then dml.sql
@@ -838,7 +881,9 @@ class DrRptGpkgCreate(DrGpkgBase):
         for sql_file in sql_files:
             file_path = os.path.join(rpt_gpkg_dir, sql_file)
             if not os.path.exists(file_path):
-                tools_log.log_info(f"SQL file not found: {file_path}")
+                msg = "SQL file not found: {0}"
+                msg_params = (file_path,)
+                tools_log.log_info(msg, msg_params=msg_params)
                 continue
 
             status = self._read_execute_file(file_path, global_vars.data_epsg)

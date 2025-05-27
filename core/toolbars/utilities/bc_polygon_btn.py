@@ -102,11 +102,11 @@ class DrCreateBCFromPolygon(DrAction):
                         break
 
         if not all(self.layers.values()):
-            message = (
+            msg = (
                 "To make 'Create Boundary Condition from Polygon' function properly, "
                 "you must have the ground, roof, and boundary conditions layers included in your project."
             )
-            tools_qt.show_info_box(message)
+            tools_qt.show_info_box(msg)
             self.action.setChecked(False)
             return
 
@@ -261,17 +261,17 @@ class DrCreateBCFromPolygon(DrAction):
         if config["other1"]:
             other1_str = self.dlg.txt_other1.text()
             if not other1_str:
-                tools_qt.show_info_box(
-                    f"Please fill the field: '{config['lbl_other1']}'"
-                )
+                msg = "Please fill the field: '{0}'"
+                msg_params = (config['lbl_other1'],)
+                tools_qt.show_info_box(msg, msg_params=msg_params)
                 return
             feature.setAttribute("other1", float(other1_str))
         if config["other2"]:
             other2_str = self.dlg.txt_other2.text()
             if not other2_str:
-                tools_qt.show_info_box(
-                    f"Please fill the field: '{config['lbl_other2']}'"
-                )
+                msg = "Please fill the field: '{0}'"
+                msg_params = (config['lbl_other2'],)
+                tools_qt.show_info_box(msg, msg_params=msg_params)
                 return
             feature.setAttribute("other2", float(other2_str))
 

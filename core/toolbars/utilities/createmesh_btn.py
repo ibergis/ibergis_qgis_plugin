@@ -157,36 +157,37 @@ class DrCreateMeshButton(DrAction):
         transition_extent = float(dlg.txt_extent.text())
         dem_layer = tools_qt.get_combo_value(dlg, dlg.cmb_dem_layer)
         if dem_layer == "":
-            tools_qt.show_info_box("Please, select a DEM layer!")
+            msg = "Please, select a DEM layer!"
+            tools_qt.show_info_box(msg)
             return
         roughness_layer = tools_qt.get_combo_value(dlg, dlg.cmb_roughness_layer)
         if roughness_layer == "":
-            tools_qt.show_info_box("Please, select a roughness layer!")
+            msg = "Please, select a roughness layer!"
+            tools_qt.show_info_box(msg)
             return
         losses_layer = tools_qt.get_combo_value(dlg, dlg.cmb_losses_layer)
         if losses_layer == "":
-            tools_qt.show_info_box("Please, select a losses layer!")
+            msg = "Please, select a losses layer!"
+            tools_qt.show_info_box(msg)
             return
         mesh_name = dlg.txt_name.text()
 
         if mesh_name == "":
-            tools_qt.show_info_box("Please, fill the name of the mesh.")
+            msg = "Please, fill the name of the mesh."
+            tools_qt.show_info_box(msg)
             return
 
         if not mesh_name.isalnum() and "-" not in mesh_name:
-            tools_qt.show_info_box(
-                "Only alphanumeric characters and hyphens are valid for the mesh name."
-            )
+            msg = "Only alphanumeric characters and hyphens are valid for the mesh name."
+            tools_qt.show_info_box(msg)
             return
 
         # Check for existent meshes in file
         sql = "SELECT group_concat(name) as names FROM cat_file"
         retrieved_meshes = self.dao.get_row(sql)["names"]
         if retrieved_meshes is not None and mesh_name in retrieved_meshes.split(","):
-            message = (
-                "A mesh with the same name already exists. Do you want to overwrite it?"
-            )
-            if not tools_qt.show_question(message):
+            msg = "A mesh with the same name already exists. Do you want to overwrite it?"
+            if not tools_qt.show_question(msg):
                 return
 
         features = self.ground_layer.getFeatures()
@@ -208,25 +209,25 @@ class DrCreateMeshButton(DrAction):
         # self.feedback.setProgressText(f"Estimated number of triangles: >{num_triangles}")
 
         # Warin the user if the number of triangles is too high with a dialog
-        message = ""
+        msg = ""
         if num_triangles > 10_000_000:
-            message = (
+            msg = (
                 # "Tens or hundreds of millions of records possible massive data generation, may impact performance."
                 "The estimated number of triangles is extremely high (> 10M).\n"
                 "This may take a long time to process.\n"
                 "Check your memory, disk and cpu capabilties\n"
                 "Do you want to continue?"
             )
-            if not tools_qt.show_question(message):
+            if not tools_qt.show_question(msg):
                 return
         elif num_triangles > 1_000_000:
-            message = (
+            msg = (
                 "The estimated number of triangles is high (> 1M).\n"
                 "This may take a long time to process.\n"
                 "Make sure you have enough memory, disk and cpu capabilties\n"
                 "Do you want to continue?"
             )
-            if not tools_qt.show_question(message):
+            if not tools_qt.show_question(msg):
                 return
 
         # Create anchor layers combining mesh anchor points and bridge features

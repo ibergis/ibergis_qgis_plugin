@@ -100,7 +100,9 @@ def get_config_parser(section: str, parameter: str, config_type, file_name, pref
     """ Load a simple parser value """
 
     if config_type not in ("user", "project"):
-        tools_log.log_warning(f"get_config_parser: Reference config_type = '{config_type}' it is not managed")
+        msg = "{0}: Reference {1} = '{2}' it is not managed"
+        msg_params = ("get_config_parser", "config_type", config_type,)
+        tools_log.log_warning(msg, msg_params=msg_params)
         return None
 
     # Get configuration filepath and parser object
@@ -114,7 +116,9 @@ def get_config_parser(section: str, parameter: str, config_type, file_name, pref
 
     # Needed to avoid errors with giswater plugins
     if path is None:
-        tools_log.log_warning(f"get_config_parser: Config file is not set")
+        msg = "{0}: Config file is not set"
+        msg_params = ("get_config_parser",)
+        tools_log.log_warning(msg, msg_params=msg_params)
         return None
 
     value = None
@@ -122,7 +126,9 @@ def get_config_parser(section: str, parameter: str, config_type, file_name, pref
     try:
         if parser is None:
             if plugin == 'core':
-                tools_log.log_info(f"Creating parser for file: {path}")
+                msg = "Creating parser for file: {0}"
+                msg_params = (path,)
+                tools_log.log_info(msg, msg_params=msg_params)
             parser = configparser.ConfigParser(comment_prefixes=";", allow_no_value=True, strict=False)
             parser.read(path)
 
@@ -152,7 +158,9 @@ def get_config_parser(section: str, parameter: str, config_type, file_name, pref
         if chk_user_params and config_type in "user":
             _check_user_params(section, raw_parameter, file_name, prefix)
     except Exception as e:
-        tools_log.log_warning(f"get_config_parser exception [{type(e).__name__}]: {e}")
+        msg = "{0} exception [{1}]: {2}"
+        msg_params = ("get_config_parser", type(e).__name__, e,)
+        tools_log.log_warning(msg, msg_params=msg_params)
 
     return value
 
@@ -162,7 +170,9 @@ def set_config_parser(section: str, parameter: str, value: str = None, config_ty
     """ Save simple parser value """
 
     if config_type not in ("user", "project"):
-        tools_log.log_warning(f"set_config_parser: Reference config_type = '{config_type}' it is not managed")
+        msg = "{0}: Reference {1} = '{2}' it is not managed"
+        msg_params = ("set_config_parser", "config_type", config_type,)
+        tools_log.log_warning(msg, msg_params=msg_params)
         return None
 
     # Get configuration filepath and parser object
@@ -208,7 +218,9 @@ def set_config_parser(section: str, parameter: str, value: str = None, config_ty
             configfile.close()
 
     except Exception as e:
-        tools_log.log_warning(f"set_config_parser exception [{type(e).__name__}]: {e}")
+        msg = "{0} exception [{1}]: {2}"
+        msg_params = ("set_config_parser", type(e).__name__, e,)
+        tools_log.log_warning(msg, msg_params=msg_params)
         return
 
 
@@ -807,8 +819,8 @@ def delete_selected_rows(widget, table_object):
     # Get selected rows
     selected_list = widget.selectionModel().selectedRows()
     if len(selected_list) == 0:
-        message = "Any record selected"
-        tools_qgis.show_warning(message)
+        msg = "Any record selected"
+        tools_qgis.show_warning(msg)
         return
 
     inf_text = ""
@@ -827,9 +839,9 @@ def delete_selected_rows(widget, table_object):
         list_id += f"'{id_}', "
     inf_text = inf_text[:-2]
     list_id = list_id[:-2]
-    message = "Are you sure you want to delete these records?"
+    msg = "Are you sure you want to delete these records?"
     title = "Delete records"
-    answer = tools_qt.show_question(message, title, inf_text)
+    answer = tools_qt.show_question(msg, title, inf_text)
     if answer:
         sql = (f"DELETE FROM {table_object} "
                f"WHERE {field_object_id} IN ({list_id})")
@@ -1049,17 +1061,17 @@ def check_parameters(field):
 
     msg = ""
     if 'widgettype' not in field:
-        msg += "widgettype not found. "
+        msg += f"{tools_qt.tr('Widgettype not found.')} "
 
     if 'widgetname' not in field:
-        msg += "widgetname not found. "
+        msg += f"{tools_qt.tr('Widgetname not found.')} "
 
     if field.get('widgettype') not in ('text', 'linetext', 'combo', 'check', 'datetime', 'spinbox', 'button', 'tab'):
-        msg += "widgettype is wrongly configured. Needs to be in " \
-               "('text', 'linetext', 'combo', 'check', 'datetime', 'spinbox', 'button', 'tab')"
+        msg += (f"{tools_qt.tr('Widgettype is wrongly configured. Needs to be in ')}"
+                "('text', 'linetext', 'combo', 'check', 'datetime', 'spinbox', 'button', 'tab')")
 
     if 'layoutorder' not in field:
-        msg += "layoutorder not found. "
+        msg += f"{tools_qt.tr('layoutorder not found.')} "
 
     if msg != "":
         tools_qgis.show_warning(msg)
@@ -1181,26 +1193,29 @@ def add_button(**kwargs):
             if function_name:
                 exist = tools_os.check_python_function(module, function_name)
                 if not exist:
-                    msg = f"widget {real_name} has associated function {function_name}, but {function_name} not exist"
-                    tools_qgis.show_message(msg, 2)
+                    msg = "widget {0} has associated function {1}, but {1} not exist"
+                    msg_params = (real_name, function_name,)
+                    tools_qgis.show_message(msg, 2, msg_params=msg_params)
                     return widget
             else:
-                message = "Parameter functionName is null for button"
-                tools_qgis.show_message(message, 2, parameter=widget.objectName())
+                msg = "Parameter functionName is null for button"
+                tools_qgis.show_message(msg, 2, parameter=widget.objectName())
 
     func_params = ""
     if 'widgetfunction' in field and field['widgetfunction'] and 'functionName' in field['widgetfunction']:
         function_name = field['widgetfunction']['functionName']
         exist = tools_os.check_python_function(module, function_name)
         if not exist:
-            msg = f"widget {real_name} has associated function {function_name}, but {function_name} not exist"
-            tools_qgis.show_message(msg, 2)
+            msg = "widget {0} has associated function {1}, but {1} not exist"
+            msg_params = (real_name, function_name,)
+            tools_qgis.show_message(msg, 2, msg_params=msg_params)
             return widget
         if 'parameters' in field['widgetfunction']:
             func_params = field['widgetfunction']['parameters']
     else:
-        message = "Parameter widgetfunction.functionName is null for button"
-        tools_qgis.show_message(message, 2, parameter=widget.objectName())
+        msg = "Parameter {0} is null for button"
+        msg_params = ("widgetfunction.functionName",)
+        tools_qgis.show_message(msg, 2, parameter=widget.objectName())
         return widget
 
     kwargs['widget'] = widget
@@ -1318,12 +1333,14 @@ def add_checkbox(**kwargs):
             if function_name:
                 exist = tools_os.check_python_function(module, function_name)
                 if not exist:
-                    msg = f"widget {field['widgetname']} has associated function {function_name}, but {function_name} not exist"
-                    tools_qgis.show_message(msg, 2)
+                    msg = "Widget {0} has associated function {1}, but {1} not exist"
+                    msg_params = (field['widgetname'], function_name,)
+                    tools_qgis.show_message(msg, 2, msg_params=msg_params)
                     return widget
             else:
-                message = "Parameter functionName is null for check"
-                tools_qgis.show_message(message, 2, parameter=widget.objectName())
+                msg = "Parameter {0} is null for check"
+                msg_params = ("functionName",)
+                tools_qgis.show_message(msg, 2, parameter=widget.objectName())
 
     func_params = ""
 
@@ -1332,8 +1349,9 @@ def add_checkbox(**kwargs):
 
         exist = tools_os.check_python_function(module, function_name)
         if not exist:
-            msg = f"widget {field['widgetname']} has associated function {function_name}, but {function_name} not exist"
-            tools_qgis.show_message(msg, 2)
+            msg = "Widget {0} has associated function {1}, but {1} not exist"
+            msg_params = (field['widgetname'], function_name,)
+            tools_qgis.show_message(msg, 2, msg_params=msg_params)
             return widget
         if 'parameters' in field['widgetfunction']:
             func_params = field['widgetfunction']['parameters']
@@ -1419,13 +1437,15 @@ def add_hyperlink(field):
                     tools_qgis.show_message(msg, 2)
                     return widget
             else:
-                message = "Parameter widgetfunction is null for widget hyperlink"
-                tools_qgis.show_message(message, 2, parameter=real_name)
+                msg = "Parameter {0} is null for widget hyperlink"
+                msg_params = ("widgetfunction",)
+                tools_qgis.show_message(msg, 2, parameter=real_name)
         else:
             tools_log.log_info(field['widgetfunction'])
     else:
-        message = "Parameter widgetfunction not found for widget type hyperlink"
-        tools_qgis.show_message(message, 2)
+        msg = "Parameter {0} not found for widget type hyperlink"
+        msg_params = ("widgetfunction",)
+        tools_qgis.show_message(msg, 2, parameter=real_name)
 
     if func_name is not None:
         # Call function-->func_name(widget) or def no_function_associated(self, widget=None, message_level=1)
@@ -1464,14 +1484,16 @@ def add_calendar(dlg, fld, **kwargs):
                 function_name = fld['widgetfunction']['functionName']
                 exist = tools_os.check_python_function(module, function_name)
                 if not exist:
-                    msg = f"widget {real_name} have associated function {function_name}, but {function_name} not exist"
-                    tools_qgis.show_message(msg, 2)
+                    msg = "Widget {0} have associated function {1}, but {1} not exist"
+                    msg_params = (real_name, function_name,)
+                    tools_qgis.show_message(msg, 2, msg_params=msg_params)
                     return widget
                 if 'parameters' in fld['widgetfunction']:
                     func_params = fld['widgetfunction']['parameters']
             else:
-                message = "Parameter button_function is null for button"
-                tools_qgis.show_message(message, 2, parameter=widget.objectName())
+                msg = "Parameter {0} is null for button"
+                msg_params = ("button_function",)
+                tools_qgis.show_message(msg, 2, parameter=widget.objectName())
 
     kwargs['widget'] = widget
     kwargs['message_level'] = 1
@@ -1603,8 +1625,9 @@ def add_tableview(complet_result, field, dialog, module=sys.modules[__name__], c
                 module = globals()[field['widgetfunction']['module']]
             exist = tools_os.check_python_function(module, function_name)
             if not exist:
-                msg = f"widget {real_name} have associated function {function_name}, but {function_name} not exist"
-                tools_qgis.show_message(msg, 2)
+                msg = "Widget {0} have associated function {1}, but {1} not exist"
+                msg_params = (real_name, function_name,)
+                tools_qgis.show_message(msg, 2, msg_params=msg_params)
                 return widget
             if 'parameters' in field['widgetfunction']:
                 func_params = field['widgetfunction']['parameters']
@@ -1660,12 +1683,14 @@ def add_combo(field, dialog=None, complet_result=None):
                 if function_name:
                     exist = tools_os.check_python_function(module, function_name)
                     if not exist:
-                        msg = f"widget {widget.property('widgetname')} has associated function {function_name}, but {function_name} not exist"
-                        tools_qgis.show_message(msg, 2)
+                        msg = "Widget {0} has associated function {1}, but {1} not exist"
+                        msg_params = (widget.property('widgetname'), function_name,)
+                        tools_qgis.show_message(msg, 2, msg_params=msg_params)
                         return widget
                 else:
-                    message = "Parameter functionName is null for button"
-                    tools_qgis.show_message(message, 2, parameter=widget.objectName())
+                    msg = "Parameter {0} is null for button"
+                    msg_params = ("functionName",)
+                    tools_qgis.show_message(msg, 2, parameter=widget.objectName())
             widget.currentIndexChanged.connect(partial(getattr(module, function_name), **kwargs))
 
     return widget
@@ -1783,9 +1808,13 @@ def get_actions_from_json(json_result, sql):
                 getattr(tools_backend_calls, f"{function_name}")(**params)
             except AttributeError as e:
                 # If function_name not exist as python function
-                tools_log.log_warning(f"Exception error: {e}")
+                msg = "Exception error: {0}"
+                msg_params = (e,)
+                tools_log.log_warning(msg, msg_params=msg_params)
             except Exception as e:
-                tools_log.log_debug(f"{type(e).__name__}: {e}")
+                msg = "{0}: {1}"
+                msg_params = (type(e).__name__, e,)
+                tools_log.log_debug(msg, msg_params=msg_params)
     except Exception as e:
         tools_qt.manage_exception(None, f"{type(e).__name__}: {e}", sql, global_vars.schema_name)
 
@@ -1805,13 +1834,16 @@ def execute_procedure(function_name, parameters=None, schema_name=None, commit=T
     if check_function:
         exists = tools_os.check_python_function(tools_fct, function_name)
         if not exists:
-            tools_qgis.show_warning("Function not found in tools_fct", parameter=function_name)
+            msg = "Function {0} not found in {1}"
+            msg_params = (function_name, "tools_fct",)
+            tools_qgis.show_warning(msg, parameter=function_name)
             return None
 
     if type(parameters) is str:
         parameters = json.loads(parameters)
-    msg = f"tools_fct.{function_name}({parameters})"
-    tools_log.log_db(msg, bold='b')
+    msg = "{0}.{1}({2})"
+    msg_params = ("tools_fct", function_name, parameters,)
+    tools_log.log_db(msg, msg_params=msg_params, bold='b')
     json_result = getattr(tools_fct, function_name)(parameters)
     if commit:
         global_vars.gpkg_dao_data.commit()
@@ -1821,7 +1853,8 @@ def execute_procedure(function_name, parameters=None, schema_name=None, commit=T
     # if dev_log_sql in ("True", "False"):
     #     log_sql = tools_os.set_boolean(dev_log_sql)
 
-    tools_log.log_db(json_result, header="SERVER RESPONSE")
+    header = "SERVER RESPONSE"
+    tools_log.log_db(json_result, header=header)
 
     # All functions called from python should return 'status', if not, something has probably failed in postrgres
     if 'status' not in json_result:
@@ -1913,19 +1946,19 @@ def manage_json_exception(json_result, sql=None, stack_level=2, stack_level_incr
             # Set exception message details
             title = "Database execution failed"
             msg = ""
-            msg += f"File name: {file_name}\n"
-            msg += f"Function name: {function_name}\n"
-            msg += f"Line number: {function_line}\n"
+            msg += f"{tools_qt.tr('File name')}: {file_name}\n"
+            msg += f"{tools_qt.tr('Function name')}: {function_name}\n"
+            msg += f"{tools_qt.tr('Line number')}: {function_line}\n"
             if 'SQLERR' in json_result:
-                msg += f"Detail: {json_result['SQLERR']}\n"
+                msg += f"{tools_qt.tr('Detail')}: {json_result['SQLERR']}\n"
             elif 'NOSQLERR' in json_result:
-                msg += f"Detail: {json_result['NOSQLERR']}\n"
+                msg += f"{tools_qt.tr('Detail')}: {json_result['NOSQLERR']}\n"
             if 'SQLCONTEXT' in json_result:
-                msg += f"Context: {json_result['SQLCONTEXT']}\n"
+                msg += f"{tools_qt.tr('Context')}: {json_result['SQLCONTEXT']}\n"
             if sql:
-                msg += f"SQL: {sql}\n"
+                msg += f"{tools_qt.tr('SQL')}: {sql}\n"
             if 'MSGERR' in json_result:
-                msg += f"Message error: {json_result['MSGERR']}"
+                msg += f"{tools_qt.tr('Message error')}: {json_result['MSGERR']}"
             global_vars.session_vars['last_error_msg'] = msg
 
             if is_thread:
@@ -2168,7 +2201,9 @@ def docker_dialog(dialog):
         global_vars.iface.addDockWidget(positions[global_vars.session_vars['dialog_docker'].position],
                                         global_vars.session_vars['dialog_docker'])
     except RuntimeError as e:
-        tools_log.log_warning(f"{type(e).__name__} --> {e}")
+        msg = "{0} --> {1}"
+        msg_params = (type(e).__name__, e,)
+        tools_log.log_warning(msg, msg_params=msg_params)
 
 
 def init_docker(docker_param='qgis_info_docker'):
@@ -2307,7 +2342,9 @@ def add_icon(widget, icon, sub_folder="20x20"):
             widget.setProperty('has_icon', True)
         return QIcon(icon_path)
     else:
-        tools_log.log_info("File not found", parameter=icon_path)
+        msg = "File not found: {0}"
+        msg_params = (icon_path,)
+        tools_log.log_info(msg, msg_params=msg_params)
         return False
 
 
@@ -2543,7 +2580,9 @@ def manage_user_config_folder(user_folder_dir):
     try:
         config_folder = f"{user_folder_dir}{os.sep}config{os.sep}"
         if not os.path.exists(config_folder):
-            tools_log.log_info(f"Creating user config folder: {config_folder}")
+            msg = "Creating user config folder: {0}"
+            msg_params = (config_folder,)
+            tools_log.log_info(msg, msg_params=msg_params)
             os.makedirs(config_folder)
 
         # Check if config files exists. If not create them empty
@@ -2555,7 +2594,9 @@ def manage_user_config_folder(user_folder_dir):
             open(filepath, 'a').close()
 
     except Exception as e:
-        tools_log.log_warning(f"manage_user_config_folder: {e}")
+        msg = "{0}: {1}"
+        msg_params = ("manage_user_config_folder", e,)
+        tools_log.log_warning(msg, msg_params=msg_params)
 
 
 def user_params_to_userconfig():
@@ -2645,14 +2686,17 @@ def reset_position_dialog(show_message=False, plugin='core', file_name='session'
             parser.remove_section("dialogs_position")
 
         msg = "Reset position form done successfully."
+        title = "Info"
         if show_message:
-            tools_qt.show_info_box(msg, "Info")
+            tools_qt.show_info_box(msg, title)
 
         with open(path, 'w') as configfile:
             parser.write(configfile)
             configfile.close()
     except Exception as e:
-        tools_log.log_warning(f"set_config_parser exception [{type(e).__name__}]: {e}")
+        msg = "{0} exception [{1}]: {2}"
+        msg_params = ("reset_position_dialog", type(e).__name__, e,)
+        tools_log.log_warning(msg, msg_params=msg_params)
         return
 
 def add_btn_help(dlg):
@@ -2747,13 +2791,17 @@ def _get_parser_from_filename(filename):
     parser = configparser.ConfigParser(comment_prefixes=";", allow_no_value=True, strict=False)
     filepath = f"{folder}{os.sep}config{os.sep}{filename}.config"
     if not os.path.exists(filepath):
-        tools_log.log_warning(f"File not found: {filepath}")
+        msg = "File not found: {0}"
+        msg_params = (filepath,)
+        tools_log.log_warning(msg, msg_params=msg_params)
         return filepath, None
 
     try:
         parser.read(filepath)
     except (configparser.DuplicateSectionError, configparser.DuplicateOptionError) as e:
-        tools_qgis.show_critical(f"Error parsing file: {filepath}", parameter=e)
+        msg = "Error parsing file: {0}"
+        msg_params = (filepath,)
+        tools_log.log_warning(msg, msg_params=msg_params, parameter=e)
         return filepath, None
 
     return filepath, parser
@@ -2824,12 +2872,14 @@ def set_filter_listeners(complet_result, dialog, widget_list, columnname, widget
                     if function_name:
                         exist = tools_os.check_python_function(module, function_name)
                         if not exist:
-                            msg = f"widget {widget.property('widgetname')} has associated function {function_name}, but {function_name} not exist"
-                            tools_qgis.show_message(msg, 2)
+                            msg = "Widget {0} has associated function {1}, but {1} not exist"
+                            msg_params = (widget.property('widgetname'), function_name,)
+                            tools_qgis.show_message(msg, 2, msg_params=msg_params)
                             return widget
                     else:
-                        message = "Parameter functionName is null for button"
-                        tools_qgis.show_message(message, 2, parameter=widget.objectName())
+                        msg = "Parameter {0} is null for button"
+                        msg_params = ("functionName",)
+                        tools_qgis.show_message(msg, 2, parameter=widget.objectName())
 
             func_params = ""
             function_name = ""
@@ -2838,8 +2888,9 @@ def set_filter_listeners(complet_result, dialog, widget_list, columnname, widget
 
                 exist = tools_os.check_python_function(module, function_name)
                 if not exist:
-                    msg = f"widget {widget.property('widgetname')} has associated function {function_name}, but {function_name} not exist"
-                    tools_qgis.show_message(msg, 2)
+                    msg = "Widget {0} has associated function {1}, but {1} not exist"
+                    msg_params = (widget.property('widgetname'), function_name,)
+                    tools_qgis.show_message(msg, 2, msg_params=msg_params)
                     return widget
                 if 'parameters' in widgetfunction[i]:
                     func_params = widgetfunction[i]['parameters']
@@ -2904,9 +2955,9 @@ def set_widgets(dialog, complet_result, field, tablename, class_info):
             label.setToolTip(field['label'].capitalize())
 
     if 'widgettype' in field and not field['widgettype']:
-        message = "The field widgettype is not configured for"
-        msg = f"formname:{tablename}, columnname:{field['columnname']}"
-        tools_qgis.show_message(message, 2, parameter=msg, dialog=dialog)
+        msg = "The field {0} is not configured for: {1}"
+        msg_params = ("widgettype", f"formname:{tablename}, columnname:{field['columnname']}",)
+        tools_qgis.show_message(msg, 2, msg_params=msg_params, dialog=dialog)
         return label, widget
 
     try:
@@ -2914,9 +2965,10 @@ def set_widgets(dialog, complet_result, field, tablename, class_info):
                   "class": class_info}
         widget = globals()[f"_manage_{field['widgettype']}"](**kwargs)
     except Exception as e:
-        msg = (f"{type(e).__name__}: {e} Python function: tools_dr.set_widgets. WHERE columname='{field['columnname']}' "
-               f"AND widgetname='{field['widgetname']}' AND widgettype='{field['widgettype']}'")
-        tools_qgis.show_message(msg, 2, dialog=dialog)
+        msg = (f"{type(e).__name__}: {e} {tools_qt.tr('Python function')}: tools_dr.set_widgets. WHERE: "
+               f"columname='{field['columnname']}' AND widgetname='{field['widgetname']}' AND "
+               f"widgettype='{field['widgettype']}'")
+        tools_qgis.show_message(msg, 2, msg_params=msg_params, dialog=dialog)
         return label, widget
 
     try:

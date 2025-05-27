@@ -107,8 +107,9 @@ class DrImportInpTask(DrTask):
             sql = f.read()
         status = self.dao.execute_script_sql(str(sql))
         if not status:
-            print(f"Error {fct_path} not executed")
-            tools_log.log_error(self.dao.last_error)
+            msg = "Error {0} not executed"
+            msg_params = (fct_path,)
+            tools_log.log_error(msg, msg_params=msg_params)
             self.progress_changed.emit("Execute after import fct", self.PROGRESS_IMPORT_GPKGS, f"Error {fct_path} not executed", True)
 
     def _manage_params(self) -> dict:
