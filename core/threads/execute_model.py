@@ -47,8 +47,7 @@ class DrExecuteModel(DrTask):
     PROGRESS_INLET = 35
     PROGRESS_HYETOGRAPHS = 40
     PROGRESS_RAIN = 50
-    PROGRESS_CULVERTS = 55
-    PROGRESS_BRIDGES = 60
+    PROGRESS_CULVERTS = 60
     PROGRESS_INP = 70
     PROGRESS_IBER = 97
     EXPORT_RESULTS = 99
@@ -263,17 +262,12 @@ class DrExecuteModel(DrTask):
                 self._create_culvert_file()
                 self.progress_changed.emit("Export files", self.PROGRESS_CULVERTS, "done!", True)
 
-                # Create bridge file
-                self.progress_changed.emit("Export files", self.PROGRESS_CULVERTS, "Creating bridge files...", False)
-                self._create_bridge_file(mesh_id)
-                self.progress_changed.emit("Export files", self.PROGRESS_BRIDGES, "done!", True)
-
             if self.isCanceled():
                 return False
 
             # INP file
             if self.do_generate_inp:
-                self.progress_changed.emit("Generate INP", self.PROGRESS_BRIDGES, "Generating INP...", False)
+                self.progress_changed.emit("Generate INP", self.PROGRESS_CULVERTS, "Generating INP...", False)
                 self._generate_inp()
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, "done!", True)
                 self.progress_changed.emit("Generate INP", self.PROGRESS_INP, self.generate_inp_infolog, True)
@@ -377,11 +371,11 @@ class DrExecuteModel(DrTask):
 
     def _copy_mesh_files(self, mesh_id):
 
-        sql = f"SELECT iber2d, roof, losses FROM cat_file WHERE id = '{mesh_id}'"
+        sql = f"SELECT iber2d, roof, losses, bridge FROM cat_file WHERE id = '{mesh_id}'"
         row = self.dao.get_row(sql)
         self.progress_changed.emit("Export files", tools_dr.lerp_progress(10, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
         if row:
-            iber2d_content, roof_content, losses_content = row
+            iber2d_content, roof_content, losses_content, bridges_content = row
 
             # Write content to files
             project_name, result_iber_format, iber2d_options = self._get_iber2d_options()
@@ -419,25 +413,29 @@ class DrExecuteModel(DrTask):
                     sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_cn_multiplier'"
                     row = self.dao.get_row(sql)
                     cn_multiplier = row[0] if row else 1
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(55, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # ia_coeff
                     sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_ia_coefficient'"
                     row = self.dao.get_row(sql)
                     ia_coeff = row[0] if row else 0.2
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # start_time
                     sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_starttime'"
                     row = self.dao.get_row(sql)
                     start_time = row[0] if row else 0
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # Replace first line
                     new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
                     losses_content_lines = losses_content.split('\n')
                     losses_content_lines[0] = new_first_line
                     losses_content = '\n'.join(losses_content_lines)
-            self.progress_changed.emit("Export files", tools_dr.lerp_progress(90, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+            self.progress_changed.emit("Export files", tools_dr.lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber_Losses.dat', losses_content)
+            self.progress_changed.emit("Export files", tools_dr.lerp_progress(90, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+
+            if bridges_content:
+                self._write_to_file(f'{self.folder_path}{os.sep}Iber_Internal_cond.dat', bridges_content)
             self.progress_changed.emit("Export files", tools_dr.lerp_progress(100, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
     def _get_iber2d_options(self):
@@ -807,10 +805,6 @@ class DrExecuteModel(DrTask):
                 file.write(f"{0 if str(ht_row["geom2"]) == "NULL" else ht_row["geom2"]} {0 if str(ht_row["geom1"]) == "NULL" else ht_row["geom1"]} {0 if str(ht_row["manning"]) == "NULL" else ht_row["manning"]} {ht_row["code"] }\n")
 
                 self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
-
-    def _create_bridge_file(self, mesh_id: int):
-        file_name = Path(self.folder_path) / "Iber_Internal_cond.dat"
-
 
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}

@@ -34,7 +34,8 @@ CREATE TABLE cat_file (
     name text unique check (typeof(name)='text' OR name=NULL),
     iber2d text null,
 	roof text null,
-    losses text null
+    losses text null,
+    bridge text null
 );
 
 CREATE TABLE cat_landuses (

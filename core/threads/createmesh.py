@@ -473,8 +473,8 @@ class DrCreateMeshTask(DrTask):
             print(f"Done! {time.time() - start}s")
 
             self.dao.execute_sql(f"""
-                INSERT INTO cat_file (name, iber2d, roof, losses)
-                VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}')
+                INSERT INTO cat_file (name, iber2d, roof, losses, bridge)
+                VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}')
             """)
 
             self.feedback.setProgress(80)
