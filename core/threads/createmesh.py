@@ -284,7 +284,8 @@ class DrCreateMeshTask(DrTask):
                 print("Getting roughness from ground layer... ", end="")
                 start = time.time()
                 def get_roughness(row):
-                    if np.isnan(row["custom_roughness"]):
+                    custom_roughness = row["custom_roughness"]
+                    if custom_roughness is None or np.isnan(custom_roughness):
                         return landuses_df.loc[landuses_df['idval'] == row["landuse"], 'manning'].values[0]
                     else:
                         return row["custom_roughness"]
