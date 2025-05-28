@@ -89,7 +89,8 @@ class DrSchemaI18NManager:
         else:
             self.dlg_qm.btn_search.setEnabled(True)
             self.dlg_qm.lbl_info.clear()
-            tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', f"Successful connection to the translations geopackage")
+            msg = "Successful connection to the translations geopackage"
+            tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', "Conexión correcta con el geopackage de traducciones")
             QApplication.processEvents()
 
         if not status_org:
@@ -793,6 +794,10 @@ class DrSchemaI18NManager:
                         messages.append((match.group(1), dialog_name, toolbar_name, source))
                         primary_keys_final.append((source, dialog_name, toolbar_name))
 
+        # Add btn_help to messages
+        messages.append(("Help", "common", "common", "btn_help"))
+        primary_keys_final.append(("btn_help", "common", "common"))
+
         # Determine existing primary keys from the database
         primary_keys_org = []
         try:
@@ -1119,8 +1124,9 @@ class DrSchemaI18NManager:
     def _change_table_lyt(self, table):
         # Update the part the of the program in process
         self.dlg_qm.lbl_info.clear()
-        msg = f"From {self.project_type}, updating {table}..."
-        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg)
+        msg = "From {0}, updating {1}..."
+        msg_params = (self.project_type, table)
+        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg, msg_params=msg_params)
         QApplication.processEvents()
 
     def _detect_column_names(self, table):
@@ -1228,4 +1234,14 @@ class DrSchemaI18NManager:
         message = "Python function"
         message = "has been deprecated. Use"
         message = "instead."
-        
+        message = "translation successful"
+        message = "translation failed in table"
+        message = "translation canceled"
+        message = "Python translation successful"
+        message = "Python translation failed"
+        message = "Python translation canceled"
+        message = "Database translation successful to"
+        message = "Database translation failed."
+        message = "Database translation canceled."
+        message = "There have been errors translating:"
+    # endregion

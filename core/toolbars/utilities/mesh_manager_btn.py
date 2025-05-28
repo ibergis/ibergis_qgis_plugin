@@ -197,11 +197,15 @@ class DrMeshManagerButton(DrAction):
             return
 
         detected_files = [path.name for path in [mesh_path, roof_path, losses_path] if path.exists()]
-        detected_files = f"Detected files: {', '.join(detected_files)}"
+        detected_files = ', '.join(detected_files)
 
         self.dlg_lineedit = DrLineeditUi()
-        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_title', 'Choose a name for the mesh')
-        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_subtitle', detected_files)
+        msg = "Choose a name for the mesh"
+        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_title', msg)
+
+        msg = "Detected files: {0}"
+        msg_params = (detected_files,)
+        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_subtitle', msg, msg_params=msg_params)
 
         self.dlg_lineedit.btn_accept.clicked.connect(partial(self._insert_mesh, mesh_path, roof_path, losses_path))
         self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_lineedit))

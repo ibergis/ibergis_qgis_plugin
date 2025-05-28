@@ -84,7 +84,9 @@ class DrI18NGenerator:
 
         self.dlg_qm.btn_translate.setEnabled(True)
         host = tools_qt.get_text(self.dlg_qm, self.dlg_qm.txt_path)
-        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', f'Connected to {host}')
+        msg = 'Connected to {0}'
+        msg_params = (host,)
+        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg, msg_params=msg_params)
         sql = "SELECt id, language FROM cat_language;"
         rows = self._get_rows(sql, self.cursor_i18n)
         tools_qt.fill_combo_values(self.dlg_qm.cmb_language, rows)
@@ -108,22 +110,22 @@ class DrI18NGenerator:
         if py_msg:
             status_py_msg = self._create_py_files()
             if status_py_msg is True:
-                msg += "Python translation successful\n"
+                msg += tools_qt.tr("Python translation successful\n")
             elif status_py_msg is False:
-                msg += "Python translation failed\n"
+                msg += tools_qt.tr("Python translation failed\n")
             elif status_py_msg is None:
-                msg += "Python translation canceled\n"
+                msg += tools_qt.tr("Python translation canceled\n")
 
         self._create_path_dic()
         for type_dbfile in self.path_dic:     
             if tools_qt.is_checked(self.dlg_qm, self.path_dic[type_dbfile]['checkbox']):
                 status_all_db_msg, dbtable = self._create_all_db_files(self.path_dic[type_dbfile]["path"], type_dbfile)
                 if status_all_db_msg is True:
-                    msg += f"{type_dbfile} translation successful\n"
+                    msg += f"{type_dbfile} {tools_qt.tr('translation successful')}\n"
                 elif status_all_db_msg is False:
-                    msg += f"{type_dbfile} translation failed in table: {dbtable}\n"
+                    msg += f"{type_dbfile} {tools_qt.tr('translation failed in table')}: {dbtable}\n"
                 elif status_all_db_msg is None:
-                    msg += f"{type_dbfile} translation canceled\n"        
+                    msg += f"{type_dbfile} {tools_qt.tr('translation canceled')}\n"        
 
         if msg != '':
             tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg)
@@ -342,8 +344,9 @@ class DrI18NGenerator:
 
         # Update the part the of the program in process
         self.dlg_qm.lbl_info.clear()
-        msg = f"Updating {table}..."
-        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg)
+        msg = "Updating {0}..."
+        msg_params = (table,)
+        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg, msg_params=msg_params)
         QApplication.processEvents()
         colums = []
         lang_colums = []

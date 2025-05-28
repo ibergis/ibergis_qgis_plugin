@@ -73,7 +73,8 @@ class DrSchemaI18NUpdate:
         #Send messages
         if 'password authentication failed' in str(self.last_error):
             self.dlg_qm.btn_translate.setEnabled(False)
-            tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', 'Incorrect user or password')
+            msg = "Incorrect user or password"
+            tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg)
             QApplication.processEvents()
             return
         elif host_i18n != '188.245.226.42' and port_i18n != '5432' and db_i18n != 'giswater' or not status_i18n or e:
@@ -90,7 +91,9 @@ class DrSchemaI18NUpdate:
         self.dlg_qm.cmb_language.clear()
         self.dlg_qm.btn_translate.setEnabled(True)
         host_org = tools_qt.get_text(self.dlg_qm, self.dlg_qm.txt_host)
-        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', f'Succesfully connected to {host_org}')
+        msg = "Succesfully connected to {0}"
+        msg_params = (host_org,)
+        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg, msg_params=msg_params)
         sql = "SELECT id, idval FROM i18n.cat_language"
         rows = self._get_rows(sql, self.cursor_i18n)
         tools_qt.fill_combo_values(self.dlg_qm.cmb_language, rows)
@@ -213,7 +216,9 @@ class DrSchemaI18NUpdate:
         
         # Mostrar mensaje de error si hay errores
         if messages:  # Corregido: Verifica si hay elementos en la lista
-            tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', f"Error translating: {', '.join(messages)}")
+            msg = "Error translating: {0}"
+            msg_params = (', '.join(messages),)
+            tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg, msg_params=msg_params)
             return False, messages
         else:
             return True, None
@@ -228,8 +233,9 @@ class DrSchemaI18NUpdate:
 
         # Update the part the of the program in process
         self.dlg_qm.lbl_info.clear()
-        msg = f"Updating {table}..."
-        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg)
+        msg = "Updating {0}..."
+        msg_params = (table,)
+        tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg, msg_params=msg_params)
         QApplication.processEvents()
         columns = []
         lang_columns = []
@@ -615,6 +621,9 @@ class DrSchemaI18NUpdate:
         tools_qt.set_widget_text(self.dlg_qm, 'txt_port', port)
         tools_qt.set_widget_text(self.dlg_qm, 'txt_db', db)
         tools_qt.set_widget_text(self.dlg_qm, 'txt_user', user)
+        tools_qt.set_widget_text(self.dlg_qm, 'txt_py_msg', py_msg)
+        tools_qt.set_widget_text(self.dlg_qm, 'txt_db_msg', db_msg)
+
 
     def _init_db_i18n(self, host, port, db, user, password):
         """Initializes database connection"""

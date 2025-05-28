@@ -270,8 +270,9 @@ class DrProjectCheckTask(DrTask):
         txt_log = "\nRESULTS\n--------------------\n\n"
 
         if self.result != "Success":
-            txt_log = f"{txt_log}Execution failed.\n{self.result}"
-            tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', txt_log)
+            msg = "{0}Execution failed.\n{1}"
+            msg_params = (txt_log, self.result,)
+            tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', msg, msg_params=msg_params)
             tools_qt.hide_void_groupbox(self.dlg_audit_project)
             return
         for log_message in self.log_messages:
@@ -280,7 +281,9 @@ class DrProjectCheckTask(DrTask):
             txt_log = f"{txt_log}Everything OK!\n"
 
         cur_text = tools_qt.get_text(self.dlg_audit_project, 'txt_infolog')
-        tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', f"{cur_text}\n\n{txt_log}")
+        msg = "{0}\n\n{1}"
+        msg_params = (cur_text, txt_log,)
+        tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', msg, msg_params=msg_params)
         tools_qt.hide_void_groupbox(self.dlg_audit_project)
 
         # Add temporal layers if needed

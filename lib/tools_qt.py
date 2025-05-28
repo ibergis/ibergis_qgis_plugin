@@ -23,7 +23,7 @@ from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.PyQt.QtWidgets import QAction, QLineEdit, QComboBox, QWidget, QDoubleSpinBox, QCheckBox, QLabel, QTextEdit, \
     QDateEdit, QAbstractItemView, QCompleter, QDateTimeEdit, QTableView, QSpinBox, QTimeEdit, QPushButton, \
     QPlainTextEdit, QRadioButton, QSizePolicy, QSpacerItem, QFileDialog, QGroupBox, QMessageBox, QTabWidget, QToolBox, \
-    QToolButton
+    QToolButton, QTextBrowser
 from qgis.core import QgsExpression, QgsProject
 from qgis.gui import QgsDateTimeEdit
 from qgis.utils import iface
@@ -233,31 +233,43 @@ def get_text(dialog, widget, add_quote=False, return_string_null=True):
     return text
 
 
-def set_widget_text(dialog, widget, text):
+def set_widget_text(dialog, widget, text, msg_params=None):
 
     if type(widget) is str:
         widget = dialog.findChild(QWidget, widget)
     if not widget:
         return
 
-    if type(widget) in (QLabel, QLineEdit, QTextEdit, QPushButton):
-        if str(text) == 'None':
-            text = ""
-        widget.setText(f"{text}")
-    elif type(widget) is QPlainTextEdit:
-        if str(text) == 'None':
-            text = ""
-        widget.insertPlainText(f"{text}")
-    elif type(widget) is QDoubleSpinBox or type(widget) is QSpinBox:
-        if text == 'None' or text == 'null':
-            text = 0
-        widget.setValue(float(text))
+    if type(widget) in (QLabel, QLineEdit, QTextEdit, QPushButton, QTextBrowser, QPlainTextEdit):
+        _set_text_for_text_widgets(widget, text, msg_params)
+    elif type(widget) in (QDoubleSpinBox, QSpinBox):
+        _set_text_for_spinbox(widget, text)
     elif type(widget) is QComboBox:
         set_selected_item(dialog, widget, text)
     elif type(widget) is QTimeEdit:
         set_time(dialog, widget, text)
     elif type(widget) is QCheckBox:
         set_checked(dialog, widget, text)
+
+
+def _set_text_for_text_widgets(widget, text, msg_params=None):
+    """Helper function to set text for text-based widgets"""
+    if str(text) == 'None':
+        text = ""
+    else:
+        text = tr(f"{text}", list_params=msg_params)
+
+    if type(widget) is QPlainTextEdit:
+        widget.insertPlainText(f"{text}")
+    else:
+        widget.setText(f"{text}")
+
+
+def _set_text_for_spinbox(widget, text):
+    """Helper function to set text for spinbox widgets"""
+    if text == 'None' or text == 'null':
+        text = 0
+    widget.setValue(float(text))
 
 
 def is_checked(dialog, widget):

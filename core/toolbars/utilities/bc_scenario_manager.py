@@ -267,7 +267,9 @@ class DrBCScenarioManagerButton(DrAction):
         self.dlg_bc = DrBCScenarioUi()
 
         # Populate widgets
-        tools_qt.set_widget_text(self.dlg_bc, 'txt_idval', f"{idval}_copy")
+        msg = "{0}_copy"
+        msg_params = (idval,)
+        tools_qt.set_widget_text(self.dlg_bc, 'txt_idval', msg, msg_params=msg_params)
 
         # Signals
         self.dlg_bc.btn_accept.clicked.connect(partial(self._accept_duplicate_scenario, idval))
