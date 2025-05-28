@@ -163,6 +163,7 @@ CREATE TABLE roof (
     street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
     infiltr_vol real CHECK (typeof(infiltr_vol) = 'real' OR infiltr_vol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    min_elev real CHECK (typeof(min_elev) = 'real' OR min_elev=NULL),
     geom geometry
     --FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
 );
