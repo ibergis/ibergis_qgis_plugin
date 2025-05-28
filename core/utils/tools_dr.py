@@ -866,7 +866,8 @@ def set_tabs_enabled(dialog):
 
     btn_cancel = dialog.findChild(QPushButton, 'btn_cancel')
     if btn_cancel:
-        tools_qt.set_widget_text(dialog, btn_accept, 'Close')
+        msg = "Close"
+        tools_qt.set_widget_text(dialog, btn_accept, msg)
 
 
 def set_style_mapzones():
@@ -2708,9 +2709,10 @@ def add_btn_help(dlg):
     if not hasattr(dlg.lyt_buttons, 'columnCount'):
         return
 
-    btn_help = QPushButton("Help")
-    btn_help.setObjectName("btn_help")
-    btn_help.setToolTip("Help")
+    btn_help_text_translated = tools_qt.tr("Help", "common", default="Help")
+    btn_help = QPushButton(btn_help_text_translated)
+    btn_help.setObjectName("btn_help") 
+    btn_help.setToolTip(btn_help_text_translated)
     dlg.lyt_buttons.addWidget(btn_help, 0, dlg.lyt_buttons.columnCount())
 
     # Get formtype, formname & tabname
