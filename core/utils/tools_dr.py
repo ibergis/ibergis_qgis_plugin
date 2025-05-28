@@ -2726,30 +2726,30 @@ def add_btn_help(dlg):
     btn_help.clicked.connect(partial(open_help_link, context, uiname, tabname))
 
 def open_help_link(context, uiname, tabname=None):
-    return #TODO use drain domain
     """ Opens the help link for the given dialog, or a default link if not found. """
 
     # Base URL for the documentation
-    domain = "https://docs.giswater.org" #TODO Change to drain domain
-    language = "es_CR" # TODO: get dynamic language
-    plugin_version = "testing" # TODO: get dynamic version
+    # domain = "https://docs.giswater.org" #TODO Change to drain domain
+    # language = "es_CR" # TODO: get dynamic language
+    # plugin_version = "testing" # TODO: get dynamic version
 
-    if plugin_version == "":
-        plugin_version = "latest"
+    # if plugin_version == "":
+    #     plugin_version = "latest"
 
-    base_url = f"{domain}/{plugin_version}/{language}/docs/giswater/for-users" #TODO Change to drain path
+    # base_url = f"{domain}/{plugin_version}/{language}/docs/giswater/for-users" #TODO Change to drain path
 
-    uiname = uiname.replace("_", "-").replace(" ", "-").lower() + ".html" # sanitize uiname
+    # uiname = uiname.replace("_", "-").replace(" ", "-").lower() + ".html" # sanitize uiname
 
-    # Construct the path dynamically
-    if uiname:
-        file_path = f"{base_url}/dialogs/{uiname}"
-        if tabname != 'tab_none':
-            file_path += f"#{tabname}"  # Append tabname as an anchor if provided
-    else:
-        # Fallback to the general manual link if context and uiname are missing
-        file_path = f"{base_url}/index.html"
+    # # Construct the path dynamically
+    # if uiname:
+    #     file_path = f"{base_url}/dialogs/{uiname}"
+    #     if tabname != 'tab_none':
+    #         file_path += f"#{tabname}"  # Append tabname as an anchor if provided
+    # else:
+    #     # Fallback to the general manual link if context and uiname are missing
+    #     file_path = f"{base_url}/index.html"
 
+    file_path = "https://drain-iber.github.io/testing/en/docs/drain/for-users/user-manual/index.html"
     tools_os.open_file(file_path)
 
 
