@@ -116,20 +116,13 @@ INSERT INTO cat_timeseries_value (id, timeseries, date, time, value) VALUES(72, 
 -- ---------
 -- TRANSECTS
 -- ---------
-INSERT INTO cat_transects (id, idval, descript) VALUES(1, 'TRANSECT_DEMO', 'text to test');
-INSERT INTO cat_transects (id, idval, descript) VALUES(2, 'SHAPE_DEMO', 'text to test');
+-- INSERT INTO cat_transects (id, idval, descript) VALUES(1, 'TRANSECT_DEMO', 'text to test');
 
-INSERT INTO cat_transects_value (id, transect, data_group, value) VALUES
-(1, 'TRANSECT_DEMO', ';This is a demo', null),
-(2, 'TRANSECT_DEMO', 'NC', '0.01 0.01 0.01'),
-(3, 'TRANSECT_DEMO', 'X1', 'TRANSECT_DEMO 4 0 0 0 0 0 0 0'),
-(4, 'TRANSECT_DEMO', 'GR', '0.8 0 0.02 2 0.02 6 0.8 8');
-
-INSERT INTO cat_transects_value (id, transect, data_group, value) VALUES
-(5, 'SHAPE_DEMO', ';This is a demo2', null),
-(6, 'SHAPE_DEMO', 'NC', '0.01 0.01 0.01'),
-(7, 'SHAPE_DEMO', 'X1', 'SHAPE_DEMO 5 0 0 0 0 0 0 0'),
-(8, 'SHAPE_DEMO', 'GR', '0.6 0 0.02 2 0.02 6 0.6 8');
+-- INSERT INTO cat_transects_value (id, transect, data_group, value) VALUES
+-- (1, 'TRANSECT_DEMO', ';This is a demo', null),
+-- (2, 'TRANSECT_DEMO', 'NC', '0.01 0.01 0.01'),
+-- (3, 'TRANSECT_DEMO', 'X1', 'TRANSECT_DEMO 4 0 0 0 0 0 0 0'),
+-- (4, 'TRANSECT_DEMO', 'GR', '0.8 0 0.02 2 0.02 6 0.8 8');
 
 -- --------
 -- CONTROLS
@@ -584,20 +577,20 @@ INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRC
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('RECT_OPEN', 2.0, 0.0, 57.906, 1.65, 1.6, ST_GeomFromText('LINESTRING (418696.279609 4577714.912009, 418706.273352 4577657.874548)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 59.388, 1.62, 1.6, ST_GeomFromText('LINESTRING (418602.192174 4577642.274559, 418612.429667 4577583.7746)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 47.966, 1.6, 1.63, ST_GeomFromText('LINESTRING (418565.1422 4577575.730855, 418612.429667 4577583.7746)', <SRID_VALUE>));
-INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('IRREGULAR', 2.0, 0.0, 55.948, 1.6, 1.62, ST_GeomFromText('LINESTRING (418593.90468 4577697.605771, 418602.192174 4577642.274559)', <SRID_VALUE>));
+INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 2.0, 0.0, 55.948, 1.6, 1.62, ST_GeomFromText('LINESTRING (418593.90468 4577697.605771, 418602.192174 4577642.274559)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 53.657, 1.63, 1.65, ST_GeomFromText('LINESTRING (418612.429667 4577583.7746, 418665.323381 4577592.793343)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 42.589, 1.35, 1.45, ST_GeomFromText('LINESTRING (418464.717269 4577593.524593, 418495.673498 4577564.274613)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 20.200, 1.45, 1.5, ST_GeomFromText('LINESTRING (418495.673498 4577564.274613, 418515.660984 4577567.199611)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('EGG', 1.5, 1.0, 80.785, 1.58, 1.35, ST_GeomFromText('LINESTRING (418502.498493 4577646.905806, 418515.660984 4577567.199611)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 45.201, 1.6, 1.62, ST_GeomFromText('LINESTRING (418410.117307 4577667.868292, 418454.723526 4577675.180786)', <SRID_VALUE>));
-INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('IRREGULAR', 2.0, 0.0, 55.901, 1.42, 1.62, ST_GeomFromText('LINESTRING (418487.142254 4577736.849494, 418496.648497 4577681.762032)', <SRID_VALUE>));
+INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 2.0, 0.0, 55.901, 1.42, 1.62, ST_GeomFromText('LINESTRING (418487.142254 4577736.849494, 418496.648497 4577681.762032)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 42.438, 1.62, 1.62, ST_GeomFromText('LINESTRING (418454.723526 4577675.180786, 418496.648497 4577681.762032)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('FORCE_MAIN', 0.18, 0.0, 49.490, 1.4, 1.35, ST_GeomFromText('LINESTRING (418434.24854 4577632.524566, 418464.717269 4577593.524593)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 41.795, 2.25, 1.95, ST_GeomFromText('LINESTRING (418631.442154 4578092.236748, 418670.685877 4578106.617988)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.8, 0.0, 44.280, 1.7, 1.68, ST_GeomFromText('LINESTRING (418681.410869 4577802.174449, 418673.854625 4577845.805669)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('RECT_OPEN', 1.0, 0.0, 59.066, 1.95, 1.9, ST_GeomFromText('LINESTRING (418651.18589 4577975.480579, 418641.435897 4578033.736789)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.8, 0.0, 41.597, 1.85, 1.95, ST_GeomFromText('LINESTRING (418658.498385 4577934.530607, 418651.18589 4577975.480579)', <SRID_VALUE>));
-INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('IRREGULAR', 1.0, 0.0, 47.608, 1.75, 1.8, ST_GeomFromText('LINESTRING (418604.142173 4577968.168084, 418651.18589 4577975.480579)', <SRID_VALUE>));
+INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 1.0, 0.0, 47.608, 1.75, 1.8, ST_GeomFromText('LINESTRING (418604.142173 4577968.168084, 418651.18589 4577975.480579)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.8, 0.0, 45.72, 1.9, 1.85, ST_GeomFromText('LINESTRING (418666.05463 4577889.436888, 418658.498385 4577934.530607)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.8, 0.0, 51.561, 1.75, 1.75, ST_GeomFromText('LINESTRING (418614.623416 4577885.780641, 418666.05463 4577889.436888)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 44.322, 1.68, 1.85, ST_GeomFromText('LINESTRING (418673.854625 4577845.805669, 418666.05463 4577889.436888)', <SRID_VALUE>));
@@ -607,7 +600,7 @@ INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRC
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 30.696, 0.97, 2.4, ST_GeomFromText('LINESTRING (418716.460232 4577600.003434, 418723.937598 4577570.23125)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 59.347, 1.9, 2.1, ST_GeomFromText('LINESTRING (418641.435897 4578033.736789, 418631.442154 4578092.236748)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 52.826, 2.01, 2.1, ST_GeomFromText('LINESTRING (418579.52344 4578082.486755, 418631.442154 4578092.236748)', <SRID_VALUE>));
-INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('IRREGULAR', 1.0, 0.0, 50.040, 1.9, 2.0, ST_GeomFromText('LINESTRING (418439.367287 4578023.011796, 418482.511007 4578048.361779)', <SRID_VALUE>));
+INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 1.0, 0.0, 50.040, 1.9, 2.0, ST_GeomFromText('LINESTRING (418439.367287 4578023.011796, 418482.511007 4578048.361779)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 48.250, 2.0, 2.0, ST_GeomFromText('LINESTRING (418532.967222 4578069.811764, 418579.52344 4578082.486755)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.4, 0.0, 48.447, 1.75, 1.85, ST_GeomFromText('LINESTRING (418447.411031 4577975.236829, 418439.367287 4578023.011796)', <SRID_VALUE>));
 INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRCULAR', 0.315, 0.0, 55.852, 1.75, 1.75, ST_GeomFromText('LINESTRING (418393.542318 4577991.080568, 418439.367287 4578023.011796)', <SRID_VALUE>));
@@ -694,7 +687,7 @@ UPDATE inp_outfall set gate = 'NO', curve = 'PUMP-02';
 
 --conduit
 UPDATE inp_conduit SET geom3 = 0, geom4 = 0, q0 = 0, qmax = 0;
-UPDATE inp_conduit set curve_transect = 'TRANSECT_DEMO' WHERE shape = 'IRREGULAR';
+--UPDATE inp_conduit set curve_transect = 'TRANSECT_DEMO' WHERE shape = 'IRREGULAR';
 UPDATE inp_conduit set curve_transect = 'SHAPE_DEMO' WHERE shape = 'CUSTOM';
 UPDATE inp_conduit SET roughness = 0.012;
 UPDATE inp_conduit set geom1=1, geom2=1 where shape='RECT_OPEN';

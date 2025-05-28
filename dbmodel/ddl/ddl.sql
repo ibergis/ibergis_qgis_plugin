@@ -34,7 +34,8 @@ CREATE TABLE cat_file (
     name text unique check (typeof(name)='text' OR name=NULL),
     iber2d text null,
 	roof text null,
-    losses text null
+    losses text null,
+    bridge text null
 );
 
 CREATE TABLE cat_landuses (
@@ -162,6 +163,7 @@ CREATE TABLE roof (
     street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
     infiltr_vol real CHECK (typeof(infiltr_vol) = 'real' OR infiltr_vol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
+    min_elev real CHECK (typeof(min_elev) = 'real' OR min_elev=NULL),
     geom geometry
     --FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
 );
@@ -170,7 +172,8 @@ CREATE TABLE roof (
 CREATE TABLE mesh_anchor_points (
     fid integer PRIMARY KEY,
     geom geometry,
-    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 1.0
+    cellsize real CHECK (typeof(cellsize)='real' OR cellsize = NULL) DEFAULT 1.0,
+    z_value real CHECK (typeof(z_value)='real' OR z_value = NULL)
 );
 
 CREATE TABLE mesh_anchor_lines (
@@ -239,6 +242,50 @@ create table culvert (
     manning real CHECK (typeof(manning)='real' OR manning = NULL),
     iscalculate boolean CHECK (typeof(iscalculate) IN (0,1,NULL)) DEFAULT  1,
     geom geometry
+);
+
+CREATE TABLE pinlet (
+    fid integer primary key,
+    code text unique check (typeof(code) = 'text' or code = null),
+    custom_code text unique check (typeof(custom_code) = 'text' or custom_code = null),
+    descript text check (typeof(descript) = 'text' or descript = null),
+   	outlet_node text check (typeof(outlet_node) = 'text' or outlet_node = null),
+    outlet_type text check (typeof(outlet_type) in ('text', null) and outlet_type in ('SINK', 'TO NETWORK')),
+    top_elev real check (typeof(top_elev) = 'real' or top_elev = null),
+  	width real check (typeof(width) = 'real' or width = null),
+    length real check (typeof(length) = 'real' or length = null),
+    depth real check (typeof(depth) = 'real' or depth = null),
+    method text check (typeof(method) in ('text', null) and method in ('UPC', 'W_O')),
+    weir_cd real check (typeof(weir_cd) = 'real' or weir_cd = null),
+    orifice_cd real check (typeof(orifice_cd) = 'real' or orifice_cd = null),
+    a_param real check (typeof(a_param) = 'real' or a_param = null),
+    b_param real check (typeof(b_param) = 'real' or b_param = null),
+    efficiency real check (typeof(efficiency) = 'real' or efficiency = null),
+    annotation text check (typeof(annotation) = 'text' or annotation = null),
+    geom geometry,
+    FOREIGN KEY (outlet_node) references node (code) on update cascade on delete restrict
+);
+
+create table bridge (
+    fid integer primary key,
+    code text unique check (typeof(code) = 'text' or code = null),
+    deck_cd real CHECK (typeof(deck_cd)='real' OR deck_cd = NULL),
+    freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL),
+    sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL),
+    gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL),
+	length real CHECK (typeof(gaugenumber)='real' OR gaugenumber = NULL),
+    descript text unique check (typeof(descript) = 'text' or descript = null),
+    geom geometry
+);
+
+create table bridge_value (
+    id integer primary key,
+    bridge_code text CHECK (typeof(bridge_code)='text' OR bridge_code = NULL),
+    distance float unique check (typeof(distance) = 'float' or distance = null),
+    topelev real CHECK (typeof(topelev)='real' OR topelev = NULL),
+    lowelev real CHECK (typeof(lowelev)='real' OR lowelev = NULL),
+    openingval real CHECK (typeof(openingval)='real' OR openingval = NULL),
+    FOREIGN KEY (bridge_code) references bridge(code) on update cascade on delete restrict
 );
 
 

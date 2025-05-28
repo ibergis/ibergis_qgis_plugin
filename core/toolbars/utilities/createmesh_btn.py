@@ -3,8 +3,8 @@ from functools import partial
 from pathlib import Path
 from time import time
 
-from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
-from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.core import Qgis, QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer, QgsGeometry, QgsFeature, QgsField
+from qgis.PyQt.QtCore import Qt, QTimer, QVariant
 from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox, QTextEdit
 
 from ..dialog import DrAction
@@ -12,6 +12,7 @@ from ...threads.createmesh import DrCreateMeshTask
 from ...threads.validatemesh import validations_dict
 from ...ui.ui_manager import DrCreateMeshUi
 from ...utils import Feedback, tools_dr, mesh_parser
+from ...utils.meshing_process import create_anchor_layers
 from .... import global_vars
 from ....lib import tools_qt, tools_os
 
@@ -40,6 +41,18 @@ class DrCreateMeshButton(DrAction):
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
+        dlg.cmb_mesh_qgis_layer.setFilters(Qgis.LayerFilter.MeshLayer)
+
+        # Hide grb_cleanup
+        dlg.grb_cleanup_data.setVisible(False)
+
+        # Disable widgets of the radio buttons
+        dlg.txt_mesh_qgis_path.setEnabled(False)
+        dlg.btn_mesh_qgis_path.setEnabled(False)
+        dlg.cmb_mesh_qgis_layer.setEnabled(False)
+        # Temporary disable the iber_from_qgis radio button
+        dlg.rb_mesh_qgis.setEnabled(False)  # TODO: enable when code is done
+        dlg.rb_mesh_iber_from_qgis.setEnabled(False)
 
         # Fill raster layers combos
         project = QgsProject.instance()
@@ -82,6 +95,17 @@ class DrCreateMeshButton(DrAction):
         dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_start.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
+        # Radio button IBER mesh
+        dlg.rb_mesh_iber.toggled.connect(dlg.grb_roughness.setEnabled)
+        dlg.rb_mesh_iber.toggled.connect(dlg.grb_losses.setEnabled)
+        # Radio button QGIS mesh
+        dlg.rb_mesh_qgis.toggled.connect(dlg.txt_mesh_qgis_path.setEnabled)
+        dlg.rb_mesh_qgis.toggled.connect(dlg.btn_mesh_qgis_path.setEnabled)
+        # Radio button IBER mesh from QGIS mesh
+        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.cmb_mesh_qgis_layer.setEnabled)
+        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.grb_roughness.setEnabled)
+        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.grb_losses.setEnabled)
+        # Dialog buttons
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.rejected.connect(self._save_widget_values)
@@ -124,6 +148,7 @@ class DrCreateMeshButton(DrAction):
                 for validation_id, validation in self.validations.items()
                 if validation["list_item"].checkState() == Qt.Checked
             ]
+        only_selected_features = dlg.chk_only_selected.isChecked()
         clean_geometries = dlg.chk_clean_geometries.isChecked()
         clean_tolerance = float(dlg.txt_tolerance.text())
         enable_transition = dlg.chk_transition.isChecked()
@@ -132,38 +157,90 @@ class DrCreateMeshButton(DrAction):
         transition_extent = float(dlg.txt_extent.text())
         dem_layer = tools_qt.get_combo_value(dlg, dlg.cmb_dem_layer)
         if dem_layer == "":
-            tools_qt.show_info_box("Please, select a DEM layer!")
+            msg = "Please, select a DEM layer!"
+            tools_qt.show_info_box(msg)
             return
         roughness_layer = tools_qt.get_combo_value(dlg, dlg.cmb_roughness_layer)
         if roughness_layer == "":
-            tools_qt.show_info_box("Please, select a roughness layer!")
+            msg = "Please, select a roughness layer!"
+            tools_qt.show_info_box(msg)
             return
         losses_layer = tools_qt.get_combo_value(dlg, dlg.cmb_losses_layer)
         if losses_layer == "":
-            tools_qt.show_info_box("Please, select a losses layer!")
+            msg = "Please, select a losses layer!"
+            tools_qt.show_info_box(msg)
             return
         mesh_name = dlg.txt_name.text()
 
         if mesh_name == "":
-            tools_qt.show_info_box("Please, fill the name of the mesh.")
+            msg = "Please, fill the name of the mesh."
+            tools_qt.show_info_box(msg)
             return
 
         if not mesh_name.isalnum() and "-" not in mesh_name:
-            tools_qt.show_info_box(
-                "Only alphanumeric characters and hyphens are valid for the mesh name."
-            )
+            msg = "Only alphanumeric characters and hyphens are valid for the mesh name."
+            tools_qt.show_info_box(msg)
             return
 
         # Check for existent meshes in file
         sql = "SELECT group_concat(name) as names FROM cat_file"
         retrieved_meshes = self.dao.get_row(sql)["names"]
         if retrieved_meshes is not None and mesh_name in retrieved_meshes.split(","):
-            message = (
-                "A mesh with the same name already exists. Do you want to overwrite it?"
-            )
-            if not tools_qt.show_question(message):
+            msg = "A mesh with the same name already exists. Do you want to overwrite it?"
+            if not tools_qt.show_question(msg):
                 return
 
+        features = self.ground_layer.getFeatures()
+        num_triangles = 0
+        lowest_cellsize = float('inf')
+        for feature in features:
+            geom = feature.geometry()
+            cellsize = feature["cellsize"]
+            if cellsize < lowest_cellsize:
+                lowest_cellsize = cellsize
+
+            # sqrt(3)/4 * cellsize^2 = area of equilateral triangle
+            triangle_area = 0.43301270189 * cellsize**2
+
+            num_triangles += geom.area() / triangle_area
+
+
+        print(f"Estimated number of triangles: {num_triangles}")
+        # self.feedback.setProgressText(f"Estimated number of triangles: >{num_triangles}")
+
+        # Warin the user if the number of triangles is too high with a dialog
+        msg = ""
+        if num_triangles > 10_000_000:
+            msg = (
+                # "Tens or hundreds of millions of records possible massive data generation, may impact performance."
+                "The estimated number of triangles is extremely high (> 10M).\n"
+                "This may take a long time to process.\n"
+                "Check your memory, disk and cpu capabilties\n"
+                "Do you want to continue?"
+            )
+            if not tools_qt.show_question(msg):
+                return
+        elif num_triangles > 1_000_000:
+            msg = (
+                "The estimated number of triangles is high (> 1M).\n"
+                "This may take a long time to process.\n"
+                "Make sure you have enough memory, disk and cpu capabilties\n"
+                "Do you want to continue?"
+            )
+            if not tools_qt.show_question(msg):
+                return
+
+        # Create anchor layers combining mesh anchor points and bridge features
+        mesh_anchor_points_lyr = self._get_layer(self.dao, "mesh_anchor_points")
+        mesh_anchor_lines_lyr = self._get_layer(self.dao, "mesh_anchor_lines")
+        bridge_lyr = self._get_layer(self.dao, "bridge")
+        point_anchor_layer, line_anchor_layer = create_anchor_layers(
+            mesh_anchor_points_lyr,
+            mesh_anchor_lines_lyr,
+            bridge_lyr,
+            self.dao,
+            lowest_cellsize
+        )
         # Reset txt_infolog
         tools_qt.set_widget_text(dlg, 'txt_infolog', "")
 
@@ -173,6 +250,7 @@ class DrCreateMeshButton(DrAction):
             execute_validations,
             clean_geometries,
             clean_tolerance,
+            only_selected_features,
             enable_transition,
             transition_slope,
             transition_start,
@@ -181,6 +259,8 @@ class DrCreateMeshButton(DrAction):
             roughness_layer,
             losses_layer,
             mesh_name,
+            point_anchor_layer=point_anchor_layer,
+            line_anchor_layer=line_anchor_layer,
             feedback=self.feedback,
         )
         thread = self.thread_triangulation

@@ -64,7 +64,9 @@ class DrReportTask(DrTask):
         if self.body:
             sql += f"{self.body}"
         sql += f");"
-        tools_log.log_info(f"Task 'Toolbox report' manage json response with parameters: '{self.json_result}', '{sql}', 'None'")
+        msg = "Task '{0}' manage json response with parameters: '{1}', '{2}', '{3}'"
+        msg_params = ("Toolbox report", self.json_result, sql, "None",)
+        tools_log.log_info(msg, msg_params=msg_params)
         tools_dr.manage_json_response(self.json_result, sql, None)
 
         tools_qt.set_widget_enabled(self.dialog, 'btn_export', True)
@@ -76,18 +78,20 @@ class DrReportTask(DrTask):
             return
 
         if result is False and self.exception is not None:
-            msg = f"<b>Key: </b>{self.exception}<br>"
-            msg += f"<b>key container: </b>'body/data/ <br>"
-            msg += f"<b>Python file: </b>{__name__} <br>"
-            msg += f"<b>Python function:</b> {self.__class__.__name__} <br>"
-            tools_qt.show_exception_message("Key on returned json from ddbb is missed.", msg)
+            msg = f"<b>{tools_qt.tr('Key')}: </b>{self.exception}<br>"
+            msg += f"<b>{tools_qt.tr('key container')}: </b>'body/data/ <br>"
+            msg += f"<b>{tools_qt.tr('Python file')}: </b>{__name__} <br>"
+            msg += f"<b>{tools_qt.tr('Python function')}:</b> {self.__class__.__name__} <br>"
+            title = tools_qt.tr("Key on returned json from ddbb is missed.")
+            tools_qt.show_exception_message(title, msg)
         # If database fail
         elif result is False and global_vars.session_vars['last_error_msg'] is not None:
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
         # If sql function return null
         elif result is False:
-            msg = f"Database returned null. Check postgres function 'gw_fct_getinfofromid'"
-            tools_log.log_warning(msg)
+            msg = "Database returned null. Check postgres function '{0}'"
+            msg_params = ("gw_fct_getinfofromid",)
+            tools_log.log_warning(msg, msg_params=msg_params)
 
 
     def cancel(self):

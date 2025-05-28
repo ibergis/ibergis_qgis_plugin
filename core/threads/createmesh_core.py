@@ -1,5 +1,5 @@
 import processing
-from qgis.core import QgsField, QgsGeometry, QgsVectorLayer, QgsRasterLayer, QgsFeedback
+from qgis.core import QgsField, QgsGeometry, QgsVectorLayer, QgsRasterLayer, QgsFeedback, QgsProcessingFeatureSourceDefinition, QgsFeatureRequest
 
 from typing import Optional
 import numpy as np
@@ -49,11 +49,17 @@ def execute_ground_zonal_statistics(vector_layer: QgsVectorLayer, raster_layer: 
 
 def triangulate_roof(
     roof_layer: QgsVectorLayer,
+    only_selected: bool,
     feedback: QgsFeedback
 ) -> Optional[tuple[pd.DataFrame, pd.DataFrame]]:
-
+# processing.run("3d:tessellate", {'INPUT':QgsProcessingFeatureSourceDefinition('Z:/sample2/sample2.gpkg|layername=roof', selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),'OUTPUT':'TEMPORARY_OUTPUT'})
     res = processing.run("3d:tessellate", {
-        "INPUT": roof_layer,
+        "INPUT": QgsProcessingFeatureSourceDefinition(
+            roof_layer.source(),
+            selectedFeaturesOnly=only_selected,
+            featureLimit=-1,
+            geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid
+        ),
         "OUTPUT": "TEMPORARY_OUTPUT"
     })
     if feedback.isCanceled():

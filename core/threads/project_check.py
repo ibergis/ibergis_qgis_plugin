@@ -49,11 +49,15 @@ class DrProjectCheckTask(DrTask):
         layers = self.params['layers']
         init_project = self.params['init_project']
         self.dlg_audit_project = self.params['dialog']
-        tools_log.log_info(f"Task 'Check project' execute function 'check_project_execution'")
+        msg = "Task '{0}' execute function '{1}'"
+        msg_params = ("Check project", "check_project_execution",)
+        tools_log.log_info(msg, msg_params=msg_params)
         # Call functions
         status, self.result = self.check_project_execution(layers, init_project)
         if not status:
-            tools_log.log_info("Function check_project_execution returned False. Reason:", parameter=self.result)
+            msg = "Function '{0}' returned False. Reason: {1}"
+            msg_params = ("check_project_execution", self.result,)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
         return True
@@ -73,11 +77,12 @@ class DrProjectCheckTask(DrTask):
 
         # Handle exception
         if self.exception is not None:
-            msg = f"<b>Key: </b>{self.exception}<br>"
-            msg += f"<b>key container: </b>'body/data/ <br>"
-            msg += f"<b>Python file: </b>{__name__} <br>"
-            msg += f"<b>Python function:</b> {self.__class__.__name__} <br>"
-            tools_qt.show_exception_message("Key on returned json from ddbb is missed.", msg)
+            msg = f"<b>{tools_qt.tr('Key')}: </b>{self.exception}<br>"
+            msg += f"<b>{tools_qt.tr('key container')}: </b>'body/data/ <br>"
+            msg += f"<b>{tools_qt.tr('Python file')}: </b>{__name__} <br>"
+            msg += f"<b>{tools_qt.tr('Python function')}:</b> {self.__class__.__name__} <br>"
+            title = "Key on returned json from ddbb is missed."
+            tools_qt.show_exception_message(msg, title)
             return
 
         # Show dialog with audit check project result
@@ -265,8 +270,9 @@ class DrProjectCheckTask(DrTask):
         txt_log = "\nRESULTS\n--------------------\n\n"
 
         if self.result != "Success":
-            txt_log = f"{txt_log}Execution failed.\n{self.result}"
-            tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', txt_log)
+            msg = "{0}Execution failed.\n{1}"
+            msg_params = (txt_log, self.result,)
+            tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', msg, msg_params=msg_params)
             tools_qt.hide_void_groupbox(self.dlg_audit_project)
             return
         for log_message in self.log_messages:
@@ -275,7 +281,9 @@ class DrProjectCheckTask(DrTask):
             txt_log = f"{txt_log}Everything OK!\n"
 
         cur_text = tools_qt.get_text(self.dlg_audit_project, 'txt_infolog')
-        tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', f"{cur_text}\n\n{txt_log}")
+        msg = "{0}\n\n{1}"
+        msg_params = (cur_text, txt_log,)
+        tools_qt.set_widget_text(self.dlg_audit_project, 'txt_infolog', msg, msg_params=msg_params)
         tools_qt.hide_void_groupbox(self.dlg_audit_project)
 
         # Add temporal layers if needed

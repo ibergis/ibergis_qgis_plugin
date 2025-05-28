@@ -14,8 +14,10 @@ from .epa_file_manager import _tables_dict
 from .task import DrTask
 from ..utils.generate_swmm_inp.generate_swmm_import_inp_file import ImportInpFile
 from ..utils import tools_dr
-from ...lib import tools_qgis, tools_db
+from ...lib import tools_qgis, tools_db, tools_log
+from ...lib.tools_gpkgdao import DrGpkgDao
 from ... import global_vars
+from typing import Optional
 
 
 class DrImportInpTask(DrTask):
@@ -34,6 +36,7 @@ class DrImportInpTask(DrTask):
         self.gpkg_path = gpkg_path
         self.save_folder = save_folder
         self.feedback = feedback
+        self.dividers_to_update: dict[str,str] = {}
 
     def cancel(self):
         super().cancel()
@@ -42,7 +45,7 @@ class DrImportInpTask(DrTask):
     def run(self):
         super().run()
         try:
-            self.dao = global_vars.gpkg_dao_data.clone()
+            self.dao: Optional[DrGpkgDao] = global_vars.gpkg_dao_data.clone()
             output = self._import_file()
             if not output:
                 return False
@@ -54,16 +57,6 @@ class DrImportInpTask(DrTask):
             self._enable_triggers(False)
             if self.isCanceled():
                 return
-            # Get data from gpkg and import it to existing layers (changing the column names)
-            self._import_gpkgs_to_project()
-            if self.isCanceled():
-                return
-            # Execute the after import fct
-            self._execute_after_import_fct()
-            if self.isCanceled():
-                return
-            # Enable triggers
-            self._enable_triggers(True)
             return True
         except Exception:
             self.exception = traceback.format_exc()
@@ -74,8 +67,26 @@ class DrImportInpTask(DrTask):
 
         super().finished(result)
 
+        if self.dao is not None:
+            self.dao.close_db()
+
+        if self.isCanceled() or not result:
+            return
+
+        self.dao: Optional[DrGpkgDao] = global_vars.gpkg_dao_data
+
+        # Get data from gpkg and import it to existing layers (changing the column names)
+        self._import_gpkgs_to_project()
+
         if self.isCanceled():
             return
+        # Execute the after import fct
+        self._execute_after_import_fct()
+        if self.isCanceled():
+            return
+        # Enable triggers
+        self._enable_triggers(True)
+
 
     def _import_file(self):
 
@@ -96,8 +107,9 @@ class DrImportInpTask(DrTask):
             sql = f.read()
         status = self.dao.execute_script_sql(str(sql))
         if not status:
-            print(f"Error {fct_path} not executed")
-            print(self.dao.last_error)
+            msg = "Error {0} not executed"
+            msg_params = (fct_path,)
+            tools_log.log_error(msg, msg_params=msg_params)
             self.progress_changed.emit("Execute after import fct", self.PROGRESS_IMPORT_GPKGS, f"Error {fct_path} not executed", True)
 
     def _manage_params(self) -> dict:
@@ -235,6 +247,11 @@ class DrImportInpTask(DrTask):
                     print(self.dao.last_error)
                     self.progress_changed.emit("Import gpkgs to project", self.PROGRESS_IMPORT_GPKGS, f"Error inserting nodes or arcs: {self.dao.last_error}", True)
 
+        # Update dividers arc
+        for divider in self.dividers_to_update.keys():
+            sql = f"UPDATE inp_divider SET divert_arc = '{self.dividers_to_update[divider]}' WHERE code = '{divider}';"
+            tools_db.execute_sql(sql, log_sql=True, is_thread=True, dao=self.dao)
+
     def _insert_data(self, source_layer, target_layer, field_map, batch_size=1000):
         """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
 
@@ -252,7 +269,10 @@ class DrImportInpTask(DrTask):
             attributes = [None] * len(target_field_names)
             for src_field, tgt_field in field_map.items():
                 if tgt_field in target_field_names:
-                    attributes[target_field_names.index(tgt_field)] = feature[src_field]
+                    if not (source_layer.name() == "SWMM_dividers" and tgt_field == "divert_arc"):
+                        attributes[target_field_names.index(tgt_field)] = feature[src_field]
+                    else:
+                        self.dividers_to_update[feature['Name']] = feature[src_field]
             new_feature.setAttributes(attributes)
             new_feature.setGeometry(feature.geometry())  # Preserve geometry
             features_to_add.append(new_feature)

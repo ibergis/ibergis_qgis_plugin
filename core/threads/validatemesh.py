@@ -497,7 +497,6 @@ def validate_input_layers(
     return error_layers, warning_layers
 
 
-# FIXME: Empty inlet layer crashes this function
 def validate_inlets_in_triangles(
     mesh_layer: QgsVectorLayer, inlet_layer: QgsVectorLayer
 ) -> QgsVectorLayer:
@@ -510,6 +509,9 @@ def validate_inlets_in_triangles(
     provider = output_layer.dataProvider()
     provider.addAttributes([QgsField("fid", QVariant.Int)])
     output_layer.updateFields()
+
+    if inlet_layer.featureCount() == 0:
+        return output_layer
 
     # Filter errors
     spatial_index = QgsSpatialIndexKDBush(inlet_layer)

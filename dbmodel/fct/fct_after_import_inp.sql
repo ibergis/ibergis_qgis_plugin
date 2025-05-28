@@ -42,6 +42,7 @@ UPDATE ground SET code = 'GR'||fid;
 UPDATE inlet SET code = 'IN'||fid;
 UPDATE hyetograph SET code = 'RG'||fid;
 
+UPDATE node set custom_code = code;
 
 UPDATE node set code = 'S'||table_fid WHERE table_name = 'inp_storage';
 UPDATE node set code = 'J'||table_fid WHERE table_name = 'inp_junction';
@@ -49,11 +50,22 @@ UPDATE node set code = 'O'||table_fid WHERE table_name = 'inp_outfall';
 UPDATE node set code = 'D'||table_fid WHERE table_name = 'inp_divider';
 UPDATE node set code = 'IN'||table_fid WHERE table_name = 'inlet';
 
+
 -- ----------------------------------------------------
--- BUILD TOPOLOGY by TRIGGERING THE TOPOCONTROL TRIGGER
+-- UPDATE INP_CONDUIT FOREIGN KEYS
 -- ----------------------------------------------------
-UPDATE inp_conduit SET geom = geom;
-UPDATE inp_pump SET geom = geom;
-UPDATE inp_outlet SET geom = geom;
-UPDATE inp_orifice SET geom = geom;
-UPDATE inp_weir SET geom = geom;
+
+UPDATE inp_conduit set node_1 = node.code FROM node WHERE node.custom_code = node_1;
+UPDATE inp_conduit set node_2 = node.code FROM node WHERE node.custom_code = node_2;
+
+UPDATE inp_pump set node_1 = node.code FROM node WHERE node.custom_code = node_1;
+UPDATE inp_pump set node_2 = node.code FROM node WHERE node.custom_code = node_2;
+
+UPDATE inp_outlet set node_1 = node.code FROM node WHERE node.custom_code = node_1;
+UPDATE inp_outlet set node_2 = node.code FROM node WHERE node.custom_code = node_2;
+
+UPDATE inp_orifice set node_1 = node.code FROM node WHERE node.custom_code = node_1;
+UPDATE inp_orifice set node_2 = node.code FROM node WHERE node.custom_code = node_2;
+
+UPDATE inp_weir set node_1 = node.code FROM node WHERE node.custom_code = node_1;
+UPDATE inp_weir set node_2 = node.code FROM node WHERE node.custom_code = node_2;

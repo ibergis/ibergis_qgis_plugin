@@ -14,6 +14,8 @@ from ...threads.create_temp_layer import DrCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
 from ...utils import Feedback, tools_dr, mesh_parser
 from .... import global_vars
+from ....lib.tools_gpkgdao import DrGpkgDao
+from typing import Optional
 
 
 class DrMeshManagerButton(DrAction):
@@ -26,6 +28,7 @@ class DrMeshManagerButton(DrAction):
         self.dlg_bc = None
         self.dlg_ms = None
         self.last_mesh = None
+        self.dao: Optional[DrGpkgDao] = None
 
     def clicked_event(self):
         self.manage_meshes()
@@ -128,8 +131,8 @@ class DrMeshManagerButton(DrAction):
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
         if len(selected_list) != 1:
-            message = "Select only one mesh to display"
-            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            msg = "Select only one mesh to display"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
 
         # Get selected object IDs
@@ -188,15 +191,21 @@ class DrMeshManagerButton(DrAction):
         losses_path = Path(folder_path) / LOSSES_FILE
 
         if not mesh_path.exists():
-            tools_qt.show_info_box("File Iber2D.dat not found in this folder.")
+            msg = "File {0} not found in this folder."
+            msg_params = ("Iber2D.dat",)
+            tools_qt.show_info_box(msg, msg_params=msg_params)
             return
 
         detected_files = [path.name for path in [mesh_path, roof_path, losses_path] if path.exists()]
-        detected_files = f"Detected files: {', '.join(detected_files)}"
+        detected_files = ', '.join(detected_files)
 
         self.dlg_lineedit = DrLineeditUi()
-        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_title', 'Choose a name for the mesh')
-        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_subtitle', detected_files)
+        msg = "Choose a name for the mesh"
+        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_title', msg)
+
+        msg = "Detected files: {0}"
+        msg_params = (detected_files,)
+        tools_qt.set_widget_text(self.dlg_lineedit, 'lbl_subtitle', msg, msg_params=msg_params)
 
         self.dlg_lineedit.btn_accept.clicked.connect(partial(self._insert_mesh, mesh_path, roof_path, losses_path))
         self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_lineedit))
@@ -244,8 +253,8 @@ class DrMeshManagerButton(DrAction):
         # Get selected row
         selected_list = table.selectionModel().selectedRows()
         if len(selected_list) == 0:
-            message = "Any record selected"
-            tools_qgis.show_warning(message, dialog=self.dlg_manager)
+            msg = "Any record selected"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
             return
 
         # Get selected object IDs
@@ -259,8 +268,9 @@ class DrMeshManagerButton(DrAction):
             value = idx.sibling(idx.row(), col_idx).data()
             id_list.append(value)
 
-        message = "Are you sure you want to delete these records?"
-        answer = tools_qt.show_question(message, "Delete records", id_list)
+        msg = "Are you sure you want to delete these records?"
+        title = "Delete records"
+        answer = tools_qt.show_question(msg, title, id_list)
         if answer:
             for value in id_list:
                 values.append(f"'{value}'")
@@ -278,5 +288,9 @@ class DrMeshManagerButton(DrAction):
                     return
 
             # Commit & refresh table
-            global_vars.gpkg_dao_data.commit()
+            self.dao = global_vars.gpkg_dao_data
+            if self.dao:
+                self.dao.commit()
+                sql = f"vacuum;"
+                self.dao.execute_sql(sql)
             self._reload_manager_table()

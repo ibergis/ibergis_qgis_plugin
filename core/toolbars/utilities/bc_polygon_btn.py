@@ -102,11 +102,11 @@ class DrCreateBCFromPolygon(DrAction):
                         break
 
         if not all(self.layers.values()):
-            message = (
+            msg = (
                 "To make 'Create Boundary Condition from Polygon' function properly, "
                 "you must have the ground, roof, and boundary conditions layers included in your project."
             )
-            tools_qt.show_info_box(message)
+            tools_qt.show_info_box(msg)
             self.action.setChecked(False)
             return
 
@@ -143,6 +143,7 @@ class DrCreateBCFromPolygon(DrAction):
         feat = QgsFeature(bc_layer.fields())
         feat.setGeometry(geometry)
         feat["fid"] = "Autogenerate"
+        feat["code"] = "Autogenerate"
         self.rubber_band = QgsRubberBand(iface.mapCanvas())
         self.rubber_band.setWidth(3)
         self.rubber_band.setColor(QColor(255, 0, 0, 255))
@@ -162,6 +163,7 @@ class DrCreateBCFromPolygon(DrAction):
         scenario_name = row["idval"]
 
         self.dlg.txt_fid.setText(feat["fid"])
+        self.dlg.txt_code.setText(feat["code"])
         self.dlg.txt_bscenario_id.setText(str(scenario_name))
         tools_qt.double_validator(self.dlg.txt_other1)
         tools_qt.double_validator(self.dlg.txt_other2)
@@ -177,8 +179,11 @@ class DrCreateBCFromPolygon(DrAction):
 
         self.dlg.rejected.connect(bc_layer.rollBack)
         self.dlg.rejected.connect(self.rubber_band.reset)
-        self.dlg.buttonBox.accepted.connect(
+        self.dlg.btn_accept.clicked.connect(
             partial(self._validate_and_save, bc_layer, feat)
+        )
+        self.dlg.btn_cancel.clicked.connect(
+            partial(self.dlg.reject)
         )
 
         iface.mapCanvas().setMapTool(self.lastMapTool)
@@ -213,7 +218,7 @@ class DrCreateBCFromPolygon(DrAction):
                 if config["timeseries"]:
                     rows = tools_db.get_rows(
                         f"""
-                        SELECT id, idval FROM cat_timeseries 
+                        SELECT idval as id, idval FROM cat_timeseries 
                         WHERE timser_type = '{config['timser_type']}'
                         """
                     )
@@ -238,6 +243,7 @@ class DrCreateBCFromPolygon(DrAction):
             self.action.setChecked(False)
             canvas.mapToolSet.disconnect(self._uncheck)
 
+
     def _validate_and_save(self, layer, feature):
         layer.changeAttributeValue
         feature.setAttribute("code", self.dlg.txt_code.text())
@@ -250,21 +256,22 @@ class DrCreateBCFromPolygon(DrAction):
             timeseries = tools_qt.get_combo_value(
                 self.dlg, self.dlg.cmb_timeseries
             )
+            if timeseries == '': timeseries = None
             feature.setAttribute("timeseries", timeseries)
         if config["other1"]:
             other1_str = self.dlg.txt_other1.text()
             if not other1_str:
-                tools_qt.show_info_box(
-                    f"Please fill the field: '{config['lbl_other1']}'"
-                )
+                msg = "Please fill the field: '{0}'"
+                msg_params = (config['lbl_other1'],)
+                tools_qt.show_info_box(msg, msg_params=msg_params)
                 return
             feature.setAttribute("other1", float(other1_str))
         if config["other2"]:
             other2_str = self.dlg.txt_other2.text()
             if not other2_str:
-                tools_qt.show_info_box(
-                    f"Please fill the field: '{config['lbl_other2']}'"
-                )
+                msg = "Please fill the field: '{0}'"
+                msg_params = (config['lbl_other2'],)
+                tools_qt.show_info_box(msg, msg_params=msg_params)
                 return
             feature.setAttribute("other2", float(other2_str))
 

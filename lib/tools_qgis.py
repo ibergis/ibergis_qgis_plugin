@@ -48,7 +48,7 @@ def get_feature_by_expr(layer, expr_filter):
 
 
 def show_message(text, message_level=1, duration=10, context_name=None, parameter=None, title="", logger_file=True,
-                 dialog=iface):
+                 dialog=iface, msg_params=None, title_params=None):
     """
     Show message to the user with selected message level
         :param text: The text to be shown (String)
@@ -72,9 +72,12 @@ def show_message(text, message_level=1, duration=10, context_name=None, paramete
             duration = int(dev_duration)
     msg = None
     if text:
-        msg = tools_qt.tr(text, context_name, user_parameters['aux_context'])
+        msg = tools_qt.tr(text, context_name, user_parameters['aux_context'], list_params=msg_params)
         if parameter:
             msg += f": {parameter}"
+
+    if title:
+        title = tools_qt.tr(title, context_name, user_parameters['aux_context'], list_params=title_params)
 
     # Show message
     dialog.messageBar().pushMessage(title, msg, message_level, duration)
@@ -85,7 +88,7 @@ def show_message(text, message_level=1, duration=10, context_name=None, paramete
 
 
 def show_message_link(text, url, btn_text="Open", message_level=0, duration=10, context_name=None, logger_file=True,
-                      dialog=iface):
+                      dialog=iface, msg_params=None, btn_text_params=None):
     """
     Show message to the user with selected message level and a button to open the url
         :param text: The text to be shown (String)
@@ -109,7 +112,9 @@ def show_message_link(text, url, btn_text="Open", message_level=0, duration=10, 
             duration = int(dev_duration)
     msg = None
     if text:
-        msg = tools_qt.tr(text, context_name, user_parameters['aux_context'])
+        msg = tools_qt.tr(text, context_name, user_parameters['aux_context'], list_params=msg_params)
+    if btn_text:
+        btn_text = tools_qt.tr(btn_text, context_name, user_parameters['aux_context'], list_params=btn_text_params)
 
     # Create the message with the button
     widget = iface.messageBar().createMessage(f"{msg}", f"{url}")
@@ -126,7 +131,8 @@ def show_message_link(text, url, btn_text="Open", message_level=0, duration=10, 
         global_vars.logger.info(text)
 
 
-def show_info(text, duration=10, context_name=None, parameter=None, logger_file=True, title="", dialog=iface):
+def show_info(text, duration=10, context_name=None, parameter=None, logger_file=True, title="", dialog=iface,
+              msg_params=None, title_params=None):
     """
     Show information message to the user
         :param text: The text to be shown (String)
@@ -136,10 +142,12 @@ def show_info(text, duration=10, context_name=None, parameter=None, logger_file=
         :param logger_file: Whether it should log the message in a file or not (bool)
         :param title: The title of the message (String) """
 
-    show_message(text, 0, duration, context_name, parameter, title, logger_file, dialog=dialog)
+    show_message(text, 0, duration, context_name, parameter, title, logger_file, dialog=dialog, 
+                 msg_params=msg_params, title_params=title_params)
 
 
-def show_warning(text, duration=10, context_name=None, parameter=None, logger_file=True, title="", dialog=iface):
+def show_warning(text, duration=10, context_name=None, parameter=None, logger_file=True, title="", dialog=iface,
+                 msg_params=None, title_params=None):
     """
     Show warning message to the user
         :param text: The text to be shown (String)
@@ -149,10 +157,12 @@ def show_warning(text, duration=10, context_name=None, parameter=None, logger_fi
         :param logger_file: Whether it should log the message in a file or not (bool)
         :param title: The title of the message (String) """
 
-    show_message(text, 1, duration, context_name, parameter, title, logger_file, dialog=dialog)
+    show_message(text, 1, duration, context_name, parameter, title, logger_file, dialog=dialog,
+                 msg_params=msg_params, title_params=title_params)
 
 
-def show_critical(text, duration=10, context_name=None, parameter=None, logger_file=True, title="", dialog=iface):
+def show_critical(text, duration=10, context_name=None, parameter=None, logger_file=True, title="", dialog=iface,
+                  msg_params=None, title_params=None):
     """
     Show critical message to the user
         :param text: The text to be shown (String)
@@ -162,7 +172,8 @@ def show_critical(text, duration=10, context_name=None, parameter=None, logger_f
         :param logger_file: Whether it should log the message in a file or not (bool)
         :param title: The title of the message (String) """
 
-    show_message(text, 2, duration, context_name, parameter, title, logger_file, dialog=dialog)
+    show_message(text, 2, duration, context_name, parameter, title, logger_file, dialog=dialog,
+                 msg_params=msg_params, title_params=title_params)
 
 
 def get_visible_layers(as_str_list=False, as_list=False):
@@ -303,7 +314,7 @@ def find_toc_group(root, group, case_sensitive=False):
 
     if group is None:
         return None
-    
+
     for grp in root.findGroups():
         group1 = grp.name()
         group2 = group
@@ -385,13 +396,10 @@ def get_layer_schema(layer):
         return None
 
     table_schema = None
-    uri = layer.dataProvider().dataSourceUri().lower()
 
-    pos_ini = uri.find('table=')
-    pos_end_schema = uri.rfind('.')
-    pos_fi = uri.find('" ')
-    if pos_ini != -1 and pos_fi != -1:
-        table_schema = uri[pos_ini + 7:pos_end_schema - 1]
+    expected_schema_path: str = layer.source().split('|')[0]
+    if expected_schema_path:
+        table_schema = os.path.normpath(expected_schema_path)
 
     return table_schema
 
@@ -421,20 +429,26 @@ def get_layer_by_tablename(tablename, show_warning_=False, log_info=False, schem
     if len(layers) == 0:
         return None
 
+    if schema_name is None:
+        schema_name = os.path.normpath(global_vars.gpkg_dao_data.db_filepath)
+
     # Iterate over all layers
     layer = None
     for cur_layer in layers:
         cur_layer_tablename = get_tablename_from_layer(cur_layer)
+        cur_layer_schema_name = get_layer_schema(cur_layer)
 
-        if cur_layer_tablename == tablename:
+        if cur_layer_tablename == tablename and cur_layer_schema_name == schema_name:
             layer = cur_layer
             break
 
     if layer is None and show_warning_:
-        show_warning("Layer not found", parameter=tablename)
+        msg = "Layer not found"
+        tools_log.log_warning(msg, parameter=tablename)
 
     if layer is None and log_info:
-        tools_log.log_info("Layer not found", parameter=tablename)
+        msg = "Layer not found"
+        tools_log.log_info(msg, parameter=tablename)
 
     return layer
 
@@ -506,7 +520,8 @@ def get_points_from_geometry(layer, feature):
         list_points = f'"x1":{init_point.x()}, "y1":{init_point.y()}'
         list_points += f', "x2":{last_point.x()}, "y2":{last_point.y()}'
     else:
-        tools_log.log_info("NO FEATURE TYPE DEFINED")
+        msg = "NO FEATURE TYPE DEFINED"
+        tools_log.log_info(msg)
 
     return list_points
 
@@ -517,19 +532,25 @@ def disconnect_snapping(action_pan=True, emit_point=None, vertex_marker=None):
     try:
         iface.mapCanvas().xyCoordinates.disconnect()
     except TypeError as e:
-        tools_log.log_info(f"{type(e).__name__} --> {e}")
+        msg = "{0} --> {1}"
+        msg_params = (type(e).__name__, e,)
+        tools_log.log_info(msg, msg_params=msg_params)
 
     if emit_point is not None:
         try:
             emit_point.canvasClicked.disconnect()
         except TypeError as e:
-            tools_log.log_info(f"{type(e).__name__} --> {e}")
+            msg = "{0} --> {1}"
+            msg_params = (type(e).__name__, e,)
+            tools_log.log_info(msg, msg_params=msg_params)
 
     if vertex_marker is not None:
         try:
             vertex_marker.hide()
         except AttributeError as e:
-            tools_log.log_info(f"{type(e).__name__} --> {e}")
+            msg = "{0} --> {1}"
+            msg_params = (type(e).__name__, e,)
+            tools_log.log_info(msg, msg_params=msg_params)
 
     if action_pan:
         iface.actionPan().trigger()
@@ -820,7 +841,8 @@ def get_layer_by_layername(layername, log_info=False):
         layer = layer[0]
     elif not layer and log_info:
         layer = None
-        tools_log.log_info("Layer not found", parameter=layername)
+        msg = "Layer not found"
+        tools_log.log_info(msg, parameter=layername)
 
     return layer
 
@@ -874,11 +896,13 @@ def load_qml(layer, qml_path):
         return False
 
     if not os.path.exists(qml_path):
-        tools_log.log_warning("File not found", parameter=qml_path)
+        msg = "File not found"
+        tools_log.log_warning(msg, parameter=qml_path)
         return False
 
     if not qml_path.endswith(".qml"):
-        tools_log.log_warning("File extension not valid", parameter=qml_path)
+        msg = "File extension not valid"
+        tools_log.log_warning(msg, parameter=qml_path)
         return False
 
     layer.loadNamedStyle(qml_path)
@@ -985,7 +1009,9 @@ def get_geometry_from_json(feature):
         geometry = f"{type_}{coordinates}"
         return QgsGeometry.fromWkt(geometry)
     except (AttributeError, TypeError) as e:
-        tools_log.log_info(f"{type(e).__name__} --> {e}")
+        msg = "{0} --> {1}"
+        msg_params = (type(e).__name__, e,)
+        tools_log.log_info(msg, msg_params=msg_params)
         return None
 
 
@@ -1001,7 +1027,9 @@ def get_locale():
             locale = QSettings().value('locale/userLocale')
     except AttributeError as e:
         locale = "en_US"
-        tools_log.log_info(f"{type(e).__name__} --> {e}")
+        msg = "{0} --> {1}"
+        msg_params = (type(e).__name__, e,)
+        tools_log.log_info(msg, msg_params=msg_params)
     finally:
         if locale in (None, ''):
             locale = "en_US"

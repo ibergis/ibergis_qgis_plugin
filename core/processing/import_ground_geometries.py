@@ -23,6 +23,7 @@ from ...core.utils import tools_dr, Feedback
 from ... import global_vars
 from typing import Optional
 import os
+import processing
 
 
 class ImportGroundGeometries(QgsProcessingAlgorithm):
@@ -39,6 +40,11 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
     FIELD_SCS_CN = 'FIELD_SCS_CN'
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
+
+    converted_geometries_layer: Optional[QgsVectorLayer] = None
+    file_target: Optional[QgsVectorLayer] = None
+    field_map: Optional[dict] = None
+    unique_fields: Optional[dict] = None
 
     def initAlgorithm(self, config):
         """
@@ -127,7 +133,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
         file_source: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
 
-        field_map = {
+        self.field_map = {
             "custom_code": next(iter(self.parameterAsFields(parameters, self.FIELD_CUSTOM_CODE, context)), None),
             "descript": next(iter(self.parameterAsFields(parameters, self.FIELD_DESCRIPT, context)), None),
             "cellsize": next(iter(self.parameterAsFields(parameters, self.FIELD_CELLSIZE, context)), None),
@@ -141,8 +147,16 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         feedback.setProgress(12)
 
         # get ground layer
-        file_target: QgsVectorLayer = tools_qgis.get_layer_by_tablename('ground')
-        if file_target is None:
+        self.file_target = tools_qgis.get_layer_by_tablename('ground')
+        if self.file_target is not None and global_vars.gpkg_dao_data is not None:
+            expected_schema_path: str = self.file_target.source().split('|')[0]
+            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
+                feedback.pushWarning(self.tr(f'Wrong Ground layer found: {self.file_target.source()}'))
+                return {}
+        else:
+            feedback.pushWarning(self.tr(f'Error getting expected ground layer'))
+            return {}
+        if self.file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
             return
         feedback.setProgressText(self.tr('Target layer found.'))
@@ -150,23 +164,18 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         # check layer types
         feedback.setProgressText(self.tr('Checking layer types.'))
         feedback.setProgress(13)
-        if file_source.geometryType() != file_target.geometryType():
+        if file_source.geometryType() != self.file_target.geometryType():
             feedback.reportError(self.tr('Layer types do not match.'))
             return
 
-        # import data
+        # set unique fields
         feedback.setProgress(15)
-        unique_fields: dict = {'custom_code':[]}
-        db_filepath: str = f"{global_vars.project_vars['project_gpkg']}"
-        db_filepath: str = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
-        self.dao.init_db(db_filepath)
-        if not self._insert_data(file_source, file_target, field_map, unique_fields, feedback, batch_size=50000):
-            feedback.reportError(self.tr('Error during import.'))
-            self.dao.close_db()
-            return {}
-        self.dao.close_db()
-        feedback.setProgressText(self.tr(f"Importing process finished."))
-        feedback.setProgress(100)
+        self.unique_fields = {'custom_code':[]}
+
+        # delete innecesary values from geometry
+        result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True,'OUTPUT':'memory:'})
+        self.converted_geometries_layer = result['OUTPUT']
+
         return {}
 
 
@@ -190,11 +199,14 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 for subItem in item:
                     landuse_types.append(subItem)
         # check landuse types on source layer
-        unexistent_landuses: list[int] = list()
+        unexistent_landuses: list[str] = list()
+        field_map_name: str = 'landuse'
         if field_map['landuse'] is not None:
-            for feature in source_layer.getFeatures():
-                if feature[field_map['landuse']] not in landuse_types and feature[field_map['landuse']] not in unexistent_landuses and feature[field_map['landuse']] is not None:
-                    unexistent_landuses.append(feature[field_map['landuse']])
+            field_map_name = field_map['landuse']
+        for feature in source_layer.getFeatures():
+            if feature[field_map_name] not in landuse_types and feature[field_map_name] not in unexistent_landuses and feature[field_map_name] not in ['NULL', None, 'null']:
+                unexistent_landuses.append(feature[field_map_name])
+
         # check if there are unexistent landuses
         if len(unexistent_landuses) > 0:
             feedback.reportError(self.tr(f"Landuse types not found in database: {unexistent_landuses}."))
@@ -308,6 +320,25 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 return False
         return True
 
+    def postProcessAlgorithm(self, context, feedback: Feedback):
+        """ Import featues """
+
+        if self.converted_geometries_layer is None or self.file_target is None or self.field_map is None or self.unique_fields is None:
+            return {}
+
+        db_filepath: str = f"{global_vars.project_vars['project_gpkg']}"
+        db_filepath: str = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
+        self.dao.init_db(db_filepath)
+
+        if not self._insert_data(self.converted_geometries_layer, self.file_target, self.field_map, self.unique_fields, feedback, batch_size=50000):
+            feedback.reportError(self.tr('Error during import.'))
+            self.dao.close_db()
+            return {}
+        self.dao.close_db()
+        feedback.setProgressText(self.tr(f"Importing process finished."))
+        feedback.setProgress(100)
+        return {}
+
     def enable_triggers(self, feedback: Feedback, enable: bool):
         """Enable or disable triggers."""
         trg_path: str = os.path.join(global_vars.plugin_dir, 'dbmodel', 'trg')
@@ -328,7 +359,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
     def execute_after_import_fct(self, feedback: Feedback):
         """Execute the function after import."""
-        fct_path: str = os.path.join(global_vars.plugin_dir, 'dbmodel', 'fct', 'fct_after_import_ground_features.sql')
+        fct_path: str = os.path.join(global_vars.plugin_dir, 'dbmodel', 'fct', 'fct_after_import_ground_geometries.sql')
         with open(fct_path, 'r', encoding="utf8") as f:
             sql: str = f.read()
         status = self.dao.execute_script_sql(str(sql))
@@ -343,6 +374,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         You must first select the source layer and the target Ground layer. Optionally, you can map fields from the source layer to specific fields in the target layer, such as custom code, land use, annotation, or roughness.\n
         Only features with geometry will be copied. If a source field value already exists in the target layer, it will be skipped to avoid duplicates.\n
         The tool performs the import in batches to optimize performance.""")
+
+    def helpUrl(self):
+        return "https://github.com/drain-iber"
 
     def name(self):
         return 'ImportGroundGeometries'

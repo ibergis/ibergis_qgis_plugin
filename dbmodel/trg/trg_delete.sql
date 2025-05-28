@@ -25,6 +25,9 @@ DROP TRIGGER IF EXISTS "trg_ins_code_ground";
 DROP TRIGGER IF EXISTS "trg_ins_code_inlet";
 DROP TRIGGER IF EXISTS "trg_ins_code_hyetograph";
 DROP TRIGGER IF EXISTS "trg_ins_code_culvert";
+DROP TRIGGER IF EXISTS "trg_ins_code_pinlet";
+DROP TRIGGER IF EXISTS "trg_ins_code_boundary_condition";
+DROP TRIGGER IF EXISTS "trg_ins_code_bridge";
 
 ------------------------------------------------
 -- TRIGGERS TO MANAGE TOPOLOGY WITH FOREIGN KEYS

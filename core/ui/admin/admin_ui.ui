@@ -17,8 +17,11 @@
    <layout class="QGridLayout" name="gridLayout_6">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QTabWidget" name="tabWidget">
+      <item row="1" column="0">
+       <widget class="QTabWidget" name="tab_main">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
@@ -143,15 +146,15 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <layout class="QHBoxLayout" name="lyt_buttons">
-            <item>
+           <layout class="QGridLayout" name="lyt_buttons">
+            <item row="0" column="0">
              <widget class="QLabel" name="lbl_time">
               <property name="text">
                <string/>
               </property>
              </widget>
             </item>
-            <item>
+            <item row="0" column="1">
              <spacer name="horizontalSpacer">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -164,14 +167,14 @@
               </property>
              </spacer>
             </item>
-            <item>
+            <item row="0" column="2">
              <widget class="QPushButton" name="btn_gpkg_accept">
               <property name="text">
                <string>Accept</string>
               </property>
              </widget>
             </item>
-            <item>
+            <item row="0" column="3">
              <widget class="QPushButton" name="btn_gpkg_close">
               <property name="text">
                <string>Close</string>
@@ -324,6 +327,74 @@
           </item>
          </layout>
         </widget>
+        <widget class="QWidget" name="tab_i18n">
+         <attribute name="title">
+          <string>Translations</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QGroupBox" name="groupBox_2">
+            <property name="title">
+             <string>i18n Generator:</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <item>
+              <widget class="QPushButton" name="btn_translation">
+               <property name="text">
+                <string>i18n Generator</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_3">
+            <property name="title">
+             <string>i18n Missing Messages:</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_5">
+             <item>
+              <widget class="QPushButton" name="btn_i18n">
+               <property name="text">
+                <string>i18n Missing Messages</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_4">
+            <property name="title">
+             <string>i18n Hot Update:</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QPushButton" name="btn_update_translation">
+               <property name="text">
+                <string>i18n Hot Update</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>313</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -331,6 +402,27 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>tab_main</tabstop>
+  <tabstop>gpkg_name</tabstop>
+  <tabstop>txt_description</tabstop>
+  <tabstop>data_path</tabstop>
+  <tabstop>btn_push_path</tabstop>
+  <tabstop>cmb_locale</tabstop>
+  <tabstop>srid_id</tabstop>
+  <tabstop>tbl_srid</tabstop>
+  <tabstop>rdb_data</tabstop>
+  <tabstop>rdb_sample</tabstop>
+  <tabstop>btn_gpkg_accept</tabstop>
+  <tabstop>btn_gpkg_close</tabstop>
+  <tabstop>btn_qgis_close</tabstop>
+  <tabstop>btn_qgis_accept</tabstop>
+  <tabstop>txt_gis_file</tabstop>
+  <tabstop>txt_gis_gpkg</tabstop>
+  <tabstop>btn_gis_folder</tabstop>
+  <tabstop>btn_gis_gpkg</tabstop>
+  <tabstop>txt_gis_folder</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

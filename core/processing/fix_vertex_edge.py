@@ -19,6 +19,9 @@ class DrFixEdgeVertexAlgorithm(QgsProcessingAlgorithm):
     def displayName(self) -> str:
         return 'Fix Edge Vertex Errors'
 
+    def helpUrl(self):
+        return "https://github.com/drain-iber"
+
     def createInstance(self) -> QgsProcessingAlgorithm:
         return type(self)()
 

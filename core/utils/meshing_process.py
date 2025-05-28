@@ -7,7 +7,9 @@ from qgis.core import (
     QgsTriangle,
     QgsProject,
     QgsPoint,
-    QgsFeedback
+    QgsFeedback,
+    QgsGeometry,
+    QgsPointXY
 )
 
 from qgis.PyQt.QtCore import QVariant
@@ -145,7 +147,7 @@ try:
         data = data[~data.is_empty] # type: ignore
         return data
 
-    def layer_to_gdf(layer: QgsVectorLayer, fields: list = []) -> gpd.GeoDataFrame:
+    def layer_to_gdf(layer: QgsVectorLayer, fields: list = [], only_selected: bool = False) -> gpd.GeoDataFrame:
         geoms = []
 
         data: dict[str, list] = {}
@@ -154,8 +156,12 @@ try:
             if field_index == -1:
                 raise ValueError(f"Layer `{layer.name()}` has no field `{field}`")
             data[field] = []
-        
-        for feature in layer.getFeatures():
+
+        features_iterator = layer.getFeatures()
+        if only_selected:
+            features_iterator = layer.getSelectedFeatures()
+
+        for feature in features_iterator:
             wkt = feature.geometry().asWkt()
             try:
                 geoms.append(shapely.wkt.loads(wkt))
@@ -191,6 +197,7 @@ try:
         line_anchor_layer: Optional[QgsVectorLayer] = None,
         point_anchor_layer: Optional[QgsVectorLayer] = None,
         do_clean_up: bool = True,
+        only_selected_features: bool = False,
         clean_tolerance: float = 0.5,
         algorithm: int = ALGORITHMS["Frontal-Delaunay"],
         enable_transition: bool = True,
@@ -207,11 +214,11 @@ try:
         print("Getting data... ", end="")
 
         fields = ["cellsize"]
-        data = layer_to_gdf(source_layer, fields + extra_fields)
+        data = layer_to_gdf(source_layer, fields + extra_fields, only_selected_features)
 
         line_anchors = None
         if line_anchor_layer is not None:
-            line_anchors = layer_to_gdf(line_anchor_layer, fields)
+            line_anchors = layer_to_gdf(line_anchor_layer, fields, only_selected_features)
         else:
             line_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": []}, crs=data.crs
@@ -219,10 +226,10 @@ try:
 
         point_anchors = None
         if point_anchor_layer is not None:
-            point_anchors = layer_to_gdf(point_anchor_layer, fields)
+            point_anchors = layer_to_gdf(point_anchor_layer, fields + ["z_value"], only_selected_features)
         else:
             point_anchors = gpd.GeoDataFrame(
-                geometry=[], data={"cellsize": []}, crs=data.crs
+                geometry=[], data={"cellsize": [], "z_value": []}, crs=data.crs
             ) # type: ignore
         print(f"Done! {time.time() - start}s")
 
@@ -462,6 +469,120 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
 
     return layer
 
+
+def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, mesh_anchor_lines_layer: QgsVectorLayer, bridges_layer: QgsVectorLayer, dao, bridge_cellsize: float = 10) -> tuple[QgsVectorLayer, QgsVectorLayer]:
+    """Create virtual layers for point and line anchors combining mesh anchor points and bridge features."""
+    # Create virtual layer for point anchors
+    point_anchor_layer = QgsVectorLayer("Point", "Point Anchors", "memory")
+    point_anchor_layer.setCrs(mesh_anchor_points_layer.crs())
+
+    # Add fields
+    provider = point_anchor_layer.dataProvider()
+    fields = [
+        QgsField("cellsize", QVariant.Double),
+        QgsField("z_value", QVariant.Double),
+        QgsField("source", QVariant.String)  # To track where the point came from
+    ]
+    provider.addAttributes(fields)
+    point_anchor_layer.updateFields()
+
+    # Add features from mesh anchor points
+    features = []
+    for feature in mesh_anchor_points_layer.getFeatures():
+        new_feature = QgsFeature()
+        new_feature.setGeometry(feature.geometry())
+        new_feature.setAttributes([feature["cellsize"], feature["z_value"], "mesh_anchor"])
+        features.append(new_feature)
+
+    provider.addFeatures(features)
+    point_anchor_layer.updateExtents()
+
+    # Create virtual layer for line anchors
+    line_anchor_layer = QgsVectorLayer("LineString", "Line Anchors", "memory")
+    line_anchor_layer.setCrs(bridges_layer.crs())
+
+    # Add fields
+    provider = line_anchor_layer.dataProvider()
+    fields = [
+        QgsField("cellsize", QVariant.Double),
+        QgsField("source", QVariant.String)
+    ]
+    provider.addAttributes(fields)
+    line_anchor_layer.updateFields()
+
+    # Add features from mesh anchor lines
+    features = []
+    for feature in mesh_anchor_lines_layer.getFeatures():
+        new_feature = QgsFeature()
+        new_feature.setGeometry(feature.geometry())
+        new_feature.setAttributes([feature["cellsize"], "mesh_anchor"])
+        features.append(new_feature)
+
+    provider.addFeatures(features)
+    line_anchor_layer.updateExtents()
+
+    # Add bridge lines as anchor lines with additional vertices
+    features = []
+    for feature in bridges_layer.getFeatures():
+        # Get vertices from bridge_value table
+        rows = dao.get_rows(f"""
+            SELECT distance 
+            FROM bridge_value
+            WHERE bridge_code = '{feature["code"]}'
+            ORDER BY distance
+        """)
+        distances = [row["distance"] for row in rows]
+
+        # Get all vertices from original geometry
+        points = []
+        vertex_distances = []
+        total_length = feature.geometry().length()
+
+        for vertex in feature.geometry().vertices():
+            point = QgsPointXY(vertex)
+            points.append(point)
+            # Calculate percentage distance along the line (0 to 1)
+            distance = feature.geometry().lineLocatePoint(QgsGeometry.fromPointXY(point))
+            percentage = distance / total_length
+            vertex_distances.append(percentage)
+
+        # Add vertices at specified distances from bridge_value
+        for distance in sorted(distances):
+            if distance in (0, 1):  # Skip start and end points
+                continue
+            point = feature.geometry().interpolate(distance * feature.geometry().length())
+            point_xy = point.asPoint()
+
+            # Check if point is too close to existing points (within 1mm)
+            is_duplicate = False
+            for existing_point in points:
+                if point_xy.distance(existing_point) < 0.001:
+                    is_duplicate = True
+                    break
+
+            if not is_duplicate:
+                points.append(point_xy)
+                # Calculate percentage for the new point
+                distance = feature.geometry().lineLocatePoint(QgsGeometry.fromPointXY(point_xy))
+                percentage = distance / total_length
+                vertex_distances.append(percentage)
+
+        # Order points based on their percentage distance
+        sorted_pairs = sorted(zip(points, vertex_distances), key=lambda x: x[1])
+        points = [point for point, _ in sorted_pairs]
+
+        # Create new line geometry with ordered points
+        new_geom = QgsGeometry.fromPolylineXY(points)
+
+        new_feature = QgsFeature()
+        new_feature.setGeometry(new_geom)
+        new_feature.setAttributes([bridge_cellsize, "bridge"])
+        features.append(new_feature)
+
+    provider.addFeatures(features)
+    line_anchor_layer.updateExtents()
+
+    return point_anchor_layer, line_anchor_layer
 
 
 @alg(

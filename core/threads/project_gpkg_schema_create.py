@@ -54,10 +54,14 @@ class DrGpkgCreateSchemaTask(DrTask):
         self.admin.total_sql_files = 0
         self.admin.current_sql_file = 0
         self.config_dao = global_vars.gpkg_dao_config.clone()
-        tools_log.log_info(f"Create schema: Executing function 'main_execution'")
+        msg = "Create schema: Executing function '{1}'"
+        msg_params = ("main_execution",)
+        tools_log.log_info(msg, msg_params=msg_params)
         status = self.main_execution()
         if not status:
-            tools_log.log_info("Function main_execution returned False")
+            msg = "Function '{0}' returned {1}"
+            msg_params = ("main_execution", "False",)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
         return True
 
@@ -87,11 +91,12 @@ class DrGpkgCreateSchemaTask(DrTask):
 
         # Handle exception
         if self.exception is not None:
-            msg = f"<b>Key: </b>{self.exception}<br>"
-            msg += f"<b>key container: </b>'body/data/ <br>"
-            msg += f"<b>Python file: </b>{__name__} <br>"
-            msg += f"<b>Python function:</b> {self.__class__.__name__} <br>"
-            tools_qt.show_exception_message("Key on returned json from ddbb is missed.", msg)
+            msg = f"<b>{tools_qt.tr('Key')}: </b>{self.exception}<br>"
+            msg += f"<b>{tools_qt.tr('key container')}: </b>'body/data/ <br>"
+            msg += f"<b>{tools_qt.tr('Python file')}: </b>{__name__} <br>"
+            msg += f"<b>{tools_qt.tr('Python function')}:</b> {self.__class__.__name__} <br>"
+            title = "Key on returned json from ddbb is missed."
+            tools_qt.show_exception_message(msg, title)
 
         if self.timer:
             self.timer.stop()
@@ -103,28 +108,46 @@ class DrGpkgCreateSchemaTask(DrTask):
     def main_execution(self) -> bool:
         """ Main common execution """
 
-        tools_log.log_info(f"Creating GPKG {self.admin.gpkg_name}'")
-        tools_log.log_info(f"Create schema: Executing function 'create_gpkg'")
+        msg = "Creating GPKG '{0}'"
+        msg_params = (self.admin.gpkg_name,)
+        tools_log.log_info(msg, msg_params=msg_params)
+
+        msg = "Create schema: Executing function '{1}'"
+        msg_params = ("create_gpkg",)
+        tools_log.log_info(msg, msg_params=msg_params)
         create_gpkg_status = self.admin.create_gpkg()
         if not create_gpkg_status:
             return False
 
-        tools_log.log_info(f"Create schema: Executing function '_check_database_connection'")
+        msg = "Create schema: Executing function '{1}'"
+        msg_params = ("_check_database_connection",)
+        tools_log.log_info(msg, msg_params=msg_params)
         connection_status = self.admin._check_database_connection(self.admin.gpkg_full_path, self.admin.gpkg_name)
+        global_vars.gpkg_dao_data = self.admin.gpkg_dao_data
         if not connection_status:
-            tools_log.log_info("Function '_check_database_connection' returned False")
+            msg = "Function '{0}' returned False"
+            msg_params = ("_check_database_connection",)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
-        tools_log.log_info(f"Create schema: Executing function 'main_execution'")
+        msg = "Create schema: Executing function '{1}'"
+        msg_params = ("main_execution",)
+        tools_log.log_info(msg, msg_params=msg_params)
         status = self.admin.create_schema_main_execution()
         if not status:
-            tools_log.log_info("Function 'main_execution' returned False")
+            msg = "Function '{0}' returned {1}"
+            msg_params = ("main_execution", "False",)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
-        tools_log.log_info(f"Create schema: Executing function 'custom_execution'")
+        msg = "Create schema: Executing function '{1}'"
+        msg_params = ("custom_execution",)
+        tools_log.log_info(msg, msg_params=msg_params)
         status_custom = self.admin.create_schema_custom_execution(self.config_dao)
         if not status_custom:
-            tools_log.log_info("Function 'custom_execution' returned False")
+            msg = "Function '{0}' returned {1}"
+            msg_params = ("custom_execution", "False",)
+            tools_log.log_info(msg, msg_params=msg_params)
             return False
 
         return True
@@ -133,7 +156,9 @@ class DrGpkgCreateSchemaTask(DrTask):
         """ Custom execution """
 
         example_data = self.params['example_data']
-        tools_log.log_info("Execute 'custom_execution'")
+        msg = "Execute '{0}'"
+        msg_params = ("custom_execution",)
+        tools_log.log_info(msg, msg_params=msg_params)
         if self.admin.rdb_sample.isChecked() and example_data:
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
             self.admin.load_sample_data()
@@ -149,10 +174,14 @@ class DrGpkgCreateSchemaTask(DrTask):
         list_process = ['load_base']
 
         for process_name in list_process:
-            tools_log.log_info(f"Create schema: Executing function get_number_of_files_process('{process_name}')")
+            msg = "Create schema: Executing function '{1}'"
+            msg_params = (f"get_number_of_files_process('{process_name}')",)
+            tools_log.log_info(msg, msg_params=msg_params)
             dict_folders, total = self.get_number_of_files_process(process_name)
             total_sql_files += total
-            tools_log.log_info(f"Number of SQL files '{process_name}': {total}")
+            msg = "Number of SQL files '{0}': {1}"
+            msg_params = (process_name, total,)
+            tools_log.log_info(msg, msg_params=msg_params)
             dict_process[process_name] = total
             self.dict_folders_process[process_name] = dict_folders
 
@@ -162,7 +191,9 @@ class DrGpkgCreateSchemaTask(DrTask):
     def get_number_of_files_process(self, process_name: str):
         """ Calculate number of files of all folders of selected @process_name """
 
-        tools_log.log_info(f"Create schema: Executing function get_folders_process('{process_name}')")
+        msg = "Create schema: Executing function '{1}'"
+        msg_params = (f"get_folders_process('{process_name}')",)
+        tools_log.log_info(msg, msg_params=msg_params)
         dict_folders = self.get_folders_process(process_name)
         if dict_folders is None:
             return dict_folders, 0
@@ -188,4 +219,3 @@ class DrGpkgCreateSchemaTask(DrTask):
             dict_folders[os.path.join(self.admin.folder_software, self.admin.file_pattern_trg)] = 0
 
         return dict_folders
-

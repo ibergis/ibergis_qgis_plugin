@@ -48,7 +48,9 @@ INSERT INTO tables_geom (table_name, isgeom, index_col) values
 ('vi_inlet2junction', 'LINESTRING', null),
 ('hyetograph', 'POINT', null),
 ('vi_inlet', 'POINT', null),
-('culvert', 'LINESTRING', 'code');
+('culvert', 'LINESTRING', 'code'),
+('pinlet', 'MULTIPOLYGON', 'code'),
+('bridge', 'LINESTRING', 'code');
 
 
 
@@ -113,4 +115,5 @@ insert into tables_nogeom (table_name, index_col) values
 ('inp_lid', 'idval'),
 ('inp_lid_value', 'id'),
 ('inp_lid_ground', 'id'),
-('inp_lid_roof', 'id');
+('inp_lid_roof', 'id'),
+('bridge_value', null);

@@ -16,7 +16,10 @@ from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QAp
 from . import global_vars
 from .lib import tools_qgis, tools_os, tools_log, tools_qt
 try:
+    required_packages = ['geopandas', 'gmsh', 'pandamesh', 'openpyxl', 'xlsxwriter', 'rasterio', 'xarray', 'rioxarray']
     imported_packages = []
+    not_imported = []
+
     import geopandas  # noqa: F401
     imported_packages.append('geopandas')
     from packages.gmsh import gmsh  # noqa: F401
@@ -27,13 +30,23 @@ try:
     imported_packages.append('openpyxl')
     import xlsxwriter  # noqa: F401
     imported_packages.append('xlsxwriter')
+    import rasterio  # noqa: F401
+    imported_packages.append('rasterio')
+    import xarray  # noqa: F401
+    imported_packages.append('xarray')
+    import rioxarray  # noqa: F401
+    imported_packages.append('rioxarray')
 except ImportError:
-    tools_qt.show_question(
+    not_imported = [pkg for pkg in required_packages if pkg not in imported_packages]
+    msg = (
         "It appears that certain dependencies required for the DRAIN plugin were not detected. "
-        "Please check if they are in the packages folder and restart QGIS."
-        "If the problem persists, please contact the plugin developers."
-        f"The following packages were correctly imported: {imported_packages}"
+        "Please check if they are in the packages folder and restart QGIS. "
+        "If the problem persists, please contact the plugin developers. "
+        "The following packages could not be imported: {0}"
     )
+    msg_params = (not_imported,)
+    tools_qt.show_question(msg, msg_params=msg_params)
+
 
 from .core.admin.admin_btn import DrAdminButton
 from .core.load_project import DrLoadProject
@@ -92,74 +105,88 @@ class Drain(QObject):
             global_vars.project_vars['project_role'] = None
             global_vars.project_vars['project_type'] = None
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when reset values for global_vars.project_vars: {e}")
+            msg = "Exception in unload when reset values for global_vars.project_vars: {0}"
+            msg_params = (e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
 
+        msg = "Exception in unload when {0}: {1}"
         try:
             # Remove Giswater dockers
             self._remove_dockers()
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when self._remove_dockers(): {e}")
+            msg_params = ("self._remove_dockers()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
+
 
         try:
             # Close all open dialogs
             self._close_open_dialogs()
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when self._close_open_dialogs(): {e}")
-            raise e
+            msg_params = ("self._close_open_dialogs()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         if hide_gw_button is None:
             try:
                 # Manage unset signals
                 self._unset_signals()
             except Exception as e:
-                tools_log.log_info(f"Exception in unload when unset signals: {e}")
-                raise e
+                msg_params = ("self._unset_signals()", e,)
+                tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         try:
             # Force action pan
             self.iface.actionPan().trigger()
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when self.iface.actionPan().trigger(): {e}")
+            msg_params = ("self.iface.actionPan().trigger()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
 
+        message = "Exception in unload when disconnecting {0} signal: {1}"
         try:
             # Disconnect QgsProject.instance().crsChanged signal
             tools_dr.disconnect_signal('load_project', 'project_read_crsChanged_set_epsg')
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when disconnecting QgsProject.instance().crsChanged signal: {e}")
+            msg_params = ("QgsProject.instance().crsChanged", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
 
         try:
             tools_dr.disconnect_signal('load_project', 'manage_attribute_table_focusChanged')
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when disconnecting focusChanged signal: {e}")
+            msg_params = ("focusChanged", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
 
         try:
             tools_dr.disconnect_signal('load_project', 'currentLayerChanged')
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when disconnecting currentLayerChanged signal: {e}")
+            msg_params = ("currentLayerChanged", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
 
         try:
             tools_dr.disconnect_signal('layer_changed')
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when disconnecting layer_changed signals: {e}")
+            msg_params = ("layer_changed", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
 
         try:
             # Remove 'Main Info button'
             self._unset_info_button()
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when self._unset_info_button(): {e}")
+            msg_params = ("self._unset_info_button()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         try:
             # Remove ToC buttons
             self._unset_toc_buttons()
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when self._unset_toc_buttons(): {e}")
+            msg_params = ("self._unset_toc_buttons()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         try:
             # Remove file handler when reloading
             if hide_gw_button:
                 global_vars.logger.close_logger()
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when global_vars.logger.close_logger(): {e}")
+            msg_params = ("global_vars.logger.close_logger()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         try:
             # Check if project is current loaded and remove giswater action from PluginMenu and Toolbars
@@ -170,7 +197,8 @@ class Drain(QObject):
                         self.iface.removePluginMenu(self.plugin_name, button.action)
                         self.iface.removeToolBarIcon(button.action)
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when self.iface.removePluginMenu(self.plugin_name, button.action): {e}")
+            msg_params = ("self.iface.removePluginMenu(self.plugin_name, button.action)", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         try:
             # Check if project is current loaded and remove giswater toolbars from qgis
@@ -181,7 +209,9 @@ class Drain(QObject):
                             plugin_toolbar.toolbar.setVisible(False)
                             del plugin_toolbar.toolbar
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when del plugin_toolbar.toolbar: {e}")
+            message = "Exception in unload when deleting {0}: {1}"
+            msg_params = ("plugin_toolbar.toolbar", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
 
         try:
             # Set 'Main Info button' if project is unload or project don't have layers
@@ -189,14 +219,17 @@ class Drain(QObject):
             if hide_gw_button is False and len(layers) == 0:
                 self._set_info_button()
         except Exception as e:
-            tools_log.log_info(f"Exception in unload when self._set_info_button(): {e}")
+            msg_params = ("self._set_info_button()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         try:
             # Unload processing provider
             if hide_gw_button is None or False:
                 QgsApplication.processingRegistry().removeProvider(self.provider)
         except Exception as e:
-            tools_log.log_info(f"Couldn't unload the processing provider: {e}")
+            message = "Couldn't unload the processing provider: {0}"
+            msg_params = (e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
 
         self.load_project = None
 
@@ -223,13 +256,15 @@ class Drain(QObject):
         # Create log file
         min_log_level = 20
         tools_log.set_logger(self.plugin_name, min_log_level)
-        tools_log.log_info("Initialize plugin")
+        msg = "Initialize plugin"
+        tools_log.log_info(msg)
 
         # Check if config file exists
         setting_file = os.path.join(plugin_dir, 'config', 'drain.config')
         if not os.path.exists(setting_file):
-            message = f"Config file not found at: {setting_file}"
-            tools_qgis.show_warning(message)
+            msg = "Config file not found at: {0}"
+            msg_params = (setting_file,)
+            tools_qgis.show_warning(msg, msg_params=msg_params)
             return False
 
         # Set plugin and QGIS settings: stored in the registry (on Windows) or .ini file (on Unix)
@@ -281,7 +316,9 @@ class Drain(QObject):
         try:
             config_folder = f"{user_folder_dir}{os.sep}config{os.sep}"
             if not os.path.exists(config_folder):
-                tools_log.log_info(f"Creating user config folder: {config_folder}")
+                message = "Creating user config folder: {0}"
+                msg_params = (config_folder,)
+                tools_log.log_info(message, msg_params=msg_params)
                 os.makedirs(config_folder)
 
             # Check if config files exists. If not create them empty
@@ -293,7 +330,9 @@ class Drain(QObject):
                 open(filepath, 'a').close()
 
         except Exception as e:
-            tools_log.log_warning(f"manage_user_config_folder: {e}")
+            message = "{0}: {1}"
+            msg_params = ("manage_user_config_folder", e,)
+            tools_log.log_warning(message, msg_params=msg_params)
 
 
     def _set_signals(self):
@@ -476,6 +515,8 @@ class Drain(QObject):
             try:
                 tools_dr.close_dialog(window)
             except Exception as e:
-                tools_log.log_info(f"Exception in _close_open_dialogs: {e}")
+                msg = "Exception in {0}: {1}"
+                msg_params = ("_close_open_dialogs", e,)
+                tools_log.log_info(msg, msg_params=msg_params)
 
     # endregion

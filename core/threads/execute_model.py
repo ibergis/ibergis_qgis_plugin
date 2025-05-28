@@ -11,22 +11,26 @@ import subprocess
 from pathlib import Path
 import threading
 import traceback
+import processing
 
 from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
 from qgis.PyQt.QtWidgets import QTextEdit
 from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, \
-    QgsProject, QgsGeometry
+    QgsMeshLayer
 
 from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils.feedback import Feedback
-from ..utils import tools_dr
+from ..utils import tools_dr, mesh_parser
 from ... import global_vars
 from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
 from ...lib.tools_gpkgdao import DrGpkgDao
 from .task import DrTask
 from .epa_file_manager import DrEpaFileManager
 from ..admin.admin_btn import DrRptGpkgCreate
-from typing import Optional
+from ..processing.import_execute_results import ImportExecuteResults
+from ...resources.scripts.convert_asc_to_netcdf import convert_asc_to_netcdf
+from typing import Optional, List
+from ..utils.meshing_process import create_temp_mesh_layer
 
 
 class DrExecuteModel(DrTask):
@@ -43,9 +47,10 @@ class DrExecuteModel(DrTask):
     PROGRESS_INLET = 35
     PROGRESS_HYETOGRAPHS = 40
     PROGRESS_RAIN = 50
-    PROGRESS_CULVERTS = 55
+    PROGRESS_CULVERTS = 60
     PROGRESS_INP = 70
     PROGRESS_IBER = 97
+    EXPORT_RESULTS = 99
     PROGRESS_END = 100
 
     def __init__(self, description: str, params: dict, feedback, timer=None):
@@ -66,6 +71,9 @@ class DrExecuteModel(DrTask):
         self.init_params()
         self.generate_inp_infolog = None
         self.feedback = feedback
+        self.process: Optional[ImportExecuteResults] = None
+        self.output = None
+        self.import_results_infolog = None
 
 
     def init_params(self):
@@ -82,7 +90,9 @@ class DrExecuteModel(DrTask):
         super().run()
         print(f"{self.description()} -> {threading.get_ident()}")
         self.dao = global_vars.gpkg_dao_data.clone()
-        tools_log.log_info(f"Task 'Execute model' execute function 'def _execute_model(self)'")
+        msg = "Task '{0}' execute function '{1}'"
+        msg_params = ("Execute model", "_execute_model(self)",)
+        tools_log.log_info(msg, msg_params=msg_params)
         status = self._execute_model()
 
         # self._close_dao()
@@ -99,7 +109,8 @@ class DrExecuteModel(DrTask):
         self.dialog.btn_close.setVisible(True)
 
         # Create report geopackage
-        self._create_report_gpkg()
+        if not self.isCanceled():
+            self._create_results_folder()
 
         # self._close_file()
         if self.timer:
@@ -114,17 +125,74 @@ class DrExecuteModel(DrTask):
 
     def cancel(self):
 
-        tools_qgis.show_info(f"Task canceled - {self.description()}")
+        msg = "Task canceled - {0}"
+        msg_params = (self.description(),)
+        tools_qgis.show_info(msg, msg_params=msg_params)
         # self._close_file()
         super().cancel()
 
 
-    def _create_report_gpkg(self):
-        """Create report geopackage"""
+    def _create_results_folder(self):
+        """Create results folder and generate results GPKG and NetCDF files"""
+
+        self.progress_changed.emit("Export results", None, "Exporting results", True)
+
+        if not os.path.exists(f'{self.folder_path}{os.sep}DrainResults'):
+            os.mkdir(f'{self.folder_path}{os.sep}DrainResults')
 
         # Create report geopackage
-        self.rpt_result = DrRptGpkgCreate("report_gpkg", self.folder_path)
+        self.rpt_result = DrRptGpkgCreate("results", f'{self.folder_path}{os.sep}DrainResults')
         self.rpt_result.create_rpt_gpkg()
+        self.progress_changed.emit("Export results", None, f'GPKG file created', True)
+
+        # Create NetCDF file
+        created_netcdf: bool = False
+        raster_files: str = f'{self.folder_path}{os.sep}RasterResults'
+        netcdf_file: str = f'{self.folder_path}{os.sep}DrainResults{os.sep}rasters.nc'
+        try:
+            convert_asc_to_netcdf(raster_files, netcdf_file, self.progress_changed)
+        except Exception as e:
+            self.progress_changed.emit("Export results", None, "Error creating NetCDF file", True)
+        if os.path.exists(netcdf_file):
+            self.progress_changed.emit("Export results", None, "NetCDF file created", True)
+            self.progress_changed.emit("Export results", self.EXPORT_RESULTS, "Exported results", True)
+            created_netcdf = True
+        else:
+            self.progress_changed.emit("Export results", None, "Error creating NetCDF file", True)
+
+        if self.isCanceled():
+            return
+
+        if created_netcdf:
+            msg = "Do you want to import the results into the project?"
+            title = 'Import results'
+            result: Optional[bool] = tools_qt.show_question(msg, title, force_action=True)
+            if result is not None and result:
+                # Execute ImportExecuteResults algorithm
+                self.progress_changed.emit("Import results", None, "Importing results", True)
+                self.feedback = Feedback()
+                self.feedback.progress_changed.connect(self._import_results_progress_changed)
+                self.process = ImportExecuteResults()
+                self.process.initAlgorithm(None)
+                params: dict = {'FOLDER_RESULTS':f'{self.folder_path}','CUSTOM_NAME':f'{os.path.basename(str(self.folder_path))}'}
+                context: QgsProcessingContext = QgsProcessingContext()
+                self.output = self.process.processAlgorithm(params, context, self.feedback)
+                if not bool(self.output):
+                    self.progress_changed.emit("Import results", None, "Error importing results", True)
+                    return
+                else:
+                    self.output = self.process.postProcessAlgorithm(context, self.feedback)
+                    if not bool(self.output):
+                        self.progress_changed.emit("Import results", None, "Error importing results", True)
+                        return
+                self.progress_changed.emit("Import results", None, "Imported results", True)
+        self.progress_changed.emit(None, self.PROGRESS_END, None, False)
+
+
+    def _import_results_progress_changed(self, process, progress, text, new_line):
+        self.progress_changed.emit("Import results", None, text, new_line)
+        self.import_results_infolog = text
+
 
 
     def _close_dao(self, dao=None):
@@ -175,7 +243,7 @@ class DrExecuteModel(DrTask):
 
                 # Create inlet file
                 self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "Creating inlet files...", False)
-                self._create_inlet_file()
+                self._create_inlet_file(mesh_id)
                 self.progress_changed.emit("Export files", self.PROGRESS_INLET, "done!", True)
 
                 if self.isCanceled():
@@ -220,7 +288,6 @@ class DrExecuteModel(DrTask):
             if self.isCanceled():
                 return False
 
-            self.progress_changed.emit("", self.PROGRESS_END, "", True)
         except Exception as e:
             print(f"Exception in ExecuteModel thread: {e}")
             self.progress_changed.emit("ERROR", None, f"Exception in ExecuteModel thread: {e}\n {traceback.format_exc()}", True)
@@ -309,11 +376,11 @@ class DrExecuteModel(DrTask):
 
     def _copy_mesh_files(self, mesh_id):
 
-        sql = f"SELECT iber2d, roof, losses FROM cat_file WHERE id = '{mesh_id}'"
+        sql = f"SELECT iber2d, roof, losses, bridge FROM cat_file WHERE id = '{mesh_id}'"
         row = self.dao.get_row(sql)
         self.progress_changed.emit("Export files", tools_dr.lerp_progress(10, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
         if row:
-            iber2d_content, roof_content, losses_content = row
+            iber2d_content, roof_content, losses_content, bridges_content = row
 
             # Write content to files
             project_name, result_iber_format, iber2d_options = self._get_iber2d_options()
@@ -351,25 +418,29 @@ class DrExecuteModel(DrTask):
                     sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_cn_multiplier'"
                     row = self.dao.get_row(sql)
                     cn_multiplier = row[0] if row else 1
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(55, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # ia_coeff
                     sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_ia_coefficient'"
                     row = self.dao.get_row(sql)
                     ia_coeff = row[0] if row else 0.2
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # start_time
                     sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_starttime'"
                     row = self.dao.get_row(sql)
                     start_time = row[0] if row else 0
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # Replace first line
                     new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
                     losses_content_lines = losses_content.split('\n')
                     losses_content_lines[0] = new_first_line
                     losses_content = '\n'.join(losses_content_lines)
-            self.progress_changed.emit("Export files", tools_dr.lerp_progress(90, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+            self.progress_changed.emit("Export files", tools_dr.lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber_Losses.dat', losses_content)
+            self.progress_changed.emit("Export files", tools_dr.lerp_progress(90, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+
+            if bridges_content:
+                self._write_to_file(f'{self.folder_path}{os.sep}Iber_Internal_cond.dat', bridges_content)
             self.progress_changed.emit("Export files", tools_dr.lerp_progress(100, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
     def _get_iber2d_options(self):
@@ -428,11 +499,14 @@ class DrExecuteModel(DrTask):
             shutil.copy(folder / file_name, self.folder_path)
             self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 0, len(file_names)), self.PROGRESS_MESH_FILES, self.PROGRESS_STATIC_FILES), '', False)
 
-    def _create_inlet_file(self):
+    def _create_inlet_file(self, selected_mesh: Optional[QgsMeshLayer] = None):
         file_name = Path(self.folder_path) / "Iber_SWMM_inlet_info.dat"
 
+        # Convert pinlets into inlets
+        converted_inlets: Optional[List[QgsFeature]] = self._convert_pinlets_into_inlets(selected_mesh)
+
         sql = "SELECT gully_id, outlet_type, node_id, xcoord, ycoord, zcoord, width, length, depth, method, weir_cd, " \
-              "orifice_cd, a_param, b_param, efficiency FROM vi_inlet"
+              "orifice_cd, a_param, b_param, efficiency FROM vi_inlet ORDER BY gully_id;"
         rows = self.dao.get_rows(sql)
 
         # Fetch column names
@@ -445,7 +519,7 @@ class DrExecuteModel(DrTask):
             # Write column headers
             header_str = f"{' '.join(column_names)}\n"
             dat_file.write(header_str)
-            transform_dict = {None: -9999, 'TO NETWORK': 'To_network', 'SINK': 'Sink'}
+            transform_dict = {None: -9999, 'TO NETWORK': 'To_network', 'SINK': 'Sink', 'NULL': -9999}
             for row in rows:
                 values = []
                 for value in row:
@@ -453,6 +527,130 @@ class DrExecuteModel(DrTask):
                     values.append(value_str)
                 values_str = f"{' '.join(values)}\n"
                 dat_file.write(values_str)
+            if converted_inlets:
+                # Write converted inlets
+                ordered_keys =['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
+                for feature in converted_inlets:
+                    values = []
+                    for value in ordered_keys:
+                        value_str = str(transform_dict.get(str(feature[value]), feature[value]))
+                        values.append(value_str)
+                    values.insert(0, str(feature['code']))
+                    values.insert(3, str(feature.geometry().asPoint().x()))
+                    values.insert(4, str(feature.geometry().asPoint().y()))
+                    values_str = f"{' '.join(values)}\n"
+                    dat_file.write(values_str)
+
+
+    def _convert_pinlets_into_inlets(self, selected_mesh: Optional[int] = None,  gometry_layer_name: Optional[str] = 'pinlet', minimum_size: Optional[float] = 2) -> Optional[List[QgsFeature]]:
+        """Convert pinlets into inlets"""
+        if selected_mesh is None:
+            return None
+
+        # Get pinlet layer
+        pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename(gometry_layer_name)
+        if pinlet_layer is None:
+            return None
+
+        # Get mesh layer data
+        sql = f"SELECT name, iber2d, roof, losses FROM cat_file WHERE id = {selected_mesh};"
+        if not self.dao:
+            return None
+        row = self.dao.get_row(sql)
+
+        if not row:
+            return None
+
+        # Create mesh layer
+        mesh = mesh_parser.loads(row["iber2d"], row["roof"], row["losses"])
+        mesh_layer = create_temp_mesh_layer(mesh)
+
+        if mesh_layer is None:
+            return None
+
+        # Split pinlet polygons by lines into a layer using QGIS processing algorithm: Split with lines
+        splited_pinlets = processing.run(
+            "native:splitwithlines", {
+            'INPUT':pinlet_layer,
+            'LINES':mesh_layer,
+            'OUTPUT':f'memory:'}
+        )
+        splited_pinlets_layer: QgsVectorLayer = splited_pinlets['OUTPUT']
+        if splited_pinlets_layer is None:
+            return None
+        splited_polygons = splited_pinlets_layer.getFeatures()
+
+        # Group splited polygons by pinlet
+        converted_inlets: List[QgsFeature] = []
+        grouped_splited_polygons: dict[str,List[QgsFeature]] = {}
+        for feature in splited_polygons:
+            if feature['code'] in grouped_splited_polygons.keys():
+                grouped_splited_polygons[f'{feature['code']}'].append(feature)
+            else:
+                grouped_splited_polygons[f'{feature['code']}'] = [feature]
+
+        # Get valid polygons and get its centroids
+        for pinlet_code in grouped_splited_polygons.keys():
+            # Get pinlet and its area
+            pinlet_layer_features = pinlet_layer.getFeatures()
+            pinlet_perimeter: Optional[float] = None
+            parent_pinlet: QgsFeature = None
+            minimum_size_area: Optional[float] = None
+            for pinlet_feature in pinlet_layer_features:
+                if pinlet_feature['code'] == pinlet_code:
+                    minimum_size_area = pinlet_feature.geometry().area()/100*minimum_size
+                    pinlet_perimeter = pinlet_feature.geometry().length()
+                    parent_pinlet = pinlet_feature
+                    break
+            if minimum_size_area is None or parent_pinlet is None or pinlet_perimeter is None:
+                continue
+
+            # Get total perimeter of the pinlet(sum of all splited polygon perimeters)
+            total_perimeter: float = 0
+            for feature in grouped_splited_polygons[pinlet_code]:
+                # Check if the polygon is valid
+                if feature.geometry().area() < minimum_size_area:
+                    continue
+                total_perimeter += feature.geometry().length()
+            if total_perimeter is None or total_perimeter == 0:
+                continue
+
+            # Create inlets and calculate its length/width
+            test_perimeter = 0
+            last_id = 1
+            for feature in grouped_splited_polygons[pinlet_code]:
+                # Check if the polygon is valid
+                if feature.geometry().area() < minimum_size_area:
+                    continue
+
+                # Create new inlet with the centroid of the polygon and copy its attributes from parent pinlet
+                geom = feature.geometry()
+                new_inlet = QgsFeature(feature.fields())
+                new_inlet.setGeometry(geom.centroid())
+
+                attrs = {}
+                for field in feature.fields():
+                    field_name = field.name()
+                    attrs[field_name] = feature[field_name]
+                new_inlet.setAttributes([attrs[field.name()] for field in feature.fields()])
+                new_inlet['code'] = f'{parent_pinlet.id()}_{last_id}'
+                last_id += 1
+
+                # Calculate length/width
+                length_width = 0
+                length_width = (feature.geometry().length() * pinlet_perimeter / (total_perimeter)) / 4
+                new_inlet['length'] = length_width
+                new_inlet['width'] = length_width
+                test_perimeter += (length_width * 4)
+
+                # Add to list
+                converted_inlets.append(new_inlet)
+
+        if len(converted_inlets) == 0:
+            return None
+
+        return converted_inlets
+
 
     def _create_hyetograph_file(self):
         file_name = Path(self.folder_path) / "Iber_Hyetograph.dat"

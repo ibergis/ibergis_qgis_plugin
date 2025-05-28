@@ -73,8 +73,8 @@ class DrToolBoxButton(DrAction):
         self.function_selected = f"{tools_db.get_row(sql)[0]}"
         status = self._populate_functions_dlg(self.dlg_functions, json_result['body']['data'])
         if not status:
-            message = "Function not found"
-            tools_qgis.show_message(message, parameter=self.function_selected)
+            msg = "Function not found"
+            tools_qgis.show_message(msg, parameter=self.function_selected)
             return
 
         # Disable tab log
@@ -125,7 +125,8 @@ class DrToolBoxButton(DrAction):
         layer_name = tools_qt.get_combo_value(dialog, combo, 1)
         layer = tools_qgis.get_layer_by_tablename(layer_name)
         if layer is None:
-            tools_qgis.show_warning("Layer not found", parameter=layer_name)
+            msg = "Layer not found"
+            tools_qgis.show_warning(msg, parameter=layer_name)
             return None
         global_vars.iface.setActiveLayer(layer)
         return layer
@@ -286,8 +287,8 @@ class DrToolBoxButton(DrAction):
             status = self._populate_functions_dlg(self.dlg_functions, json_result['body']['data'])
             if not status:
                 self.function_selected = index.sibling(index.row(), 1).data()
-                message = "Function not found"
-                tools_qgis.show_message(message, parameter=self.function_selected)
+                msg = "Function not found"
+                tools_qgis.show_message(msg, parameter=self.function_selected)
                 return
 
             # Disable tab log
@@ -871,7 +872,7 @@ class DrToolBoxButton(DrAction):
         with open(folder_path, "w") as output:
             writer = csv.writer(output, delimiter=';', lineterminator='\n')
             writer.writerows(all_rows)
-        message = "The csv file has been successfully exported"
-        tools_qgis.show_info(message)
+        msg = "The csv file has been successfully exported"
+        tools_qgis.show_info(msg)
 
     # endregion
