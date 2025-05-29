@@ -670,7 +670,7 @@ UPDATE inp_dwf set pattern4='WEEKEND_PATTERN', avg_value=0.0003 where fid>45;
 update inp_junction set y0 = 0, ysur = 0, apond = 0;
 
 -- roof
-UPDATE roof SET slope = 1.5, width = 30, outlet_type = 1, outlet_vol =100, street_vol=0, infiltr_vol=0, roughness = 0.018;
+UPDATE roof SET slope = 1.5, width = 30, outlet_vol =100, street_vol=0, infiltr_vol=0, roughness = 0.018;
 UPDATE roof SET isconnected=1;
 
 -- inlet
