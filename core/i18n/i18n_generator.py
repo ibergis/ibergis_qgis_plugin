@@ -278,7 +278,6 @@ class DrI18NGenerator:
         ts_file.close()
         del ts_file
 
-
         lrelease_path = f"{self.plugin_dir}{os.sep}resources{os.sep}i18n{os.sep}lrelease.exe"
         status = subprocess.call([lrelease_path, ts_path], shell=False)
         if status == 0:

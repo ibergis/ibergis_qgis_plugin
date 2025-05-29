@@ -2709,7 +2709,7 @@ def add_btn_help(dlg):
     if not hasattr(dlg.lyt_buttons, 'columnCount'):
         return
 
-    btn_help_text_translated = tools_qt.tr("Help", "common", default="Help")
+    btn_help_text_translated = tools_qt.tr("btn_help", "common", default="Help")
     btn_help = QPushButton(btn_help_text_translated)
     btn_help.setObjectName("btn_help") 
     btn_help.setToolTip(btn_help_text_translated)

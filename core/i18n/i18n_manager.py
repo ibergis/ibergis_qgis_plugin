@@ -950,6 +950,8 @@ class DrSchemaI18NManager:
         py_files = []
 
         for folder, subfolder, files in os.walk(path):
+            if 'packages' in folder.split(os.sep):
+                continue
             for file in files:
                 if file.endswith(file_type):
                     file_path = os.path.join(folder, file)

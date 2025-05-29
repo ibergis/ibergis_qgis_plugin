@@ -220,16 +220,16 @@ def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message
     if header:
         header = tools_qt.tr(header, list_params=header_params)
 
-    msg = (f'<font color="blue"><{bold}>{header}: </font>'
+    msg_ = (f'<font color="blue"><{bold}>{header}: </font>'
            f'<font color="{color}"><{bold}>{text}</font>')
     limit = 200
     if global_vars.logger and global_vars.logger.log_db_limit_characters:
         limit = global_vars.logger.log_db_limit_characters
-    msg = (msg[:limit] + '...') if len(msg) > limit and bold == '' else msg
+    msg_ = (msg_[:limit] + '...') if len(msg_) > limit and bold == '' else msg_
 
     # Check session parameter 'min_message_level' to know if we need to log message in QGIS Log Messages Panel
     if global_vars.logger and message_level >= global_vars.logger.min_message_level:
-        QgsMessageLog.logMessage(msg, global_vars.logger.tab_db, message_level)
+        QgsMessageLog.logMessage(msg_, global_vars.logger.tab_db, message_level)
 
     # Log same message into logger file
     if global_vars.logger and logger_file:
