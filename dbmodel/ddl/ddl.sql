@@ -157,7 +157,6 @@ CREATE TABLE roof (
     width real CHECK (typeof(width)='real' OR width=NULL),
     roughness real CHECK (typeof(roughness)='real' OR roughness=NULL),
     isconnected integer CHECK (typeof(isconnected) in ('integer', NULL) AND isconnected IN (1, 2, 3)),
-    outlet_type text CHECK (typeof(outlet_type)='text' OR outlet_type=NULL),
     outlet_code text CHECK (typeof(outlet_code)='text' OR outlet_code=NULL),
     outlet_vol real CHECK (typeof(outlet_vol) = 'real' OR outlet_vol=NULL),
     street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
