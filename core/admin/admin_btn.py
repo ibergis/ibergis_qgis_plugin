@@ -100,7 +100,7 @@ class DrGpkgBase:
             msg = "Error executing file: {0}\n{1}"
             msg_params = (os.path.basename(filepath), str(e),)
             tools_log.log_warning(msg, msg_params=msg_params)
-            tools_qt.show_info_box(msg)
+            tools_qt.show_info_box(msg, msg_params=msg_params)
             status = False
 
         finally:
@@ -250,6 +250,8 @@ class DrAdminButton(DrGpkgBase):
         self.timer.timeout.connect(self._on_timer_timeout)
         self.timer.start(500)
 
+        self._translate_config(self.locale)
+
         params = {}
         self.create_gpkg_thread = DrGpkgCreateSchemaTask(self, "Create GPKG", params, timer=self.timer)
         QgsApplication.taskManager().addTask(self.create_gpkg_thread)
@@ -343,6 +345,47 @@ class DrAdminButton(DrGpkgBase):
         # Set signals
         self._set_signals_create_project()
 
+    def _translate_config(self, locale):
+        """ Execute i18n DML file for selected locale """
+
+        # Build path to i18n DML file
+        i18n_dml_path = os.path.join(self.sql_dir, "i18n", locale, "dml.sql")
+        if not os.path.exists(i18n_dml_path):
+            i18n_dml_path = os.path.join(self.sql_dir, "i18n", "en_US", "dml.sql")
+        
+        # Initialize database connection to config.gpkg
+        filename = "config.gpkg"
+        db_filepath = f"{global_vars.plugin_dir}{os.sep}config{os.sep}{filename}"
+        if not os.path.exists(db_filepath):
+            msg = "Database not found: {0}"
+            msg_params = (db_filepath,)
+            tools_log.log_warning(msg, msg_params=msg_params)
+            return
+            
+        status = self.gpkg_dao_config.init_db(db_filepath)
+        if not status:
+            msg = self.gpkg_dao_config.last_error
+            tools_log.log_warning(msg)
+            return
+            
+        # Read and execute the i18n DML file
+        try:
+            with open(i18n_dml_path, 'r', encoding='utf8') as f:
+                sql_content = f.read()
+                for sql_line in sql_content.split(';'):
+                    status = self.gpkg_dao_config.execute_script_sql(sql_line)
+                    msg = "Create schema: Executing function: {0} to {1}"
+                    msg_params = ("_translate_config", locale)
+                    tools_log.log_info(msg, msg_params=msg_params)
+                    if not status:
+                        msg = "Error executing i18n DML: {0}"
+                        msg_params = (self.gpkg_dao_config.last_error,)
+                        tools_log.log_warning(msg, msg_params=msg_params)
+        except Exception as e:
+            msg = "Error reading i18n DML file: {0}\n{1}"
+            msg_params = (i18n_dml_path, str(e))
+            tools_log.log_warning(msg, msg_params=msg_params)
+            
 
     def load_base(self, dict_folders):
         """"""
