@@ -250,7 +250,7 @@ class DrAdminButton(DrGpkgBase):
         self.timer.timeout.connect(self._on_timer_timeout)
         self.timer.start(500)
 
-        self._translate_config(self.locale)
+        # self._translate_config(self.locale)
 
         params = {}
         self.create_gpkg_thread = DrGpkgCreateSchemaTask(self, "Create GPKG", params, timer=self.timer)
