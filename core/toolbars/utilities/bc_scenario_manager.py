@@ -20,7 +20,7 @@ def set_bc_filter():
     layer_name = 'boundary_conditions'
     bc_layer = tools_qgis.get_layer_by_tablename(layer_name)
 
-    sql = f"""SELECT idval FROM cat_bscenario WHERE active = 1"""
+    sql = """SELECT idval FROM cat_bscenario WHERE active = 1"""
     row = tools_db.get_row(sql)
     if not row:
         msg = "No current {0} found"
@@ -28,7 +28,7 @@ def set_bc_filter():
         tools_log.log_warning(msg, msg_params=msg_params)
         if bc_layer is None:
             return
-        bc_layer.setSubsetString(f"FALSE")
+        bc_layer.setSubsetString("FALSE")
         return
     cur_scenario = row['idval']
 

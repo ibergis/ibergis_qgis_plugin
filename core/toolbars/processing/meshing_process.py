@@ -1,14 +1,12 @@
-import qgis
 from qgis.processing import alg
 from qgis.core import (QgsVectorLayer, QgsProcessingContext, QgsPointXY, 
     QgsFeature, QgsGeometry, QgsField)
 
-from qgis.PyQt.QtCore import QPoint, QVariant
+from qgis.PyQt.QtCore import QVariant
 
 import pandamesh as pm
 
 import geopandas as gpd
-import matplotlib.pyplot as plt
 import shapely
 import numpy as np
 import time

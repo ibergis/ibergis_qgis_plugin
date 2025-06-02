@@ -1,26 +1,15 @@
-import qgis
 from qgis.processing import alg
-from qgis.gui import QgsMapCanvasSnappingUtils, QgsMapCanvas
-from qgis.core import (QgsProject, QgsVectorLayer, QgsProcessingContext, QgsPoint,
-    QgsPointLocator, QgsPointXY, QgsSnappingConfig, QgsTolerance, QgsFeature,
+from qgis.core import (QgsVectorLayer, QgsProcessingContext, QgsFeature,
     QgsGeometry)
-from qgis import analysis
-from qgis import processing
 
-from qgis.PyQt.QtCore import QPoint
 
-import pandamesh as pm
 try:
     import geopandas as gpd
 except ImportError:
     pass
-import matplotlib.pyplot as plt
 import shapely
 import shapely.validation
 import numpy as np
-import json
-import time
-import sys
 #from guppy import hpy
 # from tqdm import tqdm
 

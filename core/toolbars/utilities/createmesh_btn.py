@@ -1,17 +1,16 @@
 import datetime
 from functools import partial
-from pathlib import Path
 from time import time
 
-from qgis.core import Qgis, QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer, QgsGeometry, QgsFeature, QgsField
-from qgis.PyQt.QtCore import Qt, QTimer, QVariant
+from qgis.core import Qgis, QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
+from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox, QTextEdit
 
 from ..dialog import DrAction
 from ...threads.createmesh import DrCreateMeshTask
 from ...threads.validatemesh import validations_dict
 from ...ui.ui_manager import DrCreateMeshUi
-from ...utils import Feedback, tools_dr, mesh_parser
+from ...utils import Feedback, tools_dr
 from ...utils.meshing_process import create_anchor_layers
 from .... import global_vars
 from ....lib import tools_qt, tools_os

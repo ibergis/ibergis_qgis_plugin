@@ -10,17 +10,16 @@ from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.core import QgsApplication, QgsProcessingContext
+from qgis.core import QgsProcessingContext
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QLabel, QTextEdit
 
 from ..dialog import DrAction
-from ...threads.project_check import DrProjectCheckTask
 from ...processing.check_project import DrCheckProjectAlgorithm
 from ...ui.ui_manager import DrProjectCheckUi
 
 from ...utils import tools_dr, Feedback
-from ....lib import tools_qgis, tools_qt
+from ....lib import tools_qt
 
 
 class DrProjectCheckButton(DrAction):

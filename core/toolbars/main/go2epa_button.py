@@ -6,25 +6,22 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-import sys
-import json
 
 from functools import partial
 from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.PyQt.QtCore import QStringListModel, Qt, QTimer
-from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGroupBox, QSpacerItem, QSizePolicy, \
-    QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout, QTextEdit
+from qgis.PyQt.QtCore import QTimer
+from qgis.PyQt.QtWidgets import QLabel, QTextEdit
 from qgis.core import QgsApplication
 
 from ...threads.epa_file_manager import DrEpaFileManager
 from ...shared.options import DrOptions
 from ...utils import tools_dr, Feedback
-from ...ui.ui_manager import DrGo2EpaUI, DrGo2EpaOptionsUi
+from ...ui.ui_manager import DrGo2EpaUI
 from .... import global_vars
-from ....lib import tools_qgis, tools_qt, tools_db, tools_os
+from ....lib import tools_qgis, tools_qt, tools_os
 from ..dialog import DrAction
 
 

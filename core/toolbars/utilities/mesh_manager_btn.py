@@ -2,7 +2,6 @@ from functools import partial
 from pathlib import Path
 
 from qgis.core import QgsApplication
-from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.utils import iface
@@ -12,7 +11,7 @@ from ...ui.ui_manager import DrMeshManagerUi, DrLineeditUi
 from .createmesh_btn import DrCreateMeshButton
 from ...threads.create_temp_layer import DrCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
-from ...utils import Feedback, tools_dr, mesh_parser
+from ...utils import tools_dr, mesh_parser
 from .... import global_vars
 from ....lib.tools_gpkgdao import DrGpkgDao
 from typing import Optional
@@ -291,6 +290,6 @@ class DrMeshManagerButton(DrAction):
             self.dao = global_vars.gpkg_dao_data
             if self.dao:
                 self.dao.commit()
-                sql = f"vacuum;"
+                sql = "vacuum;"
                 self.dao.execute_sql(sql)
             self._reload_manager_table()

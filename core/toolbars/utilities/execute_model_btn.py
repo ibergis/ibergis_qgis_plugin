@@ -12,7 +12,7 @@ from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QTextEdit, QLabel
 from qgis.core import QgsApplication
 
@@ -21,7 +21,7 @@ from ...shared.options import DrOptions
 from ...utils import tools_dr, Feedback
 from ...ui.ui_manager import DrExecuteModelUi
 from .... import global_vars
-from ....lib import tools_qgis, tools_qt, tools_db, tools_os
+from ....lib import tools_qt, tools_db, tools_os
 from ..dialog import DrAction
 
 
@@ -127,7 +127,7 @@ class DrExecuteModelButton(DrAction):
         self.timer.start(1000)
 
         # Set background task 'Execute model'
-        description = f"Execute model"
+        description = "Execute model"
 
         params = {"dialog": self.execute_dlg, "folder_path": self.export_path,
                   "do_generate_inp": do_generate_inp, "do_export": True, "do_run": True, "do_import": do_import}
