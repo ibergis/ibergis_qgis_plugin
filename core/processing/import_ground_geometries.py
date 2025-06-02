@@ -265,7 +265,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                                     skiped_features.append(feature.id())
                                     break
                             src_value = feature[src_field]
-                        except KeyError as e:
+                        except KeyError:
                             src_value = None
                     attributes[target_field_names.index(tgt_field)] = src_value
             feedback.setProgress(tools_dr.lerp_progress(int(feature_index*100/num_features), 16, 90))
@@ -348,7 +348,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
             self.dao.close_db()
             return {}
         self.dao.close_db()
-        feedback.setProgressText(self.tr(f"Importing process finished."))
+        feedback.setProgressText(self.tr("Importing process finished."))
         feedback.setProgress(100)
         return {}
 

@@ -1,9 +1,9 @@
-from qgis.core import QgsProcessingAlgorithm, QgsProcessingContext, QgsProcessingFeedback, QgsProcessingParameterBoolean, QgsProject, QgsVectorLayer, QgsFeature, QgsField, QgsGeometry
+from qgis.core import QgsProcessingAlgorithm, QgsProcessingContext, QgsProcessingFeedback, QgsProject, QgsVectorLayer, QgsFeature, QgsField, QgsGeometry
 from typing import Any, Optional
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
 
 from ...lib.tools_gpkgdao import DrGpkgDao
-from ...lib import tools_qt, tools_db
+from ...lib import tools_qt
 from ... import global_vars
 import re
 from typing import Match
@@ -40,14 +40,14 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         sql: str = "SELECT id, COALESCE(i18n_text, text) AS text FROM sys_message"
         sys_messages = self.dao_config.get_rows(sql)
         if not sys_messages:
-            feedback.pushWarning(self.tr(f'ERROR: No sys messages found'))
+            feedback.pushWarning(self.tr('ERROR: No sys messages found'))
             return {}
 
         # Get queries from checkproject_query table
         sql: str = "SELECT * FROM checkproject_query ORDER BY query_type"
         queries = self.dao_config.get_rows(sql)
         if not queries:
-            feedback.pushWarning(self.tr(f'ERROR: No check project queries found'))
+            feedback.pushWarning(self.tr('ERROR: No check project queries found'))
             return {}
 
         # Query params: id, query_type, table_name, columns, extra_condition, create_layer, geometry_type, message_id, except_lvl, query_text

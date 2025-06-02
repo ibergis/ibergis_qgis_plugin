@@ -29,8 +29,7 @@ from ...lib import tools_qgis, tools_gpkgdao
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ..utils import Feedback
 from typing import Optional, List
-from ... import global_vars
-import processing, os
+import processing
 
 
 class SetOutletForRoofs(QgsProcessingAlgorithm):
@@ -151,7 +150,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         if self.file_roofs and self.nearest_valid_roof_outlets is None:
             feedback.pushWarning(self.tr("Error getting nearest valid outlet for roofs."))
         elif self.file_roofs and self.nearest_valid_roof_outlets is not None and 'result' in self.nearest_valid_roof_outlets.keys() and self.nearest_valid_roof_outlets['result'] == 'blank':
-            feedback.setProgressText(self.tr(f"No roofs without outlet assigned."))
+            feedback.setProgressText(self.tr("No roofs without outlet assigned."))
             self.nearest_valid_roof_outlets = {}
         elif self.file_roofs and self.nearest_valid_roof_outlets is not None and 'result' not in self.nearest_valid_roof_outlets.keys():
             feedback.setProgressText(self.tr(f"Roofs without outlet assigned: {len(self.nearest_valid_roof_outlets)}"))
@@ -213,7 +212,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
             feedback.setProgressText(self.tr(f"Roofs skipped[{len(self.skipped_roofs)}]: {self.skipped_roofs}"))
             feedback.setProgressText(self.tr(f"Roofs setted below[{len(self.below_roofs)}]: {self.below_roofs}"))
             feedback.setProgressText(self.tr(f"Roofs updated[{(len(self.nearest_valid_roof_outlets)+self.skipped_from_near)-len(self.skipped_roofs)}/{len(self.nearest_valid_roof_outlets)+self.skipped_from_near}]"))
-            feedback.setProgressText(self.tr(f"Outlets assigned for roofs."))
+            feedback.setProgressText(self.tr("Outlets assigned for roofs."))
 
             feedback.setProgress(90)
 
@@ -354,13 +353,13 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         outlet_layer = parameters[self.FILE_OUTLETS]
 
         if roof_layer is None:
-            error_message += self.tr(f'Roof layer not found in this schema.\n\n')
+            error_message += self.tr('Roof layer not found in this schema.\n\n')
 
         if elev_raster_layer is None:
-            error_message += self.tr(f'Missing raster layer\n')
+            error_message += self.tr('Missing raster layer\n')
 
         if outlet_layer is None:
-            error_message += self.tr(f'Outlet layer not found in this schema.\n\n')
+            error_message += self.tr('Outlet layer not found in this schema.\n\n')
 
         if len(error_message) > 0:
             return False, error_message

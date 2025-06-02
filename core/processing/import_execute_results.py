@@ -22,11 +22,9 @@ from qgis.core import (
     QgsRasterShader,
     QgsSingleBandPseudoColorRenderer,
     QgsInterval,
-    QgsTemporalNavigationObject,
-    QgsStyle,
-    QgsGradientColorRamp
+    QgsTemporalNavigationObject
 )
-from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QTimeZone
+from qgis.PyQt.QtCore import QCoreApplication, QDateTime
 from qgis.PyQt.QtGui import QColor, QAction
 from ...core.utils import Feedback
 from typing import Optional
@@ -100,24 +98,24 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
         # Check if folder is valid and if NetCDF and INP files exist
         if self.folder_results_path is not None and os.path.exists(self.folder_results_path) and os.path.isdir(self.folder_results_path):
             if os.path.exists(file_netcdf) and os.path.exists(file_netcdf) and os.path.isfile(file_netcdf):
-                feedback.setProgressText(self.tr(f"NetCDF file found."))
+                feedback.setProgressText(self.tr("NetCDF file found."))
             else:
-                feedback.pushWarning(self.tr(f"NetCDF file not found."))
+                feedback.pushWarning(self.tr("NetCDF file not found."))
                 self.folder_results_path = None
                 return {}
             if os.path.exists(file_inp) and os.path.isfile(file_inp):
-                feedback.setProgressText(self.tr(f"INP file found."))
+                feedback.setProgressText(self.tr("INP file found."))
             else:
-                feedback.pushWarning(self.tr(f"INP file not found."))
+                feedback.pushWarning(self.tr("INP file not found."))
                 self.folder_results_path = None
                 return {}
         else:
-            feedback.pushWarning(self.tr(f"This folder is not valid."))
+            feedback.pushWarning(self.tr("This folder is not valid."))
             return {}
         feedback.setProgress(10)
 
         # Get INP Config
-        feedback.setProgressText(self.tr(f"Getting INP config."))
+        feedback.setProgressText(self.tr("Getting INP config."))
         feedback.setProgress(11)
         model = read_inp_file(file_inp)
         options = model["OPTIONS"]
@@ -127,10 +125,10 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
         self.end_time = options["END_TIME"]
         self.step_time = options["REPORT_STEP"]
         if self.start_date is None or self.start_time is None or self.step_time is None or self.end_date is None or self.end_time is None:
-            feedback.pushWarning(self.tr(f"Error getting INP config."))
+            feedback.pushWarning(self.tr("Error getting INP config."))
             return {}
 
-        feedback.setProgressText(self.tr(f"Importing layers..."))
+        feedback.setProgressText(self.tr("Importing layers..."))
         feedback.setProgress(15)
 
         # Set layer names
@@ -181,9 +179,9 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
                 feedback.setProgressText(self.tr(f'Layer {layer.name()} added correctly.'))
                 if self.layers_group is not None:
                     self.layers_group.addLayer(layer)
-            feedback.setProgressText(self.tr(f'Configuring temporal line...'))
+            feedback.setProgressText(self.tr('Configuring temporal line...'))
             self.openTemporalLine(first_layer)
-            feedback.setProgressText(self.tr(f'Importing process finished.'))
+            feedback.setProgressText(self.tr('Importing process finished.'))
             feedback.setProgress(100)
             self.layers = []
         except Exception as e:

@@ -27,8 +27,7 @@ from ...lib import tools_qgis, tools_gpkgdao
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ..utils import Feedback
 from typing import Optional, List
-from ... import global_vars
-import processing, os
+import processing
 
 
 class SetOutletForInlets(QgsProcessingAlgorithm):
@@ -185,7 +184,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         if self.file_inlets and not self.nearest_valid_inlet_outlets:
             feedback.pushWarning(self.tr("Error getting nearest valid outlet for inlets."))
         elif self.file_inlets and self.nearest_valid_inlet_outlets and 'result' in self.nearest_valid_inlet_outlets.keys() and self.nearest_valid_inlet_outlets['result'] == 'blank':
-            feedback.setProgressText(self.tr(f"No inlets without outlet assigned."))
+            feedback.setProgressText(self.tr("No inlets without outlet assigned."))
             self.nearest_valid_inlet_outlets = {}
         elif self.file_inlets and self.nearest_valid_inlet_outlets and 'result' not in self.nearest_valid_inlet_outlets.keys():
             feedback.setProgressText(self.tr(f"Inlets without outlet assigned: {len(self.nearest_valid_inlet_outlets)}"))
@@ -193,7 +192,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         if self.file_pinlets and not self.nearest_valid_pinlet_outlets:
             feedback.pushWarning(self.tr("Error getting nearest valid outlet for pinlets."))
         elif self.file_pinlets and self.nearest_valid_pinlet_outlets and 'result' in self.nearest_valid_pinlet_outlets.keys() and self.nearest_valid_pinlet_outlets['result'] == 'blank':
-            feedback.setProgressText(self.tr(f"No pinlets without outlet assigned."))
+            feedback.setProgressText(self.tr("No pinlets without outlet assigned."))
             self.nearest_valid_pinlet_outlets = {}
         elif self.file_pinlets and self.nearest_valid_pinlet_outlets:
             feedback.setProgressText(self.tr(f"Pinlets without outlet assigned: {len(self.nearest_valid_pinlet_outlets)}"))
@@ -231,7 +230,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             feedback.setProgressText(self.tr(f"Inlets skipped[{len(self.skipped_inlets)}]: {self.skipped_inlets}"))
             feedback.setProgressText(self.tr(f"Inlets setted below[{len(self.below_inlets)}]: {self.below_inlets}"))
             feedback.setProgressText(self.tr(f"Inlets updated[{len(self.nearest_valid_inlet_outlets)-len(self.skipped_inlets)}/{len(self.nearest_valid_inlet_outlets)}]"))
-            feedback.setProgressText(self.tr(f"Outlets assigned for inlets."))
+            feedback.setProgressText(self.tr("Outlets assigned for inlets."))
 
         if self.nearest_valid_pinlet_outlets is not None:
             self.file_pinlets.startEditing()
@@ -260,7 +259,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             feedback.setProgressText(self.tr(f"Pinlets skipped[{len(self.skipped_pinlets)}]: {self.skipped_pinlets}"))
             feedback.setProgressText(self.tr(f"Pinlets setted below[{len(self.below_pinlets)}]: {self.below_pinlets}"))
             feedback.setProgressText(self.tr(f"Pinlets updated[{len(self.nearest_valid_pinlet_outlets)-len(self.skipped_pinlets)}/{len(self.nearest_valid_pinlet_outlets)}]"))
-            feedback.setProgressText(self.tr(f"Outlets assigned for pinlets."))
+            feedback.setProgressText(self.tr("Outlets assigned for pinlets."))
 
         feedback.setProgress(90)
 
@@ -458,13 +457,13 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         outlet_layer = parameters[self.FILE_OUTLETS]
 
         if inlet_layer is None:
-            error_message += self.tr(f'Inlet layer not found in this schema.\n\n')
+            error_message += self.tr('Inlet layer not found in this schema.\n\n')
 
         if pinlet_layer is None:
-            error_message += self.tr(f'Pinlet layer not found in this schema.\n\n')
+            error_message += self.tr('Pinlet layer not found in this schema.\n\n')
 
         if outlet_layer is None:
-            error_message += self.tr(f'Outlet layer not found in this schema.\n\n')
+            error_message += self.tr('Outlet layer not found in this schema.\n\n')
 
         if inlet_layer is None and pinlet_layer is None:
             return False, 'Is required at least one layer selected to Inlet or Pinlet.'

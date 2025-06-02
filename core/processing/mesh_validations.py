@@ -1,11 +1,7 @@
-from sqlite3 import Row
 
-from numpy.__config__ import show
-from qgis.core import QgsFeature, QgsProcessingAlgorithm, QgsProcessingContext, QgsGeometry, QgsProcessingFeedback, QgsProcessingParameterBoolean, QgsProcessingParameterVectorLayer, QgsProject, QgsVectorLayer, QgsRasterLayer
-from shapely import Polygon
+from qgis.core import QgsProcessingAlgorithm, QgsProcessingContext, QgsProcessingFeedback, QgsProcessingParameterBoolean, QgsProject, QgsVectorLayer, QgsRasterLayer
 from typing import Any
 
-from ...lib.tools_gpkgdao import DrGpkgDao
 from ...lib import tools_qt
 from ... import global_vars
 from ..threads.validatemesh import validations_dict, validate_input_layers
