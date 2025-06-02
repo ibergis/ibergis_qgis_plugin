@@ -42,7 +42,7 @@ class DrProjectCheckButton(DrAction):
         self._open_dialog()
 
         # Return layers in the same order as listed in TOC
-        #layers = tools_qgis.get_project_layers()
+        # layers = tools_qgis.get_project_layers()
 
         # Create timer
         self.t0 = time()

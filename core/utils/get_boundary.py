@@ -47,7 +47,7 @@ class GetBoundary(QgsProcessingAlgorithm):
         # Merge vector layers
         alg_params = {
             'CRS': None,
-            'LAYERS': [parameters['roof_layer'],outputs['ExtractByAttribute']['FAIL_OUTPUT']],
+            'LAYERS': [parameters['roof_layer'], outputs['ExtractByAttribute']['FAIL_OUTPUT']],
             'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
         }
         outputs['MergeVectorLayers'] = processing.run('native:mergevectorlayers', alg_params, context=context, feedback=feedback, is_child_algorithm=True)

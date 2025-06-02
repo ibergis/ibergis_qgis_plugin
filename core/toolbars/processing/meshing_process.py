@@ -54,7 +54,7 @@ def clean_geometries(gdf: gpd.GeoDataFrame, feedback):
     points = []
     polygon_index = []
     ring = []
-    #for i in tqdm(range(len(data)), desc="Polygon -> Vertex"):
+    # for i in tqdm(range(len(data)), desc="Polygon -> Vertex"):
     for i in range(len(data)):
         if feedback.isCanceled():
             return {}
@@ -110,7 +110,7 @@ def clean_geometries(gdf: gpd.GeoDataFrame, feedback):
                 vertices.loc[other_i, "anchor"] = True
 
     # Reconstruct the polygons from the modified vertices
-    #for polygon_id, group in tqdm(vertices.groupby("polygon"), desc="Vertex -> Polygon"):
+    # for polygon_id, group in tqdm(vertices.groupby("polygon"), desc="Vertex -> Polygon"):
     for polygon_id, group in vertices.groupby("polygon"):
         exterior = group[group["ring"] == -1].geometry
         exterior = [(np.round(p.x, 5), np.round(p.y, 5)) for p in exterior]
@@ -214,8 +214,8 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
     data = clean_geometries(data, feedback)
     print(f"Done! {time.time() - start}s")
     
-    #start = time.time()
-    #print("Initializing messher... ", end='')
+    # start = time.time()
+    # print("Initializing messher... ", end='')
     try:
         gmsh.finalize()
     except Exception:
@@ -281,7 +281,7 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
 
         start = time.time()
         print("Generating Mesh (2/2)... ", end='')
-        #vertices, triangles = mesher.generate()
+        # vertices, triangles = mesher.generate()
         gmsh.model.mesh.generate(dim=2)
         print(f"Done! {time.time() - start}s")
     else:
@@ -300,7 +300,7 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
     triangles = get_faces()
 
     print("Done :)")
-    #gmsh.fltk.run()
+    # gmsh.fltk.run()
     
     start = time.time()
     print("Creating temp layer... ", end='')
@@ -335,12 +335,12 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
         ])
         provider.addFeature(feature)
         
-    #for f in layer.getFeatures():
+    # for f in layer.getFeatures():
     #    print("Feature:", f.id(), f.attributes(), f.geometry())
     poly_layer.updateExtents()
     
     context.temporaryLayerStore().addMapLayer(poly_layer)
-    context.addLayerToLoadOnCompletion(poly_layer.id(),QgsProcessingContext.LayerDetails('MESH_OUTPUT',context.project(),'LAYER'))
+    context.addLayerToLoadOnCompletion(poly_layer.id(), QgsProcessingContext.LayerDetails('MESH_OUTPUT', context.project(), 'LAYER'))
     print(f"Done! {time.time() - start}s")
     
     return {"OUTPUT": poly_layer}

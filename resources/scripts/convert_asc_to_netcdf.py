@@ -11,7 +11,7 @@ try:
 except ImportError:
     pyqtSignal = None
 
-#TODO import proj.db from qgis or packages. if its not imported, the script will use the postgres one which is on a lower version
+# TODO import proj.db from qgis or packages. if its not imported, the script will use the postgres one which is on a lower version
 
 
 def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed: Optional[pyqtSignal]) -> None:
@@ -122,6 +122,6 @@ def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed:
 
 if __name__ == "__main__":
     # Example usage
-    input_folder = sys.argv[1] # Results folder with the rasters
-    output_file = sys.argv[2] # Output NetCDF file
+    input_folder = sys.argv[1]  # Results folder with the rasters
+    output_file = sys.argv[2]  # Output NetCDF file
     convert_asc_to_netcdf(input_folder, output_file, None)

@@ -168,7 +168,7 @@ class DrExecuteModel(DrTask):
                 self.feedback.progress_changed.connect(self._import_results_progress_changed)
                 self.process = ImportExecuteResults()
                 self.process.initAlgorithm(None)
-                params: dict = {'FOLDER_RESULTS':f'{self.folder_path}','CUSTOM_NAME':f'{os.path.basename(str(self.folder_path))}'}
+                params: dict = {'FOLDER_RESULTS': f'{self.folder_path}', 'CUSTOM_NAME': f'{os.path.basename(str(self.folder_path))}'}
                 context: QgsProcessingContext = QgsProcessingContext()
                 self.output = self.process.processAlgorithm(params, context, self.feedback)
                 if not bool(self.output):
@@ -518,7 +518,7 @@ class DrExecuteModel(DrTask):
                 dat_file.write(values_str)
             if converted_inlets:
                 # Write converted inlets
-                ordered_keys =['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
+                ordered_keys = ['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
                 for feature in converted_inlets:
                     values = []
                     for value in ordered_keys:
@@ -559,9 +559,9 @@ class DrExecuteModel(DrTask):
         # Split pinlet polygons by lines into a layer using QGIS processing algorithm: Split with lines
         splited_pinlets = processing.run(
             "native:splitwithlines", {
-            'INPUT':pinlet_layer,
-            'LINES':mesh_layer,
-            'OUTPUT':'memory:'}
+            'INPUT': pinlet_layer,
+            'LINES': mesh_layer,
+            'OUTPUT': 'memory:'}
         )
         splited_pinlets_layer: QgsVectorLayer = splited_pinlets['OUTPUT']
         if splited_pinlets_layer is None:
@@ -570,7 +570,7 @@ class DrExecuteModel(DrTask):
 
         # Group splited polygons by pinlet
         converted_inlets: List[QgsFeature] = []
-        grouped_splited_polygons: dict[str,List[QgsFeature]] = {}
+        grouped_splited_polygons: dict[str, List[QgsFeature]] = {}
         for feature in splited_polygons:
             if feature['code'] in grouped_splited_polygons.keys():
                 grouped_splited_polygons[f'{feature['code']}'].append(feature)

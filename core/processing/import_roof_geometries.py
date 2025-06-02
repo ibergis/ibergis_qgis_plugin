@@ -86,7 +86,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
             )
         descript.setFlags(descript.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        slope= QgsProcessingParameterField(
+        slope = QgsProcessingParameterField(
             self.FIELD_SLOPE,
             self.tr('Select *slope* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
@@ -95,7 +95,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         )
         slope.setFlags(slope.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        width= QgsProcessingParameterField(
+        width = QgsProcessingParameterField(
             self.FIELD_WIDTH,
             self.tr('Select *width* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
@@ -104,66 +104,66 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         )
         width.setFlags(width.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        roughness=QgsProcessingParameterField(
+        roughness = QgsProcessingParameterField(
             self.FIELD_ROUGHNESS,
             self.tr('Select *roughness* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         roughness.setFlags(roughness.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        isconnected=QgsProcessingParameterField(
+        isconnected = QgsProcessingParameterField(
             self.FIELD_ISCONNECTED,
             self.tr('Select *isconnected* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         isconnected.setFlags(isconnected.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        outlet_type=QgsProcessingParameterField(
+        outlet_type = QgsProcessingParameterField(
             self.FIELD_OUTLET_TYPE,
             self.tr('Select *outlet_type* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.String,
-            optional= True
+            optional=True
         )
         outlet_type.setFlags(outlet_type.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        outlet_code=QgsProcessingParameterField(
+        outlet_code = QgsProcessingParameterField(
             self.FIELD_OUTLET_CODE,
             self.tr('Select *outlet_code* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.String,
-            optional= True
+            optional=True
         )
         outlet_code.setFlags(outlet_code.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        outlet_vol=QgsProcessingParameterField(
+        outlet_vol = QgsProcessingParameterField(
             self.FIELD_OUTLET_VOL,
             self.tr('Select *outlet_vol* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         outlet_vol.setFlags(outlet_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        street_vol=QgsProcessingParameterField(
+        street_vol = QgsProcessingParameterField(
             self.FIELD_STREET_VOL,
             self.tr('Select *street_vol* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         street_vol.setFlags(street_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        infiltr_vol=QgsProcessingParameterField(
+        infiltr_vol = QgsProcessingParameterField(
             self.FIELD_INFILTR_VOL,
             self.tr('Select *Infiltr_vol* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         infiltr_vol.setFlags(infiltr_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
@@ -242,16 +242,16 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
 
         # set unique fields
         feedback.setProgress(15)
-        self.unique_fields = {'custom_code':[]}
+        self.unique_fields = {'custom_code': []}
 
         # delete innecesary values from geometry
         if self.bool_selected_features:
             result = processing.run("native:dropmzvalues", {
             'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(), selectedFeaturesOnly=True,
                 featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
-                , 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True, 'OUTPUT':'memory:'})
+                , 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
         else:
-            result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True, 'OUTPUT':'memory:'})
+            result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
         self.converted_geometries_layer = result['OUTPUT']
 
         return {}
@@ -328,7 +328,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
                     attributes[target_field_names.index(tgt_field)] = src_value
             feedback.setProgress(tools_dr.lerp_progress(int(feature_index*100/num_features), 16, 90))
             feature_index += 1
-            if(repeated_params):
+            if (repeated_params):
                 continue
             new_feature.setAttributes(attributes)
             if not feature.geometry().isGeosValid():

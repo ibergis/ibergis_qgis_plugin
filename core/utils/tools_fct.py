@@ -168,7 +168,7 @@ def getselectors(p_input: dict) -> dict:
         rows = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         for row in rows:
-            tab_json = json.loads(row[1].replace('/',''))
+            tab_json = json.loads(row[1].replace('/', ''))
             tabname = row[0].replace("basic_selector_", "")
             tabLabel = tabname.replace("tab_", "")
             table = tab_json["table"]
@@ -187,7 +187,7 @@ def getselectors(p_input: dict) -> dict:
                     f" CASE WHEN {table_id} IN (SELECT * FROM {selector}) THEN 'true' ELSE 'false' END AS value" \
                     f" from {table}"
             column_names = [f'{table_id}', 'label', 'orderBy', 'name', 'widgetname', 'columnname', 'type',
-                            'dataType', 'value' ]
+                            'dataType', 'value']
             rows_fields = global_vars.gpkg_dao_data.get_rows(v_sql)
 
             v_fields = []
@@ -199,15 +199,15 @@ def getselectors(p_input: dict) -> dict:
                 v_fields.append(widget_dict)
 
             v_fields_aux = {
-                'fields':v_fields,
-                'tabName':f'{tabname}',
-                'tableName':f'{selector}',
+                'fields': v_fields,
+                'tabName': f'{tabname}',
+                'tableName': f'{selector}',
                 'tabLabel': f'{tabLabel.capitalize()}',
                 'tooltip': f'{tabLabel.capitalize()}',
                 'selectorType': 'selector_basic',
                 'manageAll': f'{manageAll}',
                 'selectionMode': 'keepPrevious',
-                'typeaheadForced':f'{typeaheadForced}'
+                'typeaheadForced': f'{typeaheadForced}'
             }
 
             if typeaheadFilter:
@@ -215,7 +215,7 @@ def getselectors(p_input: dict) -> dict:
 
             v_return["body"]["form"]["formTabs"].append(v_fields_aux)
 
-        v_message="Process done succesfully."
+        v_message = "Process done succesfully."
 
     except Exception as e:
         print(f"EXCEPTION IN getselectors: {e}")
@@ -259,13 +259,13 @@ def setselectors(p_input: dict) -> dict:
                 global_vars.gpkg_dao_data.execute_sql(v_sql)
         else:
             if checkAll == 'True':
-                v_sql =f"INSERT INTO {selector_table} SELECT {data_table_id} FROM {data_table}"
+                v_sql = f"INSERT INTO {selector_table} SELECT {data_table_id} FROM {data_table}"
                 global_vars.gpkg_dao_data.execute_sql(v_sql)
             else:
                 v_sql = f"DELETE FROM {selector_table} WHERE {column_id} IN (SELECT {data_table_id} FROM {data_table})"
                 global_vars.gpkg_dao_data.execute_sql(v_sql)
 
-        v_sql =f"SELECT {column_id} FROM {selector_table}"
+        v_sql = f"SELECT {column_id} FROM {selector_table}"
         rows = global_vars.gpkg_dao_data.get_rows(v_sql)
         id_list = [row[0] for row in rows]
 

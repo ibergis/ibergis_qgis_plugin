@@ -32,9 +32,9 @@ class DrSchemaI18NUpdate:
 
         self.dlg_qm = DrSchemaI18NUpdateUi()  # Initialize the UI
         tools_dr.load_settings(self.dlg_qm)
-        self._load_user_values() #keep values
+        self._load_user_values()  # keep values
         self.dev_commit = tools_dr.get_config_parser('system', 'force_commit', "user", "init", prefix=True)
-        self._set_signals() #Set all the signals to wait for response
+        self._set_signals()  # Set all the signals to wait for response
 
         self.dlg_qm.btn_translate.setEnabled(False)
 
@@ -51,7 +51,7 @@ class DrSchemaI18NUpdate:
         self.dlg_qm.rejected.connect(self._close_db)
         self.dlg_qm.rejected.connect(self._close_db_dest)
 
-        #Populate schema names
+        # Populate schema names
         self.dlg_qm.cmb_projecttype.currentIndexChanged.connect(partial(self._populate_data_schema_name, self.dlg_qm.cmb_projecttype))
 
     def _check_connection(self, set_languages):
@@ -66,7 +66,7 @@ class DrSchemaI18NUpdate:
         user_i18n = tools_qt.get_text(self.dlg_qm, self.dlg_qm.txt_user)
         password_i18n = tools_qt.get_text(self.dlg_qm, self.dlg_qm.txt_pass)
         status_i18n, e = self._init_db_i18n(host_i18n, port_i18n, db_i18n, user_i18n, password_i18n)
-        #Send messages
+        # Send messages
         if 'password authentication failed' in str(self.last_error):
             self.dlg_qm.btn_translate.setEnabled(False)
             msg = "Incorrect user or password"
@@ -135,18 +135,18 @@ class DrSchemaI18NUpdate:
         """ Take current project type changed """
         self.project_type_selected = tools_qt.get_text(self.dlg_qm, widget)
 
-    #endregion
+    # endregion
 
     # region Main program
 
     def schema_i18n_update(self):
         """ Main program to run the the shcmea_i18n_update """
 
-        #Connect in case of repeated actions
+        # Connect in case of repeated actions
         self._check_connection(False)
         self.cursor_dest = tools_db.dao.get_cursor()
         self.conn_dest = tools_db.dao
-        #Initalize the language and the message (for errors,etc)
+        # Initalize the language and the message (for errors,etc)
         self.language = tools_qt.get_combo_value(self.dlg_qm, self.dlg_qm.cmb_language, 0)
         self.lower_lang = self.language.lower()
         msg = ''
@@ -161,13 +161,13 @@ class DrSchemaI18NUpdate:
         elif status_cfg_msg is None:
             msg += f"{tools_qt.tr('Database translation canceled.')}\n"
 
-        #Look for errors
+        # Look for errors
         if errors:
             msg += f"{tools_qt.tr('There have been errors translating:')} {', '.join(errors)}"
 
         self._change_lang()
 
-        #Close connections
+        # Close connections
         self._close_db()
         self._close_db_dest()
 
@@ -218,9 +218,9 @@ class DrSchemaI18NUpdate:
         else:
             return True, None
 
-        #Get db_feature values
+        # Get db_feature values
 
-    #endregion
+    # endregion
 
     # region Alter any table
     def _get_table_values(self, table):
@@ -310,7 +310,7 @@ class DrSchemaI18NUpdate:
             lang_columns = [f"na_{self.lower_lang}", f"auto_na_{self.lower_lang}", f"va_auto_na_{self.lower_lang}", f"ob_{self.lower_lang}", f"auto_ob_{self.lower_lang}", f"va_auto_ob_{self.lower_lang}"]
 
         # Make the query
-        sql=""
+        sql = ""
         if self.lower_lang == 'en_us':
             sql = (f"SELECT {", ".join(columns)} "
                f"FROM {table} "
@@ -339,8 +339,8 @@ class DrSchemaI18NUpdate:
             if column[-5:] == "en_us":
                 forenames.append(column.split("_")[0])
 
-        for i, row in enumerate(rows): #(For row in rows)
-            if row['project_type'] in schema_type: # Chose wanted schema types (ws, ud, cm, am...)
+        for i, row in enumerate(rows):  # (For row in rows)
+            if row['project_type'] in schema_type:  # Chose wanted schema types (ws, ud, cm, am...)
 
                 texts = []
                 for forename in forenames:
@@ -368,7 +368,7 @@ class DrSchemaI18NUpdate:
                         texts[j] = self._replace_invalid_characters(texts[j])
                            
                 sql_text = ""
-                #Define the query depending on the table
+                # Define the query depending on the table
                 if 'dbconfig_form_fields' in table:
                     if 'feat' in table:
                         feature_types = ['ARC', 'CONNEC', 'NODE', 'GULLY', 'LINK', 'ELEMENT']
@@ -444,7 +444,7 @@ class DrSchemaI18NUpdate:
                         sql_text = (f"UPDATE {self.schema}.{row['context']} SET idval = {texts[0]} "
                                     f"WHERE id = '{row['source']}';\n")
              
-                #Execute the corresponding query
+                # Execute the corresponding query
                 if i == 1:
                     print(sql_text)
                 try:
@@ -541,7 +541,7 @@ class DrSchemaI18NUpdate:
             self.conn_dest.rollback()
             print(e)  
     
-    #endregion
+    # endregion
     
     # region Extra fucntions
     def _change_lang(self):
@@ -783,7 +783,7 @@ class DrSchemaI18NUpdate:
                 "dbtables": ["dbconfig_engine", "dbconfig_form_tableview", "su_basic_tables"]
             },
             "cm": {
-                "dbtables": [] #["dbtable", "dbconfig_form_fields", "dbconfig_form_tabs", "dbconfig_param_system", "sys_typevalue", "dbconfig_form_fields_json"]
+                "dbtables": []  # ["dbtable", "dbconfig_form_fields", "dbconfig_form_tabs", "dbconfig_param_system", "sys_typevalue", "dbconfig_form_fields_json"]
             },
         }
         return dbtables_dic[schema_type]['dbtables']

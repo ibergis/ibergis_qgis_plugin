@@ -226,7 +226,7 @@ class DrAdminButton(DrGpkgBase):
 
         log_suffix = '%Y%m%d %H:%M:%S'
         self.project_params = {"project_name": self.gpkg_name, "project_descript": self.project_descript, "project_user": getpass.getuser(),
-                              "project_tstamp": str(time.strftime(log_suffix)),"project_version": self.plugin_version}
+                              "project_tstamp": str(time.strftime(log_suffix)), "project_version": self.plugin_version}
 
         # Save in settings
         tools_dr.set_config_parser('btn_admin', 'gpkg_name', f'{self.gpkg_name}', prefix=False)

@@ -95,10 +95,10 @@ class DrCSVButton(DrAction):
     def _populate_combos(self, combo, field_id, fields, table_name):
 
         # TODO: Define query
-        #sql = (f"SELECT DISTINCT({field_id}), {fields}"
+        # sql = (f"SELECT DISTINCT({field_id}), {fields}"
         #       f" FROM {table_name}"
         #       f" WHERE active is True ORDER BY orderby")
-        #rows = global_vars.gpkg_dao_config.get_rows(sql)
+        # rows = global_vars.gpkg_dao_config.get_rows(sql)
         rows = [[382, "Import inp timeseries", "Function to automatize the import of inp curves files.", "", 0],
                 [384, "Import inp curves", "Function to automatize the import of inp curves files. The csv file must containts next columns on same position: curve_id, x_value, y_value, curve_type (for WS project OR UD project curve_type has diferent values. Check user manual)", "gw_fct_import_inp_curve", 1],
                 [386, "Import inp patterns", "Function to automatize the import of inp patterns files. The csv file must containts next columns on same position: pattern_id, pattern_type, factor1,.......,factorn. For WS use up factor18, repeating rows if you like. For UD use up factor24. More than one row for pattern is not allowed", "gw_fct_import_inp_pattern", 2]]

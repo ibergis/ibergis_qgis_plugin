@@ -42,7 +42,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
     BOOL_FORCE_BELOWS = 'BOOL_FORCE_BELOWS'
     BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
 
-    nearest_valid_roof_outlets: Optional[dict[str,Optional[str]]] = None
+    nearest_valid_roof_outlets: Optional[dict[str, Optional[str]]] = None
 
     file_roofs: QgsVectorLayer = None
     roof_elev_layer: QgsVectorLayer = None
@@ -137,8 +137,8 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                 nearest_roof_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
                 'INPUT': self.roof_elev_layer,
                 'INPUT_2': file_outlets,
-                'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
                 self.nearest_valid_roof_outlets = self.getNearestValidOutlets(nearest_roof_outlets, feedback)
             except:
                 self.nearest_valid_roof_outlets = None
@@ -166,15 +166,15 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         try:
             if not self.bool_selected_features:
                 result = processing.run("native:zonalstatisticsfb", {
-                'INPUT':roof_layer,
-                'INPUT_RASTER':raster_layer,
-                'RASTER_BAND':1,'COLUMN_PREFIX':'elev_','STATISTICS':[5],'OUTPUT':'memory:'})
+                'INPUT': roof_layer,
+                'INPUT_RASTER': raster_layer,
+                'RASTER_BAND': 1, 'COLUMN_PREFIX': 'elev_', 'STATISTICS': [5], 'OUTPUT': 'memory:'})
             else:
                 result = processing.run("native:zonalstatisticsfb", {
-                'INPUT':QgsProcessingFeatureSourceDefinition(roof_layer.source(), selectedFeaturesOnly=True,
+                'INPUT': QgsProcessingFeatureSourceDefinition(roof_layer.source(), selectedFeaturesOnly=True,
                 featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
-                'INPUT_RASTER':raster_layer,
-                'RASTER_BAND':1,'COLUMN_PREFIX':'elev_','STATISTICS':[5],'OUTPUT':'memory:'})
+                'INPUT_RASTER': raster_layer,
+                'RASTER_BAND': 1, 'COLUMN_PREFIX': 'elev_', 'STATISTICS': [5], 'OUTPUT': 'memory:'})
             if result:
                 roof_point_layer = result['OUTPUT']
         except:
@@ -265,11 +265,11 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         feedback.setProgress(100)
         return {}
 
-    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback) -> Optional[dict[str,Optional[str]]]:
+    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback) -> Optional[dict[str, Optional[str]]]:
         """
         Get nearest valid outlet for each roof from nearest layer.
         """
-        nearest_outlets: dict[str,Optional[str]] = {}
+        nearest_outlets: dict[str, Optional[str]] = {}
         nearest_outlets_list = {}
 
         # Group nearest outlets by roof code
@@ -307,7 +307,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
             if roof_code in nearest_outlets_list.keys():
                 nearest_outlets_list[roof_code]['outlets'].append(outlet_values)
             else:
-                nearest_outlets_list[roof_code] = {'elev' : feature['elev_min'], 'outlets': [outlet_values]}
+                nearest_outlets_list[roof_code] = {'elev': feature['elev_min'], 'outlets': [outlet_values]}
             if roof_code in skipped_near_features and roof_code in nearest_outlets_list:
                 if nearest_outlets_list[roof_code] is not None:
                     self.skipped_roofs.remove(str(feature['code']))

@@ -3088,7 +3088,7 @@ def _manage_check(**kwargs):
     field = kwargs['field']
     class_info = kwargs['class']
     widget = add_checkbox(**kwargs)
-    #widget.stateChanged.connect(partial(get_values, dialog, widget, class_info.my_json))
+    # widget.stateChanged.connect(partial(get_values, dialog, widget, class_info.my_json))
     return widget
 
 

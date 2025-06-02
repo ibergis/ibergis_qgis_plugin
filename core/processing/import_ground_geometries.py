@@ -175,16 +175,16 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
         # set unique fields
         feedback.setProgress(15)
-        self.unique_fields = {'custom_code':[]}
+        self.unique_fields = {'custom_code': []}
 
         # delete innecesary values from geometry
         if self.bool_selected_features:
             result = processing.run("native:dropmzvalues", {
             'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(), selectedFeaturesOnly=True,
                 featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
-                , 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True, 'OUTPUT':'memory:'})
+                , 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
         else:
-            result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True, 'OUTPUT':'memory:'})
+            result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
         self.converted_geometries_layer = result['OUTPUT']
 
         return {}
@@ -267,7 +267,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                     attributes[target_field_names.index(tgt_field)] = src_value
             feedback.setProgress(tools_dr.lerp_progress(int(feature_index*100/num_features), 16, 90))
             feature_index += 1
-            if(repeated_params):
+            if (repeated_params):
                 continue
             new_feature.setAttributes(attributes)
             if not feature.geometry().isGeosValid():

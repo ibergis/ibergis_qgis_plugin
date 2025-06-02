@@ -362,7 +362,7 @@ class DrI18NGenerator:
             lang_colums = [f"lb_{self.lower_lang}", f"auto_lb_{self.lower_lang}", f"va_auto_lb_{self.lower_lang}"]
 
         # Make the query
-        sql=""
+        sql = ""
         if self.lower_lang == 'en_us':
             sql = (f"SELECT {", ".join(columns)} "
                f"FROM {table} "
@@ -390,7 +390,7 @@ class DrI18NGenerator:
         forenames = [col.split("_")[0] for col in columns if col.endswith("en_us")]
 
         for row_sqlite in rows:
-            row = dict(row_sqlite) # Convert sqlite3.Row to dict
+            row = dict(row_sqlite)  # Convert sqlite3.Row to dict
             texts = []
             for forename in forenames:
                 value = row.get(f'{forename}_{self.lower_lang}')
@@ -448,17 +448,17 @@ class DrI18NGenerator:
         values_by_context = {}
 
         updates = {}
-        for row_sqlite in rows: # Iterate over sqlite3.Row objects
-            row_dict = dict(row_sqlite) # Convert to dict for .get() and modification
+        for row_sqlite in rows:  # Iterate over sqlite3.Row objects
+            row_dict = dict(row_sqlite)  # Convert to dict for .get() and modification
             # Set key depending on context
             if row_dict["context"] == "config_form_fields":
                 closing = True
                 key = (row_dict["source"], row_dict["context"], row_dict["text"], row_dict["formname"], row_dict["formtype"])
             else:
                 key = (row_dict["source"], row_dict["context"], row_dict["text"])
-            updates.setdefault(key, []).append(row_dict) # Store the dict
+            updates.setdefault(key, []).append(row_dict)  # Store the dict
 
-        for key, related_rows_dicts in updates.items(): # related_rows_dicts are now lists of dicts
+        for key, related_rows_dicts in updates.items():  # related_rows_dicts are now lists of dicts
             # Unpack key
             source, context, original_text, *extra = key
             
@@ -489,8 +489,8 @@ class DrI18NGenerator:
                     continue
 
             # Translate fields
-            for row_dict in related_rows_dicts: # Iterate over dicts
-                key_hint = row_dict["hint"].split('_')[0] # Use dict access
+            for row_dict in related_rows_dicts:  # Iterate over dicts
+                key_hint = row_dict["hint"].split('_')[0]  # Use dict access
                 default_text = row_dict.get("lb_en_us", "")
                 translated = (
                     row_dict.get(f"lb_{self.lower_lang}") or
@@ -539,13 +539,13 @@ class DrI18NGenerator:
 
                 if context == "config_form_fields":
                     values_str = ",\n    ".join([
-                        f"('{item_row['source']}', '{item_row['formname']}', '{item_row['formtype']}', '{txt}')" # Use item_row as dict
+                        f"('{item_row['source']}', '{item_row['formname']}', '{item_row['formtype']}', '{txt}')"  # Use item_row as dict
                         for source_id, item_row, txt, col in data
                     ])
                     file.write(f"UPDATE {context} AS t\nSET {column} = v.text::json\nFROM (\n    VALUES\n    {values_str}\n) AS v(columnname, formname, formtype, text)\nWHERE t.columnname = v.columnname AND t.formname = v.formname AND t.formtype = v.formtype;\n\n")
                 else:
                     values_str = ",\n    ".join([
-                        f"({source_id}, '{txt}')" # Use source_id from the tuple
+                        f"({source_id}, '{txt}')"  # Use source_id from the tuple
                         for source_id, item_row, txt, col in data
                     ])
                     file.write(f"UPDATE {context} AS t\nSET {column} = v.text::json\nFROM (\n    VALUES\n    {values_str}\n) AS v(id, text)\nWHERE t.id = v.id;\n\n")

@@ -133,7 +133,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                     temporal_layer.updateFields()
                     features_to_add: list[QgsFeature] = []
 
-                columns_dict: dict[str,int] = {}
+                columns_dict: dict[str, int] = {}
 
                 # Check features
                 for feature in features:
@@ -220,7 +220,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         # Get columns
         if query['columns'] is None:
-            #TODO error message
+            # TODO error message
             return check_query
         columns = query['columns'].strip("{}").split(", ")
         columns_select: Optional[str] = None

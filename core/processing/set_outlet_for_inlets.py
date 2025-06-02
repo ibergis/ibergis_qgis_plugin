@@ -41,8 +41,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
     BOOL_SELECTED_INLET_FEATURES = 'BOOL_SELECTED_INLET_FEATURES'
     BOOL_SELECTED_PINLET_FEATURES = 'BOOL_SELECTED_PINLET_FEATURES'
 
-    nearest_valid_inlet_outlets: Optional[dict[str,Optional[str]]] = None
-    nearest_valid_pinlet_outlets: Optional[dict[str,Optional[str]]] = None
+    nearest_valid_inlet_outlets: Optional[dict[str, Optional[str]]] = None
+    nearest_valid_pinlet_outlets: Optional[dict[str, Optional[str]]] = None
 
     file_inlets: QgsVectorLayer = None
     file_pinlets: QgsVectorLayer = None
@@ -148,14 +148,14 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                     nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
                     'INPUT': self.file_inlets,
                     'INPUT_2': file_outlets,
-                    'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                    'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                    'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                    'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
                 else:
                     nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
                     'INPUT': QgsProcessingFeatureSourceDefinition(self.file_inlets.source(), selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
                     'INPUT_2': file_outlets,
-                    'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                    'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                    'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                    'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
                 self.nearest_valid_inlet_outlets = self.getNearestValidOutlets(nearest_inlet_outlets, feedback, True)
             except:
                 self.nearest_valid_inlet_outlets = None
@@ -165,14 +165,14 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                     nearest_pinlet_outlets = processing.run("native:joinbynearest", {
                         'INPUT': self.file_pinlets,
                         'INPUT_2': file_outlets,
-                        'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                        'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                        'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
                 else:
                     nearest_pinlet_outlets = processing.run("native:joinbynearest", {
                         'INPUT': QgsProcessingFeatureSourceDefinition(self.file_pinlets.source(), selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
                         'INPUT_2': file_outlets,
-                        'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                        'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                        'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
                 self.nearest_valid_pinlet_outlets = self.getNearestValidOutlets(nearest_pinlet_outlets, feedback, False)
             except:
                 self.nearest_valid_pinlet_outlets = None
@@ -357,11 +357,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         feedback.setProgress(100)
         return {}
 
-    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback, isInlet: bool = True) -> Optional[dict[str,Optional[str]]]:
+    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback, isInlet: bool = True) -> Optional[dict[str, Optional[str]]]:
         """
         Get nearest valid outlet for each inlet/pinlet from nearest layer.
         """
-        nearest_outlets: dict[str,Optional[str]] = {}
+        nearest_outlets: dict[str, Optional[str]] = {}
         nearest_outlets_list = {}
 
         # Group nearest outlets by inlet/pinlet code
@@ -403,7 +403,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             if inlet_code in nearest_outlets_list.keys():
                 nearest_outlets_list[inlet_code]['outlets'].append(outlet_values)
             else:
-                nearest_outlets_list[inlet_code] = {'elev' : feature['top_elev'], 'outlets': [outlet_values]}
+                nearest_outlets_list[inlet_code] = {'elev': feature['top_elev'], 'outlets': [outlet_values]}
             if inlet_code in skipped_near_features and inlet_code in nearest_outlets_list:
                 if nearest_outlets_list[inlet_code] is not None:
                     if isInlet:

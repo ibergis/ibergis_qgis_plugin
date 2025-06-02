@@ -34,7 +34,7 @@ try:
     def get_vertices():
         # getNodes returns: node_tags, coord, parametric_coord
         vertices: np.ndarray
-        _, vertices, _ = gmsh.model.mesh.getNodes() # type: ignore
+        _, vertices, _ = gmsh.model.mesh.getNodes()  # type: ignore
         # Return x and y
         return vertices.reshape((-1, 3))[:, :2]
 
@@ -42,7 +42,7 @@ try:
     def get_faces():
         element_types: np.ndarray
         node_tags: np.ndarray
-        element_types, _, node_tags = gmsh.model.mesh.getElements() # type: ignore
+        element_types, _, node_tags = gmsh.model.mesh.getElements()  # type: ignore
         tags = {etype: tags for etype, tags in zip(element_types, node_tags)}
         _TRIANGLE = 2
         _QUAD = 3
@@ -68,7 +68,7 @@ try:
     def clean_geometries(
             gdf: gpd.GeoDataFrame, tolerance: float, feedback: QgsFeedback
         ) -> Optional[gpd.GeoDataFrame]:
-        data: gpd.GeoDataFrame = gdf.copy() # type: ignore
+        data: gpd.GeoDataFrame = gdf.copy()  # type: ignore
 
         # Extract vertices from polygons. Keep information on how to reconstruct the polygon
         points = []
@@ -97,12 +97,12 @@ try:
                 "moved": False,
                 "anchor": False,
             },
-        ) # type: ignore
+        )  # type: ignore
 
         join: gpd.GeoDataFrame = vertices.sjoin_nearest(
             vertices, max_distance=tolerance, distance_col="dist", exclusive=True
         )
-        join = join[join["dist"] > 1e-5] # type: ignore
+        join = join[join["dist"] > 1e-5]  # type: ignore
 
         indices, counts = np.unique(join.index, return_counts=True)
         for i, count in zip(indices, counts):
@@ -144,7 +144,7 @@ try:
             data.loc[polygon_id, "geometry"] = shapely.Polygon(exterior, interiors)
 
         data.geometry = data.geometry.buffer(0)
-        data = data[~data.is_empty] # type: ignore
+        data = data[~data.is_empty]  # type: ignore
         return data
 
     def layer_to_gdf(layer: QgsVectorLayer, fields: list = [], only_selected: bool = False) -> gpd.GeoDataFrame:
@@ -172,9 +172,9 @@ try:
                 val = feature[field]
                 data[field].append(val if val else None)
 
-        gdf = gpd.GeoDataFrame(geometry=geoms, data=data) # type: ignore
-        gdf: gpd.GeoDataFrame = gdf.explode(ignore_index=True) # type: ignore
-        gdf["geometry"] = gdf["geometry"].normalize() # type: ignore
+        gdf = gpd.GeoDataFrame(geometry=geoms, data=data)  # type: ignore
+        gdf: gpd.GeoDataFrame = gdf.explode(ignore_index=True)  # type: ignore
+        gdf["geometry"] = gdf["geometry"].normalize()  # type: ignore
 
         return gdf
 
@@ -222,7 +222,7 @@ try:
         else:
             line_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": []}, crs=data.crs
-            ) # type: ignore
+            )  # type: ignore
 
         point_anchors = None
         if point_anchor_layer is not None:
@@ -230,7 +230,7 @@ try:
         else:
             point_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": [], "z_value": []}, crs=data.crs
-            ) # type: ignore
+            )  # type: ignore
         print(f"Done! {time.time() - start}s")
 
         if do_clean_up:

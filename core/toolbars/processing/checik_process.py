@@ -10,7 +10,7 @@ except ImportError:
 import shapely
 import shapely.validation
 import numpy as np
-#from guppy import hpy
+# from guppy import hpy
 # from tqdm import tqdm
 
 
@@ -114,7 +114,7 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
     overlap = data.overlay(data, how="intersection", keep_geom_type=False)
     overlap = overlap.loc[overlap["name_1"] != overlap["name_2"]]
     overlap = overlap.explode()
-    overlap = overlap.loc[overlap.geometry.geom_type=='Polygon']
+    overlap = overlap.loc[overlap.geometry.geom_type == 'Polygon']
     print(overlap)
     
     layer = QgsVectorLayer("Polygon", "temp", "memory")
@@ -128,6 +128,6 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
     layer.updateExtents()
     
     context.temporaryLayerStore().addMapLayer(layer)
-    context.addLayerToLoadOnCompletion(layer.id(),QgsProcessingContext.LayerDetails('INTERSECTING',context.project(),'LAYER'))
+    context.addLayerToLoadOnCompletion(layer.id(), QgsProcessingContext.LayerDetails('INTERSECTING', context.project(), 'LAYER'))
     
     return {"OUTPUT": layer}

@@ -275,9 +275,9 @@ class DrCreateMeshTask(DrTask):
 
             # Get ground roughness
             roughness_from_raster = False
-            if self.roughness_layer is None: # Fill with zeros
+            if self.roughness_layer is None:  # Fill with zeros
                 ground_triangles_df["roughness"] = 0
-            elif self.roughness_layer == "ground_layer": # From ground layer
+            elif self.roughness_layer == "ground_layer":  # From ground layer
                 print("Getting roughness from ground layer... ", end="")
                 start = time.time()
 
@@ -292,7 +292,7 @@ class DrCreateMeshTask(DrTask):
                 # ground_triangles_df["roughness"] = ground_triangles_df["custom_roughness"].fillna()
                 ground_triangles_df["roughness"] = ground_triangles_df.apply(get_roughness, axis=1)
                 print(f"Done! {time.time() - start}s")
-            else: # From raster layer
+            else:  # From raster layer
                 ground_triangles_df["roughness"] = np.nan
                 roughness_from_raster = True
 
@@ -328,9 +328,9 @@ class DrCreateMeshTask(DrTask):
                     "start_time": new_var,
                 }
 
-                if self.losses_layer == "ground_layer": # From ground layer
-                    pass # already calculated
-                else: # From raster layer
+                if self.losses_layer == "ground_layer":  # From ground layer
+                    pass  # already calculated
+                else:  # From raster layer
                     losses_from_raster = True
 
             # Vertices
@@ -411,7 +411,7 @@ class DrCreateMeshTask(DrTask):
             ])
             if not roofs_df.empty:
                 roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
-                roofs_df.index = roofs_df["fid"] # type: ignore
+                roofs_df.index = roofs_df["fid"]  # type: ignore
 
             bridges_df = self._create_bridges_df(triangles_df, vertices_df)
             print(f"Bridges: {bridges_df}")
@@ -628,7 +628,7 @@ class DrCreateMeshTask(DrTask):
             last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
             edges = chain(self.pairwise(vert), last_edge)
             for side, verts in enumerate(edges, start=1):
-                #edge = frozenset(verts)
+                # edge = frozenset(verts)
                 feature_edges[verts] = (pol.Index, side)
 
             if self.feedback.isCanceled():

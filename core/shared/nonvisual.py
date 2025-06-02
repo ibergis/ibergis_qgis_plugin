@@ -1444,18 +1444,18 @@ class DrNonVisual:
                     if x == 1 and type(value) == str:
                         # Convert to HH:mm time format
                         for i in range(0, len(time_formats_list)):
-                            value = QTime.fromString(item.data(0), time_formats_list[i]) # Try to convert
+                            value = QTime.fromString(item.data(0), time_formats_list[i])  # Try to convert
                             if not value.isNull():
-                                value = value.toString(output_time_format if time_formats_list[i] != 'HH:mm:ss' else output_time_format+':ss') # Convert QTime to string
+                                value = value.toString(output_time_format if time_formats_list[i] != 'HH:mm:ss' else output_time_format+':ss')  # Convert QTime to string
                                 break
                         if type(value) != str and value.isNull():
                             invalid_times.append(item.data(0))
                     elif x == 0 and type(value) == str:
                         # Convert to MM/dd/yyyy date format
                         for i in range(0, len(date_formats_list)):
-                            value = QDate.fromString(item.data(0), date_formats_list[i]) # Try to convert
+                            value = QDate.fromString(item.data(0), date_formats_list[i])  # Try to convert
                             if not value.isNull():
-                                value = value.toString(output_date_format) # Convert QDate to string
+                                value = value.toString(output_date_format)  # Convert QDate to string
                                 break
                         if type(value) != str and value.isNull():
                             invalid_dates.append(item.data(0))
@@ -1759,9 +1759,9 @@ class DrNonVisual:
                         'PP': {'lbl_surface_side_slope', 'txt_5_surface_side_slope', 'lbl_drain_delay', 'txt_4_drain_delay'},
                         'RB': {'lbl_seepage_rate', 'txt_3_seepage_rate', 'lbl_clogging_factor_storage', 'txt_4_clogging_factor_storage'},
                         'RD': {'lbl_vegetation_volume', 'txt_2_vegetation_volume', 'lbl_surface_side_slope', 'txt_5_surface_side_slope',
-                               'lbl_flow_exponent','lbl_offset', 'lbl_drain_delay', 'lbl_open_level',
+                               'lbl_flow_exponent', 'lbl_offset', 'lbl_drain_delay', 'lbl_open_level',
                                'lbl_closed_level', 'lbl_control_curve', 'lbl_flow_description', 'txt_2_flow_exponent',
-                               'txt_3_offset', 'txt_4_drain_delay', 'txt_5_open_level', 'txt_6_closed_level', 'txt_7_cmb_control_curve',},
+                               'txt_3_offset', 'txt_4_drain_delay', 'txt_5_open_level', 'txt_6_closed_level', 'txt_7_cmb_control_curve', },
                         'VS': {''}}
 
         # Hide widgets in list
@@ -1798,7 +1798,7 @@ class DrNonVisual:
         """ Manage accept button (insert & update) """
 
         # Variables
-        cmb_lidtype=dialog.cmb_lidtype
+        cmb_lidtype = dialog.cmb_lidtype
         txt_lidco_id = dialog.txt_name
 
         # Get widget values

@@ -510,7 +510,7 @@ class DrToolBoxButton(DrAction):
                 value = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
                                                    "session")
                 tools_qt.set_checked(dialog, widget, value)
-            elif type(widget) is QComboBox and widget.property('selectedId') in (None,'','NULL'):
+            elif type(widget) is QComboBox and widget.property('selectedId') in (None, '', 'NULL'):
                 value = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
                                                    "session")
                 if value in (None, '', 'NULL') and widget.property('selectedId') not in (None, '', 'NULL'):

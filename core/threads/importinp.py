@@ -34,7 +34,7 @@ class DrImportInpTask(DrTask):
         self.gpkg_path = gpkg_path
         self.save_folder = save_folder
         self.feedback = feedback
-        self.dividers_to_update: dict[str,str] = {}
+        self.dividers_to_update: dict[str, str] = {}
 
     def cancel(self):
         super().cancel()
@@ -112,7 +112,7 @@ class DrImportInpTask(DrTask):
     def _manage_params(self) -> dict:
         params = {
             "INP_FILE": self.input_file,
-            "GEODATA_DRIVER": 1, # 1: GPKG
+            "GEODATA_DRIVER": 1,  # 1: GPKG
             "SAVE_FOLDER": self.save_folder,
             "PREFIX": "",
             "DATA_CRS": f"EPSG:{global_vars.project_epsg}",

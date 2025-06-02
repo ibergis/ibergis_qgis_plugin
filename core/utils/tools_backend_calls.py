@@ -534,7 +534,7 @@ def fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields):
     return complet_list, widget_list
 
 
-def get_filter_qtableview(dialog, widget_list, complet_result, filter_fields = ''):
+def get_filter_qtableview(dialog, widget_list, complet_result, filter_fields=''):
 
     for widget in widget_list:
         if widget.property('isfilter'):

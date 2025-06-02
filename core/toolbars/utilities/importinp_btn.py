@@ -44,7 +44,7 @@ class DrImportINPButton(DrAction):
             self._progress_changed("EPSG Error", None, f"Invalid or missing EPSG: {global_vars.project_epsg}", True)
             return False
         dlg = self.dlg_import
-        self.feedback = Feedback(0,70,40)
+        self.feedback = Feedback(0, 70, 40)
         if not self._validate_inputs():
             return
         self._save_user_values()

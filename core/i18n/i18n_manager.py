@@ -350,7 +350,7 @@ class DrSchemaI18NManager:
         return query
     
     # endregion
-    #region Python
+    # region Python
     def _update_py_dialogs(self):
         # Make the user know what is being done
         self.project_type = "python"
@@ -616,7 +616,7 @@ class DrSchemaI18NManager:
         # writen to be detected by the automatical finder of pymessages
         message = "File"
 
-    #endregion
+    # endregion
     # region Global funcitons
 
     def detect_table_func(self, table):

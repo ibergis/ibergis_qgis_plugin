@@ -190,14 +190,14 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
         """ Configure style and temporal configuration to layer """
 
         # Set main colors
-        main_colors: dict = {0: QColor(0,0,255), 0.5: QColor(0,255,255), 1: QColor(0,255,0), 1.5: QColor(255,255,0), 2: QColor(255,0,0)}
+        main_colors: dict = {0: QColor(0, 0, 255), 0.5: QColor(0, 255, 255), 1: QColor(0, 255, 0), 1.5: QColor(255, 255, 0), 2: QColor(255, 0, 0)}
 
         # Create color ramp
         color_items = self.createColorRamp(main_colors, 0, 2)
 
         # Create shader
         shader = QgsRasterShader()
-        color_ramp = QgsColorRampShader(0,2)
+        color_ramp = QgsColorRampShader(0, 2)
         color_ramp.setColorRampItemList(color_items)
         color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
         shader.setRasterShaderFunction(color_ramp)
@@ -269,7 +269,7 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
             color_items.append(QgsColorRampShader.ColorRampItem(val, color, f"{val}".replace('.', ',')))
         if min_invisible:
             # Set minimum value(-9999) invisible
-            color_items.insert(0, QgsColorRampShader.ColorRampItem(-9999.0, QColor(0,0,0,0), "-9999.0"))
+            color_items.insert(0, QgsColorRampShader.ColorRampItem(-9999.0, QColor(0, 0, 0, 0), "-9999.0"))
 
         return color_items
 

@@ -263,7 +263,7 @@ def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None, bridges_fp=None):
     roofs_df['isconnected'] = roofs_df['isconnected'].astype(np.int32)
     # roofs_df['outlet_code'] = roofs_df['outlet_code'].astype(???)
     roofs_df['fid'] = roofs_df['fid'].astype(np.uint32)
-    roofs_df.index = roofs_df['fid'] # type: ignore
+    roofs_df.index = roofs_df['fid']  # type: ignore
 
     bridge_rows = []
     if bridges_fp:
