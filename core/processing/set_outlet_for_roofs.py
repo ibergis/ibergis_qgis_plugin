@@ -19,7 +19,9 @@ from qgis.core import (
     QgsSymbol,
     QgsRendererCategory,
     QgsCategorizedSymbolRenderer,
-    QgsFeature
+    QgsFeature,
+    QgsFeatureRequest,
+    QgsProcessingFeatureSourceDefinition
 )
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
@@ -39,6 +41,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
     FILE_ELEV_RASTER = 'FILE_ELEV_RASTER'
     FILE_OUTLETS = 'FILE_OUTLETS'
     BOOL_FORCE_BELOWS = 'BOOL_FORCE_BELOWS'
+    BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
 
     nearest_valid_roof_outlets: Optional[dict[str,Optional[str]]] = None
 
@@ -48,6 +51,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
     skipped_roofs: list[str] = []
     below_roofs: list[str] = []
     skipped_from_near: int = 0
+    bool_selected_features: bool = False
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -65,6 +69,12 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         if roof_layer:
             roof_layer_param.setDefaultValue(roof_layer)
         self.addParameter(roof_layer_param)
+
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
 
         elev_raster_layer: QgsRasterLayer = tools_qgis.get_layer_by_layername('dem')
         elev_raster_layer_param = QgsProcessingParameterRasterLayer(
@@ -110,6 +120,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         file_elev_raster: QgsRasterLayer = self.parameterAsRasterLayer(parameters, self.FILE_ELEV_RASTER, context)
         file_outlets: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_OUTLETS, context)
         self.bool_force_belows: bool = self.parameterAsBoolean(parameters, self.BOOL_FORCE_BELOWS, context)
+        self.bool_selected_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_FEATURES, context)
         feedback.setProgress(10)
 
         # Get roof layer with minimum elevation for each feature
@@ -125,10 +136,10 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         if self.file_roofs:
             try:
                 nearest_roof_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
-                    'INPUT': self.roof_elev_layer,
-                    'INPUT_2': file_outlets,
-                    'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                    'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                'INPUT': self.roof_elev_layer,
+                'INPUT_2': file_outlets,
+                'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
+                'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
                 self.nearest_valid_roof_outlets = self.getNearestValidOutlets(nearest_roof_outlets, feedback)
             except:
                 self.nearest_valid_roof_outlets = None
@@ -154,8 +165,15 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         roof_point_layer: Optional[QgsVectorLayer] = None
 
         try:
-            result = processing.run("native:zonalstatisticsfb", {
+            if not self.bool_selected_features:
+                result = processing.run("native:zonalstatisticsfb", {
                 'INPUT':roof_layer,
+                'INPUT_RASTER':raster_layer,
+                'RASTER_BAND':1,'COLUMN_PREFIX':'elev_','STATISTICS':[5],'OUTPUT':'memory:'})
+            else:
+                result = processing.run("native:zonalstatisticsfb", {
+                'INPUT':QgsProcessingFeatureSourceDefinition(roof_layer.source(), selectedFeaturesOnly=True,
+                featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
                 'INPUT_RASTER':raster_layer,
                 'RASTER_BAND':1,'COLUMN_PREFIX':'elev_','STATISTICS':[5],'OUTPUT':'memory:'})
             if result:
@@ -362,12 +380,6 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
 
     def displayName(self):
         return self.tr('Set Outlet for Roofs')
-
-    def group(self):
-        return self.tr(self.groupId())
-
-    def groupId(self):
-        return ''
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

@@ -17,7 +17,9 @@ from qgis.core import (
     QgsSymbol,
     QgsRendererCategory,
     QgsCategorizedSymbolRenderer,
-    QgsFeature
+    QgsFeature,
+    QgsFeatureRequest,
+    QgsProcessingFeatureSourceDefinition
 )
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
@@ -37,6 +39,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
     FILE_PINLETS = 'FILE_PINLETS'
     FILE_OUTLETS = 'FILE_OUTLETS'
     BOOL_FORCE_BELOWS = 'BOOL_FORCE_BELOWS'
+    BOOL_SELECTED_INLET_FEATURES = 'BOOL_SELECTED_INLET_FEATURES'
+    BOOL_SELECTED_PINLET_FEATURES = 'BOOL_SELECTED_PINLET_FEATURES'
 
     nearest_valid_inlet_outlets: Optional[dict[str,Optional[str]]] = None
     nearest_valid_pinlet_outlets: Optional[dict[str,Optional[str]]] = None
@@ -50,6 +54,9 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
     below_pinlets: list[str] = []
     skipped_from_near_inlet: int = 0
     skipped_from_near_pinlet: int = 0
+    bool_selected_inlet_features: bool = False
+    bool_selected_pinlet_features: bool = False
+
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -68,6 +75,12 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             inlet_layer_param.setDefaultValue(inlet_layer)
         self.addParameter(inlet_layer_param)
 
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_INLET_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
+
         pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('pinlet')
         pinlet_layer_param = QgsProcessingParameterVectorLayer(
                 name=self.FILE_PINLETS,
@@ -78,6 +91,12 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         if pinlet_layer:
             pinlet_layer_param.setDefaultValue(pinlet_layer)
         self.addParameter(pinlet_layer_param)
+
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_PINLET_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
 
         outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
         outlet_layer_param = QgsProcessingParameterVectorLayer(
@@ -114,6 +133,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         self.file_pinlets: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_PINLETS, context)
         file_outlets: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_OUTLETS, context)
         self.bool_force_belows: bool = self.parameterAsBoolean(parameters, self.BOOL_FORCE_BELOWS, context)
+        self.bool_selected_inlet_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_INLET_FEATURES, context)
+        self.bool_selected_pinlet_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_PINLET_FEATURES, context)
         feedback.setProgress(10)
 
         neighbor_limit: int = 10
@@ -125,8 +146,15 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         if self.file_inlets:
             try:
-                nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
+                if not self.bool_selected_inlet_features:
+                    nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
                     'INPUT': self.file_inlets,
+                    'INPUT_2': file_outlets,
+                    'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
+                    'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                else:
+                    nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
+                    'INPUT': QgsProcessingFeatureSourceDefinition(self.file_inlets.source(), selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
                     'INPUT_2': file_outlets,
                     'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
                     'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
@@ -135,11 +163,18 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                 self.nearest_valid_inlet_outlets = None
         if self.file_pinlets:
             try:
-                nearest_pinlet_outlets = processing.run("native:joinbynearest", {
-                    'INPUT': self.file_pinlets,
-                    'INPUT_2': file_outlets,
-                    'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                    'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                if not self.bool_selected_pinlet_features:
+                    nearest_pinlet_outlets = processing.run("native:joinbynearest", {
+                        'INPUT': self.file_pinlets,
+                        'INPUT_2': file_outlets,
+                        'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
+                        'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                else:
+                    nearest_pinlet_outlets = processing.run("native:joinbynearest", {
+                        'INPUT': QgsProcessingFeatureSourceDefinition(self.file_pinlets.source(), selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                        'INPUT_2': file_outlets,
+                        'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
+                        'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
                 self.nearest_valid_pinlet_outlets = self.getNearestValidOutlets(nearest_pinlet_outlets, feedback, False)
             except:
                 self.nearest_valid_pinlet_outlets = None
@@ -454,12 +489,6 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
     def displayName(self):
         return self.tr('Set Outlet for Inlets')
-
-    def group(self):
-        return self.tr(self.groupId())
-
-    def groupId(self):
-        return ''
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)
