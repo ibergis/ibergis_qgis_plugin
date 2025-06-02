@@ -735,7 +735,7 @@ class DrAdminButton(DrGpkgBase):
         if not config_dao:
             config_dao = self.gpkg_dao_config
 
-        sql_select = f"SELECT columnname, vdefault FROM config_form_fields WHERE formtype = 'form_options'"
+        sql_select = "SELECT columnname, vdefault FROM config_form_fields WHERE formtype = 'form_options'"
         rows = config_dao.get_rows(sql_select)
 
         if not rows:
@@ -743,10 +743,10 @@ class DrAdminButton(DrGpkgBase):
 
         for row in rows:
             data = (row[0], row[1])
-            sql_insert = f"INSERT INTO config_param_user (parameter, value) VALUES (?,?)"
+            sql_insert = "INSERT INTO config_param_user (parameter, value) VALUES (?,?)"
             try:
                 global_vars.gpkg_dao_data.execute_sql_placeholder(sql_insert, data)
-            except Exception as e:
+            except Exception:
                 msg = "Error executing SQL: {0}\nDatabase error: {1}"
                 msg_params = (sql_insert, global_vars.gpkg_dao_data.last_error,)
                 tools_log.log_warning(msg, msg_params=msg_params)
@@ -765,7 +765,7 @@ class DrAdminButton(DrGpkgBase):
             sql = f"UPDATE config_param_user SET value = '{value}' WHERE parameter='{key}'"
             try:
                 global_vars.gpkg_dao_data.execute_sql(sql)
-            except Exception as e:
+            except Exception:
                 msg = "Error executing SQL: {0}\nDatabase error: {1}"
                 msg_params = (sql, global_vars.gpkg_dao_data.last_error,)
                 tools_log.log_warning(msg, msg_params=msg_params)
@@ -860,7 +860,7 @@ class DrAdminButton(DrGpkgBase):
 
     def _select_active_locales(self):
 
-        sql = f"SELECT locale as id, name as idval FROM locales WHERE active = 1"
+        sql = "SELECT locale as id, name as idval FROM locales WHERE active = 1"
         rows = self.gpkg_dao_config.get_rows(sql)
         return rows
 

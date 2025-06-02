@@ -116,7 +116,7 @@ for table_name in table_names:
         """
     cursor.execute(query)
 
-cursor.execute(f"SELECT * FROM gpkg_contents ;")
+cursor.execute("SELECT * FROM gpkg_contents ;")
 
 tables = cursor.fetchall()
 print(tables)

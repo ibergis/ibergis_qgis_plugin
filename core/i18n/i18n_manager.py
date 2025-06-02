@@ -8,18 +8,15 @@ or (at your option) any later version.
 import re
 import os
 import sqlite3
-from psycopg2.extras import execute_values
 from functools import partial
-from datetime import datetime, date
 from itertools import product
 
 
 from ..ui.ui_manager import DrSchemaI18NManagerUi
 from ..utils import tools_dr
-from ...lib import tools_qt, tools_qgis, tools_db, tools_log, tools_os, tools_gpkgdao
+from ...lib import tools_qt
 from ... import global_vars
-from qgis.PyQt.QtWidgets import QLabel
-from PyQt5.QtWidgets import QApplication, QFileDialog
+from PyQt5.QtWidgets import QApplication
 
 
 class DrSchemaI18NManager:
@@ -379,7 +376,7 @@ class DrSchemaI18NManager:
             if coincidencias:
                 for num_line, content in coincidencias:
                     dialog_name, toolbar_name, source = self._search_dialog_info(file, keys[1], keys[2], num_line)
-                    pattern = rf'>(.*?)<'
+                    pattern = r'>(.*?)<'
                     match = re.search(pattern, content)
                     if match:
                         messages.append((match.group(1), dialog_name, toolbar_name, source))
@@ -521,7 +518,7 @@ class DrSchemaI18NManager:
 
                 try:
                     self.cursor_i18n.execute(query)
-                except Exception as e:
+                except Exception:
                     msg = "Error updating: {0}.\n"
                     msg_params = (message,)
                     tools_qt.show_exception_message(msg, msg_params=msg_params)
@@ -633,7 +630,7 @@ class DrSchemaI18NManager:
     # region Global funcitons
 
     def detect_table_func(self, table):
-        self.cursor_i18n.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?;", (table,))
+        self.cursor_i18n.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?;", (table,))
         table_exists = self.cursor_i18n.fetchone() is not None
         if table_exists:
             return True
@@ -653,7 +650,7 @@ class DrSchemaI18NManager:
             return rows
 
     def _vacuum_commit(self, conn, cursor):
-        cursor.execute(f"VACUUM")
+        cursor.execute("VACUUM")
         conn.commit()
 
     def _change_table_lyt(self, table):
@@ -705,7 +702,7 @@ class DrSchemaI18NManager:
 
     def _verify_lang(self):
         return True
-        query = f"SELECT language from sys_version"
+        query = "SELECT language from sys_version"
         self.cursor_org.execute(query)
         language_org = self.cursor_org.fetchone()[0]
         if language_org != 'en_US':

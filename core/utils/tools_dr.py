@@ -22,7 +22,7 @@ from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QSt
     QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, QToolButton, \
-    QWidget, QApplication, QDockWidget
+    QWidget, QDockWidget
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
@@ -310,7 +310,7 @@ def connect_signal(obj, pfunc, section, signal_name):
         signal = obj.connect(pfunc)
         global_vars.active_signals[section][signal_name] = (obj, signal, pfunc)
         return signal
-    except Exception as e:
+    except Exception:
         pass
     return None
 
@@ -340,7 +340,7 @@ def disconnect_signal(section, signal_name=None, pop=True):
     obj, signal, pfunc = global_vars.active_signals[section][signal_name]
     try:
         obj.disconnect(signal)
-    except Exception as e:
+    except Exception:
         pass
     finally:
         if pop:
@@ -361,16 +361,16 @@ def create_body(form='', feature='', filter_fields='', extras=None):
         client += f', "infoType":{info_type}'
     if global_vars.project_epsg is not None:
         client += f', "epsg":{global_vars.project_epsg}'
-    client += f'}}, '
+    client += '}, '
 
     form = f'"form":{{{form}}}, '
     feature = f'"feature":{{{feature}}}, '
     filter_fields = f'"filterFields":{{{filter_fields}}}'
-    page_info = f'"pageInfo":{{}}'
+    page_info = '"pageInfo":{}'
     data = f'"data":{{{filter_fields}, {page_info}'
     if extras is not None:
         data += ', ' + extras
-    data += f'}}}}'
+    data += '}}'
     body = "" + client + form + feature + data
 
     return body
@@ -873,7 +873,7 @@ def set_tabs_enabled(dialog):
 def set_style_mapzones():
     """ Puts the received styles, in the received layers in the json sent by the gw_fct_getstylemapzones function """
 
-    extras = f'"mapzones":""'
+    extras = '"mapzones":""'
     body = create_body(extras=extras)
     json_return = execute_procedure('gw_fct_getstylemapzones', body)
     if not json_return or json_return['status'] == 'Failed':
@@ -2287,7 +2287,7 @@ def set_tablemodel_config(dialog, widget, table_name, sort_order=0, isQStandardI
     if schema_name is not None:
         config_table = f"{schema_name}.config_form_tableview"
     else:
-        config_table = f"config_form_tableview"
+        config_table = "config_form_tableview"
 
     # Set width and alias of visible columns
     columns_to_delete = []
@@ -2366,7 +2366,7 @@ def add_tableview_header(widget, field):
             headers.append(x)
         # Set headers
         model.setHorizontalHeaderLabels(headers)
-    except Exception as e:
+    except Exception:
         # if field['value'][0] is None
         pass
 
@@ -2430,7 +2430,7 @@ def set_multi_completer_widget(tablenames: list, widget, fields_id: list, add_id
         sql += (f"SELECT DISTINCT({field_id}) as a"
                 f" FROM {tablename}")
         idx += 1
-    sql += f" ORDER BY a"
+    sql += " ORDER BY a"
 
     rows = tools_db.get_rows(sql)
     tools_qt.set_completer_rows(widget, rows)

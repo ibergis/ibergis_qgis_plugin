@@ -15,9 +15,8 @@ import json
 
 from ..ui.ui_manager import DrSchemaI18NUpdateUi
 from ..utils import tools_dr
-from ...lib import tools_qt, tools_qgis, tools_db,tools_log, tools_os, tools_gpkgdao
+from ...lib import tools_qt, tools_db
 from ... import global_vars
-from qgis.PyQt.QtWidgets import QLabel
 from PyQt5.QtWidgets import QApplication
 
 
@@ -555,7 +554,7 @@ class DrSchemaI18NUpdate:
         try:
             self.cursor_dest.execute(query)
             self._commit_dest()
-        except Exception as e:
+        except Exception:
             tools_db.dao.rollback()
 
     def _save_user_values(self):

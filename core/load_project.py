@@ -351,7 +351,7 @@ class DrLoadProject(QObject):
             except RuntimeError:
                 pass
         # Set background task 'ConfigLayerFields'
-        description = f"ConfigLayerFields"
+        description = "ConfigLayerFields"
         params = {}
         self.task_get_layers = DrProjectLayersConfig(description, params)
         QgsApplication.taskManager().addTask(self.task_get_layers)
@@ -440,7 +440,7 @@ class DrLoadProject(QObject):
     def _force_tab_exploitation(self):
         """ Select tab 'tab_exploitation' in dialog 'dlg_selector_basic' """
 
-        tools_dr.set_config_parser("dialogs_tab", f"dlg_selector_basic", f"tab_exploitation", "user", "session")
+        tools_dr.set_config_parser("dialogs_tab", "dlg_selector_basic", "tab_exploitation", "user", "session")
 
 
     def _manage_attribute_table(self):

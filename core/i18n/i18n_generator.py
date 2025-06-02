@@ -11,13 +11,12 @@ import subprocess
 from functools import partial
 import json
 import ast
-import shutil
 
 import sqlite3
 
 from ..ui.ui_manager import DrAdminTranslationUi
 from ..utils import tools_dr
-from ...lib import tools_qt, tools_qgis, tools_gpkgdao
+from ...lib import tools_qt
 from ... import global_vars
 
 from PyQt5.QtWidgets import QApplication, QFileDialog
@@ -147,15 +146,15 @@ class DrI18NGenerator:
 
         # Get python toolbars and buttons values
         if self.lower_lang == 'en_us':
-            sql = f"SELECT source, ms_en_us FROM pymessage;"  # ADD new columns
+            sql = "SELECT source, ms_en_us FROM pymessage;"  # ADD new columns
             py_messages = self._get_rows(sql, self.cursor_i18n)
-            sql = f"SELECT source, lb_en_us FROM pytoolbar;"
+            sql = "SELECT source, lb_en_us FROM pytoolbar;"
             py_toolbars = self._get_rows(sql, self.cursor_i18n)
             print(py_toolbars)
             # Get python dialog values
-            sql = (f"SELECT dialog_name, source, lb_en_us, tt_en_us"
-                f" FROM pydialog"
-                f" ORDER BY dialog_name;")
+            sql = ("SELECT dialog_name, source, lb_en_us, tt_en_us"
+                " FROM pydialog"
+                " ORDER BY dialog_name;")
             py_dialogs = self._get_rows(sql, self.cursor_i18n)
         else:
             sql = f"SELECT source, ms_en_us, {key_message}, auto_{key_message} FROM pymessage;"  # ADD new columns
@@ -192,7 +191,7 @@ class DrI18NGenerator:
         ts_file.write(line)
         for py_tlb in py_toolbars:
             py_tlb = dict(py_tlb)
-            line = f"\t\t<message>\n"
+            line = "\t\t<message>\n"
             line += f"\t\t\t<source>{py_tlb['source']}</source>\n"
             if py_tlb[key_label] is None:  # Afegir aqui l'auto amb un if
                 py_tlb[key_label] = py_tlb[f'auto_{key_label}']
@@ -202,7 +201,7 @@ class DrI18NGenerator:
                         py_tlb[key_label] = py_tlb['source']
 
             line += f"\t\t\t<translation>{py_tlb[key_label]}</translation>\n"
-            line += f"\t\t</message>\n"
+            line += "\t\t</message>\n"
             line = line.replace("&", "")
             ts_file.write(line)
 
@@ -212,14 +211,14 @@ class DrI18NGenerator:
         # Create children for message
         for py_msg in py_messages:
             py_msg = dict(py_msg)
-            line = f"\t\t<message>\n"
+            line = "\t\t<message>\n"
             line += f"\t\t\t<source>{py_msg['source']}</source>\n"
             if py_msg[key_message] is None:  # Afegir aqui l'auto amb un if
                 py_msg[key_message] = py_msg[f'auto_{key_message}']
                 if py_msg[f'auto_{key_message}'] is None:
                     py_msg[key_message] = py_msg['source']
             line += f"\t\t\t<translation>{py_msg[key_message]}</translation>\n"
-            line += f"\t\t</message>\n"
+            line += "\t\t</message>\n"
             line = line.replace("&", "")
             ts_file.write(line)
         line = '\t</context>\n\n'
@@ -242,13 +241,13 @@ class DrI18NGenerator:
                 line += f'\t\t<name>{name}</name>\n'
                 title = self._get_title(py_dialogs, name, key_label)
                 if title:
-                    line += f'\t\t<message>\n'
-                    line += f'\t\t\t<source>title</source>\n'
+                    line += '\t\t<message>\n'
+                    line += '\t\t\t<source>title</source>\n'
                     line += f'\t\t\t<translation>{title}</translation>\n'
-                    line += f'\t\t</message>\n'
+                    line += '\t\t</message>\n'
 
             # Create child for labels
-            line += f"\t\t<message>\n"
+            line += "\t\t<message>\n"
             line += f"\t\t\t<source>{py_dlg['source']}</source>\n"
             if py_dlg[key_label] is None:  # Afegir aqui l'auto amb un if
                 if self.lower_lang != 'en_us':
@@ -257,10 +256,10 @@ class DrI18NGenerator:
                     py_dlg[key_label] = py_dlg['lb_en_us']
 
             line += f"\t\t\t<translation>{py_dlg[key_label]}</translation>\n"
-            line += f"\t\t</message>\n"
+            line += "\t\t</message>\n"
 
             # Create child for tooltip
-            line += f"\t\t<message>\n"
+            line += "\t\t<message>\n"
             line += f"\t\t\t<source>tooltip_{py_dlg['source']}</source>\n"
             if py_dlg[key_tooltip] is None:  # Afegir aqui l'auto amb un if
                 if self.lower_lang != 'en_us':
@@ -268,7 +267,7 @@ class DrI18NGenerator:
                 if not py_dlg[key_tooltip]:  # Afegir aqui l'auto amb un if
                     py_dlg[key_tooltip] = py_dlg['tt_en_us']
             line += f"\t\t\t<translation>{py_dlg[key_tooltip]}</translation>\n"
-            line += f"\t\t</message>\n"
+            line += "\t\t</message>\n"
 
         # Close last context and TS
         line += '\t</context>\n'
@@ -571,19 +570,19 @@ class DrI18NGenerator:
         """
 
         file = open(path, "w")
-        header = (f'/*\n'
-                  f'This file is part of drain project software\n'
-                  f'The program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License '
-                  f'as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. '
-                  f'This version of Giswater is provided by Giswater Association.\n'
-                  f'*/\n\n\n')
+        header = ('/*\n'
+                  'This file is part of drain project software\n'
+                  'The program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License '
+                  'as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. '
+                  'This version of Giswater is provided by Giswater Association.\n'
+                  '*/\n\n\n')
         if file_type in ["i18n_ws", "i18n_ud"]:
-            header += (f'SET search_path = SCHEMA_NAME, public, pg_catalog;\n'
-                       f"UPDATE config_param_system SET value = FALSE WHERE parameter = 'admin_config_control_trigger';\n\n")
+            header += ('SET search_path = SCHEMA_NAME, public, pg_catalog;\n'
+                       "UPDATE config_param_system SET value = FALSE WHERE parameter = 'admin_config_control_trigger';\n\n")
         elif file_type == "am":
-            header += f'SET search_path = am, public;\n'
+            header += 'SET search_path = am, public;\n'
         elif file_type == "cm":
-            header += f'SET search_path = SCHEMA_NAME, public, pg_catalog;\n'
+            header += 'SET search_path = SCHEMA_NAME, public, pg_catalog;\n'
 
         file.write(header)
         file.close()

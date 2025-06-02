@@ -27,7 +27,7 @@ class DrGpkgDao(object):
         """ Initializes database connection (sqlite3) """
 
         if filename is None:
-            self.last_error = f"Database file path is not set"
+            self.last_error = "Database file path is not set"
             return False
         if not os.path.exists(filename):
             self.last_error = f"Database not found: {filename}"
@@ -171,7 +171,7 @@ class DrGpkgDao(object):
 
         try:
             self.conn.commit()
-        except Exception as e:
+        except Exception:
             pass
 
 

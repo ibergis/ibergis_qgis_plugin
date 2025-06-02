@@ -5,7 +5,6 @@ import glob
 import numpy as np
 import rasterio
 import xarray as xr
-import rioxarray
 from typing import List, Tuple, Optional
 try:
     from qgis.PyQt.QtCore import pyqtSignal
@@ -17,7 +16,7 @@ except ImportError:
 def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed: Optional[pyqtSignal]) -> None:
     if not os.path.exists(input_folder) and not os.path.isdir(input_folder):
         if progress_changed:
-            progress_changed.emit('Export results', None, f"Error: The rasters folder does not exist.", True)
+            progress_changed.emit('Export results', None, "Error: The rasters folder does not exist.", True)
         print("Error: The rasters folder does not exist.")
         return
 
@@ -100,7 +99,7 @@ def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed:
 
     if len(datasets) == 0:
         if progress_changed:
-            progress_changed.emit('Export results', None, f"Error: No data found in the dataset.", True)
+            progress_changed.emit('Export results', None, "Error: No data found in the dataset.", True)
         print("Error: No data found in the dataset.")
         return
 

@@ -7,14 +7,10 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 import os
 
-from qgis.core import QgsProject
 from qgis.PyQt import uic, QtCore
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QLineEdit
 
 from .dialog import DrDialog
 from .main_window import DrMainWindow
-from ...lib import tools_qgis, tools_qt
 
 # region private functions
 

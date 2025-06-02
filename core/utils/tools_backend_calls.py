@@ -10,8 +10,7 @@ import sys
 import subprocess
 import webbrowser
 
-from functools import partial
-from qgis.PyQt.QtCore import QDate, QRegExp, Qt
+from qgis.PyQt.QtCore import QDate, QRegExp
 from qgis.PyQt.QtWidgets import QDateEdit, QLineEdit, QTableView, QWidget
 from qgis.core import QgsEditorWidgetSetup, QgsFieldConstraints, QgsLayerTreeLayer, QgsVectorLayer
 from qgis.gui import QgsDateTimeEdit
@@ -645,7 +644,7 @@ def _reload_table(**kwargs):
             filter_fields = f'"{field_id}":{{"value":"{feature_id}","filterSign":"="}}'
 
         if no_tabs:
-            filter_fields = f''
+            filter_fields = ''
             widgetname = columnname
         linkedobject = table.property('linkedobject')
         complet_list, widget_list = fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields)

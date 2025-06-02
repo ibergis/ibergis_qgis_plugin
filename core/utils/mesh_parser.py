@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 from dataclasses import dataclass
-import os
 
 @dataclass
 class Mesh:

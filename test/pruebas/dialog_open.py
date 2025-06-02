@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     folder_path = os.getcwd()
     if not os.path.exists(folder_path):
-        print(f"File not found")
+        print("File not found")
     filename = 'dialog_designer.ui'
     filepath = os.path.join(folder_path, filename)
     dialog, form = open_dialog(filepath)

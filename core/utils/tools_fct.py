@@ -10,7 +10,7 @@ from datetime import datetime
 
 # -*- coding: utf-8 -*-
 from ... import global_vars
-from ...lib import tools_gpkgdao, tools_qgis, tools_qt, tools_db
+from ...lib import tools_db
 
 
 def getconfig(p_input: dict) -> dict:
@@ -52,9 +52,9 @@ def getconfig(p_input: dict) -> dict:
             v_widgets.append(widget_dict)
 
         # put values into widgets
-        v_sql = f"SELECT parameter, value " \
-                f"FROM config_param_user " \
-                f"ORDER BY parameter"
+        v_sql = "SELECT parameter, value " \
+                "FROM config_param_user " \
+                "ORDER BY parameter"
         v_raw_values = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         # Iterate through the raw values and update the corresponding widgets in v_widgets
@@ -164,7 +164,7 @@ def getselectors(p_input: dict) -> dict:
         v_return["body"]["form"]["currentTab"] = "tab_scenario"
         v_return["body"]["form"]["formTabs"] = []
 
-        v_sql = f"SELECT parameter, value from config_param_user WHERE parameter like 'basic_selector_%'"
+        v_sql = "SELECT parameter, value from config_param_user WHERE parameter like 'basic_selector_%'"
         rows = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         for row in rows:
@@ -287,7 +287,7 @@ def setselectors(p_input: dict) -> dict:
 def get_sectors():
     sectors = 'NULL'
 
-    sql = f'SELECT sector_id FROM selector_sector'
+    sql = 'SELECT sector_id FROM selector_sector'
     rows = global_vars.gpkg_dao_data.get_rows(sql)
     if rows:
         sectors = ", ".join(str(x[0]) for x in rows)
@@ -297,7 +297,7 @@ def get_sectors():
 def get_scenarios():
     scenarios = 'NULL'
 
-    sql = f'SELECT scenario_id FROM selector_scenario'
+    sql = 'SELECT scenario_id FROM selector_scenario'
     rows = global_vars.gpkg_dao_data.get_rows(sql)
     if rows:
         scenarios = ", ".join(str(x[0]) for x in rows)
