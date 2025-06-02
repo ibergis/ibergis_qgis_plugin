@@ -14,7 +14,10 @@ from qgis.core import (
     QgsFeature,
     QgsProcessingParameterDefinition,
     QgsProject,
-    QgsVectorLayer
+    QgsVectorLayer,
+    QgsProcessingParameterBoolean,
+    QgsProcessingFeatureSourceDefinition,
+    QgsFeatureRequest
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis, tools_gpkgdao
@@ -43,6 +46,9 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
     FIELD_STREET_VOL = 'FIELD_STREET_VOL'
     FIELD_INFILTR_VOL = 'FIELD_INFILTR_VOL'
     FIELD_ANNOTATION = 'FIELD_ANNOTATION'
+    BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
+
+    bool_selected_features: bool = False
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -184,6 +190,12 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         self.addParameter(infiltr_vol)
         self.addParameter(annotation)
 
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
+
 
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
@@ -216,18 +228,12 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
 
         # get roof layer
         self.file_target = tools_qgis.get_layer_by_tablename('roof')
-        if self.file_target is not None and global_vars.gpkg_dao_data is not None:
-            expected_schema_path: str = self.file_target.source().split('|')[0]
-            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
-                feedback.pushWarning(self.tr(f'Wrong Roof layer found: {self.file_target.source()}'))
-                return {}
-        else:
-            feedback.pushWarning(self.tr(f'Error getting expected roof layer'))
-            return {}
         if self.file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
             return {}
         feedback.setProgressText(self.tr('Target layer found.'))
+
+        self.bool_selected_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_FEATURES, context)
 
         # check layer types
         feedback.setProgressText(self.tr('Checking layer types.'))
@@ -241,7 +247,13 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         self.unique_fields = {'custom_code':[]}
 
         # delete innecesary values from geometry
-        result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True,'OUTPUT':'memory:'})
+        if self.bool_selected_features:
+            result = processing.run("native:dropmzvalues", {
+            'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(), selectedFeaturesOnly=True,
+                featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
+                , 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True, 'OUTPUT':'memory:'})
+        else:
+            result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True, 'OUTPUT':'memory:'})
         self.converted_geometries_layer = result['OUTPUT']
 
         return {}
@@ -426,12 +438,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
 
     def displayName(self):
         return self.tr('Import Roof geometries')
-
-    def group(self):
-        return self.tr(self.groupId())
-
-    def groupId(self):
-        return ''
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

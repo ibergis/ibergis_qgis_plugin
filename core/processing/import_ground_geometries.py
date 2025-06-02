@@ -14,7 +14,10 @@ from qgis.core import (
     QgsFeature,
     QgsProcessingParameterDefinition,
     QgsProject,
-    QgsVectorLayer
+    QgsVectorLayer,
+    QgsProcessingParameterBoolean,
+    QgsProcessingFeatureSourceDefinition,
+    QgsFeatureRequest
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis, tools_gpkgdao
@@ -38,6 +41,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
     FIELD_LANDUSE = 'FIELD_LANDUSE'
     FIELD_CUSTOM_ROUGHNESS = 'FIELD_CUSTOM_ROUGHNESS'
     FIELD_SCS_CN = 'FIELD_SCS_CN'
+    BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
+
+    bool_selected_features: bool = False
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -121,6 +127,12 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         self.addParameter(custom_roughness)
         self.addParameter(scs_cn)
 
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
+
 
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
@@ -148,18 +160,12 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
         # get ground layer
         self.file_target = tools_qgis.get_layer_by_tablename('ground')
-        if self.file_target is not None and global_vars.gpkg_dao_data is not None:
-            expected_schema_path: str = self.file_target.source().split('|')[0]
-            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
-                feedback.pushWarning(self.tr(f'Wrong Ground layer found: {self.file_target.source()}'))
-                return {}
-        else:
-            feedback.pushWarning(self.tr(f'Error getting expected ground layer'))
-            return {}
         if self.file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
             return
         feedback.setProgressText(self.tr('Target layer found.'))
+
+        self.bool_selected_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_FEATURES, context)
 
         # check layer types
         feedback.setProgressText(self.tr('Checking layer types.'))
@@ -173,7 +179,13 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         self.unique_fields = {'custom_code':[]}
 
         # delete innecesary values from geometry
-        result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True,'OUTPUT':'memory:'})
+        if self.bool_selected_features:
+            result = processing.run("native:dropmzvalues", {
+            'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(), selectedFeaturesOnly=True,
+                featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
+                , 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True, 'OUTPUT':'memory:'})
+        else:
+            result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True, 'OUTPUT':'memory:'})
         self.converted_geometries_layer = result['OUTPUT']
 
         return {}
@@ -203,8 +215,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         field_map_name: str = 'landuse'
         if field_map['landuse'] is not None:
             field_map_name = field_map['landuse']
+
         for feature in source_layer.getFeatures():
-            if feature[field_map_name] not in landuse_types and feature[field_map_name] not in unexistent_landuses and feature[field_map_name] not in ['NULL', None, 'null']:
+            if field_map_name in feature.attributes() and feature[field_map_name] not in landuse_types and feature[field_map_name] not in unexistent_landuses and feature[field_map_name] not in ['NULL', None, 'null']:
                 unexistent_landuses.append(feature[field_map_name])
 
         # check if there are unexistent landuses
@@ -383,12 +396,6 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
     def displayName(self):
         return self.tr('Import Ground geometries')
-
-    def group(self):
-        return self.tr(self.groupId())
-
-    def groupId(self):
-        return ''
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)
