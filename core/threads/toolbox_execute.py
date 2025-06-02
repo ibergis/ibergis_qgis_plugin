@@ -162,7 +162,7 @@ class DrToolBoxTask(DrTask):
         sql = f"SELECT {self.function_name}("
         if self.body:
             sql += f"{self.body}"
-        sql += f");"
+        sql += ");"
         msg = "Task 'Toolbox execute' manage json response with parameters: '{0}', '{1}', '{2}'"
         msg_params = (self.json_result, sql, "None",)
         tools_log.log_info(msg, msg_params=msg_params)

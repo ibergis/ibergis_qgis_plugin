@@ -10,7 +10,7 @@ from qgis.core import QgsTask
 from qgis.utils import iface
 
 from ... import global_vars
-from ...lib import tools_log, tools_db
+from ...lib import tools_log
 
 
 class DrTask(QgsTask, QObject):

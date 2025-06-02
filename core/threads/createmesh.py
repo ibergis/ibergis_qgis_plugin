@@ -1,5 +1,4 @@
 import traceback
-from pathlib import Path
 from itertools import chain, tee
 
 from qgis.core import (
@@ -15,8 +14,7 @@ from qgis.core import (
     QgsPoint,
     QgsCoordinateReferenceSystem,
     QgsFields,
-    QgsProcessingContext,
-    QgsProcessing
+    QgsProcessingContext
 )
 from qgis.utils import iface
 from qgis.PyQt.QtCore import QVariant

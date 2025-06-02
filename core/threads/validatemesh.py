@@ -364,7 +364,7 @@ def validate_dem_coverage(layers_dict: dict, feedback: Feedback) -> QgsVectorLay
         {"INPUT": ground, "OVERLAY": polygon, "OUTPUT": "TEMPORARY_OUTPUT"},
     )["OUTPUT"]
     diff.setCrs(ground.crs())
-    diff.setName(f"Raster Ground Coverage Error")
+    diff.setName("Raster Ground Coverage Error")
 
     return diff
 

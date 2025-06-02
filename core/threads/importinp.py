@@ -1,15 +1,13 @@
 import traceback
 import os
-import pandas as pd
 import math
 
 from datetime import datetime
 from itertools import count
 
-from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsCoordinateReferenceSystem, QgsProject, QgsFeature
+from qgis.core import QgsProcessingContext, QgsFeature
 from qgis.PyQt.QtCore import pyqtSignal
 
-from . import importinp_core as core
 from .epa_file_manager import _tables_dict
 from .task import DrTask
 from ..utils.generate_swmm_inp.generate_swmm_import_inp_file import ImportInpFile
@@ -145,9 +143,9 @@ class DrImportInpTask(DrTask):
                 self.progress_changed.emit("Disable triggers", self.PROGRESS_IMPORT_NON_VISUAL, f"Error {f_to_read} not executed: {self.dao.last_error}", True)
         else:
             if enable:
-                self.progress_changed.emit("Enable triggers", self.PROGRESS_END, f"Triggers created", True)
+                self.progress_changed.emit("Enable triggers", self.PROGRESS_END, "Triggers created", True)
             else:
-                self.progress_changed.emit("Disable triggers", self.PROGRESS_IMPORT_NON_VISUAL, f"Triggers disabled", True)
+                self.progress_changed.emit("Disable triggers", self.PROGRESS_IMPORT_NON_VISUAL, "Triggers disabled", True)
 
     def _import_non_visual_data(self):
         """ Import the non-visual data from the xlsx to the gpkg """

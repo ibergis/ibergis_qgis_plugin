@@ -1,11 +1,8 @@
 from pathlib import Path
 
-from qgis.core import QgsFeature, QgsField, QgsGeometry, QgsProject, QgsVectorLayer
-from qgis.PyQt.QtCore import QVariant
 
 from .task import DrTask
 from ..utils import mesh_parser
-from ... import global_vars
 from ..utils.meshing_process import create_temp_mesh_layer
 
 

@@ -14,16 +14,14 @@ import traceback
 import processing
 import time
 
-from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
-from qgis.PyQt.QtWidgets import QTextEdit
-from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, \
+from qgis.PyQt.QtCore import pyqtSignal
+from qgis.core import QgsProcessingContext, QgsVectorLayer, QgsFeature, \
     QgsMeshLayer
 
-from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils.feedback import Feedback
 from ..utils import tools_dr, mesh_parser
 from ... import global_vars
-from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
+from ...lib import tools_log, tools_qt, tools_qgis
 from ...lib.tools_gpkgdao import DrGpkgDao
 from .task import DrTask
 from .epa_file_manager import DrEpaFileManager
@@ -144,7 +142,7 @@ class DrExecuteModel(DrTask):
         # Create report geopackage
         self.rpt_result = DrRptGpkgCreate("results", f'{self.folder_path}{os.sep}DrainResults')
         self.rpt_result.create_rpt_gpkg()
-        self.progress_changed.emit("Export results", None, f'GPKG file created', True)
+        self.progress_changed.emit("Export results", None, 'GPKG file created', True)
 
         # Create NetCDF file
         created_netcdf: bool = False
@@ -152,7 +150,7 @@ class DrExecuteModel(DrTask):
         netcdf_file: str = f'{self.folder_path}{os.sep}DrainResults{os.sep}rasters.nc'
         try:
             convert_asc_to_netcdf(raster_files, netcdf_file, self.progress_changed)
-        except Exception as e:
+        except Exception:
             self.progress_changed.emit("Export results", None, "Error creating NetCDF file", True)
         if os.path.exists(netcdf_file):
             self.progress_changed.emit("Export results", None, "NetCDF file created", True)
@@ -574,7 +572,7 @@ class DrExecuteModel(DrTask):
             "native:splitwithlines", {
             'INPUT':pinlet_layer,
             'LINES':mesh_layer,
-            'OUTPUT':f'memory:'}
+            'OUTPUT':'memory:'}
         )
         splited_pinlets_layer: QgsVectorLayer = splited_pinlets['OUTPUT']
         if splited_pinlets_layer is None:
@@ -792,12 +790,12 @@ class DrExecuteModel(DrTask):
                 file.write(f"{ht_row.geometry().asPolyline()[1].x()} {ht_row.geometry().asPolyline()[1].y()} ")
                 # 7 - z_start
                 if ht_row["z_start"] is None or str(ht_row["z_start"]) == "NULL":
-                    file.write(f"0 ")
+                    file.write("0 ")
                 else:
                     file.write(f"{ht_row["z_start"]} ")
                 # 8 - z_end
                 if ht_row["z_end"] is None or str(ht_row["z_end"]) == "NULL":
-                    file.write(f"0 ")
+                    file.write("0 ")
                 else:
                     file.write(f"{ht_row["z_end"]} ")
 
@@ -885,7 +883,7 @@ class DrExecuteModel(DrTask):
 
         print(f"IberPlus execution finished. Return code: {return_code}")
 
-        self.progress_changed.emit("Run Iber", tools_dr.lerp_progress(100, self.PROGRESS_INP, self.PROGRESS_IBER), f'', True)
+        self.progress_changed.emit("Run Iber", tools_dr.lerp_progress(100, self.PROGRESS_INP, self.PROGRESS_IBER), '', True)
 
 
     # endregion

@@ -5,24 +5,18 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
-import json
 import os
-import re
 import shutil
-import subprocess
 import tempfile
-import sqlite3
 import pandas as pd
 
-from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
-from qgis.PyQt.QtWidgets import QTextEdit
-from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, \
+from qgis.PyQt.QtCore import pyqtSignal
+from qgis.core import QgsProcessingContext, QgsVectorLayer, QgsField, QgsFields, QgsFeature, \
     QgsProject
 
 from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
-from ..utils import tools_dr
 from ... import global_vars
-from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
+from ...lib import tools_log, tools_qt, tools_qgis
 from .task import DrTask
 from .importinp_core import _tables
 

@@ -6,11 +6,11 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import Qgis, QgsEditFormConfig, QgsRasterLayer
+from qgis.core import Qgis, QgsEditFormConfig
 
 from .task import DrTask
 from ..utils import tools_dr, tools_fct
-from ...lib import tools_log, tools_qgis, tools_qt, tools_db, tools_os
+from ...lib import tools_log, tools_qgis, tools_qt, tools_os
 
 
 class DrProjectLayersConfig(DrTask):
@@ -47,10 +47,10 @@ class DrProjectLayersConfig(DrTask):
 
         super().finished(result)
 
-        sql = f"SELECT gw_fct_getinfofromid("
+        sql = "SELECT gw_fct_getinfofromid("
         if self.body:
             sql += f"{self.body}"
-        sql += f");"
+        sql += ");"
         tools_dr.manage_json_response(self.json_result, sql, None)
 
         # If user cancel task

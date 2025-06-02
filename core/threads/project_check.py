@@ -6,20 +6,14 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 
-import platform
-from functools import partial
-import os
 
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QVariant
-from qgis.PyQt.QtWidgets import QCheckBox, QGridLayout, QLabel, QSizePolicy
+from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.PyQt.QtGui import QColor
-from qgis.core import Qgis, QgsWkbTypes, QgsSpatialIndex, QgsPointXY, QgsField, QgsProject, QgsVectorLayer, QgsFeature
+from qgis.core import QgsWkbTypes, QgsSpatialIndex, QgsField, QgsProject, QgsVectorLayer, QgsFeature
 
 from .task import DrTask
-from ..utils import tools_dr
-from ..ui.ui_manager import DrProjectCheckUi
 from ... import global_vars
-from ...lib import tools_qgis, tools_log, tools_qt, tools_os
+from ...lib import tools_qgis, tools_log, tools_qt
 
 
 class DrProjectCheckTask(DrTask):
