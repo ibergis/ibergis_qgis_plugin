@@ -24,10 +24,10 @@ from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
 from qgis.PyQt.QtCore import QTime, QDate
 from ..ui.ui_manager import DrNonVisualManagerUi, DrNonVisualControlsUi, DrNonVisualCurveUi, DrNonVisualPatternUDUi, \
-    DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualPrint, DrNonVisualRasterUi
+    DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualRasterUi
 from ..utils.matplotlib_widget import MplCanvas
 from ..utils import tools_dr
-from ...lib import tools_qgis, tools_qt, tools_db, tools_log
+from ...lib import tools_qgis, tools_qt, tools_db
 from ... import global_vars
 
 
@@ -87,7 +87,7 @@ class DrNonVisual:
         self.manager_dlg.finished.connect(partial(tools_dr.close_dialog, self.manager_dlg))
 
         # Open dialog
-        tools_dr.open_dialog(self.manager_dlg, dlg_name=f'dlg_nonvisual_manager')
+        tools_dr.open_dialog(self.manager_dlg, dlg_name='dlg_nonvisual_manager')
 
 
     def _manage_tabs_manager(self):
@@ -311,7 +311,7 @@ class DrNonVisual:
         tools_qt.set_tableview_config(tbl_curve_value, sectionResizeMode=1, edit_triggers=QTableView.DoubleClicked)
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_curve')
+        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_curve')
 
 
     def _paste_curve_values(self, tbl_curve_value):
@@ -336,7 +336,7 @@ class DrNonVisual:
 
         curve_type_list = []
         curve_type_headers = {}
-        sql = f"SELECT id, COALESCE(i18n_idval, idval) AS idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
+        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
 
         if rows:
@@ -996,7 +996,7 @@ class DrNonVisual:
                 continue
 
             for n, x in enumerate(row):
-                sql = f"INSERT INTO cat_pattern_value (pattern, timestep, value) "
+                sql = "INSERT INTO cat_pattern_value (pattern, timestep, value) "
                 sql += f"VALUES ({pattern_name}, {n+1}, {x});"
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
@@ -1078,7 +1078,7 @@ class DrNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_controls')
+        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_controls')
 
 
     def _populate_controls_widgets(self, control_id):
@@ -1215,7 +1215,7 @@ class DrNonVisual:
         self._manage_times_type(tbl_timeseries_value, tools_qt.get_combo_value(self.dialog, cmb_times_type))
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_timeseries')
+        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_timeseries')
 
 
     def _paste_timeseries_values(self, tbl_timeseries_value):
@@ -1546,7 +1546,7 @@ class DrNonVisual:
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (timeseries, date, time, value) "
+                sql = "INSERT INTO cat_timeseries_value (timeseries, date, time, value) "
                 sql += f"VALUES ('{timeseries}', '{row[0]}', '{row[1]}', {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
@@ -1567,7 +1567,7 @@ class DrNonVisual:
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (timeseries, time, value) "
+                sql = "INSERT INTO cat_timeseries_value (timeseries, time, value) "
                 sql += f"VALUES ('{timeseries}', '{row[1]}', {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
@@ -1602,14 +1602,14 @@ class DrNonVisual:
                 tools_qt.double_validator(widget, 0, 9999999, 3)
 
         # Populate LID Type combo
-        sql = f"SELECT id, idval FROM inp_typevalue WHERE typevalue = 'inp_value_lidtype' ORDER BY idval"
+        sql = "SELECT id, idval FROM inp_typevalue WHERE typevalue = 'inp_value_lidtype' ORDER BY idval"
         rows = global_vars.gpkg_dao_data.get_rows(sql)
 
         if rows:
             tools_qt.fill_combo_values(self.dialog.cmb_lidtype, rows, 1)
 
         # Populate Control Curve combo
-        sql = f"SELECT id FROM cat_curve; "
+        sql = "SELECT id FROM cat_curve; "
         rows = global_vars.gpkg_dao_data.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(self.dialog.txt_7_cmb_control_curve, rows)
@@ -1629,7 +1629,7 @@ class DrNonVisual:
             self._load_lids_widgets(self.dialog)
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_lids')
+        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_lids')
 
 
     def _open_help(self):
@@ -1940,7 +1940,7 @@ class DrNonVisual:
                 visible_widgets = [widget for widget in widgets_list if not widget.isHidden()]
                 visible_widgets = self._order_list(visible_widgets)
 
-                sql = f"INSERT INTO inp_lid_value (lidco_id, lidlayer,"
+                sql = "INSERT INTO inp_lid_value (lidco_id, lidlayer,"
                 for y, widget in enumerate(visible_widgets):
                     sql += f"value_{y + 2}, "
                 sql = sql.rstrip(', ') + ")"
@@ -2007,7 +2007,7 @@ class DrNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_raster')
+        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_raster')
 
     def _populate_raster_combo(self, cmb_raster_type):
         """ Populates raster dialog combos """
@@ -2176,7 +2176,7 @@ class DrNonVisual:
             if row == (['null'] * tbl_raster_value.columnCount()):
                 continue
 
-            sql = f"INSERT INTO cat_raster_value (raster, time, fname) "
+            sql = "INSERT INTO cat_raster_value (raster, time, fname) "
             sql += f"VALUES ('{raster_id}', '{row[0]}', '{row[1]}')"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:

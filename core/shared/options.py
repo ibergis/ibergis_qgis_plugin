@@ -14,7 +14,7 @@ from qgis.PyQt.QtWidgets import QWidget, QComboBox, QGroupBox, QSpacerItem, QSiz
 from qgis.PyQt.QtCore import QDateTime
 from ..ui.ui_manager import DrGo2EpaOptionsUi
 from ..utils import tools_dr
-from ...lib import tools_qgis, tools_qt, tools_db, tools_log
+from ...lib import tools_qgis, tools_qt
 from ... import global_vars
 
 
@@ -52,20 +52,20 @@ class DrOptions:
             return False
 
         # Get sys_param values
-        v_sql = f"SELECT distinct tabname " \
-                f"FROM config_form_fields " \
-                f"WHERE formname = 'dlg_options' AND tabname IS NOT NULL"
+        v_sql = "SELECT distinct tabname " \
+                "FROM config_form_fields " \
+                "WHERE formname = 'dlg_options' AND tabname IS NOT NULL"
         tab_list = global_vars.gpkg_dao_config.get_rows(v_sql)
         tab_list = sorted(tab_list, key=lambda tab: self.tabs_to_show.index(tab[0]) if tab[0] in self.tabs_to_show else float('inf'))
 
-        v_sql = f"select distinct (layoutname), tabname " \
-                f"FROM config_form_fields " \
-                f"WHERE formname = 'dlg_options' AND layoutname IS NOT NULL"
+        v_sql = "select distinct (layoutname), tabname " \
+                "FROM config_form_fields " \
+                "WHERE formname = 'dlg_options' AND layoutname IS NOT NULL"
         lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
 
-        v_sql = f"SELECT id, COALESCE(i18n_idval, idval) AS idval " \
-                f"FROM edit_typevalue " \
-                f"WHERE typevalue = 'dlg_options_layout'"
+        v_sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval " \
+                "FROM edit_typevalue " \
+                "WHERE typevalue = 'dlg_options_layout'"
         titles_list = global_vars.gpkg_dao_config.get_rows(v_sql)
         titles_dict = {row[0]: row[1] for row in titles_list}
 
