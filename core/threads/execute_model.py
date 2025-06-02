@@ -12,6 +12,7 @@ from pathlib import Path
 import threading
 import traceback
 import processing
+import time
 
 from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
 from qgis.PyQt.QtWidgets import QTextEdit
@@ -850,6 +851,9 @@ class DrExecuteModel(DrTask):
         init_progress = tools_dr.lerp_progress(10, self.PROGRESS_INP, self.PROGRESS_IBER)
         self.progress_changed.emit("Run Iber", init_progress, '', False)
 
+        # Add a small delay to ensure the files are copied
+        time.sleep(1)
+
         process = subprocess.Popen([iber_exe_path],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
@@ -860,7 +864,7 @@ class DrExecuteModel(DrTask):
 
         # Read output in real-time
         while not self.isCanceled():
-            output = process.stdout.readline()
+            output = process.stdout.readline()  # TODO: Read the output from the file proceso.rep
             if output == '' and process.poll() is not None:
                 break
             if output:
