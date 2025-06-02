@@ -21,13 +21,13 @@ from ... import global_vars
 
 from PyQt5.QtWidgets import QApplication, QFileDialog
 
+
 class DrI18NGenerator:
 
     def __init__(self):
         super().__init__()
         self.plugin_dir = global_vars.plugin_dir
         self.schema_name = global_vars.schema_name
-
 
     def init_dialog(self):
         """ Constructor """
@@ -62,7 +62,6 @@ class DrI18NGenerator:
 
     # region private functions
 
-
     def _check_connection(self):
         """ Check connection to database """
 
@@ -77,7 +76,6 @@ class DrI18NGenerator:
             tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', self.last_error)
             return
         self._populate_cmb_language()
-
 
     def _populate_cmb_language(self):
         """ Populate combo with languages values """
@@ -284,7 +282,6 @@ class DrI18NGenerator:
         else:
             return False
 
-
     def _get_title(self, py_dialogs, name, key_label):
         """ Return title's according language """
 
@@ -381,7 +378,6 @@ class DrI18NGenerator:
             return None, columns
         return rows, columns
 
-
     def _write_table_values(self, rows, columns, table, path, file_type):
         """
         Generate mass update SQL queries using VALUES and write them to file
@@ -443,7 +439,6 @@ class DrI18NGenerator:
                         for item_row, txt in data:
                             file.write(f"UPDATE {context} SET srs_name = {txt[0]}, definition = {txt[1]} WHERE srs_id = {item_row['source']};\n")
         del file
-
 
     # endregion
     # region Generate from Json
@@ -558,7 +553,6 @@ class DrI18NGenerator:
             if closing:
                 file.write("UPDATE config_param_system SET value = FALSE WHERE parameter = 'admin_config_control_trigger';\\n")  
 
-
     # endregion
  
     # region Extra functions
@@ -599,7 +593,6 @@ class DrI18NGenerator:
         tools_dr.set_config_parser('i18n_generator', 'chk_py_msg', f"{py_msg}", "user", "session", prefix=False)
         tools_dr.set_config_parser('i18n_generator', 'chk_i18n_files', f"{i18n_msg}", "user", "session", prefix=False)
 
-
     def _load_user_values(self):
         """
         Load last selected user values
@@ -614,7 +607,6 @@ class DrI18NGenerator:
         tools_qt.set_checked(self.dlg_qm, self.dlg_qm.chk_py_msg, py_msg)
         tools_qt.set_checked(self.dlg_qm, self.dlg_qm.chk_i18n_files, i18n_msg)
 
-
     def _init_db(self, gpkg_path):
         """ Initializes database connection """
 
@@ -628,7 +620,6 @@ class DrI18NGenerator:
             status = False
 
         return status
-
 
     def _close_db(self):
         """ Close database connection """
@@ -647,16 +638,13 @@ class DrI18NGenerator:
 
         return status
 
-
     def _commit(self, cursor):
         """ Commit current database transaction """
         cursor.commit()
 
-
     def _rollback(self, cursor):
         """ Rollback current database transaction """
         cursor.rollback()
-
 
     def _get_rows(self, sql, cursor, commit=True):
         """ Get multiple rows from selected query """
@@ -676,7 +664,6 @@ class DrI18NGenerator:
         finally:
             return rows
 
-
     def _replace_invalid_characters(self, param):
         """
         This function replaces the characters that break JSON messages
@@ -691,7 +678,6 @@ class DrI18NGenerator:
 
         return param
 
-
     def _replace_invalid_quotation_marks(self, param):
         """
         This function replaces the characters that break JSON messages
@@ -702,7 +688,6 @@ class DrI18NGenerator:
 
         return param
 
-
     def _create_path_dic(self):
         self.path_dic = {
             "DB": {
@@ -712,6 +697,5 @@ class DrI18NGenerator:
                 "tables": ["dbconfig_form_fields", "dbtexts"]
             },
         }
-
 
     # endregion

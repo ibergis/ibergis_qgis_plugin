@@ -247,7 +247,6 @@ class ImportInpFile (QgsProcessingAlgorithm):
                     raise QgsProcessingException('File '+fname
                         + ' already exists. Please choose another folder.')
 
-
         # reading input text file
         feedback.setProgressText(self.tr('reading inp ...'))
         feedback.setProgress(3)
@@ -345,7 +344,6 @@ class ImportInpFile (QgsProcessingAlgorithm):
                 'OPTIONS': df_options_converted
             }
             
-
         # inflows section
         section_name = 'INFLOWS'
         feedback.setProgressText('Preparing section \"'+section_name+'\"')
@@ -641,7 +639,6 @@ class ImportInpFile (QgsProcessingAlgorithm):
             feedback.setProgress(95)
             dict_res_table['TRANSECTS'] = transects_dict
             feedback.setProgress(100)
-
 
         # writing tables: 
         feedback.setProgressText('Writing tables ...')

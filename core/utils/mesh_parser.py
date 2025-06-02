@@ -4,6 +4,7 @@ import numpy as np
 from typing import Optional
 from dataclasses import dataclass
 
+
 @dataclass
 class Mesh:
     polygons: pd.DataFrame
@@ -12,6 +13,7 @@ class Mesh:
     losses: Optional[dict]
     boundary_conditions: dict
     bridges: pd.DataFrame
+
 
 def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losses_fp: io.TextIOWrapper, bridges_fp: io.TextIOWrapper):
     mesh_fp.write("MATRIU\n")
@@ -98,6 +100,7 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
 
             for index, scs_cn in mesh.polygons["scs_cn"].dropna().items():
                 losses_fp.write(f"{index} {scs_cn}\n")
+
 
 def dumps(mesh):
     with (

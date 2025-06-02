@@ -33,7 +33,6 @@ class DrOptions:
     def open_options_dlg(self):
         self._go2epa_options()
 
-
     def _go2epa_options(self):
         """ Button 23: Open form to set INP, RPT and project """
 
@@ -128,7 +127,6 @@ class DrOptions:
 
         tools_dr.open_dialog(self.dlg_go2epa_options, dlg_name='go2epa_options')
 
-
     def _update_values(self, _json):
 
         _json = self._parse_values_json(_json)
@@ -147,7 +145,6 @@ class DrOptions:
         # Close dialog
         tools_dr.close_dialog(self.dlg_go2epa_options)
 
-
     def _get_event_combo_parent(self, complet_result):
 
         for field in complet_result['body']['form']['formTabs'][0]["fields"]:
@@ -155,7 +152,6 @@ class DrOptions:
                 widget = self.dlg_go2epa_options.findChild(QComboBox, field['widgetname'])
                 if widget:
                     widget.currentIndexChanged.connect(partial(self._fill_child, self.dlg_go2epa_options, widget))
-
 
     def _fill_child(self, dialog, widget):
 

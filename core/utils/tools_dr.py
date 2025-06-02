@@ -559,6 +559,7 @@ def load_gpkg(gpkg_file) -> dict:
 
     return layers
 
+
 def config_layer_attributes(json_result, layer, layer_name, thread=None):
 
     for field in json_result['body']['data']['fields']:
@@ -2700,6 +2701,7 @@ def reset_position_dialog(show_message=False, plugin='core', file_name='session'
         tools_log.log_warning(msg, msg_params=msg_params)
         return
 
+
 def add_btn_help(dlg):
     """ Create and add btn_help in all dialogs """
     if tools_qt.get_widget(dlg, 'btn_help') is not None:
@@ -2726,6 +2728,7 @@ def add_btn_help(dlg):
         tabname = tab_widget.widget(index_tab).objectName()
 
     btn_help.clicked.connect(partial(open_help_link, context, uiname, tabname))
+
 
 def open_help_link(context, uiname, tabname=None):
     """ Opens the help link for the given dialog, or a default link if not found. """
@@ -2859,7 +2862,6 @@ def set_filter_listeners(complet_result, dialog, widget_list, columnname, widget
             widgetfunction = widget.property('widgetfunction')
         else:
             widgetfunction = [widget.property('widgetfunction')]
-
 
         for i in range(len(functions)):
             kwargs = {"complet_result": complet_result, "model": model, "dialog": dialog, "linkedobject": linkedobject,

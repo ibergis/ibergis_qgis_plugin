@@ -31,11 +31,9 @@ class DrProjectCheckButton(DrAction):
         self.cur_process = None
         self.cur_text = None
 
-
     def clicked_event(self):
 
         self._open_check_project()
-
 
     # region private functions
 
@@ -73,7 +71,6 @@ class DrProjectCheckButton(DrAction):
 
         self.timer.stop()
 
-
     def _progress_update(self, process, progress, text, new_line):
         # Progress bar
         if progress is not None:
@@ -103,7 +100,6 @@ class DrProjectCheckButton(DrAction):
         scrollbar = txt_infolog.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
-
     # def _progress_update(self, process, progress, text, new_line):
     #     txt_infolog = dialog.findChild(QTextEdit, 'txt_infolog')
     #     cur_text = tools_qt.get_text(self.dlg_audit_project, txt_infolog, return_string_null=False)
@@ -111,7 +107,6 @@ class DrProjectCheckButton(DrAction):
     #     txt_infolog.setText(text)
     #     txt_infolog.show()
         # tools_qt.set_widget_text(self.dlg_audit_project, txt_infolog, text)
-
 
     def _open_dialog(self):
 
@@ -127,13 +122,11 @@ class DrProjectCheckButton(DrAction):
         # Open dialog
         tools_dr.open_dialog(self.dlg_audit_project, dlg_name='project_check')
 
-
     def _calculate_elapsed_time(self, dialog):
 
         tf = time()  # Final time
         td = tf - self.t0  # Delta time
         self._update_time_elapsed(f"Exec. time: {timedelta(seconds=round(td))}", dialog)
-
 
     def _update_time_elapsed(self, text, dialog):
 

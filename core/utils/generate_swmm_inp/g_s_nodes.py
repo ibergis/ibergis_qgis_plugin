@@ -59,6 +59,7 @@ all_st_type_cols = [
     'SurfHeight'
 ]
 
+
 # Export
 #----------
 # Junctions
@@ -72,6 +73,7 @@ def get_junctions_from_layer(junctions_raw):
     junctions_inp_cols = def_sections_dict['JUNCTIONS']
     junctions_df = junctions_df[junctions_inp_cols]
     return junctions_df
+
     
 # dividers
 def get_dividers_from_layer(dividers_raw):
@@ -88,6 +90,7 @@ def get_dividers_from_layer(dividers_raw):
     dividers_df['WeirMaxDep'] = dividers_df['WeirMaxDep'].fillna('')
     dividers_df['WeirCoeff'] = dividers_df['WeirCoeff'].fillna('')
     return dividers_df
+
 
 # Outfalls
 def get_outfalls_from_shapefile(outfalls_raw):
@@ -106,6 +109,7 @@ def get_outfalls_from_shapefile(outfalls_raw):
     outfalls_raw['FlapGate'] = outfalls_raw['FlapGate'].fillna('NO')
     outfalls_raw['Data'] = outfalls_raw['Data'].fillna('')
     return outfalls_raw
+
 
 # Storages
 def get_storages_from_layer(storages_raw):
@@ -168,6 +172,7 @@ def get_storages_from_layer(storages_raw):
     storage_df = storage_df[storage_inp_cols]
     return storage_df
 
+
 # inflows
 def compose_infl_dict(inflow, i, inf_type):
     """
@@ -201,6 +206,7 @@ def compose_infl_dict(inflow, i, inf_type):
             ])
         }            
     return i_dict
+
         
 # Hydrographs
 def compose_hydrograph_df(hydrog):
@@ -234,6 +240,7 @@ def compose_hydrograph_df(hydrog):
             )
             df_rg = pd.concat([df_rg, df_i])
         return df_rg
+
 
 # Inflows
 def get_inflows_from_table(inflows_raw, all_nodes, feedback):
@@ -334,6 +341,7 @@ def get_outfalls_from_inp(outfalls_line, feedback):
     if outfalls_line[2] in ['TIDAL', 'TIMESERIES']:
         outfalls_line.insert(3, np.nan)
     return outfalls_line
+
     
 # Dividers
 def get_dividers_from_inp(divider_line, feedback):
@@ -356,6 +364,7 @@ def get_dividers_from_inp(divider_line, feedback):
         for pos in [4, 5]:
             divider_line.insert(pos, np.nan)
     return divider_line
+
 
 # Storage
 def get_storages_from_inp(st_raw_line, feedback):
@@ -382,6 +391,7 @@ def get_storages_from_inp(st_raw_line, feedback):
     # resulting line
     st_line_adjusted = init_elems + type_elems + sur_elems
     return(st_line_adjusted)
+
     
 # Hydrographs
 def get_hydrogrphs(hg_name, df_hydrographs_raw):
@@ -407,6 +417,7 @@ def get_hydrogrphs(hg_name, df_hydrographs_raw):
         )
     return (hg_rg)
 
+
 # Geometry helpers
 def create_point_from_x_y(sr, i, n, feedback):
     """
@@ -426,6 +437,7 @@ def create_point_from_x_y(sr, i, n, feedback):
     if feedback.isCanceled():
         pass
     return [sr['Name'], geom]
+
 
 def create_points_df(data, feedback):
     """

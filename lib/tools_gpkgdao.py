@@ -22,7 +22,6 @@ class DrGpkgDao(object):
         self.db_qsql = None
         self.enable_spatial = None
 
-
     def init_db(self, filename, enable_spatial=True):
         """ Initializes database connection (sqlite3) """
 
@@ -50,7 +49,6 @@ class DrGpkgDao(object):
 
         return status
 
-
     def close_db(self):
         """ Close database connection """
 
@@ -72,12 +70,10 @@ class DrGpkgDao(object):
 
         return status
 
-
     def get_cursor(self):
 
         cursor = self.conn.cursor()
         return cursor
-
 
     def get_rows(self, sql, commit=False):
         """ Get multiple rows from selected query """
@@ -97,7 +93,6 @@ class DrGpkgDao(object):
         finally:
             return rows
 
-
     def get_row(self, sql, commit=False, aux_conn=None):
         """ Get single row from selected query """
 
@@ -114,7 +109,6 @@ class DrGpkgDao(object):
                 self.rollback()
         finally:
             return row
-
 
     def execute_sql(self, sql, commit=True):
         """ Execute selected query """
@@ -165,7 +159,6 @@ class DrGpkgDao(object):
         finally:
             return status
 
-
     def commit(self):
         """ Commit current database transaction """
 
@@ -174,7 +167,6 @@ class DrGpkgDao(object):
         except Exception:
             pass
 
-
     def rollback(self):
         """ Rollback current database transaction """
 
@@ -182,7 +174,6 @@ class DrGpkgDao(object):
             self.conn.rollback()
         except Exception:
             pass
-
 
     def init_qsql_db(self, filepath, database_name):
         """ Initializes database connection (QSqlDatabase) """
@@ -198,7 +189,6 @@ class DrGpkgDao(object):
 
         self.db_qsql = db_qsql
         return status, db_qsql
-
 
     def clone(self):
         new_dao = DrGpkgDao()

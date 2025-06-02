@@ -669,7 +669,6 @@ def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableMode
     :return:
     """
 
-
     # Set model
     model = QSqlTableModel(db=global_vars.db_qsql_data)
     model.setTable(table_name)
@@ -1230,7 +1229,6 @@ def show_exception_message(title=None, msg="", window_title="Information about e
         pattern = "File\\sname:|Function\\sname:|Line\\snumber:|SQL:|SQL\\sfile:|Detail:|Context:|Description|Schema " \
                   "name|Message\\serror:"
     set_text_bold(dlg_text.txt_infolog, pattern)
-
 
     dlg_text.show()
 

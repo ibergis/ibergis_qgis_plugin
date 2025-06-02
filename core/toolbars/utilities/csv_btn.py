@@ -27,11 +27,9 @@ class DrCSVButton(DrAction):
 
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
-
     def clicked_event(self):
 
         self._open_csv()
-
 
     def save_settings_values(self):
         """ Save QGIS settings related with csv options """
@@ -46,7 +44,6 @@ class DrCSVButton(DrAction):
         tools_dr.set_config_parser('btn_csv2pg', 'rb_space', f"{self.dlg_csv.rb_space.isChecked()}")
         tools_dr.set_config_parser('btn_csv2pg', 'rb_dec_comma', f"{self.dlg_csv.rb_dec_comma.isChecked()}")
         tools_dr.set_config_parser('btn_csv2pg', 'rb_dec_period', f"{self.dlg_csv.rb_dec_period.isChecked()}")
-
 
     # region private functions
 
@@ -95,7 +92,6 @@ class DrCSVButton(DrAction):
         # Finally set label info
         self._update_info(self.dlg_csv)
 
-
     def _populate_combos(self, combo, field_id, fields, table_name):
 
         # TODO: Define query
@@ -109,7 +105,6 @@ class DrCSVButton(DrAction):
         if rows:
             tools_qt.fill_combo_values(combo, rows, 1, True, True, 1)
             self._update_info(self.dlg_csv)
-
 
     def _write_csv(self, dialog, temp_tablename):
         """ Write csv in postgres and execute PG function """
@@ -155,7 +150,6 @@ class DrCSVButton(DrAction):
                 msg = message.get('text')
                 tools_qt.show_info_box(msg)
 
-
     def _update_info(self, dialog):
         """ Update the tag according to item selected from cmb_import_type """
 
@@ -165,7 +159,6 @@ class DrCSVButton(DrAction):
             msg = "Error updating info: {0}"
             msg_params = (str(e),)
             tools_log.log_warning(msg, msg_params=msg_params)
-
 
     def _get_function_name(self):
 
@@ -178,7 +171,6 @@ class DrCSVButton(DrAction):
             msg = "Error getting function name: {0}"
             msg_params = (str(e),)
             tools_log.log_warning(msg, msg_params=msg_params)
-
 
     def _select_file_csv(self):
         """ Select CSV file """
@@ -198,7 +190,6 @@ class DrCSVButton(DrAction):
 
         self.save_settings_values()
         self._preview_csv(self.dlg_csv)
-
 
     def _preview_csv(self, dialog):
         """ Show current file in QTableView acorrding to selected delimiter and unicode """
@@ -221,7 +212,6 @@ class DrCSVButton(DrAction):
             msg = "EXCEPTION: {0}"
             msg_params = (str(e),)
             tools_qgis.show_warning(msg, msg_params=msg_params, dialog=dialog)
-
 
     def _load_settings_values(self):
         """ Load QGIS settings related with csv options """
@@ -255,7 +245,6 @@ class DrCSVButton(DrAction):
         elif tools_dr.get_config_parser('btn_csv2pg', 'rb_dec_period', "user", "session") == 'True':
             self.dlg_csv.rb_dec_period.setChecked(True)
 
-
     def _validate_params(self, dialog):
         """ Validate if params are valids """
 
@@ -265,14 +254,12 @@ class DrCSVButton(DrAction):
             return False
         return True
 
-
     def _delete_table_csv(self, temp_tablename, fid_aux):
         """ Delete records from temp_csv for current user and selected cat """
 
         sql = (f"DELETE FROM {temp_tablename} "
                f"WHERE fid = '{fid_aux}'")
         global_vars.gpkg_dao_config.execute_sql(sql)
-
 
     def _get_delimiter(self, dialog):
 
@@ -284,7 +271,6 @@ class DrCSVButton(DrAction):
         elif dialog.rb_space.isChecked():
             delimiter = ' '
         return delimiter
-
 
     def _insert_into_db(self, dialog, csvfile, delimiter, _unicode):
 
@@ -335,7 +321,6 @@ class DrCSVButton(DrAction):
 
         return False
 
-
     def _get_path(self, dialog):
         """ Take the file path if exists. AND if not exit ask it """
 
@@ -350,7 +335,6 @@ class DrCSVButton(DrAction):
             return None
 
         return path
-
 
     def _read_csv_file(self, model, file_input, delimiter, _unicode, _ignoreheader):
 

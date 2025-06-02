@@ -56,7 +56,6 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
     bool_selected_inlet_features: bool = False
     bool_selected_pinlet_features: bool = False
 
-
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
     def initAlgorithm(self, config):

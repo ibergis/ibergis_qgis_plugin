@@ -41,6 +41,7 @@ inflow_keys_dict = {
     ]
 }
 
+
 def write_inp(
     inp_file_name,
     project_dir,
@@ -186,7 +187,6 @@ def write_inp(
             file1.write('\n')
         file1.write('\n')
 
-
     # transects
     if 'TRANSECTS' in inp_dict.keys():
         feedback.setProgressText('writing [TRANSECTS]...')
@@ -220,7 +220,6 @@ def write_inp(
             file1.write('\n')
         file1.write('\n')
 
-
     # quality
     df_to_inp_section('POLLUTANTS')
     df_to_inp_section('LANDUSES')
@@ -228,7 +227,6 @@ def write_inp(
     df_to_inp_section('WASHOFF')
     df_to_inp_section('COVERAGES')
     df_to_inp_section('LOADINGS')
-
 
     def compose_dict_text(dict_i, section, inflow_keys_dict):
         """writes text lines from inflows dictionaries"""
@@ -264,7 +262,6 @@ def write_inp(
         
     df_to_inp_section('HYDROGRAPHS')
     df_to_inp_section('RDII')
-        
         
     # curves
     if 'CURVES' in inp_dict.keys():

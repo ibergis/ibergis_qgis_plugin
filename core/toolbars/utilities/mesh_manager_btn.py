@@ -210,7 +210,6 @@ class DrMeshManagerButton(DrAction):
         self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_lineedit))
         tools_dr.open_dialog(self.dlg_lineedit)
 
-
     def _insert_mesh(self, mesh_path, roof_path, losses_path):
         mesh_name = tools_qt.get_text(self.dlg_lineedit, 'txt_input')
 
@@ -243,7 +242,6 @@ class DrMeshManagerButton(DrAction):
 
         self._reload_manager_table()
         tools_dr.close_dialog(self.dlg_lineedit)
-
 
     def _delete_mesh(self):
         # Variables

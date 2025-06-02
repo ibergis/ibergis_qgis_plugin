@@ -115,7 +115,6 @@ def delete_object(**kwargs):
     qtable_name = func_params['targetwidget']
     qtable = tools_qt.get_widget(dialog, f"{qtable_name}")
 
-
     # Get selected rows
     selected_list = qtable.selectionModel().selectedRows()
     if len(selected_list) == 0:
@@ -150,7 +149,6 @@ def delete_object(**kwargs):
                " WHERE id::integer IN (" + list_id + ")")
         tools_db.execute_sql(sql, log_sql=False)
         _reload_table(**kwargs)
-
 
 
 def open_selected_path(**kwargs):
@@ -257,8 +255,6 @@ def set_layer_index(**kwargs):
     if type(layers_name_list) == list:
         for layer_name in layers_name_list:
             tools_qgis.set_layer_index(layer_name)
-
-
 
 
 def set_style_mapzones(**kwargs):
@@ -607,7 +603,6 @@ def _reload_table(**kwargs):
         tab_name = 'main'
         list_tables = dialog.findChildren(QTableView)
 
-
     complet_result = kwargs['complet_result']
     feature_id = complet_result['body']['feature']['id']
     field_id = str(complet_result['body']['feature']['idName'])
@@ -694,6 +689,7 @@ def manage_duplicate_dscenario_copyfrom(dialog):
         tools_qt.set_combo_value(dialog.findChild(QComboBox, 'expl'), f"{row[4]}", 0)
 
 # region unused functions atm
+
 
 def get_all_layers(group, all_layers):
 

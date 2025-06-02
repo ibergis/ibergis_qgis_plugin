@@ -86,13 +86,11 @@ class DrImportINPButton(DrAction):
         QgsApplication.taskManager().addTask(self.thread)
         QgsApplication.taskManager().triggerTask(self.thread)
 
-
     def _delete_folder(self, folder):
         for file in glob.glob(folder + "/*"):
             os.remove(file)
         os.rmdir(folder)
         
-
     def _progress_changed(self, process, progress, text, new_line):
         # Progress bar
         if progress is not None:

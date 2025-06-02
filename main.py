@@ -77,7 +77,6 @@ class Drain(QObject):
         self.action_info = None
         self.provider: Optional[DrainProvider] = None
 
-
     def initGui(self):
         """ Create the menu entries and toolbar icons inside the QGIS GUI """
 
@@ -86,7 +85,6 @@ class Drain(QObject):
             # Force project read (to work with PluginReloader)
             self._project_read(False, False)
             self._initProcessing()
-
 
     def unload(self, hide_gw_button=None):
         """
@@ -116,7 +114,6 @@ class Drain(QObject):
         except Exception as e:
             msg_params = ("self._remove_dockers()", e,)
             tools_qt.show_exception_message(msg, msg_params=msg_params)
-
 
         try:
             # Close all open dialogs
@@ -233,7 +230,6 @@ class Drain(QObject):
 
         self.load_project = None
 
-
     # region private functions
     def _initProcessing(self):
         """Init Processing provider"""
@@ -302,13 +298,11 @@ class Drain(QObject):
 
         return True
 
-
     def _create_signal_manager(self):
         """ Creates an instance of DrSignalManager and connects all the signals """
 
         global_vars.signal_manager = DrSignalManager()
         global_vars.signal_manager.show_message.connect(tools_qgis.show_message)
-
 
     def _manage_user_config_folder(self, user_folder_dir):
         """ Check if user config folder exists. If not create empty files init.config and session.config """
@@ -334,7 +328,6 @@ class Drain(QObject):
             msg_params = ("manage_user_config_folder", e,)
             tools_log.log_warning(message, msg_params=msg_params)
 
-
     def _set_signals(self):
         """ Define iface event signals on Project Read / New Project / Save Project """
 
@@ -347,7 +340,6 @@ class Drain(QObject):
                                     'main', 'actionSaveProject_save_toolbars_position')
         except AttributeError:
             pass
-
 
     def _unset_signals(self):
         """ Disconnect iface event signals on Project Read / New Project / Save Project """
@@ -364,7 +356,6 @@ class Drain(QObject):
             tools_dr.disconnect_signal('main', 'actionSaveProject_save_toolbars_position')
         except TypeError:
             pass
-
 
     def _set_info_button(self):
         """ Set Giswater information button (always visible)
@@ -388,7 +379,6 @@ class Drain(QObject):
         admin_button = DrAdminButton()
         self.action.triggered.connect(partial(admin_button.init_sql))
 
-
     def _unset_info_button(self):
         """ Unset Giswater information button (when plugin is disabled or reloaded) """
 
@@ -404,7 +394,6 @@ class Drain(QObject):
         self.action = None
         self.action_info = None
 
-
     def _unset_toc_buttons(self):
         """ Unset Add Child Layer and Toggle EPA World buttons (when plugin is disabled or reloaded) """
 
@@ -415,13 +404,11 @@ class Drain(QObject):
             toolbar.removeAction(action)  # Remove from toolbar
             action.deleteLater()  # Schedule for deletion
 
-
     def _project_new(self):
         """ Function executed when a user creates a new QGIS project """
 
         # Unload plugin when create new QGIS project
         self.unload(False)
-
 
     def _project_read(self, show_warning=True, hide_gw_button=True):
         """ Function executed when a user opens a QGIS project (*.qgs) """
@@ -436,7 +423,6 @@ class Drain(QObject):
         # Create class to manage code that performs project configuration
         self.load_project = DrLoadProject()
         self.load_project.project_read(show_warning)
-
 
     def _save_toolbars_position(self):
 
@@ -460,11 +446,9 @@ class Drain(QObject):
         sorted_toolbar_ids = ",".join(sorted_toolbar_ids)
         tools_dr.set_config_parser('toolbars_position', 'toolbars_order', str(sorted_toolbar_ids), "user", "init")
 
-
     def save_project(self):
         project = QgsProject.instance()
         project.write()
-
 
     def _remove_dockers(self):
         """ Remove Giswater dockers """
@@ -498,7 +482,6 @@ class Drain(QObject):
             # TODO improve this, now remove last action
             toolbar.removeAction(toolbar.actions()[len(toolbar.actions()) - 1])
             self.btn_add_layers = None
-
 
     def _close_open_dialogs(self):
         """ Close Giswater open dialogs """

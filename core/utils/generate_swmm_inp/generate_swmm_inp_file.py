@@ -286,8 +286,6 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
         inp_file_name = os.path.basename(inp_file_path)
         project_dir = os.path.dirname(inp_file_path)
 
-
-        
         export_params = {
             'all_nodes': list(),
             'all_subcatchments': list(),
@@ -317,7 +315,6 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
         } 
         inp_dict['COORDINATES'] = {'data': pd.DataFrame()}
         inp_dict['VERTICES'] = {'data': dict()}
-
 
         # putting together all dita in a dict
         export_data = {
@@ -360,7 +357,6 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
                 )
         feedback.setProgressText(self.tr('done \n'))
 
-
         # check crs for layer
         feedback.setProgressText('Checking CRS of layers...')
         raw_layers_crs_list = [
@@ -374,16 +370,15 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
             )
         feedback.setProgressText(self.tr('done \n'))
 
-
         # store pandas dataframes for each layer     
         feedback.setProgressText('Reading layers and tables...')   
         read_data_direct(export_data, feedback = feedback)
         feedback.setProgressText(self.tr('done \n'))
 
-
-
         feedback.setProgressText(self.tr('preparing data for input file:'))
+
         # main handler
+
         def data_export_handler(
             data_name,
             export_data,
@@ -512,8 +507,6 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
                 # das ggf. für jede subgruppe
                 inp_dict[data_name]['annotations'] = annotations_df
 
-
-
         # check deprecated data
         for data_name in [
             'CONDUITS',
@@ -527,7 +520,6 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
                     cols_deprecated={'Shape': 'XsectShape'},
                     feedback=feedback
                 )
-
 
         # run export handler
         for data_name in [
@@ -569,7 +561,6 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
         inp_dict = {k: v for k, v in inp_dict.items() if len(v['data'])>0}
 
         feedback.setProgressText(self.tr('done \n'))
-
 
         # writing inp file
         feedback.setProgressText(self.tr('Creating inp file:'))

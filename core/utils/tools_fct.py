@@ -198,7 +198,6 @@ def getselectors(p_input: dict) -> dict:
                     widget_dict[key] = value
                 v_fields.append(widget_dict)
 
-
             v_fields_aux = {
                 'fields':v_fields,
                 'tabName':f'{tabname}',
@@ -266,7 +265,6 @@ def setselectors(p_input: dict) -> dict:
                 v_sql = f"DELETE FROM {selector_table} WHERE {column_id} IN (SELECT {data_table_id} FROM {data_table})"
                 global_vars.gpkg_dao_data.execute_sql(v_sql)
 
-
         v_sql =f"SELECT {column_id} FROM {selector_table}"
         rows = global_vars.gpkg_dao_data.get_rows(v_sql)
         id_list = [row[0] for row in rows]
@@ -284,6 +282,7 @@ def setselectors(p_input: dict) -> dict:
     v_return = _create_return(v_return, accepted=accepted, message=v_message)
     return v_return
 
+
 def get_sectors():
     sectors = 'NULL'
 
@@ -293,6 +292,7 @@ def get_sectors():
         sectors = ", ".join(str(x[0]) for x in rows)
 
     return sectors
+
 
 def get_scenarios():
     scenarios = 'NULL'
@@ -434,7 +434,6 @@ def getinfofromid(p_input: dict) -> dict:
                     widget['iseditable'] = bool(widget['iseditable'])
                 if 'hidden' in widget:
                     widget['hidden'] = bool(widget['hidden'])
-
 
         v_return["body"] = {"data": {}, "form": {}}
         v_return["body"]["data"] = {

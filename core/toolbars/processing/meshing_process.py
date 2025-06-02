@@ -12,12 +12,14 @@ import numpy as np
 import time
 from packages.gmsh import gmsh
 
+
 # From pandamesh
 def get_vertices():
     # getNodes returns: node_tags, coord, parametric_coord
     _, vertices, _ = gmsh.model.mesh.getNodes()
     # Return x and y
     return vertices.reshape((-1, 3))[:, :2]
+
 
 # From pandamesh
 def get_faces():
@@ -43,6 +45,7 @@ def get_faces():
         raise ValueError("No triangles or quads in mesh")
     # convert to 0-based index
     return faces - 1
+
 
 def clean_geometries(gdf: gpd.GeoDataFrame, feedback):
     data = gdf.copy()
@@ -125,6 +128,7 @@ def clean_geometries(gdf: gpd.GeoDataFrame, feedback):
     data = data[~data.is_empty]
     return data
 
+
 def layer_to_gdf(layer, feedback):
     geoms = []
     sizes = []
@@ -146,6 +150,7 @@ def layer_to_gdf(layer, feedback):
     
     return gdf
 
+
 # 2D algorithms: https://gmsh.info/doc/texinfo/gmsh.html#Mesh-options
 ALGORITHMS = {
     "MeshAdapt": 1, 
@@ -158,6 +163,7 @@ ALGORITHMS = {
     "Packing of Parallelograms": 9, 
     "Quasi-structured Quad": 11
 }
+
 
 @alg(name='triangulate_custom', label='Hopefully triangulate',
      group='drain_scripts', group_label='Drain')

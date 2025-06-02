@@ -5,6 +5,7 @@ from typing import Any
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ... import global_vars
 
+
 class DrFixEdgeVertexAlgorithm(QgsProcessingAlgorithm):
     GROUND_LAYER = 'GROUND_LAYER'
     POINT_LAYER = 'INPUT'

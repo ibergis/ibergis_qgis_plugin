@@ -36,6 +36,7 @@ from .g_s_defaults import (
     annotation_field_name
 )
 
+
 # Export
 # geometry functions
 def check_nan(replace_lst):
@@ -73,6 +74,7 @@ def use_z_if_available(
             df['Elevation'] = coords['Z_Coord']
         coords.drop("Z_Coord", axis=1, inplace=True)
     return df, coords
+
 
 def get_coords_from_geometry(df):
     """
@@ -152,6 +154,7 @@ def get_coords_from_geometry(df):
             'Geometry type of one or more features could not be handled'
         )
 
+
 def extract_xyz_from_simple_point(p_name, point_simple):
     """
     extracts x and y coordinates from a LineString
@@ -188,6 +191,7 @@ def extract_xy_from_line(line_geom):
     extr_coords_df.drop('Name', axis=1, inplace=True)
     return extr_coords_df
 
+
 def extract_xy_from_area(geom_row):
     """
     extraxts xy from polygon geometries
@@ -196,6 +200,7 @@ def extract_xy_from_area(geom_row):
     xy_list = [[str(v.x()), str(v.y())] for v in geom_row.vertices()]
     xy_df = pd.DataFrame(xy_list, columns=['X_Coord', 'Y_Coord'])
     return xy_df
+
 
 # functions for data in tables
 def get_curves_from_table(curves_raw, name_col):
@@ -390,8 +395,7 @@ def check_deprecated(
             df = df.rename(columns={dep_col: cols_deprecated[dep_col]})
     return df
         
-        
-        
+
 def check_columns(
     swmm_data_file,
     cols_expected,

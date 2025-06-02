@@ -33,6 +33,7 @@ import numpy as np
 import pandas as pd
 import processing
 
+
 class DrCreateMeshTask(DrTask):
     def __init__(
         self,
@@ -94,7 +95,6 @@ class DrCreateMeshTask(DrTask):
             self.dao = global_vars.gpkg_dao_data.clone()
             db_path = self.dao.db_filepath.replace('\\', '/')
             path = f"{db_path}|layername="
-
 
             layers: dict[str, Union[QgsVectorLayer, QgsRasterLayer]] = {}
 
@@ -273,7 +273,6 @@ class DrCreateMeshTask(DrTask):
             ground_triangles_df["custom_roughness"] = extra_data["custom_roughness"]
             ground_triangles_df["scs_cn"] = extra_data["scs_cn"]
 
-
             # Get ground roughness
             roughness_from_raster = False
             if self.roughness_layer is None: # Fill with zeros
@@ -281,6 +280,7 @@ class DrCreateMeshTask(DrTask):
             elif self.roughness_layer == "ground_layer": # From ground layer
                 print("Getting roughness from ground layer... ", end="")
                 start = time.time()
+
                 def get_roughness(row):
                     custom_roughness = row["custom_roughness"]
                     if custom_roughness is None or np.isnan(custom_roughness):
@@ -344,6 +344,7 @@ class DrCreateMeshTask(DrTask):
                 ground_crs = layers["ground"].crs()
                 dem_crs = self.dem_layer.crs()
                 qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
+
                 def get_z(x, y):
                     point = qct.transform(QgsPointXY(x, y))
                     val, res = self.dem_layer.dataProvider().sample(point, 1)
@@ -588,7 +589,6 @@ class DrCreateMeshTask(DrTask):
             bridge_values_dict[value["bridge_code"]].append({"distance": value["distance"], "topelev": value["topelev"]
                                                              , "lowelev": value["lowelev"], "openingval": value["openingval"]})
         return bridge_values_dict
-
 
     def _create_valid_edges_layer(self, buffer_layer: QgsVectorLayer, mesh_edges_layer: QgsVectorLayer, context: QgsProcessingContext):
         # Join buffer with mesh edges

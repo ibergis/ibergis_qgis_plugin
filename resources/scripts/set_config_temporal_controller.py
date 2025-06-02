@@ -55,6 +55,7 @@ def set_raster_renderer_to_singleband(layer: QgsRasterLayer, band: int = 1) -> N
     layer.setRenderer(renderer)
     layer.triggerRepaint()
 
+
 def set_band_based_on_range(layer: QgsRasterLayer, t_range: QgsDateTimeRange) -> int:
     """
 
@@ -74,6 +75,7 @@ def set_band_based_on_range(layer: QgsRasterLayer, t_range: QgsDateTimeRange) ->
             set_raster_renderer_to_singleband(layer, band_num)
     return band_num
 
+
 def set_fixed_temporal_range(layer: QgsRasterLayer, t_range: QgsDateTimeRange) -> None:
     """
     Set fixed temporal range for raster layer
@@ -92,13 +94,16 @@ def set_fixed_temporal_range(layer: QgsRasterLayer, t_range: QgsDateTimeRange) -
     tprops.setFixedTemporalRange(t_range)
     tprops.setIsActive(True)
 
+
 def temporal_range_changed(t_range: QgsDateTimeRange):
     layer = iface.activeLayer()
     if isinstance(layer, QgsRasterLayer):
         set_band_based_on_range(layer, t_range)
 
+
 def set_range():
     mode = QgsRasterLayerTemporalProperties.ModeFixedTemporalRange
+
 
 temporal_controller: QgsTemporalController = iface.mapCanvas().temporalController()
 temporal_controller.updateTemporalRange.connect(temporal_range_changed)

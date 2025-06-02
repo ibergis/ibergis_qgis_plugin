@@ -13,7 +13,6 @@ from qgis.PyQt.QtWidgets import QDockWidget
 class DrDocker(QDockWidget):
     dlg_closed = QtCore.pyqtSignal()
 
-
     def __init__(self):
 
         super().__init__()
@@ -22,7 +21,6 @@ class DrDocker(QDockWidget):
             self.setupUi(self)
         except Exception:
             pass
-
 
     def closeEvent(self, event):
 

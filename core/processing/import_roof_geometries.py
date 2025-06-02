@@ -176,7 +176,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
             )
         annotation.setFlags(annotation.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-
         self.addParameter(custom_code)
         self.addParameter(descript)
         self.addParameter(slope)
@@ -195,7 +194,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
             description=self.tr('Selected features only'),
             defaultValue=False
         ))
-
 
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """

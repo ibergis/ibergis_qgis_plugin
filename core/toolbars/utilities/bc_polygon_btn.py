@@ -243,7 +243,6 @@ class DrCreateBCFromPolygon(DrAction):
             self.action.setChecked(False)
             canvas.mapToolSet.disconnect(self._uncheck)
 
-
     def _validate_and_save(self, layer, feature):
         layer.changeAttributeValue
         feature.setAttribute("code", self.dlg.txt_code.text())

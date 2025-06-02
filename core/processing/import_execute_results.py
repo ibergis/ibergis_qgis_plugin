@@ -56,8 +56,6 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
 
     folder_results_path: Optional[str] = None
 
-
-
     def initAlgorithm(self, config):
         """
         inputs and output of the algorithm
@@ -76,7 +74,6 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
                 optional=True
             )
         )
-
 
     def processAlgorithm(self, parameters, context: QgsProcessingContext, feedback: Feedback):
         """
@@ -233,7 +230,6 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
 
         temporal.setFixedRangePerBand(ranges)
 
-
     def createColorRamp(self, main_colors: dict, min_val: float, max_val: float, num_steps: int = 20, min_invisible: bool = True):
         """ Creates a color ramp from main colors
                 Parameters:
@@ -277,7 +273,6 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
 
         return color_items
 
-
     def openTemporalLine(self, layer: QgsRasterLayer):
         """ Configure and open the QGIS temporal line """
 
@@ -315,7 +310,6 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
         # Open temporal controller
         action = self.iface.mainWindow().findChild(QAction, 'mActionTemporalController')
         action.trigger()
-
 
     def shortHelpString(self):
         return self.tr("""This tool allows you to import raster results from the results folder created on execute model.\n

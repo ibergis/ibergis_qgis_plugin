@@ -193,7 +193,6 @@ class DrAdminButton(DrGpkgBase):
         # Create the dialog and signals
         self._init_show_database()
 
-
     def create_project_data_schema(self):
         """"""
 
@@ -214,7 +213,6 @@ class DrAdminButton(DrGpkgBase):
         self.project_path = project_path
         self.project_epsg = project_srid
         self.locale = project_locale
-
 
         self.gpkg_full_path = project_path + "/" + gpkg_name + ".gpkg"
         if os.path.exists(self.gpkg_full_path):
@@ -257,7 +255,6 @@ class DrAdminButton(DrGpkgBase):
         QgsApplication.taskManager().addTask(self.create_gpkg_thread)
         QgsApplication.taskManager().triggerTask(self.create_gpkg_thread)
 
-
     def change_tab(self):
 
         self.dlg_readsql.tab_main.setCurrentIndex(1)
@@ -268,7 +265,6 @@ class DrAdminButton(DrGpkgBase):
         self.dlg_readsql.txt_gis_file.setText(gpkg_name)
         self.dlg_readsql.txt_gis_gpkg.setText(f"{gpkg_path}/{gpkg_name}.gpkg")
         self.dlg_readsql.txt_gis_folder.setText(gpkg_path)
-
 
     def manage_process_result(self, is_utils=False, dlg=None):
         """"""
@@ -288,7 +284,6 @@ class DrAdminButton(DrGpkgBase):
         global_vars.gpkg_dao_data.close_db()
         global_vars.gpkg_dao_data = global_vars.gpkg_dao_data.clone()
         self.change_tab()
-
 
     def init_dialog_create_project(self):
         """ Initialize dialog (only once) """
@@ -386,7 +381,6 @@ class DrAdminButton(DrGpkgBase):
             msg_params = (i18n_dml_path, str(e))
             tools_log.log_warning(msg, msg_params=msg_params)
             
-
     def load_base(self, dict_folders):
         """"""
 
@@ -398,13 +392,11 @@ class DrAdminButton(DrGpkgBase):
                 return False
         return True
 
-
     def load_sample_data(self):
 
         folder_example = os.path.join(self.sql_dir, "example")
         status = self._execute_files(folder_example)
         return status
-
 
     def _init_show_database(self):
         """ Initialization code of the form (to be executed only once) """
@@ -461,7 +453,6 @@ class DrAdminButton(DrGpkgBase):
 
         self._open_form_create_gis_project()
 
-
     def _gis_create_project(self):
         """"""
 
@@ -490,7 +481,6 @@ class DrAdminButton(DrGpkgBase):
         # Generate QGIS project
         self._generate_qgis_project(gis_folder, gis_file, gpkg_file, self.project_epsg)
 
-
     def _generate_qgis_project(self, gis_folder, gis_file, gpkg_file, srid):
         """ Generate QGIS project """
 
@@ -499,7 +489,6 @@ class DrAdminButton(DrGpkgBase):
         self._close_dialog_admin(self.dlg_readsql)
         if result:
             self._open_project(qgs_path)
-
 
     def _open_project(self, qgs_path):
         """ Open a QGis project """
@@ -510,7 +499,6 @@ class DrAdminButton(DrGpkgBase):
         # Reload plugin
         file_name = os.path.basename(self.plugin_dir)
         reloadPlugin(f"{file_name}")
-
 
     def _open_form_create_gis_project(self):
         """"""
@@ -536,18 +524,15 @@ class DrAdminButton(DrGpkgBase):
         # Set shortcut keys
         self.dlg_readsql.key_escape.connect(partial(tools_dr.close_dialog, self.dlg_readsql))
 
-
     def _close_dialog_admin(self, dlg):
         """ Close dialog """
         tools_dr.close_dialog(dlg, delete_dlg=False)
-
 
     def _update_locale(self):
         """"""
         # TODO: Class variable foder_locale is unused
         cmb_locale = tools_qt.get_combo_value(self.dlg_readsql, self.cmb_locale, 0)
         self.folder_locale = os.path.join(self.sql_dir, 'i18n', cmb_locale)
-
 
     def _manage_srid(self):
         """ Manage SRID configuration """
@@ -558,14 +543,12 @@ class DrAdminButton(DrGpkgBase):
         self.tbl_srid.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tbl_srid.clicked.connect(partial(self._set_selected_srid))
 
-
     def _set_selected_srid(self, index):
 
         model = self.tbl_srid.model()
         row = index.row()
         srid = model.data(model.index(row, 0), Qt.DisplayRole)
         tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, srid)
-
 
     def _filter_srid_changed(self):
         """"""
@@ -593,7 +576,6 @@ class DrAdminButton(DrGpkgBase):
         self.tbl_srid.setColumnWidth(1, 300)
         self.tbl_srid.horizontalHeader().setStretchLastSection(True)
 
-
     def _set_signals_create_project(self):
         """"""
 
@@ -615,20 +597,17 @@ class DrAdminButton(DrGpkgBase):
         qm_gen = DrI18NGenerator()
         qm_gen.init_dialog()
 
-
     def _update_translations(self):
         """ Initialize the translation functionalities """
 
         qm_i18n_up = DrSchemaI18NUpdate()
         qm_i18n_up.init_dialog()
 
-
     def _i18n_manager(self):
         """ Initialize the i18n functionalities """
 
         qm_i18n_manager = DrSchemaI18NManager()
         qm_i18n_manager.init_dialog()
-
 
     def _select_path(self):
         """ Select file path"""
@@ -643,7 +622,6 @@ class DrAdminButton(DrGpkgBase):
         message = tools_qt.tr("Select GPKG path")
         file_path = QFileDialog.getExistingDirectory(None, message)
         self.dlg_readsql.data_path.setText(file_path)
-
 
     def _select_file_gpkg(self):
         """ Select GPKG file """
@@ -661,7 +639,6 @@ class DrAdminButton(DrGpkgBase):
         message = tools_qt.tr("Select GPKG file")
         file_gpkg, filter_ = QFileDialog.getOpenFileName(None, message, "", '*.gpkg')
         self.dlg_readsql.txt_gis_gpkg.setText(file_gpkg)
-
 
     def _execute_files(self, filedir):
         """"""
@@ -695,7 +672,6 @@ class DrAdminButton(DrGpkgBase):
 
         return status
 
-
     def create_schema_main_execution(self):
         """ Main common execution """
 
@@ -708,7 +684,6 @@ class DrAdminButton(DrGpkgBase):
         tools_log.log_info(msg, msg_params=msg_params)
         status = self.load_base(self.dict_folders_process['load_base'])
         return status
-
 
     def create_schema_custom_execution(self, config_dao=None):
         """ Custom execution """
@@ -757,7 +732,6 @@ class DrAdminButton(DrGpkgBase):
 
         return True
 
-
     def populate_project_params(self):
         """Populate project params in config_param_user"""
 
@@ -771,7 +745,6 @@ class DrAdminButton(DrGpkgBase):
                 tools_log.log_warning(msg, msg_params=msg_params)
                 tools_qt.show_info_box(msg)
                 return False
-
 
     def create_gpkg(self):
         """ Create Geopackage """
@@ -789,7 +762,6 @@ class DrAdminButton(DrGpkgBase):
         dataset = driver.Create(self.gpkg_full_path, 0, 0, 0, gdal.GDT_Unknown)
         del dataset
         return True
-
 
     def calculate_number_of_files(self):
         """ Calculate total number of SQL to execute """
@@ -812,7 +784,6 @@ class DrAdminButton(DrGpkgBase):
 
         return total_sql_files
 
-
     def get_number_of_files_process(self, process_name: str):
         """ Calculate number of files of all folders of selected @process_name """
 
@@ -831,7 +802,6 @@ class DrAdminButton(DrGpkgBase):
 
         return dict_folders, number_of_files
 
-
     def get_folders_process(self, process_name):
         """ Get list of folders related with this @process_name """
 
@@ -843,7 +813,6 @@ class DrAdminButton(DrGpkgBase):
             dict_folders[os.path.join(self.folder_software, self.file_pattern_trg)] = 0
 
         return dict_folders
-
 
     def _manage_result_message(self, status, msg_ok=None, msg_error=None, parameter=None):
         """ Manage message depending result @status """
@@ -857,13 +826,11 @@ class DrAdminButton(DrGpkgBase):
                 msg_error = "Process finished with some errors"
             tools_qgis.show_warning(msg_error, parameter=parameter, dialog=self.dlg_readsql)
 
-
     def _select_active_locales(self):
 
         sql = "SELECT locale as id, name as idval FROM locales WHERE active = 1"
         rows = self.gpkg_dao_config.get_rows(sql)
         return rows
-
 
     def _on_timer_timeout(self):
         # Update timer

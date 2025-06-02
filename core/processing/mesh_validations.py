@@ -52,8 +52,6 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
             if self.parameterAsBoolean(parameters, validation, context):
                 validations.append(validation)
 
-
-
         # Validate the input layer
         validation_layers = validate_input_layers(self.layers, validations, feedback)
         if validation_layers is None:

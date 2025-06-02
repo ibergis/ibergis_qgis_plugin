@@ -6,6 +6,7 @@ from ...lib.tools_gpkgdao import DrGpkgDao
 
 LayerType = Literal["Point", "LineString", "Polygon", "MultiPoint", "MultiLineString", "MultiPolygon"]
 
+
 class Query:
     def __init__(self, query: str, layer_type: LayerType, description: str, short_name: str, show_layer: bool = True) -> None:
         self.query = query

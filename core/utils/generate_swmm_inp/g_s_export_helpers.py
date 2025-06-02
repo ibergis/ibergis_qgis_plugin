@@ -222,8 +222,6 @@ def data_preparation(data_name, data_entry, export_params):
         )
         return {'TIMESERIES': {'data': timeseries_dict}}
 
-
-
     elif data_name == 'QUALITY':
         from .g_s_quality import get_quality_params_from_table
         (
@@ -264,6 +262,7 @@ def data_preparation(data_name, data_entry, export_params):
     else:
         raise QgsProcessingException(f'Unknown data name: {data_name}')
 
+
 # geometry functions
 def check_missing_z(z_vals, coord_type, all_names, layer_name):
     """
@@ -284,6 +283,7 @@ def check_missing_z(z_vals, coord_type, all_names, layer_name):
             f'Missing z-Coordinates for the following {coord_type} in layer {layer_name}: {", ".join(missing_z)}'
             '\nPlease check all required nodes and links or run the tool without z-coordinates'
         )
+
 
 def use_z_if_available(
     df,
@@ -469,6 +469,7 @@ def get_coords_from_geometry(df):
             'Geometry type of one or more features could not be handled'
         )
 
+
 def extract_xyz_from_simple_point(p_name, point_simple):
     """
     Extract X, Y, and Z coordinates from a simple point.
@@ -513,6 +514,7 @@ def extract_xy_from_line(line_geom):
     extr_coords_df.drop('Name', axis=1, inplace=True)
     return extr_coords_df
 
+
 def extract_xy_from_area(geom_row):
     """
     extraxts xy from polygon geometries
@@ -521,6 +523,7 @@ def extract_xy_from_area(geom_row):
     xy_list = [[str(v.x()), str(v.y())] for v in geom_row.vertices()]
     xy_df = pd.DataFrame(xy_list, columns=['X_Coord', 'Y_Coord'])
     return xy_df
+
 
 # functions for data in tables
 def get_curves_from_table(curves_raw, name_col):
@@ -725,7 +728,6 @@ def check_deprecated(
             )
             df = df.rename(columns={dep_col: cols_deprecated[dep_col]})
     return df
-
 
 
 def check_columns(

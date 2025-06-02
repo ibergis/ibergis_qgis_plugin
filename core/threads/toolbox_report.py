@@ -31,7 +31,6 @@ class DrReportTask(DrTask):
         self.queryAdd = queryAdd
         self.timer = timer
 
-
     def run(self):
 
         super().run()
@@ -54,7 +53,6 @@ class DrReportTask(DrTask):
             return False
 
         return True
-
 
     def finished(self, result):
 
@@ -92,7 +90,6 @@ class DrReportTask(DrTask):
             msg = "Database returned null. Check postgres function '{0}'"
             msg_params = ("gw_fct_getinfofromid",)
             tools_log.log_warning(msg, msg_params=msg_params)
-
 
     def cancel(self):
 

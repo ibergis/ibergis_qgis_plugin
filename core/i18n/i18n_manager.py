@@ -38,7 +38,6 @@ class DrSchemaI18NManager:
 
         tools_dr.open_dialog(self.dlg_qm, dlg_name='admin_i18n_manager')
 
-
     def _set_signals(self):
         # Mysteriously without the partial the function check_connection is not called
         self.dlg_qm.btn_search.clicked.connect(self._update_i18n_database)
@@ -174,7 +173,6 @@ class DrSchemaI18NManager:
         if self.py_dialogs:
             self._update_py_dialogs()
 
-
     # region Missing DB Dialogs
     def _update_db_tables(self):
         no_repeat_table = []
@@ -205,7 +203,6 @@ class DrSchemaI18NManager:
         self._vacuum_commit(self.conn_i18n, self.cursor_i18n)      
         self.dlg_qm.lbl_info.clear()
         tools_qt.show_info_box(text_error)
-
 
     def _update_tables(self, table_i18n):
         tables_org = self.dbtables_dic[self.project_type]['tables_org'][table_i18n]
@@ -238,7 +235,6 @@ class DrSchemaI18NManager:
                         row_dict[actual_column_name] = ''
                 processed_rows_i18n.append(row_dict)
         
-
         columns_select_org = ", ".join(columns_org)
         query_org = f"SELECT {columns_select_org} FROM {table_org};"
         rows_org_sqlite = self._get_rows(query_org, self.cursor_org)
@@ -282,7 +278,6 @@ class DrSchemaI18NManager:
                                         ON CONFLICT (source_code, context, source) 
                                         DO UPDATE SET al_en_us = {texts[0]}, ds_en_us = {texts[1]};\n"""
                         
-                        
                     try:
                         self.cursor_i18n.execute(query)
                         self.conn_i18n.commit()
@@ -294,7 +289,6 @@ class DrSchemaI18NManager:
         else:
             return f"{text_error}\n"
         
-
     def _get_rows_to_compare(self, table_i18n, table_org):
         if 'dbconfig_form_fields' in table_i18n:
             columns_i18n = ["formname", "formtype", "source", "lb_en_us", "pl_en_us", "ds_en_us"]
@@ -355,7 +349,6 @@ class DrSchemaI18NManager:
                         query += query_row
         return query
     
-
     # endregion
     #region Python
     def _update_py_dialogs(self):
@@ -581,7 +574,6 @@ class DrSchemaI18NManager:
             print(f"Error reading file {file}: {e}")
         return found_lines
     
-
     def _msg_multines_end(self, found_lines, full_text, num_line):
         matches = re.findall(r"(['\"])(.*?)\1", full_text)
         if matches:
@@ -591,7 +583,6 @@ class DrSchemaI18NManager:
             print(f"Error: Could not extract message from line: {full_text}")
             found_lines.append((num_line, full_text.strip()))
         return found_lines
-    
     
     def _search_dialog_info(self, file, key_row, key_text, num_line):
         with open(file, "r", encoding="utf-8") as f:
@@ -621,7 +612,6 @@ class DrSchemaI18NManager:
             
             return dialog_name, toolbar_name, source
 
-
     def _extra_messages_to_find():
         # writen to be detected by the automatical finder of pymessages
         message = "File"
@@ -637,7 +627,6 @@ class DrSchemaI18NManager:
         else:
             return False
 
-    
     def _get_rows(self, sql, cursor):
         """ Get multiple rows from selected query """
         rows = None
@@ -699,7 +688,6 @@ class DrSchemaI18NManager:
         recurse(data)
         return results
     
-
     def _verify_lang(self):
         return True
         query = "SELECT language from sys_version"

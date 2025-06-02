@@ -203,7 +203,6 @@ class DrCreateMeshButton(DrAction):
 
             num_triangles += geom.area() / triangle_area
 
-
         print(f"Estimated number of triangles: {num_triangles}")
         # self.feedback.setProgressText(f"Estimated number of triangles: >{num_triangles}")
 
@@ -288,7 +287,6 @@ class DrCreateMeshButton(DrAction):
 
         QgsApplication.taskManager().addTask(thread)
 
-
     def _progress_changed(self, process, progress, text, new_line):
         # Progress bar
         if progress is not None:
@@ -317,7 +315,6 @@ class DrCreateMeshButton(DrAction):
         # Scroll to the bottom
         scrollbar = txt_infolog.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
-
 
     def _load_widget_values(self):
         dlg = self.dlg_mesh

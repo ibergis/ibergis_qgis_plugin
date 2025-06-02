@@ -251,7 +251,6 @@ def sect_list_import_handler(
                         df_processed['geometry'] = geometries_with_z
                 feedback.setProgress(97)
                 
-                
                 dict_all_vals[section_name]['data'] = df_processed
                 feedback.setProgress(99)
                 dict_all_vals[section_name]['status'] = ImportDataStatus.GEOM_READY
@@ -503,6 +502,7 @@ def insert_nan_after_kw(df_line, kw_position, kw, insert_positions):
             df_line.insert(i_p, np.nan)
     return df_line
 
+
 # dtype adjustment
 def date_conversion(datestring):
     """
@@ -514,6 +514,7 @@ def date_conversion(datestring):
         return NULL
     else:
         return QDate().fromString(datestring, 'MM/dd/yyyy')
+
 
 def time_conversion(timestring):
     """
@@ -543,6 +544,7 @@ def time_conversion(timestring):
         time_minutes = int(time_minutes)
         time_seconds = int(time_seconds)
     return QTime(time_hours, time_minutes, time_seconds)
+
 
 def adjust_column_types(df, col_types):
     """

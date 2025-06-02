@@ -133,7 +133,6 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
             defaultValue=False
         ))
 
-
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
         main process algorithm of this tool
@@ -189,8 +188,6 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         self.converted_geometries_layer = result['OUTPUT']
 
         return {}
-
-
 
     def _insert_data(self, source_layer: QgsVectorLayer, target_layer: QgsVectorLayer, field_map: dict, unique_fields: dict, feedback: Feedback, batch_size: int = 1000):
         """Copies features from the source layer to the target layer with mapped fields, committing in batches."""

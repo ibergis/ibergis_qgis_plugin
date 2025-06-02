@@ -27,7 +27,6 @@ class DrSchemaI18NUpdate:
         self.schema_name = global_vars.schema_name
         self.project_type_selected = None
 
-
     def init_dialog(self):
         """ Constructor """
 
@@ -40,7 +39,6 @@ class DrSchemaI18NUpdate:
         self.dlg_qm.btn_translate.setEnabled(False)
 
         tools_dr.open_dialog(self.dlg_qm, dlg_name='admin_update_translation')
-
 
     # region private functions
 
@@ -55,7 +53,6 @@ class DrSchemaI18NUpdate:
 
         #Populate schema names
         self.dlg_qm.cmb_projecttype.currentIndexChanged.connect(partial(self._populate_data_schema_name, self.dlg_qm.cmb_projecttype))
-
 
     def _check_connection(self, set_languages):
         """ Check connection to database """
@@ -132,7 +129,6 @@ class DrSchemaI18NUpdate:
                 self.dlg_qm.cmb_schema.clear()
                 return
     
-
         tools_qt.fill_combo_values(self.dlg_qm.cmb_schema, result_list)
 
     def _change_project_type(self, widget):
@@ -458,7 +454,6 @@ class DrSchemaI18NUpdate:
                     print(e)
                     tools_db.dao.rollback()
         
-    
     def _write_dbjson_values(self, rows):
         query = ""
         updates = {}
@@ -623,7 +618,6 @@ class DrSchemaI18NUpdate:
         tools_qt.set_widget_text(self.dlg_qm, 'txt_py_msg', py_msg)
         tools_qt.set_widget_text(self.dlg_qm, 'txt_db_msg', db_msg)
 
-
     def _init_db_i18n(self, host, port, db, user, password):
         """Initializes database connection"""
         e = ''
@@ -664,7 +658,6 @@ class DrSchemaI18NUpdate:
 
         return status
 
-
     def _commit(self):
         """ Commit current database transaction """
         self.conn_i18n.commit()
@@ -694,7 +687,6 @@ class DrSchemaI18NUpdate:
         finally:
             return rows
 
-
     def _replace_invalid_characters(self, param):
         """
         This function replaces the characters that break JSON messages
@@ -706,7 +698,6 @@ class DrSchemaI18NUpdate:
         param = param.replace("\n", " ")
 
         return param
-    
     
     def _replace_invalid_quotation_marks(self, param):
         """
@@ -727,7 +718,6 @@ class DrSchemaI18NUpdate:
             print(e)
             conn.rollback()
 
-            
     def _copy_table_from_another_db(self, full_table_org, full_table_dest, cur_org, cur_dest, conn_dest):
         # Fetch existing rows from cat_feature
         schema_org = full_table_org.split('.')[0]
@@ -772,7 +762,6 @@ class DrSchemaI18NUpdate:
 
         cur_dest.execute(final_query)
         conn_dest.commit()
-
 
     def tables_dic(self, schema_type):
         dbtables_dic = {

@@ -32,7 +32,6 @@ class DrLoadProject(QObject):
         self.buttons_to_hide = []
         self.buttons = {}
 
-
     def project_read(self, show_warning=True):
         """ Function executed when a user opens a QGIS project (*.qgs) """
 
@@ -125,7 +124,6 @@ class DrLoadProject(QObject):
         # Call gw_fct_setcheckproject and create GwProjectLayersConfig thread
         self._config_layers()
 
-
     # region private functions
 
     def _get_project_variables(self):
@@ -139,7 +137,6 @@ class DrLoadProject(QObject):
         global_vars.project_vars['project_type'] = tools_qgis.get_project_variable('gwProjectType')
         global_vars.project_vars['project_gpkg'] = tools_qgis.get_project_variable('project_gpkg_path')
 
-
     def _get_user_variables(self):
         """ Get config related with user variables """
 
@@ -150,11 +147,9 @@ class DrLoadProject(QObject):
         global_vars.user_level['showadminadvanced'] = tools_dr.get_config_parser('user_level', 'showadminadvanced', "user", "init", False)
         global_vars.date_format = tools_dr.get_config_parser('system', 'date_format', "user", "init", False)
 
-
     def _check_project(self, show_warning):
         """ TODO: Check if loaded project is valid for Drain """
         return True
-
 
     def _check_database_connection(self):
         """ Set database connection to Geopackage file """
@@ -195,7 +190,6 @@ class DrLoadProject(QObject):
         gpkg_dao_data = tools_gpkgdao.DrGpkgDao()
         global_vars.gpkg_dao_data = gpkg_dao_data
 
-
         # Define filepath of data GPKG
         db_filepath = f"{global_vars.project_vars['project_gpkg']}"
         db_filepath = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
@@ -230,12 +224,9 @@ class DrLoadProject(QObject):
             tools_log.log_info(msg, msg_params=msg_params)
             return False
 
-
-
         msg = "Database connection successful"
         tools_log.log_info(msg)
         return True
-
 
     def _get_buttons_to_hide(self):
         """ Get all buttons to hide """
@@ -254,7 +245,6 @@ class DrLoadProject(QObject):
             tools_log.log_warning(msg, msg_params=msg_params)
         finally:
             return buttons_to_hide
-
 
     def _manage_toolbars(self):
         """ Manage actions of the custom plugin toolbars """
@@ -336,7 +326,6 @@ class DrLoadProject(QObject):
         self._enable_toolbar("toc")
         self._hide_button("308")
 
-
     def _config_layers(self):
         """ Call gw_fct_setcheckproject and create GwProjectLayersConfig thread """
 
@@ -358,7 +347,6 @@ class DrLoadProject(QObject):
         QgsApplication.taskManager().triggerTask(self.task_get_layers)
 
         return True
-
 
     def _create_toolbar(self, toolbar_id):
 
@@ -388,7 +376,6 @@ class DrLoadProject(QObject):
         plugin_toolbar.list_actions = list_actions
         self.plugin_toolbars[toolbar_id] = plugin_toolbar
 
-
     def _enable_toolbars(self, visible=True):
         """ Enable/disable all plugin toolbars from QGIS GUI """
 
@@ -403,13 +390,11 @@ class DrLoadProject(QObject):
             msg_params = (str(e),)
             tools_log.log_warning(msg, msg_params=msg_params)
 
-
     def _enable_all_buttons(self, enable=True):
         """ Utility to enable/disable all buttons """
 
         for index in self.buttons.keys():
             self._enable_button(index, enable)
-
 
     def _enable_button(self, button_id, enable=True):
         """ Enable/disable selected button """
@@ -418,14 +403,12 @@ class DrLoadProject(QObject):
         if key in self.buttons:
             self.buttons[key].action.setEnabled(enable)
 
-
     def _hide_button(self, button_id, hide=True):
         """ Enable/disable selected action """
 
         key = str(button_id).zfill(2)
         if key in self.buttons:
             self.buttons[key].action.setVisible(not hide)
-
 
     def _enable_toolbar(self, toolbar_id, enable=True):
         """ Enable/Disable toolbar. Normally because user has no permission """
@@ -436,12 +419,10 @@ class DrLoadProject(QObject):
             for index_action in plugin_toolbar.list_actions:
                 self._enable_button(index_action, enable)
 
-
     def _force_tab_exploitation(self):
         """ Select tab 'tab_exploitation' in dialog 'dlg_selector_basic' """
 
         tools_dr.set_config_parser("dialogs_tab", "dlg_selector_basic", "tab_exploitation", "user", "session")
-
 
     def _manage_attribute_table(self):
         """ If configured, disable button "Update all" from attribute table """
@@ -450,7 +431,6 @@ class DrLoadProject(QObject):
         if tools_os.set_boolean(disable, False):
             tools_dr.connect_signal(QApplication.instance().focusChanged, self._manage_focus_changed,
                                     'load_project', 'manage_attribute_table_focusChanged')
-
 
     def _manage_focus_changed(self, old, new):
         """ Disable button "Update all" of QGIS attribute table dialog. Parameters are passed by the signal itself. """

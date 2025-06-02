@@ -33,7 +33,6 @@ class DrToolBoxTask(DrTask):
         self.function_name = None
         self.timer = timer
 
-
     def run(self):
 
         super().run()
@@ -154,7 +153,6 @@ class DrToolBoxTask(DrTask):
 
         return True
 
-
     def finished(self, result):
 
         super().finished(result)
@@ -193,7 +191,6 @@ class DrToolBoxTask(DrTask):
             msg = "Database returned null. Check postgres function '{0}'"
             msg_params = ("gw_fct_getinfofromid",)
             tools_log.log_warning(msg, msg_params=msg_params)
-
 
     def cancel(self):
 

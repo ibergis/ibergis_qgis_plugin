@@ -49,7 +49,6 @@ class DrMainWindow(QMainWindow):
         giswater_icon = QIcon(icon_path)
         self.setWindowIcon(giswater_icon)
 
-
     def closeEvent(self, event):
 
         try:
@@ -59,7 +58,6 @@ class DrMainWindow(QMainWindow):
             # This exception jumps, for example, when closing the mincut dialog when it is in docker
             # RuntimeError: wrapped C/C++ object of type Mincut has been deleted
             pass
-
 
     def keyPressEvent(self, event):
 
@@ -73,7 +71,6 @@ class DrMainWindow(QMainWindow):
         except RuntimeError:
             # Multiples signals are emited when we use key_scape in order to close dialog
             pass
-
 
     def messageBar(self):
         return self._messageBar

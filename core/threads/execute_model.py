@@ -74,7 +74,6 @@ class DrExecuteModel(DrTask):
         self.output = None
         self.import_results_infolog = None
 
-
     def init_params(self):
         self.dialog = self.params.get('dialog')
         self.folder_path = self.params.get('folder_path')
@@ -82,7 +81,6 @@ class DrExecuteModel(DrTask):
         self.do_export = self.params.get('do_export', True)
         self.do_run = self.params.get('do_run', True)
         self.do_import = self.params.get('do_import', True)
-
 
     def run(self):
 
@@ -97,7 +95,6 @@ class DrExecuteModel(DrTask):
         # self._close_dao()
 
         return status
-
 
     def finished(self, result):
 
@@ -121,7 +118,6 @@ class DrExecuteModel(DrTask):
         if global_vars.session_vars['last_error']:
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
 
-
     def cancel(self):
 
         msg = "Task canceled - {0}"
@@ -129,7 +125,6 @@ class DrExecuteModel(DrTask):
         tools_qgis.show_info(msg, msg_params=msg_params)
         # self._close_file()
         super().cancel()
-
 
     def _create_results_folder(self):
         """Create results folder and generate results GPKG and NetCDF files"""
@@ -187,12 +182,9 @@ class DrExecuteModel(DrTask):
                 self.progress_changed.emit("Import results", None, "Imported results", True)
         self.progress_changed.emit(None, self.PROGRESS_END, None, False)
 
-
     def _import_results_progress_changed(self, process, progress, text, new_line):
         self.progress_changed.emit("Import results", None, text, new_line)
         self.import_results_infolog = text
-
-
 
     def _close_dao(self, dao=None):
 
@@ -205,7 +197,6 @@ class DrExecuteModel(DrTask):
                 del dao
         except Exception:
             pass
-
 
     # region private functions
 
@@ -486,7 +477,6 @@ class DrExecuteModel(DrTask):
         options_str = f"{options_delta_time} {options_tmax} {options_rank_results} {options_order} {options_cfl} {options_wetdry_edge} {options_viscosity_coeff} {options_t0} {options_simulation_details} {options_simulation_new} {options_plan_id} {options_simulation_plan} {options_timeseries}"
         return project_name, result_iber_format, options_str
 
-
     def _write_to_file(self, file_path, content):
         with open(file_path, 'w') as file:
             file.write(content)
@@ -539,7 +529,6 @@ class DrExecuteModel(DrTask):
                     values.insert(4, str(feature.geometry().asPoint().y()))
                     values_str = f"{' '.join(values)}\n"
                     dat_file.write(values_str)
-
 
     def _convert_pinlets_into_inlets(self, selected_mesh: Optional[int] = None,  gometry_layer_name: Optional[str] = 'pinlet', minimum_size: Optional[float] = 2) -> Optional[List[QgsFeature]]:
         """Convert pinlets into inlets"""
@@ -650,7 +639,6 @@ class DrExecuteModel(DrTask):
 
         return converted_inlets
 
-
     def _create_hyetograph_file(self):
         file_name = Path(self.folder_path) / "Iber_Hyetograph.dat"
 
@@ -695,7 +683,6 @@ class DrExecuteModel(DrTask):
                 self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
             file.write("End\n")
-
 
     def _create_rain_file(self):
         file_name = Path(self.folder_path) / "Iber_Rain.dat"
@@ -884,6 +871,5 @@ class DrExecuteModel(DrTask):
         print(f"IberPlus execution finished. Return code: {return_code}")
 
         self.progress_changed.emit("Run Iber", tools_dr.lerp_progress(100, self.PROGRESS_INP, self.PROGRESS_IBER), '', True)
-
 
     # endregion

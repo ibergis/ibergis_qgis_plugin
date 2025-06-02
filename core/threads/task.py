@@ -26,7 +26,6 @@ class DrTask(QgsTask, QObject):
         self.duration = duration
         self.aux_conn = None
 
-
     def run(self) -> bool:
 
         global_vars.session_vars['threads'].append(self)
@@ -37,7 +36,6 @@ class DrTask(QgsTask, QObject):
         iface.actionOpenProject().setEnabled(False)
         iface.actionNewProject().setEnabled(False)
         return True
-
 
     def finished(self, result):
 
@@ -61,7 +59,6 @@ class DrTask(QgsTask, QObject):
                 msg = "Task '{0}' Exception: {1}"
                 msg_params = (self.description(), self.exception,)
                 tools_log.log_info(msg, msg_params=msg_params)
-
 
     def cancel(self):
 

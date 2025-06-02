@@ -65,7 +65,6 @@ class DrEpaFileManager(DrTask):
         self.debug_mode = False
         self.debug_folder_path = ''  # This is the folder where the .xlsx and .inp files will be saved
 
-
     def initialize_variables(self):
 
         self.exception = None
@@ -78,14 +77,12 @@ class DrEpaFileManager(DrTask):
         self.output = None
         self.dao = global_vars.gpkg_dao_data.clone()
 
-
     def set_variables_from_params(self):
         """ Set variables from object Go2Epa """
 
         self.dlg_go2epa = self.params.get("dialog")
         self.export_file_path = self.params.get("export_file_path")
         self.is_subtask = self.params.get("is_subtask", False)
-
 
     def run(self):
 
@@ -100,7 +97,6 @@ class DrEpaFileManager(DrTask):
         self._close_dao()
 
         return status
-
 
     def finished(self, result):
 
@@ -121,7 +117,6 @@ class DrEpaFileManager(DrTask):
             if global_vars.session_vars['last_error']:
                 tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
 
-
     def cancel(self):
 
         msg = "Task canceled - {0}"
@@ -129,7 +124,6 @@ class DrEpaFileManager(DrTask):
         tools_qgis.show_info(msg, msg_params=msg_params)
         # self._close_file()
         super().cancel()
-
 
     def _close_dao(self, dao=None):
 
@@ -142,7 +136,6 @@ class DrEpaFileManager(DrTask):
                 del dao
         except Exception:
             pass
-
 
     # region private functions
 
@@ -176,7 +169,6 @@ class DrEpaFileManager(DrTask):
                     print(e)
 
         return True
-
 
     def _manage_params(self):
 
@@ -292,7 +284,6 @@ class DrEpaFileManager(DrTask):
 
         return output_layer
 
-
     def _create_curves_file(self):
         from ..utils.generate_swmm_inp.g_s_defaults import def_tables_dict
         # Use pandas to read the SQL table into a DataFrame
@@ -346,7 +337,6 @@ class DrEpaFileManager(DrTask):
                     writer.sheets[sheet_name].write(0, i, header)
 
         return file_path
-
 
     def _create_patterns_file(self):
         # Use pandas to read the SQL table into a DataFrame
@@ -402,7 +392,6 @@ class DrEpaFileManager(DrTask):
 
         return file_path
 
-
     def _create_options_file(self):
         query = """SELECT
                     Option,
@@ -451,7 +440,6 @@ class DrEpaFileManager(DrTask):
 
         return file_path
 
-
     def _create_controls_file(self):
         query = """SELECT
                     text
@@ -485,7 +473,6 @@ class DrEpaFileManager(DrTask):
                 worksheet.set_column(i, i, max_len, None, {'align': 'left'})
 
         return file_path
-
 
     def _create_timeseries_file(self):
         # Use pandas to read the SQL table into a DataFrame
@@ -538,7 +525,6 @@ class DrEpaFileManager(DrTask):
 
         return file_path
 
-
     def _create_inflows_file(self):
 
         # Direct inflows
@@ -577,7 +563,6 @@ class DrEpaFileManager(DrTask):
             df_rdii.to_excel(writer, sheet_name="RDII", index=False)
 
         return file_path
-
 
     def _write_transects(self):
 

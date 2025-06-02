@@ -85,7 +85,6 @@ class DrImportInpTask(DrTask):
         # Enable triggers
         self._enable_triggers(True)
 
-
     def _import_file(self):
 
         self.process = ImportInpFile()
@@ -379,6 +378,7 @@ class DrImportInpTask(DrTask):
             ts_data_f = tuple()
             if not ts_data:
                 return ts_data_f
+
             def format_time(time, value) -> tuple:
                 if isinstance(time, float):
                     total_minutes = int(time * 60)

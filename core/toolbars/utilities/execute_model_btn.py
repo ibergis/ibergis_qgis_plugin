@@ -38,11 +38,9 @@ class DrExecuteModelButton(DrAction):
         self.cur_text = None
         self.execute_model_task = None
 
-
     def clicked_event(self):
 
         self._open_execute_dlg()
-
 
     def _open_execute_dlg(self):
         self.execute_dlg = DrExecuteModelUi()
@@ -65,24 +63,20 @@ class DrExecuteModelButton(DrAction):
 
         tools_dr.open_dialog(self.execute_dlg, 'dlg_execute_model')
 
-
     def _populate_mesh_cmb(self):
         sql = "SELECT id, name as idval FROM cat_file"
         rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(self.execute_dlg.cmb_mesh, rows, add_empty=True)
 
-
     def _go2epa_options(self):
         self.go2epa_options = DrOptions()
         self.go2epa_options.open_options_dlg()
-
 
     def _manage_btn_folder_path(self):
         path = tools_os.open_folder_path()
         if path:
             tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', str(path))
-
 
     def _manage_btn_accept(self):
         # Check if results exist on folder
@@ -138,11 +132,9 @@ class DrExecuteModelButton(DrAction):
         QgsApplication.taskManager().addTask(self.execute_model_task)
         QgsApplication.taskManager().triggerTask(self.execute_model_task)
 
-
     def _cancel_task(self):
         if self.execute_model_task:
             self.execute_model_task.cancel()
-
 
     def _progress_changed(self, process, progress, text, new_line):
         # Progress bar
@@ -173,7 +165,6 @@ class DrExecuteModelButton(DrAction):
         scrollbar = txt_infolog.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
-
     def _load_user_values(self):
         """ Load QGIS settings related with file_manager """
 
@@ -187,7 +178,6 @@ class DrExecuteModelButton(DrAction):
         if value:
             tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', value)
 
-
     def _save_user_values(self):
         """ Save QGIS settings related with file_manager """
 
@@ -198,7 +188,6 @@ class DrExecuteModelButton(DrAction):
         # Export file path
         value = f"{tools_qt.get_text(self.execute_dlg, 'txt_folder_path', return_string_null=False)}"
         tools_dr.set_config_parser('btn_execute_model', 'txt_folder_path', f"{value}")
-
 
     def _calculate_elapsed_time(self, dialog):
 

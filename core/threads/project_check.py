@@ -35,7 +35,6 @@ class DrProjectCheckTask(DrTask):
         self.log_features_node = []
         self.log_features_polygon = []
 
-
     def run(self):
 
         super().run()
@@ -55,7 +54,6 @@ class DrProjectCheckTask(DrTask):
             return False
 
         return True
-
 
     def finished(self, result):
 
@@ -84,7 +82,6 @@ class DrProjectCheckTask(DrTask):
 
         self.setProgress(100)
 
-
     def check_project_execution(self, layers, init_project):
         """ Execute python functions to check the project """
 
@@ -102,7 +99,6 @@ class DrProjectCheckTask(DrTask):
         return True, message
 
     # region private functions
-
 
     def _get_project_feature_count(self, layers_to_check=None):
         # Initialize a variable to store the total feature count
@@ -122,7 +118,6 @@ class DrProjectCheckTask(DrTask):
                 total_feature_count += layer.featureCount()
 
         self.total_feature_count = total_feature_count
-
 
     def _check_topology(self, layers):
         """ Checks if there are node on top of eachother """
@@ -171,7 +166,6 @@ class DrProjectCheckTask(DrTask):
                 elif layer.geometryType() == QgsWkbTypes.PolygonGeometry:
                     if layer_name == 'roof':
                         check_attr = ['outlet_code']
-
 
                 for feature in layer.getFeatures():
                     n += 1
@@ -231,7 +225,6 @@ class DrProjectCheckTask(DrTask):
 
         return True, "Success"
 
-
     def _check_roof_volumes(self):
         """  """
 
@@ -255,7 +248,6 @@ class DrProjectCheckTask(DrTask):
             return False, e
 
         return True, "Success"
-
 
     def _show_check_project_result(self):
         """ Show dialog with audit check project results """
@@ -283,7 +275,6 @@ class DrProjectCheckTask(DrTask):
         # Add temporal layers if needed
         if any([self.log_features_node, self.log_features_arc, self.log_features_polygon]):
             self._add_temp_layers()
-
 
     def _add_temp_layers(self):
         """ Create temporal layers with the conflicting features """
@@ -347,14 +338,12 @@ class DrProjectCheckTask(DrTask):
         # Refresh the map canvas
         global_vars.iface.mapCanvas().refresh()
 
-
     def create_in_memory_layer(self, geometry_type, layer_name, fields):
         srid = global_vars.project_epsg
         layer = QgsVectorLayer(f"{geometry_type}?crs=epsg:{srid}", layer_name, "memory")
         layer.dataProvider().addAttributes(fields)
         layer.updateFields()
         return layer
-
 
     def add_features_to_layer(self, layer, features, field_id):
         layer.startEditing()

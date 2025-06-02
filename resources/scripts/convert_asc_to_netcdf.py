@@ -13,6 +13,7 @@ except ImportError:
 
 #TODO import proj.db from qgis or packages. if its not imported, the script will use the postgres one which is on a lower version
 
+
 def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed: Optional[pyqtSignal]) -> None:
     if not os.path.exists(input_folder) and not os.path.isdir(input_folder):
         if progress_changed:
@@ -117,6 +118,7 @@ def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed:
     if progress_changed:
             progress_changed.emit('Export results', None, f"NetCDF file created successfully: {output_file}", True)
     print(f"NetCDF file created successfully: {output_file}")
+
 
 if __name__ == "__main__":
     # Example usage

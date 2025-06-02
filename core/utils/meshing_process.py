@@ -393,6 +393,7 @@ except ImportError:
 
 import shapely
 
+
 def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] = None) -> QgsVectorLayer:
     c1 = mesh.vertices.loc[mesh.polygons["v1"], ['x', 'y', 'z']]
     c2 = mesh.vertices.loc[mesh.polygons["v2"], ['x', 'y', 'z']]

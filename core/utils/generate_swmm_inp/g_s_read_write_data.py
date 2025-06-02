@@ -61,6 +61,7 @@ from .g_s_defaults import (
 )
 from .g_s_import_helpers import replace_nan_null
 
+
 # export functions
 # helper function for export
 def replace_null_nan(attr_value):
@@ -69,6 +70,7 @@ def replace_null_nan(attr_value):
         return np.nan
     else:
         return attr_value
+
 
 def del_none_bool(df):
     """
@@ -86,6 +88,7 @@ def del_none_bool(df):
         df = df.applymap(replace_null_nan)
     df[df.columns[:-1]] = df[df.columns[:-1]].replace('True', 'YES').replace('False', 'NO')
     return df
+
 
 def load_layer_to_df(
     vlayer,
@@ -158,7 +161,6 @@ def load_layer_to_df(
         )
         raise QgsProcessingException(exception_text)
 
-
     # data generator
     if with_id is True:
         datagen = ([f[col] for col in cols] + [f.geometry()] + [f.id()] for f in vlayer.getFeatures())
@@ -206,8 +208,6 @@ def read_data_direct(
                     feedback=feedback
                 )
             
-
-
 
 # tables
 def read_data_from_table_direct(tab_file, sheet=0, feedback=QgsProcessingFeedback):
@@ -261,6 +261,7 @@ def read_data_from_table_direct(tab_file, sheet=0, feedback=QgsProcessingFeedbac
 # import
 # write functions and helpers
 
+
 def create_feature_from_attrlist(attrlist, geom_type, f_geometry=NULL):
     """
     creates a QgsFeature from data in df
@@ -283,6 +284,7 @@ def create_feature_from_attrlist(attrlist, geom_type, f_geometry=NULL):
     f.setAttributes(attrlist)
     return f
 
+
 def create_feature_from_row(df, geom_type):
     """
     creates a QgsFeature from data in df
@@ -298,6 +300,7 @@ def create_feature_from_row(df, geom_type):
         attrlist = df.tolist()
         f_created = create_feature_from_attrlist(attrlist, geom_type)
     return f_created
+
 
 def transform_crs_function(
     vector_layer,
@@ -498,6 +501,7 @@ def save_layer_to_file(
             driverName=geodata_driver_name
         )
 
+
 # Tables to Excel files
 def create_empty_feature(vector_layer):
     """
@@ -510,6 +514,7 @@ def create_empty_feature(vector_layer):
     new_ft.setFields(layer_fields)
     new_ft.setAttributes([NULL] * len(layer_fields))
     return new_ft
+
 
 def layerlist_to_excel(
     layer_list,

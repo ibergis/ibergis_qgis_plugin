@@ -47,7 +47,6 @@ class DrDialog(QDialog):
         giswater_icon = QIcon(icon_path)
         self.setWindowIcon(giswater_icon)
 
-
     def keyPressEvent(self, event):
 
         try:

@@ -21,6 +21,8 @@ def get_ui_class(ui_file_name):
 
 
 FORM_CLASS = get_ui_class('dialog_text.ui')
+
+
 class DialogTextUi(DrDialog, FORM_CLASS):
     pass
 

@@ -45,7 +45,6 @@ class DrGpkgCreateSchemaTask(DrTask):
         # # Disable dlg_readsql buttons
         # self.admin.dlg_readsql.btn_close.setEnabled(False)
 
-
     def run(self):
 
         super().run()
@@ -64,7 +63,6 @@ class DrGpkgCreateSchemaTask(DrTask):
             tools_log.log_info(msg, msg_params=msg_params)
             return False
         return True
-
 
     def finished(self, result):
 
@@ -103,7 +101,6 @@ class DrGpkgCreateSchemaTask(DrTask):
 
         self.admin.manage_process_result()
         self.setProgress(100)
-
 
     def main_execution(self) -> bool:
         """ Main common execution """
@@ -165,7 +162,6 @@ class DrGpkgCreateSchemaTask(DrTask):
         elif self.admin.rdb_data.isChecked():
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
 
-
     def calculate_number_of_files(self):
         """ Calculate total number of SQL to execute """
 
@@ -187,7 +183,6 @@ class DrGpkgCreateSchemaTask(DrTask):
 
         return total_sql_files
 
-
     def get_number_of_files_process(self, process_name: str):
         """ Calculate number of files of all folders of selected @process_name """
 
@@ -205,7 +200,6 @@ class DrGpkgCreateSchemaTask(DrTask):
             dict_folders[folder] = file_count
 
         return dict_folders, number_of_files
-
 
     def get_folders_process(self, process_name):
         """ Get list of folders related with this @process_name """
