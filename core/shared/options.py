@@ -63,7 +63,7 @@ class DrOptions:
                 f"WHERE formname = 'dlg_options' AND layoutname IS NOT NULL"
         lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
 
-        v_sql = f"SELECT id, idval " \
+        v_sql = f"SELECT id, COALESCE(i18n_idval, idval) AS idval " \
                 f"FROM edit_typevalue " \
                 f"WHERE typevalue = 'dlg_options_layout'"
         titles_list = global_vars.gpkg_dao_config.get_rows(v_sql)

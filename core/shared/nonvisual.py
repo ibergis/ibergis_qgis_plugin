@@ -336,7 +336,7 @@ class DrNonVisual:
 
         curve_type_list = []
         curve_type_headers = {}
-        sql = f"SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
+        sql = f"SELECT id, COALESCE(i18n_idval, idval) AS idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
 
         if rows:
@@ -761,7 +761,7 @@ class DrNonVisual:
             paste_shortcut = QShortcut(QKeySequence.Paste, table)
             paste_shortcut.activated.connect(partial(self._paste_patterns_values, table))
 
-        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
+        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
             tools_qt.fill_combo_values(cmb_pattern_type, rows)
@@ -1242,14 +1242,14 @@ class DrNonVisual:
         """ Populates timeseries dialog combos """
 
         timeser_type_headers = {}
-        sql = "SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_timeseries_type'"
+        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_timeseries_type'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
             timeser_type_list = [[row[0], row[1]] for row in rows]
             timeser_type_headers = {row[0]: json.loads(row[2]).get('header') for row in rows if row[2]}
             tools_qt.fill_combo_values(cmb_timeser_type, timeser_type_list, index_to_show=1)
 
-        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_timeseries_timestype'"
+        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval FROM edit_typevalue WHERE typevalue = 'inp_timeseries_timestype'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
             tools_qt.fill_combo_values(cmb_times_type, rows, index_to_show=1)
@@ -2013,7 +2013,7 @@ class DrNonVisual:
         """ Populates raster dialog combos """
 
         raster_type_headers = {}
-        sql = "SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_rain_format'"
+        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_rain_format'"
         rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
         if rows:
             raster_type_list = [[row[0], row[1]] for row in rows]

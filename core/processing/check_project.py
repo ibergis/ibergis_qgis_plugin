@@ -37,7 +37,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             return {}
 
         # Get messages from sys_message
-        sql: str = "SELECT * FROM sys_message"
+        sql: str = "SELECT id, COALESCE(i18n_text, text) AS text FROM sys_message"
         sys_messages = self.dao_config.get_rows(sql)
         if not sys_messages:
             feedback.pushWarning(self.tr(f'ERROR: No sys messages found'))
