@@ -4,8 +4,8 @@ The program is free software: you can redistribute it and/or modify it under the
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
 """
+# flake8: noqa: F401
 # -*- coding: utf-8 -*-
-# noqa: F401
 
 # Main
 from .main.go2epa_button import DrGo2IberButton
