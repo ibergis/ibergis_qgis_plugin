@@ -1933,6 +1933,10 @@ class DrNonVisual:
         tbl_raster_value = self.dialog.tbl_raster_value
         cmb_raster_type = self.dialog.cmb_raster_type
 
+        # Activate paste shortcut
+        paste_shortcut = QShortcut(QKeySequence.Paste, tbl_raster_value)
+        paste_shortcut.activated.connect(partial(self._paste_raster_values, tbl_raster_value))
+
         # Populate combobox
         raster_type_headers = self._populate_raster_combo(cmb_raster_type)
 
@@ -1956,6 +1960,25 @@ class DrNonVisual:
 
         # Open dialog
         tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_raster')
+
+    def _paste_raster_values(self, tbl_raster_value):
+        """ Paste values from clipboard to table """
+
+        selected = tbl_raster_value.selectedRanges()
+        if not selected:
+            return
+
+        text = QApplication.clipboard().text()
+        rows = text.split("\n")
+
+        for r, row in enumerate(rows):
+            columns = row.split("\t")
+            for c, value in enumerate(columns):
+                item = QTableWidgetItem(value)
+                row_pos = selected[0].topRow() + r
+                col_pos = selected[0].leftColumn() + c
+                tbl_raster_value.setItem(row_pos, col_pos, item)
+
 
     def _populate_raster_combo(self, cmb_raster_type):
         """ Populates raster dialog combos """
