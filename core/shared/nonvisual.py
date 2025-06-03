@@ -1869,21 +1869,23 @@ class DrNonVisual:
 
     def _insert_lids_values(self, dialog, lidco_id, lidco_type):
 
-        control_values = {'BC': {'txt_1_thickness', 'txt_1_thickness_storage'},
-                    'RG': {'txt_1_thickness', 'txt_1_thickness_storage'},
-                    'GR': {'txt_1_thickness', 'drainmat_2'},
-                    'IT': {'txt_1_thickness_storage'},
-                    'PP': {'txt_1_thickness_pavement', 'txt_1_thickness_storage'},
-                    'RB': {''},
-                    'RD': {''},
-                    'VS': {'txt_1_berm_height'}}
+        control_values = {
+            'BC': {'txt_1_thickness', 'txt_1_thickness_storage'},
+            'RG': {'txt_1_thickness', 'txt_1_thickness_storage'},
+            'GR': {'txt_1_thickness', 'drainmat_2'},
+            'IT': {'txt_1_thickness_storage'},
+            'PP': {'txt_1_thickness_pavement', 'txt_1_thickness_storage'},
+            'RB': {''},
+            'RD': {''},
+            'VS': {'txt_1_berm_height'}
+        }
 
         for i in range(dialog.tab_lidlayers.count()):
             if dialog.tab_lidlayers.isTabVisible(i):
                 tab_name = dialog.tab_lidlayers.widget(i).objectName().upper()
                 # List with all QLineEdit children
                 child_list = dialog.tab_lidlayers.widget(i).children()
-                widgets_list = [widget for widget in child_list if type(widget) == QLineEdit or type(widget) == QComboBox]
+                widgets_list = [widget for widget in child_list if type(widget) in (QLineEdit, QComboBox)]
                 # Get QLineEdits and QComboBox that are visible
                 visible_widgets = [widget for widget in widgets_list if not widget.isHidden()]
                 visible_widgets = self._order_list(visible_widgets)

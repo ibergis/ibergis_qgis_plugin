@@ -225,8 +225,9 @@ class DrAdminButton(DrGpkgBase):
             os.remove(self.gpkg_full_path)
 
         log_suffix = '%Y%m%d %H:%M:%S'
-        self.project_params = {"project_name": self.gpkg_name, "project_descript": self.project_descript, "project_user": getpass.getuser(),
-                              "project_tstamp": str(time.strftime(log_suffix)), "project_version": self.plugin_version}
+        self.project_params = {"project_name": self.gpkg_name, "project_descript": self.project_descript,
+                               "project_user": getpass.getuser(), "project_tstamp": str(time.strftime(log_suffix)),
+                               "project_version": self.plugin_version}
 
         # Save in settings
         tools_dr.set_config_parser('btn_admin', 'gpkg_name', f'{self.gpkg_name}', prefix=False)
@@ -261,7 +262,7 @@ class DrAdminButton(DrGpkgBase):
         gpkg_name = tools_dr.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
                                                False, force_reload=True)
         gpkg_path = tools_dr.get_config_parser('btn_admin', 'project_path', "user", "session",
-                                                              False, force_reload=True)
+                                               False, force_reload=True)
         self.dlg_readsql.txt_gis_file.setText(gpkg_name)
         self.dlg_readsql.txt_gis_gpkg.setText(f"{gpkg_path}/{gpkg_name}.gpkg")
         self.dlg_readsql.txt_gis_folder.setText(gpkg_path)
@@ -299,13 +300,13 @@ class DrAdminButton(DrGpkgBase):
 
         # Load user values
         self.txt_gpkg_name.setText(tools_dr.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
-                                                             False, force_reload=True))
+                                                              False, force_reload=True))
         self.txt_description.setText(tools_dr.get_config_parser('btn_admin', 'project_description', "user", "session",
                                                                 False, force_reload=True))
         self.txt_data_path.setText(tools_dr.get_config_parser('btn_admin', 'project_path', "user", "session",
                                                               False, force_reload=True))
         self.txt_srid.setText(tools_dr.get_config_parser('btn_admin', 'project_srid', "user", "session",
-                                                              False, force_reload=True))
+                                                         False, force_reload=True))
 
         # Manage SRID
         self._manage_srid()
@@ -347,7 +348,7 @@ class DrAdminButton(DrGpkgBase):
         i18n_dml_path = os.path.join(self.sql_dir, "i18n", locale, "dml.sql")
         if not os.path.exists(i18n_dml_path):
             i18n_dml_path = os.path.join(self.sql_dir, "i18n", "en_US", "dml.sql")
-        
+
         # Initialize database connection to config.gpkg
         filename = "config.gpkg"
         db_filepath = f"{global_vars.plugin_dir}{os.sep}config{os.sep}{filename}"
@@ -356,13 +357,13 @@ class DrAdminButton(DrGpkgBase):
             msg_params = (db_filepath,)
             tools_log.log_warning(msg, msg_params=msg_params)
             return
-            
+
         status = self.gpkg_dao_config.init_db(db_filepath)
         if not status:
             msg = self.gpkg_dao_config.last_error
             tools_log.log_warning(msg)
             return
-            
+
         # Read and execute the i18n DML file
         try:
             with open(i18n_dml_path, 'r', encoding='utf8') as f:
@@ -380,7 +381,7 @@ class DrAdminButton(DrGpkgBase):
             msg = "Error reading i18n DML file: {0}\n{1}"
             msg_params = (i18n_dml_path, str(e))
             tools_log.log_warning(msg, msg_params=msg_params)
-            
+
     def load_base(self, dict_folders):
         """"""
 
@@ -557,7 +558,7 @@ class DrAdminButton(DrGpkgBase):
         if filter_value == 'null':
             filter_value = ''
         sql = ("SELECT srid  as " + '"SRID"' + ",description as " + '"Description"' +
-                "FROM srs WHERE CAST(srid AS TEXT) LIKE '" + str(filter_value))
+               "FROM srs WHERE CAST(srid AS TEXT) LIKE '" + str(filter_value))
         sql += "%' order by srs_id DESC"
 
         self.last_srids = self.gpkg_dao_config.get_rows(sql)
@@ -593,7 +594,7 @@ class DrAdminButton(DrGpkgBase):
 
     def _manage_translations(self):
         """ Initialize the translation functionalities """
-        
+
         qm_gen = DrI18NGenerator()
         qm_gen.init_dialog()
 
@@ -787,7 +788,7 @@ class DrAdminButton(DrGpkgBase):
     def get_number_of_files_process(self, process_name: str):
         """ Calculate number of files of all folders of selected @process_name """
 
-        msg = "Create schema: Executing function {0}"  
+        msg = "Create schema: Executing function {0}"
         msg_params = (f"get_folders_process('{process_name}')",)
         tools_log.log_info(msg, msg_params=msg_params)
         dict_folders = self.get_folders_process(process_name)

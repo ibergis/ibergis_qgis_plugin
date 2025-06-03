@@ -64,11 +64,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         """
         inlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
         inlet_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_INLETS,
-                description=self.tr('Inlets layer'),
-                types=[QgsProcessing.SourceType.VectorPoint],
-                optional=True
-            )
+            name=self.FILE_INLETS,
+            description=self.tr('Inlets layer'),
+            types=[QgsProcessing.SourceType.VectorPoint],
+            optional=True
+        )
         if inlet_layer:
             inlet_layer_param.setDefaultValue(inlet_layer)
         self.addParameter(inlet_layer_param)
@@ -81,11 +81,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('pinlet')
         pinlet_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_PINLETS,
-                description=self.tr('Pinlets layer'),
-                types=[QgsProcessing.SourceType.VectorPolygon],
-                optional=True
-            )
+            name=self.FILE_PINLETS,
+            description=self.tr('Pinlets layer'),
+            types=[QgsProcessing.SourceType.VectorPolygon],
+            optional=True
+        )
         if pinlet_layer:
             pinlet_layer_param.setDefaultValue(pinlet_layer)
         self.addParameter(pinlet_layer_param)
@@ -98,11 +98,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
         outlet_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_OUTLETS,
-                description=self.tr('Outlets layer'),
-                types=[QgsProcessing.SourceType.VectorPoint],
-                optional=False
-            )
+            name=self.FILE_OUTLETS,
+            description=self.tr('Outlets layer'),
+            types=[QgsProcessing.SourceType.VectorPoint],
+            optional=False
+        )
         if outlet_layer:
             outlet_layer_param.setDefaultValue(outlet_layer)
         self.addParameter(outlet_layer_param)
@@ -146,16 +146,18 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             try:
                 if not self.bool_selected_inlet_features:
                     nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
-                    'INPUT': self.file_inlets,
-                    'INPUT_2': file_outlets,
-                    'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
-                    'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
+                        'INPUT': self.file_inlets,
+                        'INPUT_2': file_outlets,
+                        'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                    })['OUTPUT']
                 else:
                     nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
-                    'INPUT': QgsProcessingFeatureSourceDefinition(self.file_inlets.source(), selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
-                    'INPUT_2': file_outlets,
-                    'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
-                    'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
+                        'INPUT': QgsProcessingFeatureSourceDefinition(self.file_inlets.source(), selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                        'INPUT_2': file_outlets,
+                        'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                    })['OUTPUT']
                 self.nearest_valid_inlet_outlets = self.getNearestValidOutlets(nearest_inlet_outlets, feedback, True)
             except:
                 self.nearest_valid_inlet_outlets = None
@@ -166,13 +168,15 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                         'INPUT': self.file_pinlets,
                         'INPUT_2': file_outlets,
                         'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
-                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                    })['OUTPUT']
                 else:
                     nearest_pinlet_outlets = processing.run("native:joinbynearest", {
                         'INPUT': QgsProcessingFeatureSourceDefinition(self.file_pinlets.source(), selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
                         'INPUT_2': file_outlets,
                         'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
-                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                    })['OUTPUT']
                 self.nearest_valid_pinlet_outlets = self.getNearestValidOutlets(nearest_pinlet_outlets, feedback, False)
             except:
                 self.nearest_valid_pinlet_outlets = None
@@ -264,6 +268,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         if len(self.skipped_inlets) > 0 or len(self.below_inlets) > 0:
             # Create a temporal layer with skipped features and load it on QGIS
+            # TODO: get srid from project
             temporal_features_layer: QgsVectorLayer = QgsVectorLayer("Point?crs=EPSG:25831", "inlet_features", "memory")
             temporal_features_layer.dataProvider().addAttributes(self.file_inlets.fields())
             temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])

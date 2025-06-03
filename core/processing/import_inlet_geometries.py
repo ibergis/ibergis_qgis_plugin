@@ -128,11 +128,16 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         # delete innecesary values from geometry
         if self.bool_selected_features:
             result = processing.run("native:dropmzvalues", {
-            'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(), selectedFeaturesOnly=True,
-                featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
-                , 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
+                'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(),
+                                                              selectedFeaturesOnly=True, featureLimit=-1,
+                                                              geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                'DROP_M_VALUES': True, 'DROP_Z_VALUES': True,
+                'OUTPUT': 'memory:'
+            })
         else:
-            result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
+            result = processing.run("native:dropmzvalues", {
+                'INPUT': file_source, 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'
+            })
         self.converted_geometries_layer = result['OUTPUT']
 
         return {}

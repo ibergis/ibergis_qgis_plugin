@@ -60,11 +60,11 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         """
         roof_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('roof')
         roof_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_ROOFS,
-                description=self.tr('Roof layer'),
-                types=[QgsProcessing.SourceType.VectorPolygon],
-                optional=True
-            )
+            name=self.FILE_ROOFS,
+            description=self.tr('Roof layer'),
+            types=[QgsProcessing.SourceType.VectorPolygon],
+            optional=True
+        )
         if roof_layer:
             roof_layer_param.setDefaultValue(roof_layer)
         self.addParameter(roof_layer_param)
@@ -77,21 +77,21 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
 
         elev_raster_layer: QgsRasterLayer = tools_qgis.get_layer_by_layername('dem')
         elev_raster_layer_param = QgsProcessingParameterRasterLayer(
-                name=self.FILE_ELEV_RASTER,
-                description=self.tr('Elevation raster layer'),
-                optional=True
-            )
+            name=self.FILE_ELEV_RASTER,
+            description=self.tr('Elevation raster layer'),
+            optional=True
+        )
         if elev_raster_layer:
             elev_raster_layer_param.setDefaultValue(elev_raster_layer)
         self.addParameter(elev_raster_layer_param)
 
         outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
         outlet_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_OUTLETS,
-                description=self.tr('Outlets layer'),
-                types=[QgsProcessing.SourceType.VectorPoint],
-                optional=False
-            )
+            name=self.FILE_OUTLETS,
+            description=self.tr('Outlets layer'),
+            types=[QgsProcessing.SourceType.VectorPoint],
+            optional=False
+        )
         if outlet_layer:
             outlet_layer_param.setDefaultValue(outlet_layer)
         self.addParameter(outlet_layer_param)
@@ -135,10 +135,11 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         if self.file_roofs:
             try:
                 nearest_roof_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
-                'INPUT': self.roof_elev_layer,
-                'INPUT_2': file_outlets,
-                'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
-                'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'})['OUTPUT']
+                    'INPUT': self.roof_elev_layer,
+                    'INPUT_2': file_outlets,
+                    'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                    'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                })['OUTPUT']
                 self.nearest_valid_roof_outlets = self.getNearestValidOutlets(nearest_roof_outlets, feedback)
             except:
                 self.nearest_valid_roof_outlets = None
@@ -166,18 +167,21 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         try:
             if not self.bool_selected_features:
                 result = processing.run("native:zonalstatisticsfb", {
-                'INPUT': roof_layer,
-                'INPUT_RASTER': raster_layer,
-                'RASTER_BAND': 1, 'COLUMN_PREFIX': 'elev_', 'STATISTICS': [5], 'OUTPUT': 'memory:'})
+                    'INPUT': roof_layer,
+                    'INPUT_RASTER': raster_layer,
+                    'RASTER_BAND': 1, 'COLUMN_PREFIX': 'elev_', 'STATISTICS': [5], 'OUTPUT': 'memory:'
+                })
             else:
                 result = processing.run("native:zonalstatisticsfb", {
-                'INPUT': QgsProcessingFeatureSourceDefinition(roof_layer.source(), selectedFeaturesOnly=True,
-                featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
-                'INPUT_RASTER': raster_layer,
-                'RASTER_BAND': 1, 'COLUMN_PREFIX': 'elev_', 'STATISTICS': [5], 'OUTPUT': 'memory:'})
+                    'INPUT': QgsProcessingFeatureSourceDefinition(roof_layer.source(),
+                                                                  selectedFeaturesOnly=True, featureLimit=-1,
+                                                                  geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                    'INPUT_RASTER': raster_layer,
+                    'RASTER_BAND': 1, 'COLUMN_PREFIX': 'elev_', 'STATISTICS': [5], 'OUTPUT': 'memory:'
+                })
             if result:
                 roof_point_layer = result['OUTPUT']
-        except:
+        except Exception:
             roof_point_layer = None
 
         return roof_point_layer
@@ -335,7 +339,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                         break
                 if roof_code not in nearest_outlets.keys():
                     # Set outlet as None or set the minimum one. Depends on checkbox parameter "bool_force_belows"
-                    if self.bool_force_belows and min_outlet != None:
+                    if self.bool_force_belows and min_outlet is not None:
                         nearest_outlets[roof_code] = min_outlet['code']
                         self.below_roofs.append(roof_code)
                     else:

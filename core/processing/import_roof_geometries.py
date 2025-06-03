@@ -74,21 +74,21 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
             defaultValue=False
         ))
         custom_code = QgsProcessingParameterField(
-                self.FIELD_CUSTOM_CODE,
-                self.tr('Select *custom code* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_CUSTOM_CODE,
+            self.tr('Select *custom code* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         custom_code.setFlags(custom_code.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
         descript = QgsProcessingParameterField(
-                self.FIELD_DESCRIPT,
-                self.tr('Select *descript* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_DESCRIPT,
+            self.tr('Select *descript* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         descript.setFlags(descript.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
         slope = QgsProcessingParameterField(
@@ -173,12 +173,12 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         infiltr_vol.setFlags(infiltr_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
         annotation = QgsProcessingParameterField(
-                self.FIELD_ANNOTATION,
-                self.tr('Select *annotation* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_ANNOTATION,
+            self.tr('Select *annotation* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         annotation.setFlags(annotation.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
         self.addParameter(custom_code)
@@ -247,11 +247,15 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         # delete innecesary values from geometry
         if self.bool_selected_features:
             result = processing.run("native:dropmzvalues", {
-            'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(), selectedFeaturesOnly=True,
-                featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
-                , 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
+                'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(),
+                                                              selectedFeaturesOnly=True, featureLimit=-1,
+                                                              geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'
+            })
         else:
-            result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
+            result = processing.run("native:dropmzvalues", {
+                'INPUT': file_source, 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'
+            })
         self.converted_geometries_layer = result['OUTPUT']
 
         return {}

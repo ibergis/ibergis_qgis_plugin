@@ -69,60 +69,60 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
             defaultValue=False
         ))
         custom_code = QgsProcessingParameterField(
-                self.FIELD_CUSTOM_CODE,
-                self.tr('Select *custom code* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_CUSTOM_CODE,
+            self.tr('Select *custom code* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         custom_code.setFlags(custom_code.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         descript = QgsProcessingParameterField(
-                self.FIELD_DESCRIPT,
-                self.tr('Select *descript* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_DESCRIPT,
+            self.tr('Select *descript* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         descript.setFlags(descript.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         cellsize = QgsProcessingParameterField(
-                self.FIELD_CELLSIZE,
-                self.tr('Select *cell size* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.Numeric,
-                optional=True
-            )
+            self.FIELD_CELLSIZE,
+            self.tr('Select *cell size* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
         cellsize.setFlags(cellsize.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         annotation = QgsProcessingParameterField(
-                self.FIELD_ANNOTATION,
-                self.tr('Select *annotation* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_ANNOTATION,
+            self.tr('Select *annotation* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         annotation.setFlags(annotation.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         landuse = QgsProcessingParameterField(
-                self.FIELD_LANDUSE,
-                self.tr('Select *landuse* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_LANDUSE,
+            self.tr('Select *landuse* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         landuse.setFlags(landuse.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         custom_roughness = QgsProcessingParameterField(
-                self.FIELD_CUSTOM_ROUGHNESS,
-                self.tr('Select *custom roughness* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.Numeric,
-                optional=True
-            )
+            self.FIELD_CUSTOM_ROUGHNESS,
+            self.tr('Select *custom roughness* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
         custom_roughness.setFlags(custom_roughness.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         scs_cn = QgsProcessingParameterField(
-                self.FIELD_SCS_CN,
-                self.tr('Select *scs_cn* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.Numeric,
-                optional=True
-            )
+            self.FIELD_SCS_CN,
+            self.tr('Select *scs_cn* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
         scs_cn.setFlags(scs_cn.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         self.addParameter(custom_code)
         self.addParameter(descript)
@@ -180,9 +180,12 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         # delete innecesary values from geometry
         if self.bool_selected_features:
             result = processing.run("native:dropmzvalues", {
-            'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(), selectedFeaturesOnly=True,
-                featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid)
-                , 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
+                'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(),
+                                                              selectedFeaturesOnly=True, featureLimit=-1,
+                                                              geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                'DROP_M_VALUES': True, 'DROP_Z_VALUES': True,
+                'OUTPUT': 'memory:'
+            })
         else:
             result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
         self.converted_geometries_layer = result['OUTPUT']
