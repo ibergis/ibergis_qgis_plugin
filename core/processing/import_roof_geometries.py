@@ -68,6 +68,11 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
                 types=[QgsProcessing.SourceType.VectorPolygon]
             )
         )
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
         custom_code = QgsProcessingParameterField(
                 self.FIELD_CUSTOM_CODE,
                 self.tr('Select *custom code* reference'),
@@ -189,11 +194,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         self.addParameter(infiltr_vol)
         self.addParameter(annotation)
 
-        self.addParameter(QgsProcessingParameterBoolean(
-            name=self.BOOL_SELECTED_FEATURES,
-            description=self.tr('Selected features only'),
-            defaultValue=False
-        ))
 
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
@@ -266,7 +266,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         db_filepath: str = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
         self.dao.init_db(db_filepath)
 
-        if not self._insert_data(self.converted_geometries_layer, self.file_target, self.field_map, self.unique_fields, feedback, batch_size=50000):
+        if not self._insert_data(self.converted_geometries_layer, self.file_target, self.field_map, self.unique_fields, feedback, batch_size=5000):
             feedback.reportError(self.tr('Error during import.'))
             self.dao.close_db()
             return {}
