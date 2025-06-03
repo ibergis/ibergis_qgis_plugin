@@ -65,9 +65,7 @@ try:
         # convert to 0-based index
         return faces - 1
 
-    def clean_geometries(
-            gdf: gpd.GeoDataFrame, tolerance: float, feedback: QgsFeedback
-        ) -> Optional[gpd.GeoDataFrame]:
+    def clean_geometries(gdf: gpd.GeoDataFrame, tolerance: float, feedback: QgsFeedback) -> Optional[gpd.GeoDataFrame]:
         data: gpd.GeoDataFrame = gdf.copy()  # type: ignore
 
         # Extract vertices from polygons. Keep information on how to reconstruct the polygon

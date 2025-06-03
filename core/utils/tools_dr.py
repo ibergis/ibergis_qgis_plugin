@@ -1822,7 +1822,7 @@ def get_actions_from_json(json_result, sql):
 
 
 def execute_procedure(function_name, parameters=None, schema_name=None, commit=True, log_sql=True, rubber_band=None,
-        aux_conn=None, is_thread=False, check_function=True):
+                      aux_conn=None, is_thread=False, check_function=True):
     """ Manage execution database function
     :param function_name: Name of function to call (text)
     :param parameters: Parameters for function (json) or (query parameters)
@@ -2713,7 +2713,7 @@ def add_btn_help(dlg):
 
     btn_help_text_translated = tools_qt.tr("btn_help", "common", default="Help")
     btn_help = QPushButton(btn_help_text_translated)
-    btn_help.setObjectName("btn_help") 
+    btn_help.setObjectName("btn_help")
     btn_help.setToolTip(btn_help_text_translated)
     dlg.lyt_buttons.addWidget(btn_help, 0, dlg.lyt_buttons.columnCount())
 

@@ -559,9 +559,10 @@ class DrExecuteModel(DrTask):
         # Split pinlet polygons by lines into a layer using QGIS processing algorithm: Split with lines
         splited_pinlets = processing.run(
             "native:splitwithlines", {
-            'INPUT': pinlet_layer,
-            'LINES': mesh_layer,
-            'OUTPUT': 'memory:'}
+                'INPUT': pinlet_layer,
+                'LINES': mesh_layer,
+                'OUTPUT': 'memory:'
+            }
         )
         splited_pinlets_layer: QgsVectorLayer = splited_pinlets['OUTPUT']
         if splited_pinlets_layer is None:

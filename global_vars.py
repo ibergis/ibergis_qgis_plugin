@@ -4,6 +4,7 @@ The program is free software: you can redistribute it and/or modify it under the
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
 """
+# flake8: noqa: E501
 # -*- coding: utf-8 -*-
 import sys
 
@@ -24,11 +25,11 @@ list_configs = [                        # List of configuration files
     'user_params']
 project_loaded = False                  # True when selected project has been loaded
 configs = {}                            # Dictionary of configuration files. Value is an array of 2 columns:
-                                        # [0]-> Filepath. [1]-> Instance of class ConfigParser
+                                        # [0]-> Filepath. [1]-> Instance of class ConfigParser  # noqa: E116
 configs['init'] = [None, None]          # User configuration file: init.config (located in user config folder)
 configs['session'] = [None, None]       # Session configuration file: session.config (located in user config folder)
 configs['dev'] = [None, None]           # Developer configuration file: dev.config (located in plugin config folder)
-configs['drain'] = [None, None]      # Plugin configuration file: drain.config (located in plugin config folder)
+configs['drain'] = [None, None]         # Plugin configuration file: drain.config (located in plugin config folder)
 configs['user_params'] = [None, None]   # Settings configuration file: user_params.config (plugin config folder)
 schema_name = None                      # Schema name retrieved from QGIS project connection with PostgreSql
 project_type = None                     # Project type get from table "sys_version"

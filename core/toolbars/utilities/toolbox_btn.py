@@ -289,7 +289,8 @@ class DrToolBoxButton(DrAction):
             # Connect signals
             self.dlg_functions.mainTab.currentChanged.connect(partial(self._manage_btn_run))
             self.dlg_functions.btn_run.clicked.connect(partial(self._execute_function, self.function_selected,
-                self.dlg_functions, self.dlg_functions.cmb_layers, json_result['body']['data']))
+                                                               self.dlg_functions, self.dlg_functions.cmb_layers,
+                                                               json_result['body']['data']))
             self.dlg_functions.btn_close.clicked.connect(partial(tools_dr.close_dialog, self.dlg_functions))
             self.dlg_functions.rejected.connect(partial(tools_dr.close_dialog, self.dlg_functions))
             self.dlg_functions.btn_cancel.clicked.connect(partial(self.remove_layers))
@@ -667,11 +668,11 @@ class DrToolBoxButton(DrAction):
         sql = (f"SELECT tablename, type FROM "
                f"(SELECT DISTINCT(parent_layer) AS tablename, feature_type as type, 0 as c FROM cat_feature "
                f"UNION SELECT child_layer, feature_type, 2 as c FROM cat_feature "
-               F" UNION "
+               f" UNION "
                f"SELECT concat('v_edit_',epa_table), feature_type as type, 4 as c FROM sys_feature_epa_type "
                f"WHERE epa_table IS NOT NULL AND epa_table NOT IN ('inp_virtualvalve', 'inp_inlet')"
-			   f" UNION SELECT 'v_edit_inp_subcatchment', 'SUBCATCHMENT', 6"
-			   f" UNION SELECT 'v_edit_raingage', 'RAINGAGE', 8 ) t "
+               f" UNION SELECT 'v_edit_inp_subcatchment', 'SUBCATCHMENT', 6"
+               f" UNION SELECT 'v_edit_raingage', 'RAINGAGE', 8 ) t "
                f" WHERE type = '{feature_type.upper()}' ORDER BY c, tablename")
         rows = tools_db.get_rows(sql)
         if rows:

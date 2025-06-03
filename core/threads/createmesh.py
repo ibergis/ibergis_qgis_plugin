@@ -540,7 +540,7 @@ class DrCreateMeshTask(DrTask):
             if feature["code"] in bridges_values_dict:
                 # Get values with distance >= relative_distance
                 matching_values = [v for v in bridges_values_dict[feature["code"]]
-                                 if v["distance"] >= relative_distance]
+                                   if v["distance"] >= relative_distance]
                 if matching_values:
                     # Take the first matching value (smallest distance >= relative_distance)
                     bridge_values = matching_values[0]

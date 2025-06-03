@@ -56,7 +56,7 @@ class DrCSVButton(DrAction):
         temp_tablename = 'temp_csv'
         tools_qt.fill_combo_unicodes(self.dlg_csv.cmb_unicode_list)
         self._populate_combos(self.dlg_csv.cmb_import_type, 'fid',
-                             'alias, config_csv.descript, functionname, orderby', 'config_csv')
+                              'alias, config_csv.descript, functionname, orderby', 'config_csv')
 
         self.dlg_csv.lbl_info.setWordWrap(True)
         tools_qt.set_widget_text(self.dlg_csv, self.dlg_csv.cmb_unicode_list, 'utf8')
