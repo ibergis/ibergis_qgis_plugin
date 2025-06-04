@@ -347,8 +347,9 @@ class DrI18NGenerator:
         lang_colums = []
 
         if table == 'dbconfig_form_fields':
-            columns = ["source_code", "context", "formname", "formtype", "source", "lb_en_us", "pl_en_us", "ds_en_us"]
+            columns = ["source_code", "context", "formname", "formtype", "source", "lb_en_us", "tt_en_us", "pl_en_us", "ds_en_us"]
             lang_colums = [f"lb_{self.lower_lang}", f"auto_lb_{self.lower_lang}", f"va_auto_lb_{self.lower_lang}", 
+                           f"tt_{self.lower_lang}", f"auto_tt_{self.lower_lang}", f"va_auto_tt_{self.lower_lang}", 
                            f"pl_{self.lower_lang}", f"auto_pl_{self.lower_lang}", f"va_auto_pl_{self.lower_lang}", 
                            f"ds_{self.lower_lang}", f"auto_ds_{self.lower_lang}", f"va_auto_ds_{self.lower_lang}"]
 
@@ -416,28 +417,33 @@ class DrI18NGenerator:
 
             values_by_context[context].append((row, texts))
 
-        with open(path, "a") as file:
+        with open(path, "a", encoding="utf-8") as file:
             for context, data in values_by_context.items():
+                query = ""
                 if 'dbconfig_form_fields' in table:
                     for item_row, txt in data:
-                        file.write(f"UPDATE {context} SET label = {txt[0]}, placeholder = {txt[1]}, descript = {txt[2]} WHERE formname = '{item_row['formname']}' AND formtype = '{item_row['formtype']}' AND columnname = '{item_row['source']}';\n")
+                        query = (f"UPDATE {context} SET i18n_label = {txt[0]}, i18n_tooltip = {txt[1]}, "
+                                 f"i18n_placeholder = {txt[2]}, i18n_descript = {txt[3]} WHERE "
+                                 f"formname = '{item_row['formname']}' AND formtype = '{item_row['formtype']}' AND "
+                                 f"columnname = '{item_row['source']}';\n")
+                        file.write(query)
 
                 elif "dbtexts" in table:
                     if context == "sys_message":
                         for item_row, txt in data:
-                            file.write(f"UPDATE {context} SET text = {txt[0]} WHERE id = '{item_row['source']}';\n")
+                            query = (f"UPDATE {context} SET i18n_text = {txt[0]} WHERE id = '{item_row['source']}';\n")
 
                     elif context == "config_csv":
                         for item_row, txt in data:
-                            file.write(f"UPDATE {context} SET alias = {txt[0]}, descript = {txt[1]} WHERE id = {item_row['source']};\n")
+                            query = (f"UPDATE {context} SET i18n_alias = {txt[0]}, i18n_descript = {txt[1]} WHERE "
+                                     f"id = {item_row['source']};\n")
 
                     elif context == "edit_typevalue":
                         for item_row, txt in data:
-                            file.write(f"UPDATE {context} SET idval = {txt[0]}, descript = {txt[1]} WHERE rowid = {item_row['source']};\n")
-
-                    elif context == "gpkg_spatial_ref_sys":
-                        for item_row, txt in data:
-                            file.write(f"UPDATE {context} SET srs_name = {txt[0]}, definition = {txt[1]} WHERE srs_id = {item_row['source']};\n")
+                            query = (f"UPDATE {context} SET i18n_idval = {txt[0]}, i18n_descript = {txt[1]} WHERE "
+                                     f"rowid = {item_row['source']};\n")
+                            
+                    file.write(query)
         del file
 
     # endregion

@@ -31,6 +31,7 @@ from qgis.utils import iface
 from . import tools_log, tools_os, tools_qgis
 from .. import global_vars
 from .ui.ui_manager import DialogTextUi
+from .tools_gpkgdao import DrGpkgDao
 
 translator = QTranslator()
 dlg_text = DialogTextUi()
@@ -1342,9 +1343,8 @@ def create_datetime(object_name, allow_null=True, set_cal_popup=True, display_fo
     btn_calendar.clicked.connect(partial(set_calendar_empty, widget))
     return widget
 
+
 # region private functions
-
-
 def _add_translator(locale_path, log_info=False):
     """ Add translation file to the list of translation files to be used for translations """
 

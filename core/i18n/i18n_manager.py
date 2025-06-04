@@ -256,11 +256,11 @@ class DrSchemaI18NManager:
                         texts.append(value)
 
                     if 'dbconfig_form_fields' in table_i18n:
-                        query = f"""INSERT INTO {table_i18n} (context, source_code, source, formname, formtype, lb_en_us, pl_en_us, ds_en_us) 
+                        query = f"""INSERT INTO {table_i18n} (context, source_code, source, formname, formtype, lb_en_us, tt_en_us, pl_en_us, ds_en_us) 
                                         VALUES ('{table_org}', 'drain', '{row_org_dict['columnname']}', '{row_org_dict['formname']}', '{row_org_dict['formtype']}',
-                                        {texts[0]}, {texts[1]}, {texts[2]}) 
+                                        {texts[0]}, {texts[1]}, {texts[2]}, {texts[3]}) 
                                         ON CONFLICT (context, source_code, source, formname, formtype) 
-                                        DO UPDATE SET lb_en_us = {texts[0]}, pl_en_us = {texts[1]}, ds_en_us = {texts[2]};\n"""
+                                        DO UPDATE SET lb_en_us = {texts[0]}, tt_en_us = {texts[1]}, pl_en_us = {texts[2]}, ds_en_us = {texts[3]};\n"""
                     
                     elif 'dbtexts' in table_i18n:
                         source = ""
@@ -291,9 +291,9 @@ class DrSchemaI18NManager:
         
     def _get_rows_to_compare(self, table_i18n, table_org):
         if 'dbconfig_form_fields' in table_i18n:
-            columns_i18n = ["formname", "formtype", "source", "lb_en_us", "pl_en_us", "ds_en_us"]
-            columns_org = ["formname", "formtype", "columnname", "label", "placeholder", "descript"]
-            names = ["label", "placeholder", "descript"]
+            columns_i18n = ["formname", "formtype", "source", "lb_en_us", "tt_en_us", "pl_en_us", "ds_en_us"]
+            columns_org = ["formname", "formtype", "columnname", "label", "tooltip", "placeholder", "descript"]
+            names = ["label", "tooltip", "placeholder", "descript"]
 
         elif 'dbtexts' in table_i18n:
             columns_i18n = ["source", "al_en_us", "ds_en_us"]

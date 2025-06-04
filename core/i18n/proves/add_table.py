@@ -13,6 +13,7 @@ gpkg_path = "C:\\Users\\Usuario\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\defaul
 conn = sqlite3.connect(gpkg_path)
 cursor = conn.cursor()
 table_names = ["pydialog", "pymessage", "dbconfig_form_fields", "dbconfig_form_fields_json", "dbtexts", "cat_language"]
+table_names = ["dbconfig_form_fields"]
 
 for table_name in table_names:
     query = f"DROP TABLE IF EXISTS {table_name}"
@@ -58,6 +59,7 @@ for table_name in table_names:
                     lb_en_us TEXT CHECK (typeof(lb_en_us)='text' OR lb_en_us IS NULL),
                     pl_en_us TEXT CHECK (typeof(pl_en_us)='text' OR pl_en_us IS NULL),
                     ds_en_us TEXT CHECK (typeof(ds_en_us)='text' OR ds_en_us IS NULL),
+                    tt_en_us TEXT CHECK (typeof(tt_en_us)='text' OR tt_en_us IS NULL),
                     UNIQUE (source_code, context, formname, formtype, source)
                 );
                 """

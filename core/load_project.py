@@ -74,6 +74,7 @@ class DrLoadProject(QObject):
         # Manage locale and corresponding 'i18n' file
         global_vars.plugin_name = tools_qgis.get_plugin_metadata('name', 'drain', global_vars.plugin_dir)
         tools_qt.manage_translation(global_vars.plugin_name)
+        self._translate_config()
 
         # Manage actions of the different plugin_toolbars
         self._manage_toolbars()
@@ -462,5 +463,41 @@ class DrLoadProject(QObject):
                         break
             except IndexError:
                 pass
+
+
+    def _translate_config(self):
+        """ Update config.gpkg language from selected locale """
+
+        locale = tools_qgis.get_locale()
+        print(locale)
+
+        sql_dir = os.path.normpath(os.path.join(global_vars.plugin_dir, 'dbmodel'))
+        i18n_dml_path = os.path.join(sql_dir, "i18n", locale, "dml.sql")
+        if not os.path.exists(i18n_dml_path):
+            i18n_dml_path = os.path.join(sql_dir, "i18n", "en_US", "dml.sql") # Default to en_US
+
+        config_gpkg_path = os.path.join(global_vars.plugin_dir, 'config', 'config.gpkg')
+
+        if not os.path.exists(config_gpkg_path):
+            msg = "Config GPKG not found: {0}"
+            msg_params = (config_gpkg_path,)
+            tools_log.log_warning(msg, msg_params=msg_params)
+            return
+
+        try:
+            with open(i18n_dml_path, 'r', encoding='utf8') as f:
+                sql_content = f.read()
+                # Splitting by semicolon and filtering out empty statements
+                for sql_statement in filter(None, sql_content.split(';')):
+                    status_exec = global_vars.gpkg_dao_config.execute_script_sql(sql_statement.strip())
+                    if not status_exec:
+                        msg = "Error executing i18n DML in config.gpkg: {0}"
+                        msg_params = (global_vars.gpkg_dao_config.last_error,)
+                        tools_log.log_warning(msg, msg_params=msg_params)
+                        # Optionally, decide if you want to stop on first error or continue
+        except Exception as e:
+            msg = "Error reading/executing i18n DML file for config.gpkg: {0}\\n{1}"
+            msg_params = (i18n_dml_path, str(e))
+            tools_log.log_warning(msg, msg_params=msg_params)
 
     # endregion

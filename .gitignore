@@ -21,3 +21,4 @@ samples/test_*.qgz
 .vscode/
 *.gpkg-shm
 *.gpkg-wal
+notas.txt
