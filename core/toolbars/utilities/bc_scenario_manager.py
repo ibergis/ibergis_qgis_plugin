@@ -4,7 +4,7 @@ from time import time
 
 from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
-from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView
+from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTextEdit
 from qgis.PyQt.QtSql import QSqlTableModel
 
 from ..dialog import DrAction
@@ -515,9 +515,13 @@ class DrBCScenarioManagerButton(DrAction):
             bcscenario,
             mesh_name,
             mesh,
-            feedback=self.feedback,
+            feedback=self.feedback
         )
         thread = self.thread_savetomesh
+
+        # Show tab log
+        tools_dr.set_tabs_enabled(self.dlg_ms)
+        self.dlg_ms.mainTab.setCurrentIndex(1)
 
         # Set signals
         self.dlg_ms.btn_ok.setEnabled(False)
@@ -526,8 +530,7 @@ class DrBCScenarioManagerButton(DrAction):
         self.dlg_ms.btn_cancel.clicked.connect(partial(self.dlg_ms.btn_cancel.setText, "Canceling..."))
         thread.taskCompleted.connect(self._on_s2m_completed)
         thread.taskTerminated.connect(self._on_s2m_terminated)
-        thread.feedback.progressText.connect(self._set_progress_text)
-        thread.feedback.progressChanged.connect(self.dlg_ms.progress_bar.setValue)
+        thread.feedback.progress_changed.connect(self._set_progress_text)
 
         # Timer
         self.t0 = time()
@@ -569,14 +572,23 @@ class DrBCScenarioManagerButton(DrAction):
         text = str(datetime.timedelta(seconds=round(elapsed_time)))
         self.dlg_ms.lbl_timer.setText(text)
 
-    def _set_progress_text(self, txt):
-        tools_dr.fill_tab_log(
-            self.dlg_ms,
-            {"info": {"values": [{"message": txt}]}},
-            reset_text=False,
-            close=False,
-        )
-        sb = self.dlg_ms.txt_infolog.verticalScrollBar()
-        sb.setValue(sb.maximum())
+    def _set_progress_text(self, process, progress, text, new_line):
+        # Progress bar
+        if progress is not None:
+            self.dlg_ms.progress_bar.setValue(progress)
+
+        # TextEdit log
+        txt_infolog = self.dlg_ms.findChild(QTextEdit, 'txt_infolog')
+        cur_text = tools_qt.get_text(self.dlg_ms, txt_infolog, return_string_null=False)
+
+        end_line = '\n' if new_line else ''
+        if text:
+            txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        else:
+            txt_infolog.setText(f"{cur_text}{end_line}")
+        txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
 
     # endregion
