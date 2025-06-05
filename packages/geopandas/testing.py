@@ -1,13 +1,13 @@
 """
 Testing functionality for geopandas objects.
 """
+
 import warnings
 
 import pandas as pd
 
 from geopandas import GeoDataFrame, GeoSeries
 from geopandas.array import GeometryDtype
-from geopandas import _vectorized
 
 
 def _isna(this):
@@ -158,7 +158,7 @@ def assert_geoseries_equal(
         Typically useful with ``check_less_precise=True``, which uses
         ``geom_equals_exact`` and requires exact coordinate order.
     """
-    assert len(left) == len(right), "%d != %d" % (len(left), len(right))
+    assert len(left) == len(right), f"{len(left)} != {len(right)}"
 
     if check_dtype:
         msg = "dtype should be a GeometryDtype, got {0}"
@@ -180,17 +180,16 @@ def assert_geoseries_equal(
         if not isinstance(right, GeoSeries):
             right = GeoSeries(right, index=left.index)
 
-    assert left.index.equals(right.index), "index: %s != %s" % (left.index, right.index)
+    assert left.index.equals(right.index), f"index: {left.index} != {right.index}"
 
     if check_geom_type:
-        assert (left.geom_type == right.geom_type).all(), "type: %s != %s" % (
-            left.geom_type,
-            right.geom_type,
+        assert (left.geom_type == right.geom_type).all(), (
+            f"type: {left.geom_type} != {right.geom_type}"
         )
 
     if normalize:
-        left = GeoSeries(_vectorized.normalize(left.array._data))
-        right = GeoSeries(_vectorized.normalize(right.array._data))
+        left = GeoSeries(left.array.normalize())
+        right = GeoSeries(right.array.normalize())
 
     if not check_crs:
         with warnings.catch_warnings():
@@ -315,14 +314,12 @@ def assert_geodataframe_equal(
 
     # shape comparison
     assert left.shape == right.shape, (
-        "GeoDataFrame shape mismatch, left: {lshape!r}, right: {rshape!r}.\n"
-        "Left columns: {lcols!r}, right columns: {rcols!r}"
-    ).format(
-        lshape=left.shape, rshape=right.shape, lcols=left.columns, rcols=right.columns
+        f"GeoDataFrame shape mismatch, left: {left.shape!r}, right: {right.shape!r}.\n"
+        f"Left columns: {left.columns!r}, right columns: {right.columns!r}"
     )
 
     if check_like:
-        left, right = left.reindex_like(right), right
+        left = left.reindex_like(right)
 
     # column comparison
     assert_index_equal(
