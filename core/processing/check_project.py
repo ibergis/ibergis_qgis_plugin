@@ -445,7 +445,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         # Get additional conditions
         condition_select: Optional[str] = None
         if query['extra_condition']:
-            condition_select = query['extra_condition']
+            condition_select = query['extra_condition'].replace('"', "'")
 
         if query['table_name']:
             if condition_select is not None:
