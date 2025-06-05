@@ -243,7 +243,7 @@ def save_current_tab(dialog, tab_widget, selector_name):
         pass
 
 
-def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_widgets=False):
+def open_dialog(dlg, dlg_name=None, stay_on_top=False, title=None, hide_config_widgets=False):
     """ Open dialog """
 
     # Manage translate
@@ -255,7 +255,7 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_wi
         dlg.setWindowTitle(title)
 
     # Manage stay on top, maximize/minimize button and information button
-    flags = Qt.WindowCloseButtonHint | Qt.WindowMinMaxButtonsHint
+    flags = Qt.WindowCloseButtonHint | Qt.WindowMinMaxButtonsHint | Qt.Window
 
     if stay_on_top:
         flags |= Qt.WindowStaysOnTopHint
@@ -268,6 +268,7 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_wi
     # Create btn_help
     add_btn_help(dlg)
 
+    dlg.show()
     # Open dialog
     if issubclass(type(dlg), DrDialog):
         dlg.open()
