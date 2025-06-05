@@ -1,6 +1,7 @@
 import traceback
 from itertools import chain, tee
 
+from geopandas import gpd
 from qgis.core import (
     QgsCoordinateTransform,
     QgsFeedback,
@@ -18,6 +19,7 @@ from qgis.core import (
 )
 from qgis.utils import iface
 from qgis.PyQt.QtCore import QVariant
+import shapely
 
 from . import createmesh_core as core
 from .validatemesh import validate_input_layers, validate_inlets_in_triangles
@@ -27,7 +29,7 @@ from ..utils.meshing_process import triangulate_custom, create_temp_mesh_layer, 
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt
 
-from typing import Union, Optional, Literal
+from typing import Union, Literal
 import time
 import numpy as np
 import pandas as pd
@@ -50,9 +52,10 @@ class DrCreateMeshTask(DrTask):
         roughness_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
         losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
         mesh_name: str,
+        point_anchor_layer: QgsVectorLayer,
+        line_anchor_layer: QgsVectorLayer,
+        bridge_layer: QgsVectorLayer,
         feedback: QgsFeedback,
-        point_anchor_layer: Optional[QgsVectorLayer] = None,
-        line_anchor_layer: Optional[QgsVectorLayer] = None,
     ):
         super().__init__(description)
         self.execute_validations = execute_validations
@@ -70,6 +73,7 @@ class DrCreateMeshTask(DrTask):
         self.feedback = feedback
         self.point_anchor_layer = point_anchor_layer
         self.line_anchor_layer = line_anchor_layer
+        self.bridge_layer = bridge_layer
         self.error_layers = None
         self.warning_layers = None
 
@@ -238,6 +242,26 @@ class DrCreateMeshTask(DrTask):
                     self.feedback.setProgress(100)
                     return False
 
+            # Create anchor GeoDataFrames
+            print("Creating anchor GeoDataFrames... ", end="")
+            start = time.time()
+
+            point_anchors = layer_to_gdf(
+                self.point_anchor_layer,
+                ["cellsize", "z_value"],
+                self.only_selected_features
+            )
+
+            line_anchors = layer_to_gdf(
+                self.line_anchor_layer,
+                ["cellsize"],
+                self.only_selected_features
+            )
+
+            complete_line_anchors = self._create_line_anchors_gdf(line_anchors)
+
+            print(f"Done! {time.time() - start}s")
+
             # Create mesh
             self.feedback.setProgressText("Creating ground mesh...")
             self.feedback.setProgress(15)
@@ -248,8 +272,8 @@ class DrCreateMeshTask(DrTask):
             ground_triangulation_result = triangulate_custom(
                 layers["ground"],
                 ["custom_roughness", "landuse", "scs_cn"],
-                point_anchor_layer=self.point_anchor_layer,
-                line_anchor_layer=self.line_anchor_layer,
+                point_anchors=point_anchors,
+                line_anchors=complete_line_anchors,
                 do_clean_up=self.clean_geometries,
                 only_selected_features=self.only_selected_features,
                 clean_tolerance=self.clean_tolerance,
@@ -341,6 +365,9 @@ class DrCreateMeshTask(DrTask):
             if self.dem_layer is None:
                 ground_vertices_df["z"] = 0
             else:
+                print("Getting z-values from DEM... ", end="")
+                start = time.time()
+
                 ground_crs = layers["ground"].crs()
                 dem_crs = self.dem_layer.crs()
                 qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
@@ -352,13 +379,40 @@ class DrCreateMeshTask(DrTask):
 
                 ground_vertices_df["z"] = ground_vertices_df.apply(lambda row: get_z(row["x"], row["y"]), axis=1)
 
+                print(f"Done! {time.time() - start}s")
+
+            print(f"Setting z-values from anchors... ", end="")
+            start = time.time()
+
             # Get z-values from point anchors
-            if self.point_anchor_layer is not None:
-                point_anchor_df = layer_to_gdf(self.point_anchor_layer, ["z_value"])
-                for _, anchor in point_anchor_df.iterrows():
-                    x, y = anchor.geometry.x, anchor.geometry.y
-                    mask = (ground_vertices_df["x"] == x) & (ground_vertices_df["y"] == y)
-                    ground_vertices_df.loc[mask, "z"] = anchor["z_value"]
+            for _, anchor in point_anchors.iterrows():
+                x, y = anchor.geometry.x, anchor.geometry.y
+                mask = (ground_vertices_df["x"] == x) & (ground_vertices_df["y"] == y)
+                ground_vertices_df.loc[mask, "z"] = anchor["z_value"]
+
+            # Get z-values from line anchors
+            for _, line in line_anchors.iterrows():
+                line_geom = line.geometry.buffer(0.01)  # Buffer to avoid precision issues with the intersect
+                ground_vertices_geom = gpd.GeoSeries(
+                    [shapely.Point(xy) for xy in zip(ground_vertices_df["x"], ground_vertices_df["y"])],
+                    crs=line_anchors.crs
+                )
+                mask = ground_vertices_geom.intersects(line_geom)
+                points = ground_vertices_df[mask] # Get points inside the line anchor
+                points = gpd.GeoDataFrame(points, geometry=ground_vertices_geom[mask], crs=line_anchors.crs)
+
+                # Ignoring the z value, get the distance along the line, then interpolate the z value
+                line_2d = shapely.force_2d(line.geometry)
+
+                def interpolate_z(p):
+                    dist = line_2d.project(p)
+                    return line.geometry.interpolate(dist).z
+
+                z_values = points["geometry"].apply(interpolate_z)
+
+                ground_vertices_df.loc[points.index, "z"] = z_values
+
+            print(f"Done! {time.time() - start}s")
 
             print("Validating landuses... ", end="")
             start = time.time()
@@ -503,16 +557,63 @@ class DrCreateMeshTask(DrTask):
             )
             return False
 
+    def _create_line_anchors_gdf(self, line_anchors: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+        line_anchors = line_anchors.copy()
+
+        line_anchors["geometry"] = line_anchors["geometry"].force_2d()
+
+        rows = self.dao.get_rows(f"""
+            SELECT bridge_code, distance
+            FROM bridge_value
+            ORDER BY distance
+        """)
+        distances = pd.DataFrame(rows, columns=["bridge_code", "distance"])
+        distances = distances.set_index("bridge_code")
+        distances = distances.groupby("bridge_code")["distance"].apply(list)
+
+        bridges = layer_to_gdf(
+            self.bridge_layer,
+            ["code"],
+            self.only_selected_features
+        )
+        bridges.set_index("code", inplace=True)
+
+        bridges["distance"] = bridges.index.map(distances)
+
+        def make_bridge(row):
+            line: shapely.LineString = row["geometry"]
+            total_length = line.length
+
+            distances = set(row["distance"])
+
+            for vert in line.coords:
+                dist = line.project(shapely.Point(vert)) / total_length
+                distances.add(dist)
+
+            points = []
+            for distance in sorted(distances):
+                point = line.interpolate(distance, normalized=True)
+                points.append(point)
+
+            geom = shapely.LineString(points)
+            return geom
+
+        bridges["geometry"] = bridges.apply(make_bridge, axis=1)
+        bridges = bridges.drop(columns=["distance"])
+
+        bridges["cellsize"] = np.inf # Infinity so that it will not affect the triangulation (keeps the minimum cell size)
+
+        return pd.concat([line_anchors, bridges], ignore_index=True) # type: ignore
+
     def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame):
         context = QgsProcessingContext()
         # Create mesh edges layer
         mesh_edges_layer = self._create_mesh_edges_layer(polygons_df, vertices_df)  # FIXME: This takes too long
-        # Create buffer for each bridge
+        # Create buffer for each bridge 
         bridge_layer = tools_qgis.get_layer_by_tablename("bridge")
         buffer_layer = self._create_bridge_buffer(bridge_layer, context)
         # Join buffer with mesh edges
         valid_edges_layer = self._create_valid_edges_layer(buffer_layer, mesh_edges_layer, context)
-
         bridges_values_dict = self.get_bridges_values_dict()
 
         bridge_list = []

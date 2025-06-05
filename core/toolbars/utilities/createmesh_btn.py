@@ -232,13 +232,7 @@ class DrCreateMeshButton(DrAction):
         mesh_anchor_points_lyr = self._get_layer(self.dao, "mesh_anchor_points")
         mesh_anchor_lines_lyr = self._get_layer(self.dao, "mesh_anchor_lines")
         bridge_lyr = self._get_layer(self.dao, "bridge")
-        point_anchor_layer, line_anchor_layer = create_anchor_layers(
-            mesh_anchor_points_lyr,
-            mesh_anchor_lines_lyr,
-            bridge_lyr,
-            self.dao,
-            lowest_cellsize
-        )
+
         # Reset txt_infolog
         tools_qt.set_widget_text(dlg, 'txt_infolog', "")
 
@@ -257,8 +251,9 @@ class DrCreateMeshButton(DrAction):
             roughness_layer,
             losses_layer,
             mesh_name,
-            point_anchor_layer=point_anchor_layer,
-            line_anchor_layer=line_anchor_layer,
+            point_anchor_layer=mesh_anchor_points_lyr,
+            line_anchor_layer=mesh_anchor_lines_lyr,
+            bridge_layer=bridge_lyr,
             feedback=self.feedback,
         )
         thread = self.thread_triangulation
