@@ -259,6 +259,7 @@ class DrCreateMeshTask(DrTask):
             )
 
             complete_line_anchors = self._create_line_anchors_gdf(line_anchors)
+            print(complete_line_anchors)
 
             print(f"Done! {time.time() - start}s")
 
@@ -404,13 +405,21 @@ class DrCreateMeshTask(DrTask):
                 # Ignoring the z value, get the distance along the line, then interpolate the z value
                 line_2d = shapely.force_2d(line.geometry)
 
-                def interpolate_z(p):
+                # TODO: If the line vertex z value is 0, set its value to the z value of the point directly below it.
+                # this way we can have lines with values set and unset at the same time and it will work properly
+                def interpolate_z(row):
+                    p = row["geometry"]
                     dist = line_2d.project(p)
-                    return line.geometry.interpolate(dist).z
+                    anchor_z = line.geometry.interpolate(dist).z
+                    if anchor_z != 0:
+                        return anchor_z
+                    else:
+                        return row["z"]
 
-                z_values = points["geometry"].apply(interpolate_z)
+                z_values = points.apply(interpolate_z, axis=1)
 
                 ground_vertices_df.loc[points.index, "z"] = z_values
+                print(ground_vertices_df.loc[points.index, "z"])
 
             print(f"Done! {time.time() - start}s")
 
@@ -559,8 +568,17 @@ class DrCreateMeshTask(DrTask):
 
     def _create_line_anchors_gdf(self, line_anchors: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         line_anchors = line_anchors.copy()
-
         line_anchors["geometry"] = line_anchors["geometry"].force_2d()
+
+        bridges = layer_to_gdf(
+            self.bridge_layer,
+            ["code"],
+            self.only_selected_features
+        )
+
+        if len(bridges) == 0:
+            print("No bridges found in the bridge layer.")
+            return line_anchors
 
         rows = self.dao.get_rows(f"""
             SELECT bridge_code, distance
@@ -571,11 +589,6 @@ class DrCreateMeshTask(DrTask):
         distances = distances.set_index("bridge_code")
         distances = distances.groupby("bridge_code")["distance"].apply(list)
 
-        bridges = layer_to_gdf(
-            self.bridge_layer,
-            ["code"],
-            self.only_selected_features
-        )
         bridges.set_index("code", inplace=True)
 
         bridges["distance"] = bridges.index.map(distances)
@@ -584,7 +597,11 @@ class DrCreateMeshTask(DrTask):
             line: shapely.LineString = row["geometry"]
             total_length = line.length
 
-            distances = set(row["distance"])
+            distances = set()
+
+            db_distances = row["distance"]
+            if db_distances and not np.isnan(db_distances):
+                distances.update(db_distances)
 
             for vert in line.coords:
                 dist = line.project(shapely.Point(vert)) / total_length
