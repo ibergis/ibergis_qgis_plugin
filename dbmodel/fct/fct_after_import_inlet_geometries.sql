@@ -10,3 +10,4 @@ This version of Giswater is provided by Giswater Association
 -- USE DRAIN CORE-CODE
 -- -------------------
 UPDATE inlet SET code = 'IN'||fid;
+UPDATE pinlet SET code = 'PI'||fid;

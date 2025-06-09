@@ -34,6 +34,7 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
     Class to import inlet geometries from another layer.
     """
     FILE_SOURCE = 'FILE_SOURCE'
+    FILE_TARGET = 'FILE_TARGET'
     FIELD_TOP_ELEV = 'FIELD_TOP_ELEV'
     BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
 
@@ -54,7 +55,7 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
             QgsProcessingParameterVectorLayer(
                 self.FILE_SOURCE,
                 self.tr('Source layer'),
-                types=[QgsProcessing.SourceType.VectorPoint]
+                types=[QgsProcessing.SourceType.VectorPoint, QgsProcessing.SourceType.VectorPolygon]
             )
         )
         self.addParameter(QgsProcessingParameterBoolean(
@@ -62,6 +63,15 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
             description=self.tr('Selected features only'),
             defaultValue=False
         ))
+        target_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
+        target_layer_param = QgsProcessingParameterVectorLayer(
+            self.FILE_TARGET,
+            self.tr('Target layer (inlet or pinlet)'),
+            types=[QgsProcessing.SourceType.VectorPoint, QgsProcessing.SourceType.VectorPolygon]
+        )
+        if target_layer:
+            target_layer_param.setDefaultValue(target_layer)
+        self.addParameter(target_layer_param)
         top_elev = QgsProcessingParameterField(
             self.FIELD_TOP_ELEV,
             self.tr('Select *top_elev* reference'),
@@ -106,7 +116,7 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         feedback.setProgress(12)
 
         # get inlet layer
-        self.file_target = tools_qgis.get_layer_by_tablename('inlet')
+        self.file_target = self.parameterAsVectorLayer(parameters, self.FILE_TARGET, context)
         if self.file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
             return {}
@@ -307,6 +317,39 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
             return False
         feedback.setProgressText(self.tr(f"File {fct_path} executed"))
         return True
+
+    def checkParameterValues(self, parameters, context):
+        """ Check if parameters are valid """
+
+        error_message = ''
+        source_layer : QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
+        target_layer : QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_TARGET, context)
+        inlet_layer = tools_qgis.get_layer_by_tablename('inlet')
+        pinlet_layer = tools_qgis.get_layer_by_tablename('pinlet')
+
+        if source_layer is None:
+            error_message += self.tr('Source layer not found in this schema.\n\n')
+        if target_layer is None:
+            error_message += self.tr('Target layer not found in this schema.\n\n')
+        if inlet_layer is None:
+            error_message += self.tr('Inlet layer not found in this schema.\n\n')
+        if pinlet_layer is None:
+            error_message += self.tr('Pinlet layer not found in this schema.\n\n')
+
+        if len(error_message) > 0:
+            return False, error_message
+
+        if source_layer.geometryType() != target_layer.geometryType():
+            error_message += self.tr('Source and target layer types do not match.\n\n')
+            return False, error_message
+
+        if target_layer != inlet_layer and target_layer != pinlet_layer:
+            error_message += self.tr('Target layer is not an inlet or pinlet layer.\n\n')
+            return False, error_message
+
+        if len(error_message) > 0:
+            return False, error_message
+        return True, ''
 
     def shortHelpString(self):
         return self.tr("""ImportInletGeometries""")
