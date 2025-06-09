@@ -25,9 +25,10 @@ from qgis.core import (
 )
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt.QtWidgets import QApplication
 from ...lib import tools_qgis, tools_gpkgdao
 from ...lib.tools_gpkgdao import DrGpkgDao
-from ..utils import Feedback
+from ..utils import Feedback, tools_dr
 from typing import Optional, List
 import processing
 
@@ -156,7 +157,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         elif self.file_roofs and self.nearest_valid_roof_outlets is not None and 'result' not in self.nearest_valid_roof_outlets.keys():
             feedback.setProgressText(self.tr(f"Roofs without outlet assigned: {len(self.nearest_valid_roof_outlets)}"))
 
-        feedback.setProgress(60)
+        feedback.setProgress(80)
 
         return {}
 
@@ -186,8 +187,17 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
 
         return roof_point_layer
 
-    def postProcessAlgorithm(self, context, feedback: Feedback):
+    def postProcessAlgorithm(self, context, feedback: Feedback, batch_size: int = 5000):
         """ Update features and create temporal layers """
+
+        current_updated_roofs: int = 0
+        updated_roofs: int = 0
+        progress_index: int = 0
+
+        roof_features: dict[str, QgsFeature] = {}
+        for feature in self.file_roofs.getFeatures():
+            roof_features[feature['code']] = feature
+
         # Set outlet code for roof
         if self.nearest_valid_roof_outlets is not None:
             self.file_roofs.startEditing()
@@ -198,27 +208,34 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                 if outlet_code is None:
                     self.skipped_roofs.append(str(roof_code))
                     continue
+                if not self.file_roofs.isEditable():
+                    self.file_roofs.startEditing()
                 # Update outlet code in the roof layer
-                for feature in self.file_roofs.getFeatures():
-                    try:
-                        if feature['code'] == roof_code:
-                            feature['outlet_code'] = outlet_code
-                            self.file_roofs.updateFeature(feature)
-                            break
-                    except Exception as e:
-                        self.file_roofs.rollBack()
-                        feedback.pushWarning(self.tr(f"Error updating roof {roof_code}: {str(e)}"))
-                        self.skipped_roofs.append(str(roof_code))
+                try:
+                    if roof_code in roof_features.keys():
+                        roof_features[roof_code]['outlet_code'] = outlet_code
+                        self.file_roofs.updateFeature(roof_features[roof_code])
+                        current_updated_roofs += 1
+                        updated_roofs += 1
+                        if current_updated_roofs >= batch_size:
+                            self.file_roofs.commitChanges()
+                            current_updated_roofs = 0
+                            feedback.setProgressText(self.tr(f"Roofs updated with a batch of {batch_size} [{(updated_roofs+self.skipped_from_near)}/{len(self.nearest_valid_roof_outlets)+self.skipped_from_near}]"))
+                            feedback.setProgress(tools_dr.lerp_progress(int(((progress_index+1)/(len(self.nearest_valid_roof_outlets.keys())/batch_size))*100), 80, 98))
+                            progress_index += 1
+                            QApplication.processEvents()
+                except Exception as e:
+                    self.file_roofs.rollBack()
+                    feedback.pushWarning(self.tr(f"Error updating roof {roof_code}: {str(e)}"))
+                    self.skipped_roofs.append(str(roof_code))
             if self.file_roofs.isEditable():
                 self.file_roofs.commitChanges()
             self.skipped_roofs = list(dict.fromkeys(self.skipped_roofs))
             self.below_roofs = list(dict.fromkeys(self.below_roofs))
-            feedback.setProgressText(self.tr(f"Roofs skipped[{len(self.skipped_roofs)}]: {self.skipped_roofs}"))
-            feedback.setProgressText(self.tr(f"Roofs setted below[{len(self.below_roofs)}]: {self.below_roofs}"))
+            feedback.setProgressText(self.tr(f"Roofs skipped: ({len(self.skipped_roofs)})"))
+            feedback.setProgressText(self.tr(f"Roofs setted below: ({len(self.below_roofs)})"))
             feedback.setProgressText(self.tr(f"Roofs updated[{(len(self.nearest_valid_roof_outlets)+self.skipped_from_near)-len(self.skipped_roofs)}/{len(self.nearest_valid_roof_outlets)+self.skipped_from_near}]"))
             feedback.setProgressText(self.tr("Outlets assigned for roofs."))
-
-            feedback.setProgress(90)
 
             if len(self.skipped_roofs) > 0 or len(self.below_roofs) > 0:
                 # Create a temporal layer with skipped features and load it on QGIS
@@ -275,11 +292,14 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         """
         nearest_outlets: dict[str, Optional[str]] = {}
         nearest_outlets_list = {}
+        min_progress = 10
+        max_progress = 80
 
         # Group nearest outlets by roof code
         necessary_fields: List[str] = ['code', 'code_2', 'elev', 'elev_min', 'distance']
         skipped_near_features: list[str] = []
-        for feature in nearest_layer.getFeatures():
+        for index, feature in enumerate(nearest_layer.getFeatures()):
+            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/nearest_layer.featureCount())*100), min_progress, max_progress))
             valid_attributes = True
             if feedback.isCanceled():
                 return None
@@ -318,7 +338,8 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                     self.skipped_from_near -= 1
 
         # Get nearest valid outlet for each roof
-        for roof_code, values in nearest_outlets_list.items():
+        for index, (roof_code, values) in enumerate(nearest_outlets_list.items()):
+            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/len(nearest_outlets_list.keys()))*100), min_progress, max_progress))
             if feedback.isCanceled():
                 return None
             if len(values['outlets']) == 1:
