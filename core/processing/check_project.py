@@ -357,7 +357,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                             if conditions:
                                 error_msg = exception_message.format(col, conditions.group(1), conditions.group(2), columns_dict[col])
                             else:
-                                feedback.pushWarning(self.tr(f'ERROR - [{query['error_code']}]: Error getting additional conditions for table[{query['table_name']}]'))
+                                feedback.pushWarning(self.tr(f'ERROR-{query['error_code']}: Error getting additional conditions for table[{query['table_name']}]'))
                                 continue
                     else:
                         valid_columns.append(col)
@@ -445,7 +445,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         # Get additional conditions
         condition_select: Optional[str] = None
         if query['extra_condition']:
-            condition_select = query['extra_condition']
+            condition_select = query['extra_condition'].replace('"', "'")
 
         if query['table_name']:
             if condition_select is not None:

@@ -18,17 +18,18 @@ except ImportError:
     scipy_imported = False
 
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTableWidget, QTableWidgetItem, QSizePolicy, QLineEdit, \
-    QGridLayout, QComboBox, QApplication, QShortcut
+    QGridLayout, QComboBox, QApplication, QShortcut, QTextEdit
 from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
 from qgis.PyQt.QtCore import QTime, QDate
 from ..ui.ui_manager import DrNonVisualManagerUi, DrNonVisualControlsUi, DrNonVisualCurveUi, DrNonVisualPatternUDUi, \
-    DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualRasterUi
+    DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualRasterUi, DrNonVisualRasterImportUi
 from ..utils.matplotlib_widget import MplCanvas
 from ..utils import tools_dr
-from ...lib import tools_qgis, tools_qt, tools_db
+from ...lib import tools_qgis, tools_qt, tools_db, tools_os
 from ... import global_vars
+from typing import Optional
 
 
 class DrNonVisual:
@@ -51,7 +52,7 @@ class DrNonVisual:
                          'cat_pattern': 'idval', 'cat_pattern_value': 'pattern',
                          'cat_controls': 'id',
                          'cat_timeseries': 'idval', 'cat_timeseries_value': 'timeseries',
-                         'cat_raster': 'id', 'cat_raster_value': 'raster',
+                         'cat_raster': 'idval', 'cat_raster_value': 'raster',
                          }
         self.valid = (True, "")
 
@@ -72,6 +73,13 @@ class DrNonVisual:
         self.manager_dlg = DrNonVisualManagerUi()
         tools_dr.load_settings(self.manager_dlg)
 
+        # Show import button if current tab is rasters
+        tab_name = self.manager_dlg.main_tab.tabText(self.manager_dlg.main_tab.currentIndex())
+        if tab_name == 'Rasters':
+            self.manager_dlg.btn_import.setVisible(True)
+        else:
+            self.manager_dlg.btn_import.setVisible(False)
+
         # Make and populate tabs
         self._manage_tabs_manager()
 
@@ -82,6 +90,7 @@ class DrNonVisual:
         self.manager_dlg.btn_create.clicked.connect(partial(self._create_object, self.manager_dlg))
         self.manager_dlg.btn_delete.clicked.connect(partial(self._delete_object, self.manager_dlg))
         self.manager_dlg.btn_cancel.clicked.connect(self.manager_dlg.reject)
+        self.manager_dlg.btn_import.clicked.connect(partial(self._import_rasters, self.manager_dlg))
         self.manager_dlg.finished.connect(partial(tools_dr.close_dialog, self.manager_dlg))
 
         # Open dialog
@@ -146,6 +155,13 @@ class DrNonVisual:
         widget_table = dialog.main_tab.currentWidget()
         tablename = widget_table.objectName()
         id_field = self.dict_ids.get(tablename, 'idval')
+        tab_name = dialog.main_tab.tabText(dialog.main_tab.currentIndex())
+
+        # Show import button if current tab is rasters
+        if tab_name == 'Rasters':
+            dialog.btn_import.setVisible(True)
+        else:
+            dialog.btn_import.setVisible(False)
 
         if text is None:
             text = tools_qt.get_text(dialog, dialog.txt_filter, return_string_null=False)
@@ -2238,5 +2254,207 @@ class DrNonVisual:
                 if lst[j].objectName() > lst[(j + 1)].objectName():
                     lst[j], lst[(j + 1)] = lst[(j + 1)], lst[j]
         return lst
+
+    def _import_rasters(self, dialog):
+        # Configure and open import dialog
+        self.raster_import_dlg = DrNonVisualRasterImportUi()
+
+        # Build combos
+        time_systems = [['hours', 'hours'], ['minutes', 'minutes'], ['seconds', 'seconds']]
+        tools_qt.fill_combo_values(self.raster_import_dlg.cmb_time_system, time_systems)
+        self._previous_time_system = tools_qt.get_combo_value(self.raster_import_dlg, self.raster_import_dlg.cmb_time_system)
+
+        self._populate_raster_combo(self.raster_import_dlg.cmb_raster_type)
+
+        # Set listeners
+        self.raster_import_dlg.btn_cancel.clicked.connect(self.raster_import_dlg.reject)
+        self.raster_import_dlg.rejected.connect(partial(tools_dr.close_dialog, self.raster_import_dlg))
+        self.raster_import_dlg.btn_ok.clicked.connect(partial(self._import_rasters_accept, self.raster_import_dlg))
+        self.raster_import_dlg.btn_push_raster_input_folder.clicked.connect(self._open_raster_input_folder)
+        self.raster_import_dlg.cmb_time_system.currentIndexChanged.connect(self._on_time_system_changed)
+
+
+        # Open dialog
+        tools_dr.open_dialog(self.raster_import_dlg, dlg_name='dlg_nonvisual_raster_import')
+
+    def _import_rasters_accept(self, dialog: DrNonVisualRasterImportUi):
+        """ Check raster files and save them to database """
+
+        plugin_dir: str = os.path.dirname(global_vars.gpkg_dao_data.db_filepath)
+        folder_path: Optional[str] = tools_qt.get_text(self.raster_import_dlg, 'txt_folder_path', return_string_null=False)
+        timestep_value: float = self.raster_import_dlg.sb_time_value.value()
+        time_system = tools_qt.get_combo_value(self.raster_import_dlg, self.raster_import_dlg.cmb_time_system)
+        raster_type = tools_qt.get_combo_value(self.raster_import_dlg, self.raster_import_dlg.cmb_raster_type)
+        raster_name: Optional[str] = tools_qt.get_text(self.raster_import_dlg, 'txt_raster_name', return_string_null=False)
+
+        if raster_name is None or raster_name == '':
+            msg = "Please enter a raster name"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+
+        # Check folder
+        folder_path = tools_qt.get_text(dialog, 'txt_folder_path')
+        if not folder_path:
+            msg = "Please select a folder"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+        if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+            msg = "Invalid folder path"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+
+        # Check if folder is inside plugin directory
+        try:
+            plugin_path = os.path.abspath(plugin_dir)
+            folder_path = os.path.abspath(folder_path)
+            if not folder_path.startswith(plugin_path):
+                msg = "Selected folder must be inside the same directory as the geopackage file"
+                tools_qgis.show_warning(msg, dialog=dialog)
+                return
+        except Exception:
+            msg = "Error validating folder path"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+
+        result = tools_qt.show_question("The raster files will be ordered by filename on alphabetical order.\n\n Do you want to continue?", "Import rasters", force_action=True)
+        if not result:
+            return
+
+        # Get raster files
+        files = os.listdir(folder_path)
+        files.sort()
+        filtered_files = []
+        for file in files:
+            if file.endswith('.asc') or file.endswith('.txt'):
+                filtered_files.append(file)
+        if len(filtered_files) == 0:
+            msg = "No raster files found in the selected folder"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+
+        # Show tab log
+        tools_dr.set_tabs_enabled(self.raster_import_dlg)
+        self.raster_import_dlg.mainTab.setCurrentIndex(1)
+
+        self.raster_import_dlg.btn_ok.setEnabled(False)
+
+        self._set_progress_text("Importing rasters...", 0, True)
+
+        # Insert inp_raster
+        sql = f"INSERT INTO cat_raster (idval, raster_type)" \
+                f"VALUES('{raster_name}', '{raster_type}')"
+        result = tools_db.execute_sql(sql, commit=False)
+        if not result:
+            msg = "There was an error inserting raster."
+            tools_qgis.show_warning(msg, dialog=dialog)
+            self._set_progress_text("Error inserting raster: " + msg, 100, True)
+            global_vars.gpkg_dao_data.rollback()
+            return
+
+        # Initialize time as QTime starting from 00:00
+        current_time = QTime(0, 0)
+
+        # Convert timestep_value to minutes based on time_system
+        minutes_to_add = 0
+        if time_system == 'hours':
+            minutes_to_add = int(timestep_value * 60)
+        elif time_system == 'minutes':
+            minutes_to_add = int(timestep_value)
+        elif time_system == 'seconds':
+            minutes_to_add = int(timestep_value / 60)
+
+        for index, raster in enumerate(filtered_files):
+            # Calculate relative path from plugin directory
+            raster_full_path = os.path.join(folder_path, raster)
+            relative_path = os.path.relpath(raster_full_path, plugin_dir)
+
+            # Format current time as HH:mm
+            time_str = current_time.toString('HH:mm')
+
+            # Insert inp_raster_value with relative path and formatted time
+            sql = "INSERT INTO cat_raster_value (raster, time, fname) "
+            sql += f"VALUES ('{raster_name}', '{time_str}', '{relative_path}')"
+            result = tools_db.execute_sql(sql, commit=False)
+            if not result:
+                msg = "There was an error inserting raster value."
+                tools_qgis.show_warning(msg, dialog=dialog)
+                self._set_progress_text("Error inserting raster value: " + msg, 100, True)
+                global_vars.gpkg_dao_data.rollback()
+                return False
+
+            # Increment time by timestep
+            current_time = current_time.addSecs(minutes_to_add * 60)
+
+            self._set_progress_text(f"Imported raster {raster} with time {time_str}", tools_dr.lerp_progress(int(index/len(filtered_files)*100), 0, 90), True)
+
+        global_vars.gpkg_dao_data.commit()
+        self._set_progress_text("Rasters imported successfully", 100, True)
+        self.raster_import_dlg.btn_cancel.setEnabled(False)
+        # Reload manager table
+        self._reload_manager_table()
+
+    def _set_progress_text(self, text: str, progress: int, new_line: bool = False):
+        """ Set text to textbox """
+
+        # Progress bar
+        if progress is not None:
+            self.raster_import_dlg.progress_bar.setValue(progress)
+
+        # TextEdit log
+        txt_infolog = self.raster_import_dlg.findChild(QTextEdit, 'txt_infolog')
+        cur_text = tools_qt.get_text(self.raster_import_dlg, txt_infolog, return_string_null=False)
+
+        end_line = '\n' if new_line else ''
+        if text:
+            txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        else:
+            txt_infolog.setText(f"{cur_text}{end_line}")
+        txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
+    def _open_raster_input_folder(self):
+        """ Open folder dialog and set path to textbox """
+        path = tools_os.open_folder_path()
+        if path:
+            tools_qt.set_widget_text(self.raster_import_dlg, 'txt_folder_path', str(path))
+
+    def _on_time_system_changed(self):
+        """ Update Spinbox value based on selected time system """
+
+        # Get current time system
+        time_system = tools_qt.get_combo_value(self.raster_import_dlg, self.raster_import_dlg.cmb_time_system)
+
+        # Get current value from appropriate spinbox based on previous time system
+        current_value: float = 0
+        if hasattr(self, '_previous_time_system'):
+            current_value = self.raster_import_dlg.sb_time_value.value()
+
+        # Convert value based on time system change
+        converted_value: float = current_value
+        if hasattr(self, '_previous_time_system'):
+            # Convert from previous to new time system
+            if self._previous_time_system == 'hours':
+                if time_system == 'minutes':
+                    converted_value = current_value * 60
+                elif time_system == 'seconds':
+                    converted_value = current_value * 3600
+            elif self._previous_time_system == 'minutes':
+                if time_system == 'hours':
+                    converted_value = current_value / 60
+                elif time_system == 'seconds':
+                    converted_value = current_value * 60
+            elif self._previous_time_system == 'seconds':
+                if time_system == 'hours':
+                    converted_value = current_value / 3600
+                elif time_system == 'minutes':
+                    converted_value = current_value / 60
+
+        # Update appropriate spinbox with converted value
+        self.raster_import_dlg.sb_time_value.setValue(converted_value)
+
+        # Store current time system for next change
+        self._previous_time_system = time_system
 
     # endregion

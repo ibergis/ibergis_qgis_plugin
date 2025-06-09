@@ -141,6 +141,14 @@ FORM_CLASS = _get_ui_class('create_mesh.ui', 'utilities')
 
 class DrCreateMeshUi(DrDialog, FORM_CLASS):
     pass
+
+
+FROM_CLASS = _get_ui_class('nonvisual_import_raster.ui', 'main')
+
+
+class DrNonVisualRasterImportUi(DrDialog, FROM_CLASS):
+    pass
+
 # endregion
 
 

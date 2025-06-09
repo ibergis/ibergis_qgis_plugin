@@ -422,25 +422,24 @@ class DrI18NGenerator:
                 query = ""
                 if 'dbconfig_form_fields' in table:
                     for item_row, txt in data:
-                        query = (f"UPDATE {context} SET i18n_label = {txt[0]}, i18n_tooltip = {txt[1]}, "
+                        query += (f"UPDATE {context} SET i18n_label = {txt[0]}, i18n_tooltip = {txt[1]}, "
                                  f"i18n_placeholder = {txt[2]}, i18n_descript = {txt[3]} WHERE "
                                  f"formname = '{item_row['formname']}' AND formtype = '{item_row['formtype']}' AND "
                                  f"columnname = '{item_row['source']}';\n")
-                        file.write(query)
 
                 elif "dbtexts" in table:
                     if context == "sys_message":
                         for item_row, txt in data:
-                            query = (f"UPDATE {context} SET i18n_text = {txt[0]} WHERE id = '{item_row['source']}';\n")
+                            query += (f"UPDATE {context} SET i18n_text = {txt[0]} WHERE id = '{item_row['source']}';\n")
 
                     elif context == "config_csv":
                         for item_row, txt in data:
-                            query = (f"UPDATE {context} SET i18n_alias = {txt[0]}, i18n_descript = {txt[1]} WHERE "
+                            query += (f"UPDATE {context} SET i18n_alias = {txt[0]}, i18n_descript = {txt[1]} WHERE "
                                      f"id = {item_row['source']};\n")
 
                     elif context == "edit_typevalue":
                         for item_row, txt in data:
-                            query = (f"UPDATE {context} SET i18n_idval = {txt[0]}, i18n_descript = {txt[1]} WHERE "
+                            query += (f"UPDATE {context} SET i18n_idval = {txt[0]}, i18n_descript = {txt[1]} WHERE "
                                      f"rowid = {item_row['source']};\n")
                             
                     file.write(query)

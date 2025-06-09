@@ -14,6 +14,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.gui import QgsMessageBar
 
 from ... import global_vars
+from qgis.utils import iface
 
 
 class DrMainWindow(QMainWindow):
@@ -22,9 +23,9 @@ class DrMainWindow(QMainWindow):
     key_escape = QtCore.pyqtSignal()
     key_enter = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, parent=None):
 
-        super().__init__()
+        super().__init__(parent or iface.mainWindow())
         self.setupUi(self)
         # Create message bar
         try:

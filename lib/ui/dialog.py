@@ -14,4 +14,3 @@ class DrDialog(QDialog):
 
         super().__init__()
         self.setupUi(self)
-

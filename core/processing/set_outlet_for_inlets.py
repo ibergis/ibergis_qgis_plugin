@@ -23,7 +23,9 @@ from qgis.core import (
 )
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt.QtWidgets import QApplication
 from ...lib import tools_qgis, tools_gpkgdao
+from ..utils import tools_dr
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ..utils import Feedback
 from typing import Optional, List
@@ -199,12 +201,28 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             self.nearest_valid_pinlet_outlets = {}
         elif self.file_pinlets and self.nearest_valid_pinlet_outlets:
             feedback.setProgressText(self.tr(f"Pinlets without outlet assigned: {len(self.nearest_valid_pinlet_outlets)}"))
-        feedback.setProgress(60)
+        feedback.setProgress(80)
 
         return {}
 
-    def postProcessAlgorithm(self, context, feedback: Feedback):
+    def postProcessAlgorithm(self, context, feedback: Feedback, batch_size: int = 5000):
         """ Update features and create temporal layers """
+
+        current_updated_inlets: int = 0
+        current_updated_pinlets: int = 0
+        updated_inlets: int = 0
+        updated_pinlets: int = 0
+        inlet_progress_index: int = 0
+        pinlet_progress_index: int = 0
+
+        inlet_features: dict[str, QgsFeature] = {}
+        for feature in self.file_inlets.getFeatures():
+            inlet_features[feature['code']] = feature
+
+        pinlet_features: dict[str, QgsFeature] = {}
+        for feature in self.file_pinlets.getFeatures():
+            pinlet_features[feature['code']] = feature
+
         # Set outlet code for inlet and pinlet
         if self.nearest_valid_inlet_outlets is not None:
             self.file_inlets.startEditing()
@@ -215,23 +233,33 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                 if outlet_code is None:
                     self.skipped_inlets.append(str(inlet_code))
                     continue
+
+                if not self.file_inlets.isEditable():
+                    self.file_inlets.startEditing()
                 # Update outlet code in inlet layer
-                for feature in self.file_inlets.getFeatures():
-                    try:
-                        if feature['code'] == inlet_code:
-                            feature['outlet_node'] = outlet_code
-                            self.file_inlets.updateFeature(feature)
-                            break
-                    except Exception as e:
-                        self.file_inlets.rollBack()
-                        feedback.pushWarning(self.tr(f"Error updating inlet {inlet_code}: {str(e)}"))
-                        self.skipped_inlets.append(str(inlet_code))
+                try:
+                    if inlet_code in inlet_features.keys():
+                        inlet_features[inlet_code]['outlet_node'] = outlet_code
+                        self.file_inlets.updateFeature(inlet_features[inlet_code])
+                        current_updated_inlets += 1
+                        updated_inlets += 1
+                        if current_updated_inlets >= batch_size:
+                            self.file_inlets.commitChanges()
+                            current_updated_inlets = 0
+                            feedback.setProgressText(self.tr(f"Inlets updated with batch of {batch_size}[{updated_inlets}/{len(self.nearest_valid_inlet_outlets)}]"))
+                            feedback.setProgress(tools_dr.lerp_progress(int(((inlet_progress_index+1)/(len(self.nearest_valid_inlet_outlets.keys())/batch_size))*100), 80, 89))
+                            inlet_progress_index += 1
+                            QApplication.processEvents()
+                except Exception as e:
+                    self.file_inlets.rollBack()
+                    feedback.pushWarning(self.tr(f"Error updating inlet {inlet_code}: {str(e)}"))
+                    self.skipped_inlets.append(str(inlet_code))
             if self.file_inlets.isEditable():
                 self.file_inlets.commitChanges()
             self.skipped_inlets = list(dict.fromkeys(self.skipped_inlets))
             self.below_inlets = list(dict.fromkeys(self.below_inlets))
-            feedback.setProgressText(self.tr(f"Inlets skipped[{len(self.skipped_inlets)}]: {self.skipped_inlets}"))
-            feedback.setProgressText(self.tr(f"Inlets setted below[{len(self.below_inlets)}]: {self.below_inlets}"))
+            feedback.setProgressText(self.tr(f"Inlets skipped: ({len(self.skipped_inlets)})"))
+            feedback.setProgressText(self.tr(f"Inlets setted below: ({len(self.below_inlets)})"))
             feedback.setProgressText(self.tr(f"Inlets updated[{len(self.nearest_valid_inlet_outlets)-len(self.skipped_inlets)}/{len(self.nearest_valid_inlet_outlets)}]"))
             feedback.setProgressText(self.tr("Outlets assigned for inlets."))
 
@@ -244,27 +272,34 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                 if outlet_code is None:
                     self.skipped_pinlets.append(str(pinlet_code))
                     continue
-                # Update outlet code in inlet layer
-                for feature in self.file_pinlets.getFeatures():
-                    try:
-                        if feature['code'] == pinlet_code:
-                            feature['outlet_node'] = outlet_code
-                            self.file_pinlets.updateFeature(feature)
-                            break
-                    except Exception as e:
-                        self.file_pinlets.rollBack()
-                        feedback.pushWarning(self.tr(f"Error updating pinlet {pinlet_code}: {str(e)}"))
-                        self.skipped_pinlets.append(str(pinlet_code))
+                if not self.file_pinlets.isEditable():
+                    self.file_pinlets.startEditing()
+                # Update outlet code in pinlet layer
+                try:
+                    if pinlet_code in pinlet_features.keys():
+                        pinlet_features[pinlet_code]['outlet_node'] = outlet_code
+                        self.file_pinlets.updateFeature(pinlet_features[pinlet_code])
+                        current_updated_pinlets += 1
+                        updated_pinlets += 1
+                        if current_updated_pinlets >= batch_size:
+                            self.file_pinlets.commitChanges()
+                            current_updated_pinlets = 0
+                            feedback.setProgressText(self.tr(f"Pinlets updated with batch of {batch_size}[{updated_pinlets}/{len(self.nearest_valid_pinlet_outlets)}]"))
+                            feedback.setProgress(tools_dr.lerp_progress(int((((pinlet_progress_index+1)/(len(self.nearest_valid_pinlet_outlets.keys())/batch_size))*100)), 89, 98))
+                            pinlet_progress_index += 1
+                            QApplication.processEvents()
+                except Exception as e:
+                    self.file_pinlets.rollBack()
+                    feedback.pushWarning(self.tr(f"Error updating pinlet {pinlet_code}: {str(e)}"))
+                    self.skipped_pinlets.append(str(pinlet_code))
             if self.file_pinlets.isEditable():
                 self.file_pinlets.commitChanges()
             self.skipped_pinlets = list(dict.fromkeys(self.skipped_pinlets))
             self.below_pinlets = list(dict.fromkeys(self.below_pinlets))
-            feedback.setProgressText(self.tr(f"Pinlets skipped[{len(self.skipped_pinlets)}]: {self.skipped_pinlets}"))
-            feedback.setProgressText(self.tr(f"Pinlets setted below[{len(self.below_pinlets)}]: {self.below_pinlets}"))
+            feedback.setProgressText(self.tr(f"Pinlets skipped: ({len(self.skipped_pinlets)})"))
+            feedback.setProgressText(self.tr(f"Pinlets setted below: ({len(self.below_pinlets)})"))
             feedback.setProgressText(self.tr(f"Pinlets updated[{len(self.nearest_valid_pinlet_outlets)-len(self.skipped_pinlets)}/{len(self.nearest_valid_pinlet_outlets)}]"))
             feedback.setProgressText(self.tr("Outlets assigned for pinlets."))
-
-        feedback.setProgress(90)
 
         if len(self.skipped_inlets) > 0 or len(self.below_inlets) > 0:
             # Create a temporal layer with skipped features and load it on QGIS
@@ -368,11 +403,21 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         """
         nearest_outlets: dict[str, Optional[str]] = {}
         nearest_outlets_list = {}
+        min_progress = 10
+        max_progress = 80
+
+        if isInlet:
+            min_progress = 10
+            max_progress = 45
+        else:
+            min_progress = 45
+            max_progress = 80
 
         # Group nearest outlets by inlet/pinlet code
         necessary_fields: List[str] = ['code', 'code_2', 'elev', 'top_elev', 'distance']
         skipped_near_features: list[str] = []
-        for feature in nearest_layer.getFeatures():
+        for index, feature in enumerate(nearest_layer.getFeatures()):
+            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/nearest_layer.featureCount())*100), min_progress, int(max_progress/2)))
             valid_attributes = True
             if feedback.isCanceled():
                 return None
@@ -419,7 +464,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                         self.skipped_from_near_pinlet -= 1
 
         # Get nearest valid outlet for each inlet/pinlet
-        for inlet_code, values in nearest_outlets_list.items():
+        for index, (inlet_code, values) in enumerate(nearest_outlets_list.items()):
+            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/len(nearest_outlets_list.keys()))*100), int(max_progress/2), max_progress))
             if feedback.isCanceled():
                 return None
             if len(values['outlets']) == 1:
