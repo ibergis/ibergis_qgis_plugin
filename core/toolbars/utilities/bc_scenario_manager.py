@@ -426,8 +426,28 @@ class DrBCScenarioManagerButton(DrAction):
             msg = "There was an error inserting the scenario"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
+
+        # Set all scenarios as not active
+        sql = f"""UPDATE {self.tablename} SET active = 0"""
+        status = tools_db.execute_sql(sql)
+        if status is False:
+            msg = "There was an error setting the scenario as active"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
+            return
+
+        # Set current scenario as active
+        idval = idval.replace("'", "")
+        sql = f"""UPDATE {self.tablename} SET active = 1 WHERE idval = '{idval}'"""
+        status = tools_db.execute_sql(sql)
+        if status is False:
+            msg = "There was an error setting the scenario as active"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
+            return
+        self._set_lbl_current_scenario(idval)
+
         tools_dr.close_dialog(self.dlg_bc)
         self._reload_manager_table()
+        set_bc_filter()
 
     def _accept_edit_scenario(self):
         txt_id = self.dlg_bc.txt_id
