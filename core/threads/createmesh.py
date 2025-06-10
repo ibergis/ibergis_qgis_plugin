@@ -600,7 +600,7 @@ class DrCreateMeshTask(DrTask):
             distances = set()
 
             db_distances = row["distance"]
-            if db_distances and not np.isnan(db_distances):
+            if isinstance(db_distances, list):
                 distances.update(db_distances)
 
             for vert in line.coords:
