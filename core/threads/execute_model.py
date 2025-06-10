@@ -732,12 +732,7 @@ class DrExecuteModel(DrTask):
         if not raster_rows:
             raise Exception(f"Raster values not found. Raster idval: {raster_idval}.")
 
-        def str2seconds(time: str) -> int:
-            hours, minutes = map(int, time.split(":"))
-            seconds = hours * 3600 + minutes * 60
-            return seconds
-
-        times = [str2seconds(row["time"]) for row in raster_rows]
+        times = [row["time"] for row in raster_rows]
         paths = [Path(row["fname"]) for row in raster_rows]
 
         project_folder = Path(self.dao.db_filepath).parent

@@ -123,7 +123,7 @@ CREATE TABLE cat_raster (
 CREATE TABLE cat_raster_value (
     id integer primary key,
     raster text NOT NULL,
-    time datetime CHECK (typeof(time)='datetime' OR time=NULL),
+    time integer CHECK (typeof(time)='integer' OR time=NULL),
 	fname text check (typeof(fname)='text' or fname = null),
     FOREIGN KEY (raster) references cat_raster(idval) on update cascade on delete restrict
 );

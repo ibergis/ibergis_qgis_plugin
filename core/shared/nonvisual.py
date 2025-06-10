@@ -2040,7 +2040,7 @@ class DrNonVisual:
             return
         print(f"ROWS -> {rows}")
         for n, row in enumerate(rows):
-            tbl_raster_value.setItem(n, 0, QTableWidgetItem(f"{row[0]}"))
+            tbl_raster_value.setItem(n, 0, QTableWidgetItem(f"{QTime(0, 0, 0).addSecs(row[0]).toString('HH:mm:ss')}"))
             tbl_raster_value.setItem(n, 1, QTableWidgetItem(f"{row[1]}"))
             tbl_raster_value.insertRow(tbl_raster_value.rowCount())
 
@@ -2164,9 +2164,9 @@ class DrNonVisual:
         for row in values:
             if row == (['null'] * tbl_raster_value.columnCount()):
                 continue
-
+            time_value: int = self._str2seconds(row[0])
             sql = "INSERT INTO cat_raster_value (raster, time, fname) "
-            sql += f"VALUES ('{raster_id}', '{row[0]}', '{row[1]}')"
+            sql += f"VALUES ('{raster_id}', {time_value}, '{row[1]}')"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting raster value."
@@ -2174,6 +2174,11 @@ class DrNonVisual:
                 global_vars.gpkg_dao_data.rollback()
                 return False
         return True
+
+    def _str2seconds(self, time: str) -> int:
+        hours, minutes, seconds = map(int, time.split(":"))
+        seconds = hours * 3600 + minutes * 60 + seconds
+        return seconds
 
     # endregion
 
@@ -2352,28 +2357,25 @@ class DrNonVisual:
             return
 
         # Initialize time as QTime starting from 00:00
-        current_time = QTime(0, 0)
+        current_seconds = 0
 
         # Convert timestep_value to minutes based on time_system
-        minutes_to_add = 0
+        seconds_to_add = 0
         if time_system == 'hours':
-            minutes_to_add = int(timestep_value * 60)
+            seconds_to_add = int(timestep_value * 3600)
         elif time_system == 'minutes':
-            minutes_to_add = int(timestep_value)
+            seconds_to_add = int(timestep_value * 60)
         elif time_system == 'seconds':
-            minutes_to_add = int(timestep_value / 60)
+            seconds_to_add = int(timestep_value)
 
         for index, raster in enumerate(filtered_files):
             # Calculate relative path from plugin directory
             raster_full_path = os.path.join(folder_path, raster)
             relative_path = os.path.relpath(raster_full_path, plugin_dir)
 
-            # Format current time as HH:mm
-            time_str = current_time.toString('HH:mm')
-
             # Insert inp_raster_value with relative path and formatted time
             sql = "INSERT INTO cat_raster_value (raster, time, fname) "
-            sql += f"VALUES ('{raster_name}', '{time_str}', '{relative_path}')"
+            sql += f"VALUES ('{raster_name}', '{current_seconds}', '{relative_path}')"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting raster value."
@@ -2383,7 +2385,9 @@ class DrNonVisual:
                 return False
 
             # Increment time by timestep
-            current_time = current_time.addSecs(minutes_to_add * 60)
+            current_seconds += seconds_to_add
+
+            time_str = QTime(0, 0, 0).addSecs(current_seconds).toString('HH:mm:ss')
 
             self._set_progress_text(f"Imported raster {raster} with time {time_str}", tools_dr.lerp_progress(int(index/len(filtered_files)*100), 0, 90), True)
 
