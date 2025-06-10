@@ -253,9 +253,9 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
                     # enable inlet triggers
                     if not self.enable_triggers(feedback, True):
                         return False
-                    feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}."))
+                    feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}"))
                     if len(skiped_features) > 0:
-                        feedback.setProgressText(self.tr(f"Skipped {len(skiped_features)} features with id: {skiped_features}."))
+                        feedback.setProgressText(self.tr(f"Skipped features: ({len(skiped_features)})"))
                     features_to_add.clear()
                 except Exception as e:
                     feedback.reportError(self.tr(f"Error adding features: {e}"))
@@ -279,9 +279,9 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
                 # enable inlet triggers
                 if not self.enable_triggers(feedback, True):
                     return False
-                feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}."))
+                feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}"))
                 if len(skiped_features) > 0:
-                    feedback.setProgressText(self.tr(f"Skipped {len(skiped_features)} features with id: {skiped_features}."))
+                    feedback.setProgressText(self.tr(f"Skipped features: ({len(skiped_features)})"))
             except Exception as e:
                 feedback.reportError(self.tr(f"Error adding features: {e}"))
                 target_layer.rollBack()
