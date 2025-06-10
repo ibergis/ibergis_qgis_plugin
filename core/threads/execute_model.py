@@ -288,40 +288,41 @@ class DrExecuteModel(DrTask):
     def _create_config_files(self):
         # Iber_Results.dat
         file_name = Path(self.folder_path) / "Iber_Results.dat"
-        mapper = {
-            "result_depth": "Depth",
-            "result_vel": "Velocity",
-            "result_specific_discharge": "Specific_Discharge",
-            "result_water_elevation": "Water_Elevation",
-            "result_fronde_number": "Froude_Number",
-            "result_localtime_step": "Local_Time_Step",
-            "result_manning_coefficient": "Manning_Coefficient",
-            "result_critical_diameter": "Critical_Diameter",
-            "result_max_depth": "Maximum_Depth",
-            "result_max_vel": "Maximum_Velocity",
-            "result_max_spec_discharge": "Maximum_Spec_Discharge",
-            "result_max_water_elev": "Maximum_Water_Elev",
-            "result_max_localtime_step": "Maximum_Local_Time_Step",
-            "result_max_critical_diameter": "Maximum_Critical_Diameter",
-            "result_hazard_rd9_2008": "Hazard RD9/2008",
-            "result_hazard_aca2003": "Hazard ACA2003",
-            "result_depth_vector": "Depth_vector",
-            "result_bed_shear_stress": "Bed_Shear_Stress",
-            "result_max_bed_shear_stress": "Maximum_Bed_Shear_Stress",
-            "result_energy": "Energy",
-            "result_steamlines": "Streamlines",
-            "result_results_raster": "Raster interpolation",
-            "result_results_raster_cell": "Raster cell size",
-        }
+        mapper = [
+            {"parameter": "result_depth", "tag": "Depth"},
+            {"parameter": "result_vel", "tag": "Velocity"},
+            {"parameter": "result_specific_discharge", "tag": "Specific_Discharge"},
+            {"parameter": "result_water_elevation", "tag": "Water_Elevation"},
+            {"parameter": "result_fronde_number", "tag": "Froude_Number"},
+            {"parameter": "result_localtime_step", "tag": "Local_Time_Step"},
+            {"parameter": "result_manning_coefficient", "tag": "Manning_Coefficient"},
+            {"parameter": "result_critical_diameter", "tag": "Critical_Diameter"},
+            {"parameter": "result_max_depth", "tag": "Maximum_Depth"},
+            {"parameter": "result_max_vel", "tag": "Maximum_Velocity"},
+            {"parameter": "result_max_spec_discharge", "tag": "Maximum_Spec_Discharge"},
+            {"parameter": "result_max_water_elev", "tag": "Maximum_Water_Elev"},
+            {"parameter": "result_max_localtime_step", "tag": "Maximum_Local_Time_Step"},
+            {"parameter": "result_max_critical_diameter", "tag": "Maximum_Critical_Diameter"},
+            {"parameter": "result_hazard_rd9_2008", "tag": "Hazard RD9/2008"},
+            {"parameter": "result_hazard_aca2003", "tag": "Hazard ACA2003"},
+            {"parameter": "result_depth_vector", "tag": "Depth_vector"},
+            {"parameter": "result_bed_shear_stress", "tag": "Bed_Shear_Stress"},
+            {"parameter": "result_max_bed_shear_stress", "tag": "Maximum_Bed_Shear_Stress"},
+            {"parameter": "result_energy", "tag": "Energy"},
+            {"parameter": "result_steamlines", "tag": "Streamlines"},
+            {"parameter": "result_results_raster", "tag": "Raster interpolation"},
+            {"parameter": "result_results_raster_cell", "tag": "Raster cell size"},
+        ]
         sql = "SELECT parameter, value FROM config_param_user WHERE parameter like 'result_%'"
         rows = self.dao.get_rows(sql)
         if rows:
+            parameters = {row['parameter']: row['value'] for row in rows}
             with open(file_name, 'w', newline='') as dat_file:
-                for row in rows:
-                    value = row['value']
+                for item in mapper:
+                    value = parameters.get(item['parameter'], -9999)
                     if value in (None, "True", "False"):
                         value = "1" if value == "True" else "0"
-                    parameter = mapper.get(row['parameter'], row['parameter'])
+                    parameter = item['tag']
                     line = f"{value}\t{parameter}\n"
                     dat_file.write(line)
 
