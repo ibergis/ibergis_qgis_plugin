@@ -10,16 +10,13 @@ import os
 
 from qgis.core import QgsProcessingProvider
 from qgis.PyQt.QtGui import QIcon
-from .import_ground_geometries import ImportGroundGeometries
-from .import_roof_geometries import ImportRoofGeometries
-from .import_execute_results import ImportExecuteResults
-from .set_outlet_for_inlets import SetOutletForInlets
-from .set_outlet_for_roofs import SetOutletForRoofs
-from .import_inlet_geometries import ImportInletGeometries
-from .check_project import DrCheckProjectAlgorithm
+from .fix_vertex_edge import DrFixEdgeVertexAlgorithm
+from .mesh_validations import DrMeshValidationsAlgorithm
+from .remove_duplicate_vertices import DrRemoveDuplicateVertices
+from .simplify_mesh_input_geometries import SimplifyMeshInputGeometries
 
 
-class DrainProvider(QgsProcessingProvider):
+class DrainMeshProvider(QgsProcessingProvider):
 
     def __init__(self, plugin_dir):
         """
@@ -39,13 +36,10 @@ class DrainProvider(QgsProcessingProvider):
         """
         Loads all algorithms belonging to this provider.
         """
-        self.addAlgorithm(ImportGroundGeometries())
-        self.addAlgorithm(ImportRoofGeometries())
-        self.addAlgorithm(ImportInletGeometries())
-        self.addAlgorithm(ImportExecuteResults())
-        self.addAlgorithm(SetOutletForInlets())
-        self.addAlgorithm(SetOutletForRoofs())
-        self.addAlgorithm(DrCheckProjectAlgorithm())
+        self.addAlgorithm(DrFixEdgeVertexAlgorithm())
+        self.addAlgorithm(DrMeshValidationsAlgorithm())
+        self.addAlgorithm(DrRemoveDuplicateVertices())
+        self.addAlgorithm(SimplifyMeshInputGeometries())
 
     def id(self):
         """
@@ -53,7 +47,7 @@ class DrainProvider(QgsProcessingProvider):
         string should be a unique, short, character only string, eg "qgis" or
         "gdal". This string should not be localised.
         """
-        return 'DrainProvider'
+        return 'DrainMeshProvider'
 
     def name(self):
         """
@@ -62,7 +56,7 @@ class DrainProvider(QgsProcessingProvider):
 
         This string should be short (e.g. "Lastools") and localised.
         """
-        return self.tr('Drain')
+        return self.tr('Drain - Mesh')
 
     def icon(self):
         return QIcon(f"{self.plugin_dir}{os.sep}icons{os.sep}toolbars{os.sep}utilities{os.sep}59.png")
