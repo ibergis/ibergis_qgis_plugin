@@ -419,11 +419,10 @@ class DrCreateMeshTask(DrTask):
                 z_values = points.apply(interpolate_z, axis=1)
 
                 ground_vertices_df.loc[points.index, "z"] = z_values
-                print(ground_vertices_df.loc[points.index, "z"])
 
             print(f"Done! {time.time() - start}s")
 
-            print("Validating landuses... ", end="")
+            print("Triangulating Roofs... ", end="")
             start = time.time()
             self.feedback.setProgressText("Creating roof mesh...")
             self.feedback.setProgress(30)
@@ -460,6 +459,9 @@ class DrCreateMeshTask(DrTask):
             triangles_df["v2"], triangles_df["v3"] = triangles_df["v3"], triangles_df["v2"]
 
             # Get roofs
+            print("Creating roofs DataFrame... ", end="")
+            start = time.time()
+
             self.feedback.setProgressText("Getting roof data...")
             rows = self.dao.get_rows("""
                 SELECT 
@@ -476,8 +478,12 @@ class DrCreateMeshTask(DrTask):
                 roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
                 roofs_df.index = roofs_df["fid"]  # type: ignore
 
+            print(f"Done! {time.time() - start}s")
+
+            print("Creating bridges DataFrame... ", end="")
+            start = time.time()
             bridges_df = self._create_bridges_df(triangles_df, vertices_df)
-            print(f"Bridges: {bridges_df}")
+            print(f"Done! {time.time() - start}s")
 
             self.mesh = mesh_parser.Mesh(
                 polygons=triangles_df,
@@ -622,77 +628,135 @@ class DrCreateMeshTask(DrTask):
 
         return pd.concat([line_anchors, bridges], ignore_index=True) # type: ignore
 
-    def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame):
-        context = QgsProcessingContext()
-        # Create mesh edges layer
-        mesh_edges_layer = self._create_mesh_edges_layer(polygons_df, vertices_df)  # FIXME: This takes too long
-        # Create buffer for each bridge 
-        bridge_layer = tools_qgis.get_layer_by_tablename("bridge")
-        buffer_layer = self._create_bridge_buffer(bridge_layer, context)
-        # Join buffer with mesh edges
-        valid_edges_layer = self._create_valid_edges_layer(buffer_layer, mesh_edges_layer, context)
+
+    def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame) -> pd.DataFrame:
+        bridges = layer_to_gdf(
+            self.bridge_layer,
+            ["code", "freeflow_cd", "deck_cd", "sumergeflow_cd", "gaugenumber"],
+            self.only_selected_features
+        )
         bridges_values_dict = self.get_bridges_values_dict()
 
-        bridge_list = []
-        for feature in valid_edges_layer.getFeatures():
-            relative_distance = 0
-            total_length = 0
-            bridge_feature = None
-            for bridge in bridge_layer.getFeatures():
-                if bridge["code"] == feature["code"]:
-                    total_length = bridge.geometry().length()
-                    bridge_feature = bridge
-                    break
-            line_last_vertex = feature.geometry().asPolyline()[-1]
-            # Get the absolute distance along the line to the point
-            absolute_distance = bridge_feature.geometry().lineLocatePoint(QgsGeometry.fromPointXY(line_last_vertex))
-            # Convert to relative distance (0 to 1)
-            relative_distance = absolute_distance / total_length
+        # Create a DataFrame with the tiangles and its vertices position (optimized_df)
+        polygons_df = polygons_df[polygons_df["category"] == "ground"].copy()
 
-            relative_distance = round(relative_distance, 2)
-            element_id = feature['pol_id']
-            side = feature['side']
+        c1 = vertices_df.loc[polygons_df["v1"], ['x', 'y', 'z']]
+        c2 = vertices_df.loc[polygons_df["v2"], ['x', 'y', 'z']]
+        c3 = vertices_df.loc[polygons_df["v3"], ['x', 'y', 'z']]
 
-            # Get bridge values based on code and distance
-            bridge_values = None
-            if feature["code"] in bridges_values_dict:
-                # Get values with distance >= relative_distance
-                matching_values = [v for v in bridges_values_dict[feature["code"]]
-                                   if v["distance"] >= relative_distance]
-                if matching_values:
-                    # Take the first matching value (smallest distance >= relative_distance)
-                    bridge_values = matching_values[0]
+        c1.columns = ["x1", "y1", "z1"]
+        c2.columns = ["x2", "y2", "z2"]
+        c3.columns = ["x3", "y3", "z3"]
 
-            # Set values from bridge_values if found, otherwise use defaults
-            lowerdeckelev = bridge_values["lowelev"] if bridge_values else None
-            bridgeopeningpercent = bridge_values["openingval"] if bridge_values else None
-            topelevn = bridge_values["topelev"] if bridge_values else None
+        c1.index = polygons_df.index
+        c2.index = polygons_df.index
+        c3.index = polygons_df.index
 
-            freepressureflowcd = feature['freeflow_cd']
-            deckcd = feature['deck_cd']
-            sumergeflowcd = feature['sumergeflow_cd']
-            gaugenumber = feature['gaugenumber']
+        optimized_df = pd.concat([polygons_df, c1, c2, c3], axis=1)
 
-            feature_list = [
-                element_id,
-                side,
-                1,
-                -999,
-                lowerdeckelev,
-                bridgeopeningpercent,
-                freepressureflowcd,
-                topelevn,
-                100,
-                deckcd,
-                sumergeflowcd,
-                gaugenumber,
-                0,
-                0,
-                0,
-                0,
-                0
+        # We create a DataFrame with the geometry of the triangles simplified to only the vertices (optimized_gdf)
+        # This will be used to check intersections with the bridges
+        coords = optimized_df[['x1','y1','x2','y2','x3','y3']].to_numpy()
+        vertices_geom = shapely.multipoints(coords.reshape(-1, 3, 2))
+
+        # We explode the MultiPoint geometries to create a GeoDataFrame with individual points
+        # index_parts=True ensures that we know the order of the points in the original triangles
+        # The index will have two levels: the triangle index and the point index (0, 1, 2)
+        optimized_gdf = gpd.GeoDataFrame(
+            optimized_df,
+            geometry=vertices_geom,
+            crs="EPSG:25831",
+        ).explode(index_parts=True)
+
+        # Now we can check for intersections with the bridges
+        bridge_list = []  # Here we will store the bridge features
+        for bridge in bridges.itertuples():
+            bridge_geom: shapely.LineString = bridge.geometry
+
+            bridge_geom_buf = bridge_geom.buffer(0.01)
+            touching = optimized_gdf[
+                optimized_gdf.intersects(bridge_geom_buf)
             ]
-            bridge_list.append(feature_list)
+
+            # Segment the bridge geometry into straight segments so that only with the segments
+            # we can check for touching edge only by knowing which vertices are touching
+            segments = map(shapely.LineString, zip(bridge_geom.coords[:-1], bridge_geom.coords[1:]))
+            for segment_geom in segments:
+                mask = touching.intersects(segment_geom.buffer(0.01))
+                segment_touching = touching[mask]
+
+                for idx, group in segment_touching.groupby(level=0):
+                    side = -1
+                    if len(group) == 2:
+                        verts = group.index.get_level_values(1).to_list()
+                        # verts.sort()  # Sorting should not be necessary, as the order is already defined by the index
+                        if verts == [0, 1]:
+                            side = 1
+                        elif verts == [1, 2]:
+                            side = 2
+                        elif verts == [0, 2]:
+                            side = 3
+                    else:
+                        if len(group) > 2:
+                            raise ValueError(f"Found more than 2 vertices in group {group.index}. This is unexpected.")
+
+                        continue
+
+                    assert side != -1, f"Side not found for group {group.index}"
+
+                    # Get the relative distance along the bridge segment
+                    # We will get the middle point of the edge to calculate the distance
+                    v1 = group.iloc[0].geometry
+                    v2 = group.iloc[1].geometry
+                    mid_point = shapely.Point(
+                        (v1.x + v2.x) / 2,
+                        (v1.y + v2.y) / 2
+                    )
+
+                    # Get the absolute distance along the line to the point
+                    relative_distance = bridge_geom.project(mid_point, normalized=True)
+
+                    # Get bridge values based on code and distance
+                    bridge_values = None
+                    if bridge.code in bridges_values_dict:
+                        # Get values with distance >= relative_distance
+                        matching_values = [v for v in bridges_values_dict[bridge.code]
+                                           if v["distance"] >= relative_distance]
+                        if matching_values:
+                            # Take the first matching value (smallest distance >= relative_distance)
+                            bridge_values = matching_values[0]
+
+                    # Set values from bridge_values if found, otherwise use defaults
+                    lowerdeckelev = bridge_values["lowelev"] if bridge_values else None
+                    bridgeopeningpercent = bridge_values["openingval"] if bridge_values else None
+                    topelevn = bridge_values["topelev"] if bridge_values else None
+
+                    freepressureflowcd = bridge.freeflow_cd
+                    deckcd = bridge.deck_cd
+                    sumergeflowcd = bridge.sumergeflow_cd
+                    gaugenumber = bridge.gaugenumber
+
+
+                    feature_list = [
+                        idx,
+                        side,
+                        1,
+                        -999,
+                        lowerdeckelev,
+                        bridgeopeningpercent,
+                        freepressureflowcd,
+                        topelevn,
+                        100,
+                        deckcd,
+                        sumergeflowcd,
+                        gaugenumber,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                    bridge_list.append(feature_list)
 
         bridges_df = pd.DataFrame(bridge_list, columns=["element_id", "side", "num1", "num2", "lowerdeckelev", "bridgeopeningpercent", "freepressureflowcd", "topelevn", "num3", "deckcd", "sumergeflowcd", "gaugenumber", "num4", "num5", "num6", "num7", "num8"])
 
@@ -704,81 +768,11 @@ class DrCreateMeshTask(DrTask):
         for value in rows:
             if value["bridge_code"] not in bridge_values_dict.keys():
                 bridge_values_dict[value["bridge_code"]] = []
-            bridge_values_dict[value["bridge_code"]].append({"distance": value["distance"], "topelev": value["topelev"]
-                                                             , "lowelev": value["lowelev"], "openingval": value["openingval"]})
+            bridge_values_dict[value["bridge_code"]].append({
+                "distance": value["distance"],
+                "topelev": value["topelev"],
+                "lowelev": value["lowelev"],
+                "openingval": value["openingval"]
+            })
         return bridge_values_dict
 
-    def _create_valid_edges_layer(self, buffer_layer: QgsVectorLayer, mesh_edges_layer: QgsVectorLayer, context: QgsProcessingContext):
-        # Join buffer with mesh edges
-        alg_params = {
-            'DISCARD_NONMATCHING': True,
-            'INPUT': mesh_edges_layer,
-            'JOIN': buffer_layer,
-            'METHOD': 0,  # Create separate feature for each matching feature (one-to-many)
-            'PREDICATE': [5],  # are within
-            'PREFIX': '',
-            'OUTPUT': 'memory:'
-        }
-        valid_edges_layer: QgsVectorLayer = processing.run('qgis:joinattributesbylocation', alg_params, context=context)['OUTPUT']
-        return valid_edges_layer
-
-    def _create_bridge_buffer(self, layer: QgsVectorLayer, context: QgsProcessingContext):
-        # Buffer
-        alg_params = {
-            'DISSOLVE': False,
-            'DISTANCE': 0.1,
-            'END_CAP_STYLE': 0,  # Round
-            'INPUT': layer,
-            'JOIN_STYLE': 0,  # Round
-            'MITER_LIMIT': 2,
-            'SEGMENTS': 5,
-            'OUTPUT': 'memory:'
-        }
-        buffer_layer: QgsVectorLayer = processing.run('native:buffer', alg_params, context=context)['OUTPUT']
-        return buffer_layer
-
-    def _create_mesh_edges_layer(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame):
-        poly_df = polygons_df
-        feature_edges = {}
-        for pol in poly_df[poly_df["category"] == "ground"].itertuples():
-            vert = [pol.v1, pol.v2, pol.v3, pol.v4]
-            # Add last and first vertices as a edge if they are distinct
-            last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
-            edges = chain(self.pairwise(vert), last_edge)
-            for side, verts in enumerate(edges, start=1):
-                # edge = frozenset(verts)
-                feature_edges[verts] = (pol.Index, side)
-
-            if self.feedback.isCanceled():
-                self.message = "Task canceled."
-                return False
-
-        layer = QgsVectorLayer("LineString", "mesh_edges", "memory")
-        layer.setCrs(QgsCoordinateReferenceSystem(f"EPSG:{global_vars.data_epsg}"))
-        provider = layer.dataProvider()
-
-        fields = QgsFields()
-        fields.append(QgsField("pol_id", QVariant.String))
-        fields.append(QgsField("side", QVariant.Int))
-        provider.addAttributes(fields)
-        layer.updateFields()
-
-        features = []
-        for edge, (pol_id, side) in feature_edges.items():
-            coords = [vertices_df.loc[vert, ["x", "y"]].to_numpy() for vert in edge]
-            feature = QgsFeature()
-            feature.setGeometry(
-                QgsGeometry.fromPolyline([QgsPoint(*coord) for coord in coords])
-            )
-            feature.setAttributes([pol_id, side])
-            features.append(feature)
-        provider.addFeatures(features)
-        layer.updateExtents()
-
-        return layer
-
-    def pairwise(self, iterable):
-        # pairwise('ABCDEFG') --> AB BC CD DE EF FG
-        a, b = tee(iterable)
-        next(b, None)
-        return zip(a, b)
