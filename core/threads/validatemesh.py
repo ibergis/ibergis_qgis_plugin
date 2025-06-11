@@ -98,10 +98,19 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
 
 
 def validate_vert_edge(
-    layers_dict: dict, feedback: Feedback
+    layers_dict: dict, feedback: Feedback, include_roof: bool = False
 ) -> Optional[QgsVectorLayer]:
-    layers = [layers_dict["ground"]]
-    data = pd.concat(map(lambda l: layer_to_gdf(l, ["fid"]), layers))
+    layers: list[QgsVectorLayer] = [layers_dict["ground"]]
+    if include_roof:
+        layers.append(layers_dict["roof"])
+
+    gdfs = []
+    for layer in layers:
+        gdf = layer_to_gdf(layer, ["fid"])
+        gdf["layer"] = layer.name()
+        gdfs.append(gdf)
+
+    data: gpd.GeoDataFrame = pd.concat(gdfs, ignore_index=True)
 
     output_layer = QgsVectorLayer("Point", "Vertex-Edge Errors", "memory")
     output_layer.setCrs(layers_dict["ground"].crs())
@@ -110,6 +119,7 @@ def validate_vert_edge(
 
     provider.addAttributes([
         QgsField("polygon_fid", QVariant.Int),
+        QgsField("layer", QVariant.String)
     ])
     output_layer.updateFields()
 
@@ -143,7 +153,8 @@ def validate_vert_edge(
                     if dist_to_verts > 0.1:
                         feature = QgsFeature()
                         feature.setAttributes([
-                            neighbour.fid
+                            neighbour.fid,
+                            neighbour.layer
                         ])
                         feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(*p)))
                         provider.addFeature(feature)
