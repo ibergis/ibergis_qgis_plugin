@@ -18,6 +18,7 @@ import pandas as pd
 import shapely
 import itertools
 import time
+import numpy as np
 
 
 def validate_cellsize(
@@ -96,6 +97,95 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
         verts += get_polygon_vertices(poly)
     return verts
 
+def validate_vert_edge_v2(
+    layers_dict: dict, feedback: Feedback, include_roof: bool = False
+) -> Optional[QgsVectorLayer]:
+    # Step 1: Prepare data with spatial indexing
+    layers = [layers_dict["ground"]]
+    if include_roof:
+        layers.append(layers_dict["roof"])
+
+    gdfs = []
+    for layer in layers:
+        gdf = layer_to_gdf(layer, ["fid"])
+        gdf["layer"] = layer.name()
+        gdfs.append(gdf)
+
+    data = pd.concat(gdfs, ignore_index=True)
+
+    # Extract vertices and create spatial index
+    data["vertices"] = data.geometry.apply(
+        lambda geom: [shapely.Point(c) for c in shapely.get_coordinates(geom, include_z=False)]
+    )
+    all_vertices = np.concatenate(data["vertices"].values)
+    vertex_tree = shapely.STRtree(all_vertices)
+
+    # Create polygon STRtree for neighbor detection
+    polygon_tree = shapely.STRtree(data.geometry.values)
+
+    # Prepare output layer
+    output_layer = QgsVectorLayer("Point", "Vertex-Edge Errors", "memory")
+    output_layer.setCrs(layers_dict["ground"].crs())
+    provider = output_layer.dataProvider()
+    provider.addAttributes([
+        QgsField("polygon_fid", QVariant.Int),
+        QgsField("layer", QVariant.String)
+    ])
+    output_layer.updateFields()
+
+    # Step 2: Vectorized neighbor checks
+    features = []
+    for idx, row in data.iterrows():
+        if feedback.isCanceled():
+            return None
+
+        vertices = row["vertices"]
+        if not vertices:
+            continue
+
+        # Find nearby polygons (within 0.1 buffer)
+        nearby_idxs = polygon_tree.query(
+            row.geometry.buffer(0.1), 
+            predicate="intersects"
+        )
+        nearby = data.iloc[nearby_idxs]
+        nearby = nearby[nearby.index != idx]  # Exclude self
+
+        if nearby.empty:
+            continue
+
+        # Check each vertex against nearby polygons
+        for vertex in vertices:
+            # Step 3: Check polygon proximity
+            close_polygons = nearby[
+                shapely.distance(vertex, nearby.geometry) < 0.1
+            ]
+            if close_polygons.empty:
+                continue
+
+            # Step 4: Check vertex proximity using spatial index
+            candidate_idxs = vertex_tree.query(vertex.buffer(0.1), predicate="contains")
+            nearby_vertices = all_vertices[candidate_idxs]
+
+            for _, poly in close_polygons.iterrows():
+                # Find vertices belonging to this polygon
+                poly_verts = set(poly["vertices"])
+                has_close_vertex = any(
+                    v in poly_verts and shapely.distance(vertex, v) < 0.1 
+                    for v in nearby_vertices
+                )
+
+                if not has_close_vertex:
+                    feat = QgsFeature()
+                    feat.setAttributes([poly["fid"], poly["layer"]])
+                    feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(vertex.x, vertex.y)))
+                    features.append(feat)
+                    break  # Only flag once per vertex
+
+    if features:
+        provider.addFeatures(features)
+    output_layer.updateExtents()
+    return output_layer
 
 def validate_vert_edge(
     layers_dict: dict, feedback: Feedback, include_roof: bool = False
@@ -442,10 +532,16 @@ _validation_steps = [
             "function": validate_dem_coverage,
             "layer": None,
         },
+        # "check_missing_vertices": {
+        #     "name": "Missing Vertices",
+        #     "type": "error",
+        #     "function": validate_vert_edge,
+        #     "layer": None,
+        # },
         "check_missing_vertices": {
             "name": "Missing Vertices",
             "type": "error",
-            "function": validate_vert_edge,
+            "function": validate_vert_edge_v2,
             "layer": None,
         },
         "check_intersections": {
