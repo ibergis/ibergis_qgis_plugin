@@ -2393,7 +2393,7 @@ class DrNonVisual:
 
         global_vars.gpkg_dao_data.commit()
         self._set_progress_text("Rasters imported successfully", 100, True)
-        self.raster_import_dlg.btn_cancel.setEnabled(False)
+        self.raster_import_dlg.btn_cancel.setText("Close")
         # Reload manager table
         self._reload_manager_table()
 
