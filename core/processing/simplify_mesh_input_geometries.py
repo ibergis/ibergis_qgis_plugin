@@ -176,9 +176,21 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
             'INPUT': self.simplified_layer,
             'FIELD':'layer','PREFIX_FIELD':True,'FILE_TYPE':0, 'OUTPUT':'TEMPORARY_OUTPUT'})
 
-        # Get splited layers
-        roof_simplified_layer = QgsVectorLayer(result['OUTPUT_LAYERS'][0], 'roof_simplified', 'ogr')
-        ground_simplified_layer = QgsVectorLayer(result['OUTPUT_LAYERS'][1], 'ground_simplified', 'ogr')
+        layer1: QgsVectorLayer = QgsVectorLayer(result['OUTPUT_LAYERS'][0], 'layer1', 'ogr')
+        layer2: QgsVectorLayer = QgsVectorLayer(result['OUTPUT_LAYERS'][1], 'layer2', 'ogr')
+        layer1_type: Optional[str] = self.get_layer_type(layer1)
+        layer2_type: Optional[str] = self.get_layer_type(layer2)
+
+        if layer1_type is None or layer2_type is None:
+            feedback.reportError(self.tr('Error getting layer type.'))
+            return {}
+
+        if layer1_type == self.roof_layer.name():
+            roof_simplified_layer = layer1
+            ground_simplified_layer = layer2
+        elif layer1_type == self.ground_layer.name():
+            roof_simplified_layer = layer2
+            ground_simplified_layer = layer1
 
         # Create temporal layers
         temporal_roof_layer = QgsVectorLayer("MultiPolygon", 'temporal_simplified_roof_layer', 'memory')
@@ -268,6 +280,11 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
 
         feedback.setProgress(100)
         return {}
+
+    def get_layer_type(self, layer: QgsVectorLayer) -> Optional[str]:
+        for feature in layer.getFeatures():
+            return feature['layer']
+        return None
 
     def shortHelpString(self):
         return self.tr("""This tool allows you to simplify the input geometries of the mesh.""")
