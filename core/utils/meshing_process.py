@@ -171,7 +171,8 @@ try:
                 val = feature[field]
                 data[field].append(val if val else None)
 
-        gdf = gpd.GeoDataFrame(geometry=geoms, data=data, crs=layer.crs().toWkt())  # type: ignore
+        # gdf = gpd.GeoDataFrame(geometry=geoms, data=data, crs=layer.crs().authid())  # type: ignore
+        gdf = gpd.GeoDataFrame(geometry=geoms, data=data)  # type: ignore
         gdf: gpd.GeoDataFrame = gdf.explode(ignore_index=True)  # type: ignore
         gdf["geometry"] = gdf["geometry"].normalize()  # type: ignore
 
