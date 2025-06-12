@@ -26,7 +26,7 @@ from ...lib.tools_gpkgdao import DrGpkgDao
 from .task import DrTask
 from .epa_file_manager import DrEpaFileManager
 from ..admin.admin_btn import DrRptGpkgCreate
-from ..processing.import_execute_results import ImportExecuteResults
+from ..processing.import_raster_results import ImportRasterResults
 from ...resources.scripts.convert_asc_to_netcdf import convert_asc_to_netcdf
 from typing import Optional, List
 from ..utils.meshing_process import create_temp_mesh_layer
@@ -70,7 +70,7 @@ class DrExecuteModel(DrTask):
         self.init_params()
         self.generate_inp_infolog = None
         self.feedback = feedback
-        self.process: Optional[ImportExecuteResults] = None
+        self.process: Optional[ImportRasterResults] = None
         self.output = None
         self.import_results_infolog = None
 
@@ -162,11 +162,11 @@ class DrExecuteModel(DrTask):
             title = 'Import results'
             result: Optional[bool] = tools_qt.show_question(msg, title, force_action=True)
             if result is not None and result:
-                # Execute ImportExecuteResults algorithm
+                # Execute ImportRasterResults algorithm
                 self.progress_changed.emit("Import results", None, "Importing results", True)
                 self.feedback = Feedback()
                 self.feedback.progress_changed.connect(self._import_results_progress_changed)
-                self.process = ImportExecuteResults()
+                self.process = ImportRasterResults()
                 self.process.initAlgorithm(None)
                 params: dict = {'FOLDER_RESULTS': f'{self.folder_path}', 'CUSTOM_NAME': f'{os.path.basename(str(self.folder_path))}'}
                 context: QgsProcessingContext = QgsProcessingContext()
