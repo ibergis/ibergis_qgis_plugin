@@ -183,6 +183,7 @@ class DrAdminButton(DrGpkgBase):
         self.total_sql_files = 0    # Total number of SQL files to process
         self.current_sql_file = 0   # Current number of SQL file
         self.gpkg_dao_config = None
+        self.last_srid = None
 
     def init_sql(self):
         """ Button 100: Execute SQL. Info show info """
@@ -331,6 +332,12 @@ class DrAdminButton(DrGpkgBase):
             msg_params = (db_filepath,)
             tools_log.log_warning(msg, msg_params=msg_params)
 
+        # Disable locale combo if sample is selected
+        if self.rdb_sample.isChecked():
+            self.txt_srid.setEnabled(False)
+        else:
+            self.txt_srid.setEnabled(True)
+
         # Set shortcut keys
         self.dlg_readsql.key_escape.connect(
             partial(tools_dr.close_dialog, self.dlg_readsql, False))
@@ -340,7 +347,7 @@ class DrAdminButton(DrGpkgBase):
 
         # Set signals
         self._set_signals_create_project()
-            
+
 
     def load_base(self, dict_folders):
         """"""
@@ -495,11 +502,20 @@ class DrAdminButton(DrGpkgBase):
         cmb_locale = tools_qt.get_combo_value(self.dlg_readsql, self.cmb_locale, 0)
         self.folder_locale = os.path.join(self.sql_dir, 'i18n', cmb_locale)
 
+        if self.rdb_sample.isChecked():
+            tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, '25831')
+            self.txt_srid.setEnabled(False)
+        else:
+            if self.last_srid is not None:
+                tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, self.last_srid)
+            self.txt_srid.setEnabled(True)
+
     def _manage_srid(self):
         """ Manage SRID configuration """
 
         self.filter_srid = self.dlg_readsql.findChild(QLineEdit, 'srid_id')
         tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, '25831')
+        self.txt_srid.setEnabled(False)
         self.tbl_srid = self.dlg_readsql.findChild(QTableView, 'tbl_srid')
         self.tbl_srid.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tbl_srid.clicked.connect(partial(self._set_selected_srid))
@@ -513,7 +529,6 @@ class DrAdminButton(DrGpkgBase):
 
     def _filter_srid_changed(self):
         """"""
-
         filter_value = tools_qt.get_text(self.dlg_readsql, self.filter_srid)
         if filter_value == 'null':
             filter_value = ''
@@ -537,6 +552,9 @@ class DrAdminButton(DrGpkgBase):
         self.tbl_srid.setColumnWidth(1, 300)
         self.tbl_srid.horizontalHeader().setStretchLastSection(True)
 
+        if self.rdb_data.isChecked():
+            self.last_srid = filter_value
+
     def _set_signals_create_project(self):
         """"""
 
@@ -551,6 +569,8 @@ class DrAdminButton(DrGpkgBase):
         self.dlg_readsql.btn_i18n.clicked.connect(partial(self._i18n_manager))
         self.dlg_readsql.btn_update_translation.clicked.connect(partial(self._update_translations))
         self.dlg_readsql.btn_translation.clicked.connect(partial(self._manage_translations))
+        self.dlg_readsql.rdb_sample.clicked.connect(partial(self._update_locale))
+        self.dlg_readsql.rdb_data.clicked.connect(partial(self._update_locale))
 
     def _manage_translations(self):
         """ Initialize the translation functionalities """
