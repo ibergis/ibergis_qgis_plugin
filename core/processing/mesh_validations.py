@@ -1,8 +1,8 @@
-
 from qgis.core import QgsProcessingAlgorithm, QgsProcessingContext, QgsProcessingFeedback, QgsProcessingParameterBoolean, QgsProject, QgsVectorLayer, QgsRasterLayer
 from typing import Any
 
 from ...lib import tools_qt
+from ...core.utils import tools_dr
 from ... import global_vars
 from ..threads.validatemesh import validations_dict, validate_input_layers
 
@@ -37,10 +37,11 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, configuration: dict[str, Any] | None = None) -> None:
         for id, data in self.validations.items():
+            value = tools_dr.get_config_parser('processing', f'{self.name()}_{id}', 'user', 'session', get_none=True)
             self.addParameter(QgsProcessingParameterBoolean(
                 id,
                 data['name'],
-                defaultValue=True
+                defaultValue=value if value is not None else True
             ))
 
     def processAlgorithm(self, parameters: dict[str, Any], context: QgsProcessingContext, feedback: QgsProcessingFeedback) -> dict[str, Any]:
@@ -70,5 +71,10 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
                 # tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
             # QgsProject.instance().layerTreeRoot().removeChildrenGroupWithoutLayers()
             # self.iface.layerTreeView().model().sourceModel().modelReset.emit()
+
+
+        for validation in self.validations:
+            value = self.parameterAsBoolean(parameters, validation, context)
+            tools_dr.set_config_parser('processing', f'{self.name()}_{validation}', value)
 
         return {}
