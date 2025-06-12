@@ -14,6 +14,7 @@ from .fix_vertex_edge import DrFixEdgeVertexAlgorithm
 from .mesh_validations import DrMeshValidationsAlgorithm
 from .remove_duplicate_vertices import DrRemoveDuplicateVertices
 from .simplify_mesh_input_geometries import SimplifyMeshInputGeometries
+from .create_temporal_mesh import CreateTemporalMesh
 
 
 class DrainMeshProvider(QgsProcessingProvider):
@@ -40,6 +41,7 @@ class DrainMeshProvider(QgsProcessingProvider):
         self.addAlgorithm(DrMeshValidationsAlgorithm())
         self.addAlgorithm(DrRemoveDuplicateVertices())
         self.addAlgorithm(SimplifyMeshInputGeometries())
+        self.addAlgorithm(CreateTemporalMesh())
 
     def id(self):
         """

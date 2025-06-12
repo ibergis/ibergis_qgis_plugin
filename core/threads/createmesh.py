@@ -29,7 +29,7 @@ from ..utils.meshing_process import triangulate_custom, create_temp_mesh_layer, 
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt
 
-from typing import Union, Literal
+from typing import Union, Literal, Optional
 import time
 import numpy as np
 import pandas as pd
@@ -56,6 +56,10 @@ class DrCreateMeshTask(DrTask):
         line_anchor_layer: QgsVectorLayer,
         bridge_layer: QgsVectorLayer,
         feedback: QgsFeedback,
+        ground_layer: QgsVectorLayer,
+        roof_layer: QgsVectorLayer,
+        inlet_layer: QgsVectorLayer,
+        temporal_mesh: bool
     ):
         super().__init__(description)
         self.execute_validations = execute_validations
@@ -76,6 +80,10 @@ class DrCreateMeshTask(DrTask):
         self.bridge_layer = bridge_layer
         self.error_layers = None
         self.warning_layers = None
+        self.ground_layer = ground_layer
+        self.roof_layer = roof_layer
+        self.inlet_layer = inlet_layer
+        self.temporal_mesh = temporal_mesh
 
     def cancel(self):
         super().cancel()
@@ -102,35 +110,13 @@ class DrCreateMeshTask(DrTask):
 
             layers: dict[str, Union[QgsVectorLayer, QgsRasterLayer]] = {}
 
-            # Load ground and roof layers from the QGIS project
-            for layer in ["ground", "roof"]:
-                layer_path = f"{path}{layer}"
-                lyrs = []
-                for lyr in QgsProject.instance().mapLayers().values():
-                    if lyr.source() == layer_path:
-                        print(f"Layer: {lyr.name()} - {lyr.source()}")
-                        lyrs.append(lyr)
-
-                if len(lyrs) == 0:
-                    self.message = f"Layer '{layer}' not found in the QGIS project."
-                    return False
-                elif len(lyrs) > 1:
-                    self.message = f"Layer '{layer}' found multiple times in the QGIS project."
-                    return False
-                else:
-                    layers[layer] = lyrs[0]
-
-            # Load other layers from the GPKG file
-            layers_to_select = ["mesh_anchor_points", "inlet", "bridge"]
-            for layer in layers_to_select:
-                if self.feedback.isCanceled():
-                    self.message = "Task canceled."
-                    return False
-                l = QgsVectorLayer(f"{path}{layer}", layer, "ogr")
-                if not l.isValid():
-                    self.message = f"Layer '{layer}' is not valid. Check if GPKG file has a '{layer}' layer."
-                    return False
-                layers[layer] = l
+            layers = {
+                "ground": self.ground_layer,
+                "roof": self.roof_layer,
+                "inlet": self.inlet_layer,
+                "bridge": self.bridge_layer,
+                "mesh_anchor_points": self.point_anchor_layer
+            }
 
             layers["dem"] = self.dem_layer
 
@@ -242,26 +228,31 @@ class DrCreateMeshTask(DrTask):
                     self.feedback.setProgress(100)
                     return False
 
-            # Create anchor GeoDataFrames
-            print("Creating anchor GeoDataFrames... ", end="")
-            start = time.time()
+            point_anchors = None
+            line_anchors = None
+            complete_line_anchors = None
 
-            point_anchors = layer_to_gdf(
-                self.point_anchor_layer,
-                ["cellsize", "z_value"],
-                self.only_selected_features
-            )
+            if not self.temporal_mesh:
+                # Create anchor GeoDataFrames
+                print("Creating anchor GeoDataFrames... ", end="")
+                start = time.time()
 
-            line_anchors = layer_to_gdf(
-                self.line_anchor_layer,
-                ["cellsize"],
-                self.only_selected_features
-            )
+                point_anchors = layer_to_gdf(
+                    self.point_anchor_layer,
+                    ["cellsize", "z_value"],
+                    self.only_selected_features
+                )
 
-            complete_line_anchors = self._create_line_anchors_gdf(line_anchors)
-            print(complete_line_anchors)
+                line_anchors = layer_to_gdf(
+                    self.line_anchor_layer,
+                    ["cellsize"],
+                    self.only_selected_features
+                )
 
-            print(f"Done! {time.time() - start}s")
+                complete_line_anchors = self._create_line_anchors_gdf(line_anchors)
+                print(complete_line_anchors)
+
+                print(f"Done! {time.time() - start}s")
 
             # Create mesh
             self.feedback.setProgressText("Creating ground mesh...")
@@ -382,45 +373,46 @@ class DrCreateMeshTask(DrTask):
 
                 print(f"Done! {time.time() - start}s")
 
-            print(f"Setting z-values from anchors... ", end="")
-            start = time.time()
+            if not self.temporal_mesh:
+                print(f"Setting z-values from anchors... ", end="")
+                start = time.time()
 
-            # Get z-values from point anchors
-            for _, anchor in point_anchors.iterrows():
-                x, y = anchor.geometry.x, anchor.geometry.y
-                mask = (ground_vertices_df["x"] == x) & (ground_vertices_df["y"] == y)
-                ground_vertices_df.loc[mask, "z"] = anchor["z_value"]
+                # Get z-values from point anchors
+                for _, anchor in point_anchors.iterrows():
+                    x, y = anchor.geometry.x, anchor.geometry.y
+                    mask = (ground_vertices_df["x"] == x) & (ground_vertices_df["y"] == y)
+                    ground_vertices_df.loc[mask, "z"] = anchor["z_value"]
 
-            # Get z-values from line anchors
-            for _, line in line_anchors.iterrows():
-                line_geom = line.geometry.buffer(0.01)  # Buffer to avoid precision issues with the intersect
-                ground_vertices_geom = gpd.GeoSeries(
-                    [shapely.Point(xy) for xy in zip(ground_vertices_df["x"], ground_vertices_df["y"])],
-                    crs=line_anchors.crs
-                )
-                mask = ground_vertices_geom.intersects(line_geom)
-                points = ground_vertices_df[mask] # Get points inside the line anchor
-                points = gpd.GeoDataFrame(points, geometry=ground_vertices_geom[mask], crs=line_anchors.crs)
+                # Get z-values from line anchors
+                for _, line in line_anchors.iterrows():
+                    line_geom = line.geometry.buffer(0.01)  # Buffer to avoid precision issues with the intersect
+                    ground_vertices_geom = gpd.GeoSeries(
+                        [shapely.Point(xy) for xy in zip(ground_vertices_df["x"], ground_vertices_df["y"])],
+                        crs=line_anchors.crs
+                    )
+                    mask = ground_vertices_geom.intersects(line_geom)
+                    points = ground_vertices_df[mask] # Get points inside the line anchor
+                    points = gpd.GeoDataFrame(points, geometry=ground_vertices_geom[mask], crs=line_anchors.crs)
 
-                # Ignoring the z value, get the distance along the line, then interpolate the z value
-                line_2d = shapely.force_2d(line.geometry)
+                    # Ignoring the z value, get the distance along the line, then interpolate the z value
+                    line_2d = shapely.force_2d(line.geometry)
 
-                # TODO: If the line vertex z value is 0, set its value to the z value of the point directly below it.
-                # this way we can have lines with values set and unset at the same time and it will work properly
-                def interpolate_z(row):
-                    p = row["geometry"]
-                    dist = line_2d.project(p)
-                    anchor_z = line.geometry.interpolate(dist).z
-                    if anchor_z != 0:
-                        return anchor_z
-                    else:
-                        return row["z"]
+                    # TODO: If the line vertex z value is 0, set its value to the z value of the point directly below it.
+                    # this way we can have lines with values set and unset at the same time and it will work properly
+                    def interpolate_z(row):
+                        p = row["geometry"]
+                        dist = line_2d.project(p)
+                        anchor_z = line.geometry.interpolate(dist).z
+                        if anchor_z != 0:
+                            return anchor_z
+                        else:
+                            return row["z"]
 
-                z_values = points.apply(interpolate_z, axis=1)
+                    z_values = points.apply(interpolate_z, axis=1)
 
-                ground_vertices_df.loc[points.index, "z"] = z_values
+                    ground_vertices_df.loc[points.index, "z"] = z_values
 
-            print(f"Done! {time.time() - start}s")
+                print(f"Done! {time.time() - start}s")
 
             print("Triangulating Roofs... ", end="")
             start = time.time()
@@ -480,10 +472,12 @@ class DrCreateMeshTask(DrTask):
 
             print(f"Done! {time.time() - start}s")
 
-            print("Creating bridges DataFrame... ", end="")
-            start = time.time()
-            bridges_df = self._create_bridges_df(triangles_df, vertices_df)
-            print(f"Done! {time.time() - start}s")
+            bridges_df: pd.DataFrame = pd.DataFrame()
+            if self.bridge_layer is not None:
+                print("Creating bridges DataFrame... ", end="")
+                start = time.time()
+                bridges_df = self._create_bridges_df(triangles_df, vertices_df)
+                print(f"Done! {time.time() - start}s")
 
             self.mesh = mesh_parser.Mesh(
                 polygons=triangles_df,
@@ -529,35 +523,37 @@ class DrCreateMeshTask(DrTask):
                 temp_layer = create_temp_mesh_layer(self.mesh)
                 print(f"Done! {time.time() - start}s")
 
-            # Delete old mesh
-            self.feedback.setProgressText("Saving mesh to GPKG file...")
-            self.dao.execute_sql(f"""
-                DELETE FROM cat_file
-                WHERE name = '{self.mesh_name}'
-            """)
+            if not self.temporal_mesh:
+                # Delete old mesh
+                self.feedback.setProgressText("Saving mesh to GPKG file...")
+                self.dao.execute_sql(f"""
+                    DELETE FROM cat_file
+                    WHERE name = '{self.mesh_name}'
+                """)
 
-            print("Dumping mesh data... ", end="")
-            start = time.time()
-            mesh_str, roof_str, losses_str, bridges_str = mesh_parser.dumps(self.mesh)
-            print(f"Done! {time.time() - start}s")
+                print("Dumping mesh data... ", end="")
+                start = time.time()
+                mesh_str, roof_str, losses_str, bridges_str = mesh_parser.dumps(self.mesh)
+                print(f"Done! {time.time() - start}s")
 
-            self.dao.execute_sql(f"""
-                INSERT INTO cat_file (name, iber2d, roof, losses, bridge)
-                VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}')
-            """)
+                self.dao.execute_sql(f"""
+                    INSERT INTO cat_file (name, iber2d, roof, losses, bridge)
+                    VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}')
+                """)
 
             self.feedback.setProgress(80)
 
             # Add temp layer to TOC
             tools_qt.add_layer_to_toc(temp_layer)
 
-            # Check for triangles with more than one inlet
-            inlet_warning = validate_inlets_in_triangles(temp_layer, layers["inlet"])
-            if inlet_warning.hasFeatures():
-                group_name = "Mesh inputs errors & warnings"
-                tools_qt.add_layer_to_toc(inlet_warning, group_name, create_groups=True)
-                project.layerTreeRoot().removeChildrenGroupWithoutLayers()
-                iface.layerTreeView().model().sourceModel().modelReset.emit()
+            if self.inlet_layer is not None:
+                # Check for triangles with more than one inlet
+                inlet_warning = validate_inlets_in_triangles(temp_layer, layers["inlet"])
+                if inlet_warning.hasFeatures():
+                    group_name = "Mesh inputs errors & warnings"
+                    tools_qt.add_layer_to_toc(inlet_warning, group_name, create_groups=True)
+                    project.layerTreeRoot().removeChildrenGroupWithoutLayers()
+                    iface.layerTreeView().model().sourceModel().modelReset.emit()
 
             # Refresh TOC
             iface.layerTreeView().model().sourceModel().modelReset.emit()
@@ -775,4 +771,3 @@ class DrCreateMeshTask(DrTask):
                 "openingval": value["openingval"]
             })
         return bridge_values_dict
-

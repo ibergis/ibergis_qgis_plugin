@@ -236,6 +236,29 @@ class DrCreateMeshButton(DrAction):
         # Reset txt_infolog
         tools_qt.set_widget_text(dlg, 'txt_infolog', "")
 
+        # Load input layers
+        db_path = self.dao.db_filepath.replace('\\', '/')
+        path = f"{db_path}|layername="
+
+        # Load ground and roof layers from the QGIS project
+        layers = {}
+        for layer in ["ground", "roof"]:
+            layer_path = f"{path}{layer}"
+            lyrs = []
+            for lyr in QgsProject.instance().mapLayers().values():
+                if lyr.source() == layer_path:
+                    print(f"Layer: {lyr.name()} - {lyr.source()}")
+                    lyrs.append(lyr)
+
+            if len(lyrs) == 0:
+                self.message = f"Layer '{layer}' not found in the QGIS project."
+                return False
+            elif len(lyrs) > 1:
+                self.message = f"Layer '{layer}' found multiple times in the QGIS project."
+                return False
+            else:
+                layers[layer] = lyrs[0]
+
         self.feedback = Feedback()
         self.thread_triangulation = DrCreateMeshTask(
             "Triangulation",
@@ -255,6 +278,10 @@ class DrCreateMeshButton(DrAction):
             line_anchor_layer=mesh_anchor_lines_lyr,
             bridge_layer=bridge_lyr,
             feedback=self.feedback,
+            ground_layer=layers["ground"],
+            roof_layer=layers["roof"],
+            inlet_layer=None,
+            temporal_mesh=False
         )
         thread = self.thread_triangulation
 
@@ -429,7 +456,6 @@ class DrCreateMeshButton(DrAction):
         dlg.btn_cancel.clicked.disconnect()
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.mainTab.setTabEnabled(0, True)
-        dlg.btn_ok.setEnabled(True)
 
     def _on_task_terminated(self):
         self._on_task_end()
