@@ -10,29 +10,23 @@ from qgis.core import (
     QgsProcessing,
     QgsProcessingAlgorithm,
     QgsProcessingParameterVectorLayer,
-    QgsProcessingParameterField,
-    QgsFeature,
-    QgsProcessingParameterDefinition,
     QgsProject,
     QgsVectorLayer,
     QgsProcessingParameterBoolean,
-    QgsProcessingFeatureSourceDefinition,
-    QgsFeatureRequest,
     QgsProcessingParameterDistance,
-    QgsProcessingParameterFeatureSink,
     QgsCoordinateReferenceSystem,
-    QgsUnitTypes,
     QgsGeometry
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QApplication
-from ...lib import tools_qgis, tools_gpkgdao
+from ...lib import tools_qgis
 from ...lib.tools_gpkgdao import DrGpkgDao
-from ...core.utils import tools_dr, Feedback
+from ...core.utils import  Feedback
+from ...core.threads import validatemesh
 from ... import global_vars
 from typing import Optional
-import os
 import processing
+
 
 
 class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
@@ -137,27 +131,23 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
 
         feedback.setProgress(12)
 
-        self.bool_selected_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_FEATURES, context)
         self.preserve_boundary : bool = self.parameterAsBoolean(parameters, self.PRESERVE_BOUNDARY, context)
         self.tolerance : float = self.parameterAsDouble(parameters, self.TOLERANCE, context)
 
         feedback.setProgressText(self.tr('Simplifying geometries...'))
 
-        # Simplify geometries
-        if self.bool_selected_features:
-            result = processing.run("native:coveragesimplify",{
-                    'INPUT': QgsProcessingFeatureSourceDefinition(self.file_source.source(),
-                                            selectedFeaturesOnly=True, featureLimit=-1,
-                                            geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
-                    'TOLERANCE': self.tolerance,'PRESERVE_BOUNDARY': self.preserve_boundary, 'OUTPUT':'memory:'})
-        else:
+        try:
+            # Simplify geometries
             result = processing.run("native:coveragesimplify",{
                     'INPUT': self.file_source,
                     'TOLERANCE': self.tolerance,'PRESERVE_BOUNDARY': self.preserve_boundary, 'OUTPUT':'memory:'})
-        self.simplified_layer : QgsVectorLayer = result['OUTPUT']
+            self.simplified_layer : QgsVectorLayer = result['OUTPUT']
+        except Exception as e:
+            feedback.reportError(self.tr(f'Error simplifying geometries. {e}'))
 
         if self.simplified_layer is None:
             feedback.reportError(self.tr('Error simplifying geometries.'))
+            self._validate_input_layers(feedback)
             return {}
 
         feedback.setProgress(50)
@@ -165,8 +155,10 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         return {}
 
     def postProcessAlgorithm(self, context, feedback: Feedback):
-        """  """
-        self.dao = global_vars.gpkg_dao_data
+        """ Crete ground and roof temporal layers from the simplified layer """
+
+        if self.simplified_layer is None:
+            return {}
 
         feedback.setProgressText(self.tr('Splitting simplified layer into roof and ground layers...'))
         feedback.setProgress(75)
@@ -281,14 +273,41 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         feedback.setProgress(100)
         return {}
 
+    def _validate_input_layers(self, feedback: Feedback):
+        """ Validate input layers """
+        feedback.setProgressText(self.tr('Validating input layers...'))
+        validation_layer = validatemesh.validate_vert_edge_v2(
+            {
+                "ground": self.ground_layer,
+                "roof": self.roof_layer
+            },
+            feedback,
+            True
+        )
+        if validation_layer is None:
+            feedback.reportError("Validation layers not found")
+            return {}
+
+        # Add temporal layer to project
+        group_name = "TEMPORAL"
+        group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+        if group is None:
+            QgsProject.instance().layerTreeRoot().addGroup(group_name)
+            group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+        QgsProject.instance().addMapLayer(validation_layer, False)
+        group.addLayer(validation_layer)
+        feedback.setProgressText(self.tr('Input layers validated'))
+
     def get_layer_type(self, layer: QgsVectorLayer) -> Optional[str]:
         for feature in layer.getFeatures():
             return feature['layer']
         return None
 
     def shortHelpString(self):
-        return self.tr("""Simplifies the geometries of the ground and roof layers to reduce complexity, with options to set a tolerance and preserve boundaries. 
-                       Use this tool to optimize mesh input layers for faster processing and improved performance.""")
+        return self.tr("""Simplifies the geometries of ground and roof polygon layers and splits the result back into separate layers, with options to set a tolerance and preserve boundaries. 
+                       Only valid geometries are processed, and the operation is optimized for large datasets. 
+                       If simplification fails, the tool will attempt to validate the input layers and provide feedback to help diagnose issues. 
+                       Use this tool to quickly reduce the complexity of mesh input layers for improved performance and easier processing.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"

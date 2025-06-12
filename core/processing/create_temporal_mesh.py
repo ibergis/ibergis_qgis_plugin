@@ -10,34 +10,17 @@ from qgis.core import (
     QgsProcessing,
     QgsProcessingAlgorithm,
     QgsProcessingParameterVectorLayer,
-    QgsProcessingParameterField,
-    QgsFeature,
-    QgsProcessingParameterDefinition,
-    QgsProject,
     QgsVectorLayer,
-    QgsProcessingParameterBoolean,
-    QgsProcessingFeatureSourceDefinition,
-    QgsFeatureRequest,
-    QgsProcessingParameterDistance,
-    QgsProcessingParameterFeatureSink,
-    QgsCoordinateReferenceSystem,
-    QgsUnitTypes,
-    QgsGeometry,
     QgsRasterLayer,
     QgsApplication,
-    QgsProcessingParameterRasterLayer,
     QgsTask
 )
 from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtWidgets import QApplication
-from ...lib import tools_qgis, tools_gpkgdao
+from ...lib import tools_qgis
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ..threads.createmesh import DrCreateMeshTask
-from ...core.utils import tools_dr, Feedback
-from ... import global_vars
+from ...core.utils import Feedback
 from typing import Optional
-import os
-import processing
 
 
 class CreateTemporalMesh(QgsProcessingAlgorithm):
@@ -140,7 +123,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         return 'CreateTemporalMesh'
 
     def displayName(self):
-        return self.tr('Create temporal mesh')
+        return self.tr('Create Temporal Mesh')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)
