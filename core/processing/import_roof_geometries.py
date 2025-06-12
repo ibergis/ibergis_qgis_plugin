@@ -427,10 +427,9 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         return True
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to import features from a source polygon layer into the Drain-Roof layer of your project.\n
-        You must first select the source layer and the target Roof layer. Optionally, you can map fields from the source layer to specific fields in the target layer, such as custom code, annotation, or roughness.\n
-        Only features with geometry will be copied. If a source field value already exists in the target layer, it will be skipped to avoid duplicates.\n
-        The tool performs the import in batches to optimize performance.""")
+        return self.tr("""Imports features from a source polygon layer into the project's Drain-Roof layer, with options to map fields and avoid duplicates. 
+                       Only valid geometries are imported, and the process is optimized for large datasets. 
+                       Use this tool to quickly transfer and match roof features from other layers.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -439,7 +438,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         return 'ImportRoofGeometries'
 
     def displayName(self):
-        return self.tr('Import Roof geometries')
+        return self.tr('Import Roof Geometries')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

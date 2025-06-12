@@ -383,10 +383,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         return True
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to import features from a source polygon layer into the Drain-Ground layer of your project.\n
-        You must first select the source layer and the target Ground layer. Optionally, you can map fields from the source layer to specific fields in the target layer, such as custom code, land use, annotation, or roughness.\n
-        Only features with geometry will be copied. If a source field value already exists in the target layer, it will be skipped to avoid duplicates.\n
-        The tool performs the import in batches to optimize performance.""")
+        return self.tr("""Imports features from a source polygon layer into the project's Drain-Ground layer, with options to map fields and avoid duplicates. 
+                       Only valid geometries are imported, and the process is optimized for large datasets. 
+                       Use this tool to quickly transfer and match ground features from other layers.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -395,7 +394,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         return 'ImportGroundGeometries'
 
     def displayName(self):
-        return self.tr('Import Ground geometries')
+        return self.tr('Import Ground Geometries')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

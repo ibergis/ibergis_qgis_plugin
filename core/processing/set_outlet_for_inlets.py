@@ -525,10 +525,9 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         return True, ''
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to set the nearest and valid outlet to the inlet and pinlet features which do not have an outlet assigned.\n
-        This algorithm will only work if the inlet, pinlet and outlet layers are valid.\n
-        The last parameter is a checkbox which let you decide if the inlet/pinlet features with no valid outlet have to be setted as none or with the minor outlet ignoring if its valid or not.\n
-        There are some attributes that cannot be None from Inlet(code, top_elev), Pinlet(code, top_elev) and Outlet(code, elev).""")
+        return self.tr("""Assigns the nearest valid outlet to inlet and pinlet features that do not have an outlet set. 
+                       Works with inlet, pinlet, and outlet layers, and offers an option to force assignment even if only a lower outlet is available. 
+                       Use this tool to quickly connect inlets and pinlets to their appropriate outlets.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -537,7 +536,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         return 'SetOutletForInlets'
 
     def displayName(self):
-        return self.tr('Set Outlet for Inlets')
+        return self.tr('Set Outlet For Inlets')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

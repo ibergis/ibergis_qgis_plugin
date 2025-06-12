@@ -287,7 +287,8 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         return None
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to simplify the input geometries of the mesh.""")
+        return self.tr("""Simplifies the geometries of the ground and roof layers to reduce complexity, with options to set a tolerance and preserve boundaries. 
+                       Use this tool to optimize mesh input layers for faster processing and improved performance.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -296,7 +297,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         return 'SimplifyMeshInputGeometries'
 
     def displayName(self):
-        return self.tr('Simplify mesh input geometries')
+        return self.tr('Simplify Mesh Input Geometries')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

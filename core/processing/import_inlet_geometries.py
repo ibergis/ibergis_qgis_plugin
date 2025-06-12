@@ -352,7 +352,9 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         return True, ''
 
     def shortHelpString(self):
-        return self.tr("""ImportInletGeometries""")
+        return self.tr("""Imports features from a source layer into the project's Drain-Inlet or Drain-Pinlet layer, with options to map fields and avoid duplicates. 
+                       Only valid geometries are imported, and the process is optimized for large datasets. 
+                       Use this tool to quickly transfer and match inlet features from other layers.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -361,7 +363,7 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         return 'ImportInletGeometries'
 
     def displayName(self):
-        return self.tr('Import Inlet geometries')
+        return self.tr('Import Inlet Geometries')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

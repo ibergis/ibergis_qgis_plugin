@@ -463,5 +463,10 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
     def helpUrl(self):
         return "https://github.com/drain-iber"
 
+    def shortHelpString(self):
+        return self.tr("""Checks your project for common data issues such as duplicate or orphan geometries, missing required values, and out-of-range attributes. 
+                       Results are shown as errors, warnings, or info messages, and problematic features can be highlighted on the map. 
+                       Use this tool to quickly validate and improve your project’s data quality.""")
+
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

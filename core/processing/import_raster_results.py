@@ -34,9 +34,9 @@ from ... import global_vars
 import os
 
 
-class ImportExecuteResults(QgsProcessingAlgorithm):
+class ImportRasterResults(QgsProcessingAlgorithm):
     """
-    Class to import ground geometries from another layer.
+    Class to import raster results from a model results folder.
     """
     FOLDER_RESULTS = 'FOLDER_RESULTS'
     CUSTOM_NAME = 'CUSTOM_NAME'
@@ -312,19 +312,17 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
         action.trigger()
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to import raster results from the results folder created on execute model.\n
-        The tool creates a raster layer with a gradient color representation from 0 to 2.\n
-        It also configures the QGIS Temporal Controller to display the created raster layer values on its time.\n                       
-        You can introduce a custom name for the created layer.""")
+        return self.tr("""Imports raster results (such as depth and velocity) from a model results folder into QGIS, applies a color gradient, and configures the Temporal Controller for time-based visualization. 
+                       You can optionally set a custom group name for the imported layers.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
 
     def name(self):
-        return 'ImportExecuteResults'
+        return 'ImportRasterResults'
 
     def displayName(self):
-        return self.tr('Import execute results')
+        return self.tr('Import Raster Results')
 
     def group(self):
         return self.tr(self.groupId())
@@ -336,4 +334,4 @@ class ImportExecuteResults(QgsProcessingAlgorithm):
         return QCoreApplication.translate('Processing', string)
 
     def createInstance(self):
-        return ImportExecuteResults()
+        return ImportRasterResults()

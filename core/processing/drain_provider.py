@@ -12,7 +12,7 @@ from qgis.core import QgsProcessingProvider
 from qgis.PyQt.QtGui import QIcon
 from .import_ground_geometries import ImportGroundGeometries
 from .import_roof_geometries import ImportRoofGeometries
-from .import_execute_results import ImportExecuteResults
+from .import_raster_results import ImportRasterResults
 from .set_outlet_for_inlets import SetOutletForInlets
 from .set_outlet_for_roofs import SetOutletForRoofs
 from .import_inlet_geometries import ImportInletGeometries
@@ -42,7 +42,7 @@ class DrainProvider(QgsProcessingProvider):
         self.addAlgorithm(ImportGroundGeometries())
         self.addAlgorithm(ImportRoofGeometries())
         self.addAlgorithm(ImportInletGeometries())
-        self.addAlgorithm(ImportExecuteResults())
+        self.addAlgorithm(ImportRasterResults())
         self.addAlgorithm(SetOutletForInlets())
         self.addAlgorithm(SetOutletForRoofs())
         self.addAlgorithm(DrCheckProjectAlgorithm())

@@ -391,10 +391,9 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         return True, ''
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to set the nearest and valid outlet to the roof features which do not have an outlet assigned.\n
-        This algorithm will only work if the roof, outlet, and raster layers are valid.\n
-        The last parameter is a checkbox which let you decide if the roof features with no valid outlet have to be setted as none or with the minor outlet ignoring if its valid or not.\n
-        There are some attributes that cannot be None from Roof(code), Outlet(code, elev).""")
+        return self.tr("""Assigns the nearest valid outlet to roof features that do not have an outlet set, using elevation data if available. 
+                       Works with roof, outlet, and elevation raster layers, and offers an option to force assignment even if only a lower outlet is available. 
+                       Use this tool to quickly connect roofs to their appropriate outlets.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -403,7 +402,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         return 'SetOutletForRoofs'
 
     def displayName(self):
-        return self.tr('Set Outlet for Roofs')
+        return self.tr('Set Outlet For Roofs')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)
