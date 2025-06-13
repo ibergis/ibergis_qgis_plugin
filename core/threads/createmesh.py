@@ -59,7 +59,8 @@ class DrCreateMeshTask(DrTask):
         ground_layer: QgsVectorLayer,
         roof_layer: QgsVectorLayer,
         inlet_layer: QgsVectorLayer,
-        temporal_mesh: bool
+        temporal_mesh: bool,
+        temp_layer_name: str
     ):
         super().__init__(description)
         self.execute_validations = execute_validations
@@ -84,6 +85,8 @@ class DrCreateMeshTask(DrTask):
         self.roof_layer = roof_layer
         self.inlet_layer = inlet_layer
         self.temporal_mesh = temporal_mesh
+        self.temp_layer: Optional[QgsVectorLayer] = None
+        self.temp_layer_name = temp_layer_name
 
     def cancel(self):
         super().cancel()
@@ -94,14 +97,15 @@ class DrCreateMeshTask(DrTask):
         try:
             self.feedback.setProgressText("Starting process!")
 
-            # Remove previous temp layers
-            project = QgsProject.instance()
-            layer_ids = (x.id() for x in project.mapLayersByName("Mesh Temp Layer"))
-            project.removeMapLayers(layer_ids)
-            group_name = "Mesh inputs errors & warnings"
-            temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
-            if temp_group is not None:
-                project.removeMapLayers(temp_group.findLayerIds())
+            if not self.temporal_mesh:
+                # Remove previous temp layers
+                project = QgsProject.instance()
+                layer_ids = (x.id() for x in project.mapLayersByName("Mesh Temp Layer"))
+                project.removeMapLayers(layer_ids)
+                group_name = "Mesh inputs errors & warnings"
+                temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
+                if temp_group is not None:
+                    project.removeMapLayers(temp_group.findLayerIds())
 
             # Load input layers
             self.dao = global_vars.gpkg_dao_data.clone()
@@ -492,7 +496,7 @@ class DrCreateMeshTask(DrTask):
             self.feedback.setProgressText("Creating temp layer for visualization...")
             start = time.time()
             print("Creating temp layer... ", end="")
-            temp_layer = create_temp_mesh_layer(self.mesh)
+            temp_layer = create_temp_mesh_layer(self.mesh, layer_name=self.temp_layer_name)
             print(f"Done! {time.time() - start}s")
 
             if roughness_from_raster:
@@ -520,7 +524,7 @@ class DrCreateMeshTask(DrTask):
                 self.feedback.setProgressText("Refreshing temp layer...")
                 start = time.time()
                 print("Recreating temp layer... ", end="")
-                temp_layer = create_temp_mesh_layer(self.mesh)
+                temp_layer = create_temp_mesh_layer(self.mesh, layer_name=self.temp_layer_name)
                 print(f"Done! {time.time() - start}s")
 
             if not self.temporal_mesh:
@@ -543,8 +547,7 @@ class DrCreateMeshTask(DrTask):
 
             self.feedback.setProgress(80)
 
-            # Add temp layer to TOC
-            tools_qt.add_layer_to_toc(temp_layer)
+            self.temp_layer = temp_layer
 
             if self.inlet_layer is not None:
                 # Check for triangles with more than one inlet

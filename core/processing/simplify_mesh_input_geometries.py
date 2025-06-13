@@ -15,18 +15,18 @@ from qgis.core import (
     QgsProcessingParameterBoolean,
     QgsProcessingParameterDistance,
     QgsCoordinateReferenceSystem,
-    QgsGeometry
+    QgsWkbTypes,
+    QgsFeatureSink,
+    QgsProcessingParameterFeatureSink,
+    QgsFeature
 )
 from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtWidgets import QApplication
 from ...lib import tools_qgis
-from ...lib.tools_gpkgdao import DrGpkgDao
-from ...core.utils import  Feedback
+from ...core.utils import  Feedback, tools_dr
 from ...core.threads import validatemesh
 from ... import global_vars
 from typing import Optional
 import processing
-
 
 
 class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
@@ -37,14 +37,12 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
     ROOF_LAYER = 'ROOF_LAYER'
     TOLERANCE = 'TOLERANCE'
     PRESERVE_BOUNDARY = 'PRESERVE_BOUNDARY'
-    BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
-    bool_selected_features: bool = False
+    SIMPLIFIED_ROOF_LAYER = 'SIMPLIFIED_ROOF_LAYER'
+    SIMPLIFIED_GROUND_LAYER = 'SIMPLIFIED_GROUND_LAYER'
+
     preserve_boundary : bool = False
-    overwrite_source_layers : bool = False
     tolerance : float = 1.0
     simplified_layer : QgsVectorLayer = None
-
-    dao: Optional[DrGpkgDao] = None
     file_source: Optional[QgsVectorLayer] = None
     roof_layer: Optional[QgsVectorLayer] = None
     ground_layer: Optional[QgsVectorLayer] = None
@@ -91,6 +89,20 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         )
         boundary_param.setHelp(self.tr('When enabled the outside edges of the coverage will be preserved without simplification.'))
         self.addParameter(boundary_param)
+        self.addParameter(
+            QgsProcessingParameterFeatureSink(
+                self.SIMPLIFIED_GROUND_LAYER,
+                self.tr('Simplified ground layer'),
+                type=QgsProcessing.SourceType.TypeVectorPolygon
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterFeatureSink(
+                self.SIMPLIFIED_ROOF_LAYER,
+                self.tr('Simplified roof layer'),
+                type=QgsProcessing.SourceType.TypeVectorPolygon
+            )
+        )
 
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
@@ -136,8 +148,8 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
 
         feedback.setProgressText(self.tr('Simplifying geometries...'))
 
+        # Simplify geometries
         try:
-            # Simplify geometries
             result = processing.run("native:coveragesimplify",{
                     'INPUT': self.file_source,
                     'TOLERANCE': self.tolerance,'PRESERVE_BOUNDARY': self.preserve_boundary, 'OUTPUT':'memory:'})
@@ -152,126 +164,62 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
 
         feedback.setProgress(50)
 
-        return {}
+        # Create feature sinks for roof and ground layers
+        (roof_sink, roof_dest_id) = self.parameterAsSink(
+            parameters,
+            self.SIMPLIFIED_ROOF_LAYER,
+            context,
+            self.roof_layer.fields(),
+            QgsWkbTypes.MultiPolygon,
+            self.simplified_layer.crs()
+        )
 
-    def postProcessAlgorithm(self, context, feedback: Feedback):
-        """ Crete ground and roof temporal layers from the simplified layer """
+        (ground_sink, ground_dest_id) = self.parameterAsSink(
+            parameters,
+            self.SIMPLIFIED_GROUND_LAYER,
+            context,
+            self.ground_layer.fields(),
+            QgsWkbTypes.MultiPolygon,
+            self.simplified_layer.crs()
+        )
 
-        if self.simplified_layer is None:
+        if roof_sink is None or ground_sink is None:
+            feedback.reportError(self.tr('Error creating feature sinks.'))
             return {}
 
-        feedback.setProgressText(self.tr('Splitting simplified layer into roof and ground layers...'))
-        feedback.setProgress(75)
+        # Create dictionaries to store features by code
+        roof_features = {}
+        ground_features = {}
+        for feature in self.roof_layer.getFeatures():
+            roof_features[feature['code']] = feature
+        for feature in self.ground_layer.getFeatures():
+            ground_features[feature['code']] = feature
 
-        # Split simplified layer into roof and ground layers
-        result = processing.run("native:splitvectorlayer", {
-            'INPUT': self.simplified_layer,
-            'FIELD':'layer','PREFIX_FIELD':True,'FILE_TYPE':0, 'OUTPUT':'TEMPORARY_OUTPUT'})
+        # Process features and add to appropriate sink
+        total = self.simplified_layer.featureCount()
+        for i, feature in enumerate(self.simplified_layer.getFeatures()):
+            if feedback.isCanceled():
+                break
 
-        layer1: QgsVectorLayer = QgsVectorLayer(result['OUTPUT_LAYERS'][0], 'layer1', 'ogr')
-        layer2: QgsVectorLayer = QgsVectorLayer(result['OUTPUT_LAYERS'][1], 'layer2', 'ogr')
-        layer1_type: Optional[str] = self.get_layer_type(layer1)
-        layer2_type: Optional[str] = self.get_layer_type(layer2)
+            if feature['layer'] == self.roof_layer.name():
+                new_feature = QgsFeature(self.roof_layer.fields())
+                new_feature.setGeometry(feature.geometry())
+                new_feature.setAttributes(roof_features[feature['code']].attributes())
+                roof_sink.addFeature(new_feature, QgsFeatureSink.FastInsert)
+            elif feature['layer'] == self.ground_layer.name():
+                new_feature = QgsFeature(self.ground_layer.fields())
+                new_feature.setAttributes(ground_features[feature['code']].attributes())
+                new_feature.setGeometry(feature.geometry())
+                ground_sink.addFeature(new_feature, QgsFeatureSink.FastInsert)
 
-        if layer1_type is None or layer2_type is None:
-            feedback.reportError(self.tr('Error getting layer type.'))
-            return {}
-
-        if layer1_type == self.roof_layer.name():
-            roof_simplified_layer = layer1
-            ground_simplified_layer = layer2
-        elif layer1_type == self.ground_layer.name():
-            roof_simplified_layer = layer2
-            ground_simplified_layer = layer1
-
-        # Create temporal layers
-        temporal_roof_layer = QgsVectorLayer("MultiPolygon", 'temporal_simplified_roof_layer', 'memory')
-        temporal_roof_layer.setCrs(self.simplified_layer.crs())
-        temporal_roof_layer.dataProvider().addAttributes(self.roof_layer.fields())
-        temporal_roof_layer.updateFields()
-        temporal_ground_layer = QgsVectorLayer("MultiPolygon", 'temporal_simplified_ground_layer', 'memory')
-        temporal_ground_layer.setCrs(self.simplified_layer.crs())
-        temporal_ground_layer.dataProvider().addAttributes(self.ground_layer.fields())
-        temporal_roof_layer.updateFields()
-
-        if temporal_roof_layer is None or temporal_ground_layer is None:
-            feedback.reportError(self.tr('Error getting source layers.'))
-            return {}
-
-        feedback.setProgressText(self.tr('Deleting features from source layers...'))
-        feedback.setProgress(80)
-
-        # Save simplified geometries into dictionaries
-        roof_simplified_dict: dict[str, QgsGeometry] = {}
-        for feature in roof_simplified_layer.getFeatures():
-            roof_simplified_dict[feature['code']] = feature.geometry()
-        ground_simplified_dict: dict[str, QgsGeometry] = {}
-        for feature in ground_simplified_layer.getFeatures():
-            ground_simplified_dict[feature['code']] = feature.geometry()
-
-        # Start editing
-        temporal_roof_layer.startEditing()
-        temporal_ground_layer.startEditing()
-
-        # Set batch size
-        batch_size = 5000
-
-        # Process roof features in batches
-        feedback.setProgressText(self.tr('Processing roof features...'))
-        roof_features = list(self.roof_layer.getFeatures())
-        for i in range(0, len(roof_features), batch_size):
-            batch = roof_features[i:i + batch_size]
-            batch_to_add = []
-            for feature in batch:
-                if feature['code'] in roof_simplified_dict:
-                    feature.setGeometry(roof_simplified_dict[feature['code']])
-                    batch_to_add.append(feature)
-
-            if batch_to_add:
-                temporal_roof_layer.addFeatures(batch_to_add)
-                feedback.setProgressText(self.tr(f"Inserted {len(batch_to_add)} features into roof layer"))
-                temporal_roof_layer.commitChanges()
-                QApplication.processEvents()
-                temporal_roof_layer.startEditing()
-
-        # Process ground features in batches
-        feedback.setProgressText(self.tr('Processing ground features...'))
-        ground_features = list(self.ground_layer.getFeatures())
-        for i in range(0, len(ground_features), batch_size):
-            batch = ground_features[i:i + batch_size]
-            batch_to_add = []
-            for feature in batch:
-                if feature['code'] in ground_simplified_dict:
-                    feature.setGeometry(ground_simplified_dict[feature['code']])
-                    batch_to_add.append(feature)
-
-            if batch_to_add:
-                temporal_ground_layer.addFeatures(batch_to_add)
-                feedback.setProgressText(self.tr(f"Inserted {len(batch_to_add)} features into ground layer"))
-                temporal_ground_layer.commitChanges()
-                QApplication.processEvents()
-                temporal_ground_layer.startEditing()
-
-        # Final commit for any remaining changes
-        temporal_roof_layer.commitChanges()
-        temporal_ground_layer.commitChanges()
-
-        feedback.setProgressText(self.tr('Simplified geometries have been processed in batches...'))
-        feedback.setProgress(90)
-
-        # Add temporal layers to project
-        group_name = "TEMPORAL"
-        group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
-        if group is None:
-            QgsProject.instance().layerTreeRoot().addGroup(group_name)
-            group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
-        QgsProject.instance().addMapLayer(temporal_roof_layer, False)
-        QgsProject.instance().addMapLayer(temporal_ground_layer, False)
-        group.addLayer(temporal_roof_layer)
-        group.addLayer(temporal_ground_layer)
+            feedback.setProgress(tools_dr.lerp_progress(i/total*100, 50, 99))
 
         feedback.setProgress(100)
-        return {}
+        outputs = {
+            self.SIMPLIFIED_ROOF_LAYER: roof_dest_id,
+            self.SIMPLIFIED_GROUND_LAYER: ground_dest_id
+        }
+        return outputs
 
     def _validate_input_layers(self, feedback: Feedback):
         """ Validate input layers """

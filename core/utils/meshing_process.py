@@ -461,7 +461,7 @@ except ImportError:
 import shapely
 
 
-def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] = None) -> QgsVectorLayer:
+def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] = None, layer_name: str = "Mesh Temp Layer") -> QgsVectorLayer:
     c1 = mesh.vertices.loc[mesh.polygons["v1"], ['x', 'y', 'z']]
     c2 = mesh.vertices.loc[mesh.polygons["v2"], ['x', 'y', 'z']]
     c3 = mesh.vertices.loc[mesh.polygons["v3"], ['x', 'y', 'z']]
@@ -484,7 +484,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
     det = v1x * v2y - v1y * v2x
     optmized_df['is_ccw'] = det > 0
 
-    optmized_df['no_area'] = det < 1e-10
+    optmized_df['area'] = 0.5 * abs(det)
 
     def get_feature(row):
         geom = QgsTriangle(
@@ -501,13 +501,13 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
             row.roughness,
             row.scs_cn,
             row.is_ccw,
-            row.no_area,
+            row.area,
         ])
         return feature
 
     features = map(get_feature, optmized_df.itertuples())
 
-    layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
+    layer = QgsVectorLayer("Polygon", layer_name, "memory")
     layer.setCrs(QgsProject.instance().crs())
     provider = layer.dataProvider()
     fields = [
@@ -520,7 +520,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
         QgsField("roughness", QVariant.Double),
         QgsField("scs_cn", QVariant.Double),
         QgsField("is_ccw", QVariant.Bool),
-        QgsField("no_area", QVariant.Bool),
+        QgsField("area", QVariant.Double),
     ]
     provider.addAttributes(fields)
     layer.updateFields()

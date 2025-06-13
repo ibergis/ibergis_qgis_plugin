@@ -14,6 +14,7 @@ from ...utils import Feedback, tools_dr
 from ...utils.meshing_process import create_anchor_layers
 from .... import global_vars
 from ....lib import tools_qt, tools_os
+from qgis.utils import iface
 
 
 class DrCreateMeshButton(DrAction):
@@ -281,7 +282,8 @@ class DrCreateMeshButton(DrAction):
             ground_layer=layers["ground"],
             roof_layer=layers["roof"],
             inlet_layer=None,
-            temporal_mesh=False
+            temporal_mesh=False,
+            temp_layer_name="Mesh Temp Layer"
         )
         thread = self.thread_triangulation
 
@@ -428,6 +430,11 @@ class DrCreateMeshButton(DrAction):
         self._on_task_end()
         dlg = self.dlg_mesh
         dlg.meshes_saved = False
+
+        # Add temp layer to TOC
+        tools_qt.add_layer_to_toc(self.thread_triangulation.temp_layer, group="DRAIN TEMPORAL")
+        iface.setActiveLayer(self.thread_triangulation.temp_layer)
+        iface.zoomToActiveLayer()
 
     def _on_task_end(self):
         thread = self.thread_triangulation

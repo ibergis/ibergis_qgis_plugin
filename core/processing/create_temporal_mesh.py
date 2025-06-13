@@ -9,18 +9,22 @@ or (at your option) any later version.
 from qgis.core import (
     QgsProcessing,
     QgsProcessingAlgorithm,
-    QgsProcessingParameterVectorLayer,
     QgsVectorLayer,
-    QgsRasterLayer,
     QgsApplication,
-    QgsTask
+    QgsTask,
+    QgsProcessingParameterFeatureSink,
+    QgsProcessingParameterVectorLayer,
+    QgsProcessingOutputVectorLayer,
+    QgsFeatureSink,
+    QgsProcessingUtils
 )
 from qgis.PyQt.QtCore import QCoreApplication
-from ...lib import tools_qgis
-from ...lib.tools_gpkgdao import DrGpkgDao
+from ...lib import tools_qgis, tools_qt
 from ..threads.createmesh import DrCreateMeshTask
 from ...core.utils import Feedback
+from ... import global_vars
 from typing import Optional
+import os
 
 
 class CreateTemporalMesh(QgsProcessingAlgorithm):
@@ -29,11 +33,12 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
     """
     GROUND_LAYER = 'GROUND_LAYER'
     ROOF_LAYER = 'ROOF_LAYER'
-    RASTER_LAYER = 'RASTER_LAYER'
-    dao: Optional[DrGpkgDao] = None
+    TEMPORAL_MESH = 'TEMPORAL_MESH'
+    IS_VALID = 'IS_VALID'
+    MESH_OUTPUT = 'MESH_OUTPUT'
+
     roof_layer: Optional[QgsVectorLayer] = None
     ground_layer: Optional[QgsVectorLayer] = None
-    raster_layer: Optional[QgsRasterLayer] = None
 
     def initAlgorithm(self, config):
         """
@@ -58,6 +63,20 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
                 optional=False,
                 types=[QgsProcessing.SourceType.VectorPolygon],
                 defaultValue=roof_layer_param
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterFeatureSink(
+                self.MESH_OUTPUT,
+                self.tr("Basic Mesh Temp Layer"),
+                QgsProcessing.SourceType.VectorPolygon,
+                createByDefault=True
+            )
+        )
+        self.addOutput(
+            QgsProcessingOutputVectorLayer(
+                self.MESH_OUTPUT,
+                self.tr("Mesh layer")
             )
         )
 
@@ -95,7 +114,8 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             ground_layer=self.ground_layer,
             roof_layer=self.roof_layer,
             inlet_layer=None,
-            temporal_mesh=True
+            temporal_mesh=True,
+            temp_layer_name="Basic Mesh Temp Layer"
         )
         task = self.thread_triangulation
 
@@ -105,9 +125,33 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
 
         task.waitForFinished()
 
-        if task.status() == QgsTask.Complete:
+        if task.status() == QgsTask.Complete and task.temp_layer is not None:
+            # Apply QML style to the temporal layer
+            qml_path = global_vars.plugin_dir + '/resources/templates/mesh_temp_layer.qml'
+            if os.path.exists(qml_path):
+                task.temp_layer.loadNamedStyle(qml_path)
+                task.temp_layer.triggerRepaint()
+
+            # Create the output layer
+            outputs = {}
+            if parameters.get(self.MESH_OUTPUT):
+                qml_path = global_vars.plugin_dir + '/resources/templates/mesh_temp_layer.qml'
+                sink, dest_id = self.parameterAsSink(parameters, self.MESH_OUTPUT, context, task.temp_layer.fields(), task.temp_layer.wkbType(), task.temp_layer.sourceCrs())
+                if sink:
+                    for feature in task.temp_layer.getFeatures():
+                        sink.addFeature(feature, QgsFeatureSink.FastInsert)
+
+                    # Get the output layer from the result
+                    output_layer = QgsProcessingUtils.mapLayerFromString(dest_id, context)
+
+                    # Apply QML style to the output layer
+                    if output_layer and os.path.exists(qml_path):
+                        output_layer.loadNamedStyle(qml_path)
+                        output_layer.triggerRepaint()
+
+                    outputs[self.MESH_OUTPUT] = os.path.abspath(dest_id)
             feedback.setProgress(100)
-            return {}
+            return outputs
         else:
             feedback.pushWarning(self.tr('Error during mesh creation'))
             return {}
