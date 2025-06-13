@@ -305,13 +305,19 @@ class DrExecuteModel(DrTask):
             {"parameter": "result_max_critical_diameter", "tag": "Maximum_Critical_Diameter"},
             {"parameter": "result_hazard_rd9_2008", "tag": "Hazard RD9/2008"},
             {"parameter": "result_hazard_aca2003", "tag": "Hazard ACA2003"},
+            {"parameter": "result_hazard_pedestrians", "tag": "Pedestrians Hazard"},
+            {"parameter": "result_hazard_vehicles", "tag": "Vehicles Hazard"},
             {"parameter": "result_depth_vector", "tag": "Depth_vector"},
             {"parameter": "result_bed_shear_stress", "tag": "Bed_Shear_Stress"},
             {"parameter": "result_max_bed_shear_stress", "tag": "Maximum_Bed_Shear_Stress"},
             {"parameter": "result_energy", "tag": "Energy"},
             {"parameter": "result_steamlines", "tag": "Streamlines"},
-            {"parameter": "result_results_raster", "tag": "Raster interpolation"},
-            {"parameter": "result_results_raster_cell", "tag": "Raster cell size"},
+            {"parameter": "result_results_raster", "tag": "Results2Raster"},
+            {"parameter": "result_results_raster_cell", "tag": "esults2Raster - Cell size"},
+            {"parameter": "result_results_raster_maxs", "tag": "Results2Raster MAX"},
+            {"parameter": "result_results_raster_frame", "tag": ""},
+            {"parameter": "result_results_raster_xymax", "tag": ""},
+            {"parameter": "result_results_raster_xymin", "tag": ""},
         ]
         sql = "SELECT parameter, value FROM config_param_user WHERE parameter like 'result_%'"
         rows = self.dao.get_rows(sql)
