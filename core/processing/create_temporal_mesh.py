@@ -125,6 +125,8 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
 
         task.waitForFinished()
 
+        feedback.setProgress(90)
+
         if task.status() == QgsTask.Complete and task.temp_layer is not None:
             # Apply QML style to the temporal layer
             qml_path = global_vars.plugin_dir + '/resources/templates/mesh_temp_layer.qml'
