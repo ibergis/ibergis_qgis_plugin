@@ -68,7 +68,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 self.MESH_OUTPUT,
-                self.tr("Basic Mesh Temp Layer"),
+                self.tr("Simplified Mesh Temp Layer"),
                 QgsProcessing.SourceType.VectorPolygon,
                 createByDefault=True
             )
@@ -115,7 +115,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             roof_layer=self.roof_layer,
             inlet_layer=None,
             temporal_mesh=True,
-            temp_layer_name="Basic Mesh Temp Layer"
+            temp_layer_name="Simplified Mesh Temp Layer"
         )
         task = self.thread_triangulation
 
@@ -123,7 +123,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         task_manager = QgsApplication.taskManager()
         task_manager.addTask(task)
 
-        task.waitForFinished()
+        task.waitForFinished(0)
 
         feedback.setProgress(90)
 

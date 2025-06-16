@@ -96,6 +96,7 @@ class DrCreateMeshTask(DrTask):
         super().run()
         try:
             self.feedback.setProgressText("Starting process!")
+            self.temp_layer = None
 
             if not self.temporal_mesh:
                 # Remove previous temp layers
@@ -558,17 +559,19 @@ class DrCreateMeshTask(DrTask):
                     project.layerTreeRoot().removeChildrenGroupWithoutLayers()
                     iface.layerTreeView().model().sourceModel().modelReset.emit()
 
-            # Refresh TOC
-            iface.layerTreeView().model().sourceModel().modelReset.emit()
+                # Refresh TOC
+                iface.layerTreeView().model().sourceModel().modelReset.emit()
 
             self.message = "Process finished!!!"
-            self.feedback.setProgress(100)
+            if not self.temporal_mesh:
+                self.feedback.setProgress(100)
             return True
         except Exception:
             self.exception = traceback.format_exc()
             self.message = (
                 "Task failed. See the Log Messages Panel for more information."
             )
+            self.temp_layer = None
             return False
 
     def _create_line_anchors_gdf(self, line_anchors: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
