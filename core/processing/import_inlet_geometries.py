@@ -35,7 +35,21 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
     """
     FILE_SOURCE = 'FILE_SOURCE'
     FILE_TARGET = 'FILE_TARGET'
+    FIELD_CUSTOM_CODE = 'FIELD_CUSTOM_CODE'
+    FIELD_DESCRIPT = 'FIELD_DESCRIPT'
+    FIELD_OUTLET_NODE = 'FIELD_OUTLET_NODE'
+    FIELD_OUTLET_TYPE = 'FIELD_OUTLET_TYPE'
     FIELD_TOP_ELEV = 'FIELD_TOP_ELEV'
+    FIELD_WIDTH = 'FIELD_WIDTH'
+    FIELD_LENGTH = 'FIELD_LENGTH'
+    FIELD_DEPTH = 'FIELD_DEPTH'
+    FIELD_METHOD = 'FIELD_METHOD'
+    FIELD_WEIR_CD = 'FIELD_WEIR_CD'
+    FIELD_ORIFICE_CD = 'FIELD_ORIFICE_CD'
+    FIELD_A_PARAM = 'FIELD_A_PARAM'
+    FIELD_B_PARAM = 'FIELD_B_PARAM'
+    FIELD_EFFICIENCY = 'FIELD_EFFICIENCY'
+    FIELD_ANNOTATION = 'FIELD_ANNOTATION'
     BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
 
     bool_selected_features: bool = False
@@ -72,6 +86,38 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         if target_layer:
             target_layer_param.setDefaultValue(target_layer)
         self.addParameter(target_layer_param)
+        custom_code = QgsProcessingParameterField(
+            self.FIELD_CUSTOM_CODE,
+            self.tr('Select *custom_code* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
+        custom_code.setFlags(custom_code.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        descript = QgsProcessingParameterField(
+            self.FIELD_DESCRIPT,
+            self.tr('Select *descript* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
+        descript.setFlags(descript.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        outlet_node = QgsProcessingParameterField(
+            self.FIELD_OUTLET_NODE,
+            self.tr('Select *outlet_node* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
+        outlet_node.setFlags(outlet_node.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        outlet_type = QgsProcessingParameterField(
+            self.FIELD_OUTLET_TYPE,
+            self.tr('Select *outlet_type* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
+        outlet_type.setFlags(outlet_type.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         top_elev = QgsProcessingParameterField(
             self.FIELD_TOP_ELEV,
             self.tr('Select *top_elev* reference'),
@@ -80,7 +126,98 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
             optional=True
         )
         top_elev.setFlags(top_elev.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        width = QgsProcessingParameterField(
+            self.FIELD_WIDTH,
+            self.tr('Select *width* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        width.setFlags(width.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        length = QgsProcessingParameterField(
+            self.FIELD_LENGTH,
+            self.tr('Select *length* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        length.setFlags(length.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        depth = QgsProcessingParameterField(
+            self.FIELD_DEPTH,
+            self.tr('Select *depth* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        depth.setFlags(depth.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        method = QgsProcessingParameterField(
+            self.FIELD_METHOD,
+            self.tr('Select *method* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
+        method.setFlags(method.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        weir_cd = QgsProcessingParameterField(
+            self.FIELD_WEIR_CD,
+            self.tr('Select *weir_cd* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        weir_cd.setFlags(weir_cd.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        orifice_cd = QgsProcessingParameterField(
+            self.FIELD_ORIFICE_CD,
+            self.tr('Select *orifice_cd* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        orifice_cd.setFlags(orifice_cd.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        a_param = QgsProcessingParameterField(
+            self.FIELD_A_PARAM,
+            self.tr('Select *a_param* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        a_param.setFlags(a_param.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        b_param = QgsProcessingParameterField(
+            self.FIELD_B_PARAM,
+            self.tr('Select *b_param* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        b_param.setFlags(b_param.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        efficiency = QgsProcessingParameterField(
+            self.FIELD_EFFICIENCY,
+            self.tr('Select *efficiency* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
+        efficiency.setFlags(efficiency.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        annotation = QgsProcessingParameterField(
+            self.FIELD_ANNOTATION,
+            self.tr('Select *annotation* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
+        annotation.setFlags(annotation.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        self.addParameter(custom_code)
+        self.addParameter(descript)
+        self.addParameter(outlet_node)
+        self.addParameter(outlet_type)
         self.addParameter(top_elev)
+        self.addParameter(width)
+        self.addParameter(length)
+        self.addParameter(depth)
+        self.addParameter(method)
+        self.addParameter(weir_cd)
+        self.addParameter(orifice_cd)
+
 
 
     def processAlgorithm(self, parameters, context, feedback: Feedback):
@@ -95,21 +232,21 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         file_source: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
 
         self.field_map = {
-            "custom_code": None,
-            "descript": None,
-            "outlet_node": None,
-            "outlet_type": None,
+            "custom_code": next(iter(self.parameterAsFields(parameters, self.FIELD_CUSTOM_CODE, context)), None),
+            "descript": next(iter(self.parameterAsFields(parameters, self.FIELD_DESCRIPT, context)), None),
+            "outlet_node": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_NODE, context)), None),
+            "outlet_type": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_TYPE, context)), None),
             "top_elev": next(iter(self.parameterAsFields(parameters, self.FIELD_TOP_ELEV, context)), None),
-            "width": None,
-            "length": None,
-            "depth": None,
-            "method": None,
-            "weir_cd": None,
-            "orifice_cd": None,
-            "a_param": None,
-            "b_param": None,
-            "efficiency": None,
-            "annotation": None
+            "width": next(iter(self.parameterAsFields(parameters, self.FIELD_WIDTH, context)), None),
+            "length": next(iter(self.parameterAsFields(parameters, self.FIELD_LENGTH, context)), None),
+            "depth": next(iter(self.parameterAsFields(parameters, self.FIELD_DEPTH, context)), None),
+            "method": next(iter(self.parameterAsFields(parameters, self.FIELD_METHOD, context)), None),
+            "weir_cd": next(iter(self.parameterAsFields(parameters, self.FIELD_WEIR_CD, context)), None),
+            "orifice_cd": next(iter(self.parameterAsFields(parameters, self.FIELD_ORIFICE_CD, context)), None),
+            "a_param": next(iter(self.parameterAsFields(parameters, self.FIELD_A_PARAM, context)), None),
+            "b_param": next(iter(self.parameterAsFields(parameters, self.FIELD_B_PARAM, context)), None),
+            "efficiency": next(iter(self.parameterAsFields(parameters, self.FIELD_EFFICIENCY, context)), None),
+            "annotation": next(iter(self.parameterAsFields(parameters, self.FIELD_ANNOTATION, context)), None)
         }
 
         feedback.setProgressText(self.tr('done \n'))
