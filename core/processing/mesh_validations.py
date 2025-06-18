@@ -50,6 +50,8 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
         # Get the validation parameters
         validations = []
         for validation in self.validations:
+            value = self.parameterAsBoolean(parameters, validation, context)
+            tools_dr.set_config_parser('processing', f'{self.name()}_{validation}', value)
             if self.parameterAsBoolean(parameters, validation, context):
                 validations.append(validation)
 
@@ -71,10 +73,5 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
                 # tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
             # QgsProject.instance().layerTreeRoot().removeChildrenGroupWithoutLayers()
             # self.iface.layerTreeView().model().sourceModel().modelReset.emit()
-
-
-        for validation in self.validations:
-            value = self.parameterAsBoolean(parameters, validation, context)
-            tools_dr.set_config_parser('processing', f'{self.name()}_{validation}', value)
 
         return {}
