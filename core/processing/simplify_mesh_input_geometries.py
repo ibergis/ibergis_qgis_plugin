@@ -18,7 +18,8 @@ from qgis.core import (
     QgsWkbTypes,
     QgsFeatureSink,
     QgsProcessingParameterFeatureSink,
-    QgsFeature
+    QgsFeature,
+    QgsLayerTreeLayer
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis
@@ -46,6 +47,8 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
     file_source: Optional[QgsVectorLayer] = None
     roof_layer: Optional[QgsVectorLayer] = None
     ground_layer: Optional[QgsVectorLayer] = None
+    validation_layer_intersect: Optional[QgsVectorLayer] = None
+    validation_layer_vert_edge: Optional[QgsVectorLayer] = None
 
     def initAlgorithm(self, config):
         """
@@ -115,6 +118,8 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         self.preserve_boundary = False
         self.tolerance = 1.0
         self.simplified_layer = None
+        self.validation_layer_intersect = None
+        self.validation_layer_vert_edge = None
 
         # reading geodata
         feedback.setProgressText(self.tr('Merging roof and ground layers...'))
@@ -124,7 +129,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         self.roof_layer = self.parameterAsVectorLayer(parameters, self.ROOF_LAYER, context)
 
         if self.ground_layer is None or self.roof_layer is None:
-            feedback.reportError(self.tr('Error getting source layers.'))
+            feedback.pushWarning(self.tr('Error getting source layers.'))
             return {}
 
         # Merge roof and ground layers
@@ -138,7 +143,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         self.file_source = input_layer['OUTPUT']
 
         if self.file_source is None:
-            feedback.reportError(self.tr('Error merging roof and ground layers.'))
+            feedback.pushWarning(self.tr('Error merging roof and ground layers.'))
             return {}
 
         feedback.setProgress(12)
@@ -155,10 +160,10 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
                     'TOLERANCE': self.tolerance,'PRESERVE_BOUNDARY': self.preserve_boundary, 'OUTPUT':'memory:'})
             self.simplified_layer : QgsVectorLayer = result['OUTPUT']
         except Exception as e:
-            feedback.reportError(self.tr(f'Error simplifying geometries. {e}'))
+            feedback.pushWarning(self.tr(f'Error simplifying geometries. {e}'))
 
         if self.simplified_layer is None:
-            feedback.reportError(self.tr('Error simplifying geometries.'))
+            feedback.pushWarning(self.tr('Error simplifying geometries.'))
             self._validate_input_layers(feedback)
             return {}
 
@@ -184,7 +189,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         )
 
         if roof_sink is None or ground_sink is None:
-            feedback.reportError(self.tr('Error creating feature sinks.'))
+            feedback.pushWarning(self.tr('Error creating feature sinks.'))
             return {}
 
         # Create dictionaries to store features by code
@@ -221,10 +226,39 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         }
         return outputs
 
+    def postProcessAlgorithm(self, context, feedback: Feedback):
+        """ Add validation layers to project """
+
+        # Find group
+        group_name = "DRAIN TEMPORAL"
+        group = tools_qgis.find_toc_group(QgsProject.instance().layerTreeRoot(), group_name)
+        if group is None:
+            QgsProject.instance().layerTreeRoot().addGroup(group_name)
+            group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+
+        # Remove only previous validation layers
+        project = QgsProject.instance()
+        layer_ids = (x.id() for x in project.mapLayersByName("Intersection Errors") + project.mapLayersByName("Vertex-Edge Errors"))
+        project.removeMapLayers(layer_ids)
+
+        if self.validation_layer_intersect is not None and self.validation_layer_intersect.featureCount() > 0:
+            # Add validation layer
+            QgsProject.instance().addMapLayer(self.validation_layer_intersect, False)
+            group.addLayer(self.validation_layer_intersect)
+            feedback.setProgressText(self.tr('Input layers validated'))
+        elif self.validation_layer_vert_edge is not None and self.validation_layer_vert_edge.featureCount() > 0:
+            # Add validation layer
+            QgsProject.instance().addMapLayer(self.validation_layer_vert_edge, False)
+            group.addLayer(self.validation_layer_vert_edge)
+            feedback.setProgressText(self.tr('Input layers validated'))
+
+        return {}
+
     def _validate_input_layers(self, feedback: Feedback):
         """ Validate input layers """
         feedback.setProgressText(self.tr('Validating input layers...'))
-        validation_layer = validatemesh.validate_vert_edge_v2(
+        # Validate intersection
+        self.validation_layer_intersect = validatemesh.validate_intersect_v2(
             {
                 "ground": self.ground_layer,
                 "roof": self.roof_layer
@@ -232,19 +266,26 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
             feedback,
             True
         )
-        if validation_layer is None:
-            feedback.reportError("Validation layers not found")
-            return {}
+        if self.validation_layer_intersect is None:
+            feedback.pushWarning("Intersection validation layer not found")
+            self.validation_layer_intersect = None
 
-        # Add temporal layer to project
-        group_name = "TEMPORAL"
-        group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
-        if group is None:
-            QgsProject.instance().layerTreeRoot().addGroup(group_name)
-            group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
-        QgsProject.instance().addMapLayer(validation_layer, False)
-        group.addLayer(validation_layer)
-        feedback.setProgressText(self.tr('Input layers validated'))
+        if self.validation_layer_intersect is not None and self.validation_layer_intersect.featureCount() > 0:
+            return
+
+        # Validate vertex-edge
+        self.validation_layer_vert_edge = validatemesh.validate_vert_edge_v2(
+            {
+                "ground": self.ground_layer,
+                "roof": self.roof_layer
+            },
+            feedback,
+            True
+        )
+        if self.validation_layer_vert_edge is None:
+            feedback.pushWarning("Vertex-edge validation layer not found")
+            self.validation_layer_vert_edge = None
+
 
     def get_layer_type(self, layer: QgsVectorLayer) -> Optional[str]:
         for feature in layer.getFeatures():

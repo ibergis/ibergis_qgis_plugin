@@ -11,6 +11,7 @@ from qgis.PyQt.QtCore import QVariant
 from ..utils.feedback import Feedback
 from ..utils.meshing_process import layer_to_gdf
 from qgis import processing
+from ..utils import tools_dr
 
 from typing import Tuple, Optional
 import geopandas as gpd
@@ -65,7 +66,47 @@ def validate_intersect(
     overlap = overlap.loc[overlap["name_1"] != overlap["name_2"]]
     overlap = overlap.explode()
     overlap = overlap.loc[
-        overlap.geometry.geom_type == "Polygon"
+        (overlap.geometry.geom_type == "Polygon") & (overlap.geometry.area > 0.0000001)
+    ]  # Ignore Line overlap
+    if feedback.isCanceled():
+        return
+
+    # Fill error layer
+    output_layer = QgsVectorLayer("Polygon", "Intersection Errors", "memory")
+    output_layer.setCrs(layers_dict["ground"].crs())
+    provider = output_layer.dataProvider()
+    for geom in overlap.geometry:
+        feature = QgsFeature()
+        feature.setGeometry(QgsGeometry.fromWkt(geom.wkt))
+        provider.addFeature(feature)
+
+    output_layer.updateExtents()
+    return output_layer
+
+def validate_intersect_v2(
+    layers_dict: dict, feedback: Feedback, include_roof: bool = False
+) -> Optional[QgsVectorLayer]:
+    layers: list[QgsVectorLayer] = [layers_dict["ground"]]
+    if include_roof:
+        layers.append(layers_dict["roof"])
+
+    gdfs = []
+    for layer in layers:
+        gdf = layer_to_gdf(layer, ["code"])
+        gdf["layer"] = layer.name()
+        gdfs.append(gdf)
+
+    data: gpd.GeoDataFrame = pd.concat(gdfs, ignore_index=True)
+
+    # Get overlap
+    data["name"] = data.index
+    overlap = data.overlay(data, how="intersection", keep_geom_type=False)
+    if feedback.isCanceled():
+        return
+    overlap = overlap.loc[overlap["name_1"] != overlap["name_2"]]
+    overlap = overlap.explode()
+    overlap = overlap.loc[
+        (overlap.geometry.geom_type == "Polygon") & (overlap.geometry.area > 0.0000001)
     ]  # Ignore Line overlap
     if feedback.isCanceled():
         return
@@ -107,7 +148,7 @@ def validate_vert_edge_v2(
 
     gdfs = []
     for layer in layers:
-        gdf = layer_to_gdf(layer, ["fid"])
+        gdf = layer_to_gdf(layer, ["code"])
         gdf["layer"] = layer.name()
         gdfs.append(gdf)
 
@@ -128,7 +169,7 @@ def validate_vert_edge_v2(
     output_layer.setCrs(layers_dict["ground"].crs())
     provider = output_layer.dataProvider()
     provider.addAttributes([
-        QgsField("polygon_fid", QVariant.Int),
+        QgsField("polygon_code", QVariant.String),
         QgsField("layer", QVariant.String)
     ])
     output_layer.updateFields()
@@ -145,7 +186,7 @@ def validate_vert_edge_v2(
 
         # Find nearby polygons (within 0.1 buffer)
         nearby_idxs = polygon_tree.query(
-            row.geometry.buffer(0.1), 
+            row.geometry.buffer(0.1),
             predicate="intersects"
         )
         nearby = data.iloc[nearby_idxs]
@@ -171,13 +212,13 @@ def validate_vert_edge_v2(
                 # Find vertices belonging to this polygon
                 poly_verts = set(poly["vertices"])
                 has_close_vertex = any(
-                    v in poly_verts and shapely.distance(vertex, v) < 0.1 
+                    v in poly_verts and shapely.distance(vertex, v) < 0.000001
                     for v in nearby_vertices
                 )
 
                 if not has_close_vertex:
                     feat = QgsFeature()
-                    feat.setAttributes([poly["fid"], poly["layer"]])
+                    feat.setAttributes([poly["code"], poly["layer"]])
                     feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(vertex.x, vertex.y)))
                     features.append(feat)
                     break  # Only flag once per vertex

@@ -13,17 +13,19 @@ from qgis.core import (
     QgsApplication,
     QgsTask,
     QgsProcessingParameterFeatureSink,
-    QgsProcessingParameterVectorLayer,
+    QgsProcessingParameterFeatureSource,
     QgsProcessingOutputVectorLayer,
     QgsFeatureSink,
-    QgsProcessingUtils
+    QgsProcessingUtils,
+    QgsProject
 )
 from qgis.PyQt.QtCore import QCoreApplication
-from ...lib import tools_qgis, tools_qt
+from ...lib import tools_qgis
 from ..threads.createmesh import DrCreateMeshTask
 from ...core.utils import Feedback
 from ... import global_vars
 from typing import Optional
+from ..threads import validatemesh
 import os
 
 
@@ -39,6 +41,8 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
 
     roof_layer: Optional[QgsVectorLayer] = None
     ground_layer: Optional[QgsVectorLayer] = None
+    validation_layer_intersect: Optional[QgsVectorLayer] = None
+    validation_layer_vert_edge: Optional[QgsVectorLayer] = None
 
     def initAlgorithm(self, config):
         """
@@ -48,7 +52,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         roof_layer_param = tools_qgis.get_layer_by_tablename('roof')
 
         self.addParameter(
-            QgsProcessingParameterVectorLayer(
+            QgsProcessingParameterFeatureSource(
                 self.GROUND_LAYER,
                 self.tr('Ground layer'),
                 optional=False,
@@ -57,7 +61,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             )
         )
         self.addParameter(
-            QgsProcessingParameterVectorLayer(
+            QgsProcessingParameterFeatureSource(
                 self.ROOF_LAYER,
                 self.tr('Roof layer'),
                 optional=False,
@@ -87,9 +91,33 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         self.ground_layer = self.parameterAsVectorLayer(parameters, self.GROUND_LAYER, context)
         self.roof_layer = self.parameterAsVectorLayer(parameters, self.ROOF_LAYER, context)
         self.thread_triangulation = None
+        self.validation_layer_intersect = None
+        self.validation_layer_vert_edge = None
 
         if self.ground_layer is None or self.roof_layer is None:
-            feedback.reportError(self.tr('Error getting source layers.'))
+            feedback.pushWarning(self.tr('Error getting source layers.'))
+            return {}
+
+        # Validate intersection
+        self.validation_layer_intersect = validatemesh.validate_intersect_v2(
+            {"ground": self.ground_layer, "roof": self.roof_layer}, feedback, True
+        )
+        if self.validation_layer_intersect is None:
+            feedback.pushWarning("Intersection validation layer not found")
+            self.validation_layer_intersect = None
+
+        if self.validation_layer_intersect is not None and self.validation_layer_intersect.featureCount() > 0:
+            return {}
+
+        # Validate vertex-edge
+        self.validation_layer_vert_edge = validatemesh.validate_vert_edge_v2(
+            {"ground": self.ground_layer, "roof": self.roof_layer}, feedback, True
+        )
+        if self.validation_layer_vert_edge is None:
+            feedback.pushWarning("Vertex-edge validation layer not found")
+            self.validation_layer_vert_edge = None
+
+        if self.validation_layer_vert_edge is not None and self.validation_layer_vert_edge.featureCount() > 0:
             return {}
 
         # Create mesh
@@ -157,6 +185,66 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         else:
             feedback.pushWarning(self.tr('Error during mesh creation'))
             return {}
+
+    def postProcessAlgorithm(self, context, feedback: Feedback):
+        """ Add validation layers to project """
+
+        # Find group
+        group_name = "DRAIN TEMPORAL"
+        group = tools_qgis.find_toc_group(QgsProject.instance().layerTreeRoot(), group_name)
+        if group is None:
+            QgsProject.instance().layerTreeRoot().addGroup(group_name)
+            group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+        else:
+            # Remove only previous validation layers
+            project = QgsProject.instance()
+            layer_ids = (x.id() for x in project.mapLayersByName("Intersection Errors") + project.mapLayersByName("Vertex-Edge Errors"))
+            project.removeMapLayers(layer_ids)
+
+        if self.validation_layer_intersect is not None and self.validation_layer_intersect.featureCount() > 0:
+            # Add validation layer
+            QgsProject.instance().addMapLayer(self.validation_layer_intersect, False)
+            group.addLayer(self.validation_layer_intersect)
+            feedback.setProgressText(self.tr('Input layers validated'))
+        elif self.validation_layer_vert_edge is not None and self.validation_layer_vert_edge.featureCount() > 0:
+            # Add validation layer
+            QgsProject.instance().addMapLayer(self.validation_layer_vert_edge, False)
+            group.addLayer(self.validation_layer_vert_edge)
+            feedback.setProgressText(self.tr('Input layers validated'))
+
+        return {}
+
+    def validate_input_layers(self, feedback: Feedback):
+        """ Validate input layers """
+        feedback.setProgressText(self.tr('Validating input layers...'))
+        # Validate intersection
+        self.validation_layer_intersect = validatemesh.validate_intersect_v2(
+            {
+                "ground": self.ground_layer,
+                "roof": self.roof_layer
+            },
+            feedback,
+            True
+        )
+        if self.validation_layer_intersect is None:
+            feedback.pushWarning("Intersection validation layer not found")
+            self.validation_layer_intersect = None
+
+        if self.validation_layer_intersect is not None and self.validation_layer_intersect.featureCount() > 0:
+            return
+
+        # Validate vertex-edge
+        self.validation_layer_vert_edge = validatemesh.validate_vert_edge_v2(
+            {
+                "ground": self.ground_layer,
+                "roof": self.roof_layer
+            },
+            feedback,
+            True
+        )
+        if self.validation_layer_vert_edge is None:
+            feedback.pushWarning("Vertex-edge validation layer not found")
+            self.validation_layer_vert_edge = None
 
     def shortHelpString(self):
         return self.tr("""Creates a temporary mesh by combining ground and roof polygon layers, suitable for hydrological or spatial analysis.                        
