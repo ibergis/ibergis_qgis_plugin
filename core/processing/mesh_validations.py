@@ -1,7 +1,7 @@
 from qgis.core import QgsProcessingAlgorithm, QgsProcessingContext, QgsProcessingFeedback, QgsProcessingParameterBoolean, QgsProject, QgsVectorLayer, QgsRasterLayer
 from typing import Any
 
-from ...lib import tools_qt
+from ...lib import tools_qt, tools_qgis
 from ...core.utils import tools_dr
 from ... import global_vars
 from ..threads.validatemesh import validations_dict, validate_input_layers
@@ -18,7 +18,9 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
         layers_to_select = ["ground", "roof"]
         self.layers: dict[str, QgsVectorLayer | QgsRasterLayer] = {}
         for layer in layers_to_select:
-            l = QgsVectorLayer(f"{path}{layer}", layer, "ogr")
+            l = tools_qgis.get_layer_by_tablename(layer)
+            if l is None:
+                l = QgsVectorLayer(f"{path}{layer}", layer, "ogr")
             self.layers[layer] = l
         # self.layers["dem"] = self.dem_layer
         self.layers['dem'] = None
@@ -64,7 +66,7 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
         error_layers, warning_layers = validation_layers
 
         if error_layers or warning_layers:
-            group_name = "Mesh inputs errors & warnings"
+            group_name = "MESH INPUTS ERRORS & WARNINGS"
             for layer in error_layers:
                 QgsProject.instance().addMapLayer(layer)
                 # tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
