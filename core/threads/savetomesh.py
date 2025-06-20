@@ -154,12 +154,12 @@ class DrSaveToMeshTask(DrTask):
                     WHERE timeseries IN (
                         SELECT idval
                         FROM cat_timeseries
-                        WHERE id = {timeseries_id}
+                        WHERE idval = '{timeseries_id}'
                     )
                 """
                 rows = dao.get_rows(sql)
                 if rows is None:
-                    self.message = f"Timeseries id {timeseries_id} is empty."
+                    self.message = f"Timeseries idval {timeseries_id} is empty."
                     return False
                 timeseries_dict = {}
                 for row in rows:

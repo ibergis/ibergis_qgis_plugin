@@ -392,5 +392,3 @@ def loads(mesh_string, roof_string="", losses_string="", bridges_string=""):
         io.StringIO(bridges_string) as bridges_file,
     ):
         return load(mesh_file, roof_file, losses_file, bridges_file)
-
-
