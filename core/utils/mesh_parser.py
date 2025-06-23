@@ -20,7 +20,7 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
     mesh_fp.write(f"  {len(mesh.polygons)}\n")
     for tri in mesh.polygons.itertuples():
         try:
-            manning_number = tri.roughness
+            manning_number = round(tri.roughness, 4)
         except KeyError:
             print(f"{tri=}")
         mesh_fp.write(f"    {tri.v1:8d} {tri.v2:8d} {tri.v3:8d} {tri.v4:8d} {manning_number:>8} {tri.Index:8d}\n")
@@ -69,7 +69,7 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
         for roof in mesh.roofs.itertuples():
             roof_fp.write(
                 f"{roof.name} {roof.fid} {-9999 if roof.slope is None else roof.slope} {-9999 if roof.width is None else roof.width} "
-                f"{-9999 if roof.roughness is None else roof.roughness} {-9999 if roof.isconnected is None else roof.isconnected} {-9999 if roof.outlet_code is None else roof.outlet_code} "
+                f"{-9999 if roof.roughness is None else round(roof.roughness, 4)} {-9999 if roof.isconnected is None else roof.isconnected} {-9999 if roof.outlet_code is None else roof.outlet_code} "
                 f"{-9999 if roof.outlet_vol is None else roof.outlet_vol} {-9999 if roof.street_vol is None else roof.street_vol} {-9999 if roof.infiltr_vol is None else roof.infiltr_vol}\n"
             )
         roof_fp.write("\nRoof elements\n")

@@ -548,7 +548,7 @@ class DrExecuteModel(DrTask):
             return None
 
         # Get mesh layer data
-        sql = f"SELECT name, iber2d, roof, losses FROM cat_file WHERE id = {selected_mesh};"
+        sql = f"SELECT name, iber2d, roof, losses, bridge FROM cat_file WHERE id = {selected_mesh};"
         if not self.dao:
             return None
         row = self.dao.get_row(sql)
@@ -557,7 +557,7 @@ class DrExecuteModel(DrTask):
             return None
 
         # Create mesh layer
-        mesh = mesh_parser.loads(row["iber2d"], row["roof"], row["losses"])
+        mesh = mesh_parser.loads(row["iber2d"], row["roof"], row["losses"], row["bridge"])
         mesh_layer = create_temp_mesh_layer(mesh)
 
         if mesh_layer is None:
