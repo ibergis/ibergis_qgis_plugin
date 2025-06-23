@@ -20,14 +20,17 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
     mesh_fp.write(f"  {len(mesh.polygons)}\n")
     for tri in mesh.polygons.itertuples():
         try:
-            manning_number = tri.roughness
-            try:
+            manning_number = float(tri.roughness)
+
+            if manning_number != 0:
                 manning_number = round(manning_number, 4)
-            except TypeError:
-                pass
-        except KeyError:
-            print(f"{tri=}")
-        mesh_fp.write(f"    {tri.v1:8d} {tri.v2:8d} {tri.v3:8d} {tri.v4:8d} {manning_number:>8} {tri.Index:8d}\n")
+            else:
+                manning_number = -999 # Default value
+        except (KeyError, TypeError, ValueError) as e:
+            print(f"Error processing roughness for triangle {tri}: {e}")
+            manning_number = -999  # Default value
+
+        mesh_fp.write(f"    {tri.v1:8d} {tri.v2:8d} {tri.v3:8d} {tri.v4:8d} {manning_number:>9.4f} {tri.Index:8d}\n")
     mesh_fp.write("VERTEXS\n")
     mesh_fp.write(f"  {len(mesh.vertices)}\n")
     for v in mesh.vertices.itertuples():
