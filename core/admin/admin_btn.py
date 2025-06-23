@@ -191,6 +191,9 @@ class DrAdminButton(DrGpkgBase):
         # Connect to sqlite database
         self.gpkg_dao_config = tools_gpkgdao.DrGpkgDao()
 
+        # Add transaltor lobby translator
+        tools_qt._add_translator()
+
         # Create the dialog and signals
         self._init_show_database()
 
@@ -249,8 +252,6 @@ class DrAdminButton(DrGpkgBase):
         self.timer = QTimer()
         self.timer.timeout.connect(self._on_timer_timeout)
         self.timer.start(500)
-
-        # self._translate_config(self.locale)
 
         params = {}
         self.create_gpkg_thread = DrGpkgCreateSchemaTask(self, "Create GPKG", params, timer=self.timer)
