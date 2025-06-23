@@ -666,8 +666,7 @@ class DrCreateMeshTask(DrTask):
         # The index will have two levels: the triangle index and the point index (0, 1, 2)
         optimized_gdf = gpd.GeoDataFrame(
             optimized_df,
-            geometry=vertices_geom,
-            crs="EPSG:25831",
+            geometry=vertices_geom
         ).explode(index_parts=True)
 
         # Now we can check for intersections with the bridges
