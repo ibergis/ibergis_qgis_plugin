@@ -41,18 +41,9 @@ class DrCreateMeshButton(DrAction):
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
-        dlg.cmb_mesh_qgis_layer.setFilters(Qgis.LayerFilter.MeshLayer)
 
         # Hide grb_cleanup
         dlg.grb_cleanup_data.setVisible(False)
-
-        # Disable widgets of the radio buttons
-        dlg.txt_mesh_qgis_path.setEnabled(False)
-        dlg.btn_mesh_qgis_path.setEnabled(False)
-        dlg.cmb_mesh_qgis_layer.setEnabled(False)
-        # Temporary disable the iber_from_qgis radio button
-        dlg.rb_mesh_qgis.setEnabled(False)  # TODO: enable when code is done
-        dlg.rb_mesh_iber_from_qgis.setEnabled(False)
 
         # Fill raster layers combos
         project = QgsProject.instance()
@@ -95,16 +86,6 @@ class DrCreateMeshButton(DrAction):
         dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_start.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
-        # Radio button IBER mesh
-        dlg.rb_mesh_iber.toggled.connect(dlg.grb_roughness.setEnabled)
-        dlg.rb_mesh_iber.toggled.connect(dlg.grb_losses.setEnabled)
-        # Radio button QGIS mesh
-        dlg.rb_mesh_qgis.toggled.connect(dlg.txt_mesh_qgis_path.setEnabled)
-        dlg.rb_mesh_qgis.toggled.connect(dlg.btn_mesh_qgis_path.setEnabled)
-        # Radio button IBER mesh from QGIS mesh
-        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.cmb_mesh_qgis_layer.setEnabled)
-        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.grb_roughness.setEnabled)
-        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.grb_losses.setEnabled)
         # Dialog buttons
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
@@ -451,7 +432,7 @@ class DrCreateMeshButton(DrAction):
 
         # Add errors to TOC
         if thread.error_layers or thread.warning_layers:
-            group_name = "Mesh inputs errors & warnings"
+            group_name = "MESH INPUTS ERRORS & WARNINGS"
             for layer in thread.error_layers:
                 tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
             for layer in thread.warning_layers:

@@ -20,7 +20,11 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
     mesh_fp.write(f"  {len(mesh.polygons)}\n")
     for tri in mesh.polygons.itertuples():
         try:
-            manning_number = round(tri.roughness, 4)
+            manning_number = tri.roughness
+            try:
+                manning_number = round(manning_number, 4)
+            except TypeError:
+                pass
         except KeyError:
             print(f"{tri=}")
         mesh_fp.write(f"    {tri.v1:8d} {tri.v2:8d} {tri.v3:8d} {tri.v4:8d} {manning_number:>8} {tri.Index:8d}\n")
