@@ -26,8 +26,10 @@ class DrOptions:
         self.tabs_to_show = tabs_to_show
         if self.tabs_to_show is None:
             self.tabs_to_show = ["tab_inp_swmm", "tab_rpt_swmm", "tab_main", "tab_rpt_iber", "tab_plugins"]
-        self.tab_aliases = {"tab_inp_swmm": "SWMM OPTIONS", "tab_rpt_swmm": "SWMM RESULTS",
-                            "tab_main": "IBER OPTIONS", "tab_rpt_iber": "IBER RESULTS", "tab_plugins": "IBER PLUGINS",
+        con_name = "dlg_options"
+        self.tab_aliases = {"tab_inp_swmm": tools_qt.tr("SWMM OPTIONS"), "tab_rpt_swmm": tools_qt.tr("SWMM RESULTS"),
+                            "tab_main": tools_qt.tr("IBER OPTIONS"), "tab_rpt_iber": tools_qt.tr("IBER RESULTS"),
+                            "tab_plugins": tools_qt.tr("IBER PLUGINS")
                             }
 
     def open_options_dlg(self):

@@ -79,7 +79,8 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         sys_messages = self.dao_data.get_rows(sql)
         sys_messages_dict: dict[int, str] = {}
         if not sys_messages:
-            feedback.pushWarning(self.tr('ERROR: No sys messages found'))
+            msg = 'ERROR: No sys messages found'
+            feedback.pushWarning(self.tr(msg))
             self.bool_error_on_execution = True
             return {}
         for msg in sys_messages:
@@ -89,7 +90,8 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         sql: str = "SELECT * FROM checkproject_query ORDER BY query_type, id"
         queries = self.dao_data.get_rows(sql)
         if not queries:
-            feedback.pushWarning(self.tr('ERROR: No check project queries found'))
+            msg = 'ERROR: No check project queries found'
+            feedback.pushWarning(self.tr(msg))
             self.bool_error_on_execution = True
             return {}
 
@@ -155,7 +157,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         # Execute checkproject queries
         for index, query in enumerate(queries):
             query_type: str = query['query_type']
-            feedback.setProgressText(f'Executing: {query_type} - {query["table_name"]}')
+            msg = 'Executing: {0} - {1}'
+            msg_params = (query_type, query['table_name'])
+            feedback.setProgressText(self.tr(msg, list_params=msg_params))
 
             # region HARCODED QUERIES
             if query_type == 'GEOMETRIC DUPLICATE' or query_type == 'GEOMETRIC ORPHAN':
@@ -175,16 +179,20 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         if temporal_layer is not None:
             if temporal_layer.featureCount() > 0:
                 self.temporal_layers_to_add.append(temporal_layer)
-                self.error_messages.append(self.tr(f'ERROR (roof): Volume errors detected ({temporal_layer.featureCount()})'))
+                msg = 'ERROR (roof): Volume errors detected ({0})'
+                msg_params = (temporal_layer.featureCount(),)
+                self.error_messages.append(self.tr(msg, list_params=msg_params))
             else:
-                self.info_messages.append(self.tr(f'INFO (roof): No volume errors detected'))
+                msg = 'INFO (roof): No volume errors detected'
+                self.info_messages.append(self.tr(msg))
 
         # Mesh validations
         ground_layer = tools_qgis.get_layer_by_tablename('ground')
         roof_layer = tools_qgis.get_layer_by_tablename('roof')
 
         if ground_layer is None or roof_layer is None:
-            feedback.pushWarning(self.tr('ERROR: Could not find ground or roof layers'))
+            msg = 'ERROR: Could not find ground or roof layers'
+            feedback.pushWarning(self.tr(msg))
             self.bool_error_on_execution = True
             return {}
 
@@ -247,7 +255,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                         'roof': roof_layer
                     }, feedback)
                 else:
-                    feedback.pushWarning(f'Unknown input_layers configuration: {input_layers}')
+                    msg = 'Unknown input_layers configuration: {0}'
+                    msg_params = (input_layers,)
+                    feedback.pushWarning(self.tr(msg, list_params=msg_params))
                     continue
 
                 # Add temporal layer to validation_temporal_layers_to_add
@@ -266,11 +276,17 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                             info_message = False
                     # Add error or info message
                     if info_message:
-                        self.info_messages.append(self.tr(f'INFO (validatemesh - {validation}): No errors detected'))
+                        msg = 'INFO (validatemesh - {0}): No errors detected'
+                        msg_params = (validation,)
+                        self.info_messages.append(self.tr(msg, list_params=msg_params))
                     else:
-                        self.error_messages.append(self.tr(f'ERROR (validatemesh - {validation}): Errors detected ({temporal_layer.featureCount()})'))
+                        msg = 'ERROR (validatemesh - {0}): Errors detected ({1})'
+                        msg_params = (validation, temporal_layer.featureCount())
+                        self.error_messages.append(self.tr(msg, list_params=msg_params))
             else:
-                feedback.pushWarning(f'Validation method {method_name} not found in validatemesh module')
+                msg = 'Validation method {0} not found in validatemesh module'
+                msg_params = (method_name,)
+                feedback.pushWarning(self.tr(msg, list_params=msg_params))
 
             feedback.setProgress(tools_dr.lerp_progress(int(index+1/len(validations)*100), 80, 90))
 
@@ -285,7 +301,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         exception_message: Optional[str] = sys_messages_dict[query['error_message_id']]
         info_message: Optional[str] = sys_messages_dict[query['info_message_id']]
         if exception_message is None or exception_message == '' or info_message is None or info_message == '':
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): No messages found for table "{query['table_name']}"'))
+            msg = 'ERROR-{0} ({1}): No messages found for table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
         # Check geometrics
@@ -294,11 +312,15 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         elif query['query_type'] == 'GEOMETRIC ORPHAN':
             temporal_layer = self.check_orphans(query, feedback)
         else:
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): No query found for table "{query['table_name']}"'))
+            msg = 'ERROR-{0} ({1}): No query found for table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'],)
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
         if temporal_layer is None:
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error creating temporal layer for table "{query['table_name']}"'))
+            msg = 'ERROR-{0} ({1}): Error creating temporal layer for table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
         if query['create_layer'] and temporal_layer.featureCount() > 0:
@@ -311,10 +333,14 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         msg = exception_message.format((temporal_layer.featureCount()))
         if query['except_lvl'] == 2:
             # Save warning message
-            self.warning_messages.append(self.tr(f'WARNING-{query['error_code']} ({query['table_name']}) ({query['query_type']}): ' + msg))
+            msg = 'WARNING-{0} ({1}) ({2}): {3}'
+            msg_params = (query['error_code'], query['table_name'], query['query_type'], msg)
+            self.warning_messages.append(self.tr(msg, list_params=msg_params))
         else:
             # Save error message
-            self.error_messages.append(self.tr(f'ERROR-{query['error_code']} ({query['table_name']}) ({query['query_type']}): ' + msg))
+            msg = 'ERROR-{0} ({1}) ({2}): {3}'
+            msg_params = (query['error_code'], query['table_name'], query['query_type'], msg)
+            self.error_messages.append(self.tr(msg, list_params=msg_params))
 
     def check_mandatory_null_or_outlayer(self, query, sys_messages_dict: dict[int, str], feedback: QgsProcessingFeedback):
         """ Check mandatory null or outlayer """
@@ -323,16 +349,22 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         exception_message: Optional[str] = sys_messages_dict[query['error_message_id']]
         info_message: Optional[str] = sys_messages_dict[query['info_message_id']]
         if exception_message is None or exception_message == '' or info_message is None or info_message == '':
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']}({query['query_type']}): Error getting messages for table "{query['table_name']}"'))
+            msg = 'ERROR-{0} ({1}): Error getting messages for table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
         # Build check query
         query_data, query_data_nogeom, columns = self._build_check_query(query, feedback)
         if query_data is None:
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error building check query on table "{query['table_name']}"'))
+            msg = 'ERROR-{0} ({1}): Error building check query on table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
         if columns is None:
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error getting mandatory columns on table "{query['table_name']}"'))
+            msg = 'ERROR-{0} ({1}): Error getting mandatory columns on table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
         # Exectue check query
@@ -341,22 +373,32 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             features = self.dao_data.get_rows(query_data_nogeom)
             if not features and self.dao_data.last_error is not None:
                 # Print error message
-                feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error getting features for table "{query['table_name']}". {self.dao_data.last_error}'))
+                msg = 'ERROR-{0} ({1}): Error getting features for table "{2}". {3}'
+                msg_params = (query['error_code'], query['query_type'], query['table_name'], self.dao_data.last_error)
+                feedback.pushWarning(self.tr(msg, list_params=msg_params))
                 return
         if not features and self.dao_data.last_error is None:
             # Save info message
             if query['query_type'] == 'MANDATORY NULL' and (query['extra_condition'] == '' or query['extra_condition'] is None):
-                self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message.format(f'{columns}')))
+                msg = 'INFO ({0}): {1}'
+                msg_params = (query['table_name'], info_message.format(f'{columns}'),)
+                self.info_messages.append(self.tr(msg, list_params=msg_params))
             elif query['query_type'] == 'MANDATORY NULL' and query['extra_condition'] is not None and query['extra_condition'] != '':
                 # Get additional conditions
                 conditions: Optional[Match[str]] = re.search(r'AND\s+(\w+)\s*==\s*"([^"]+)"', query['extra_condition'])
                 if conditions:
-                    self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message.format(f'{columns}', conditions.group(1), conditions.group(2))))
+                    msg = 'INFO ({0}): {1}'
+                    msg_params = (query['table_name'], info_message.format(f'{columns}', conditions.group(1), conditions.group(2)))
+                    self.info_messages.append(self.tr(msg, list_params=msg_params))
                 else:
-                    feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['table_name']}) ({query['query_type']}): Error getting additional conditions for table "{query['table_name']}"'))
+                    msg = 'ERROR-{0} ({1}) ({2}): Error getting additional conditions for table "{3}"'
+                    msg_params = (query['error_code'], query['table_name'], query['query_type'], query['table_name'])
+                    feedback.pushWarning(self.tr(msg, list_params=msg_params))
                     return
             elif query['query_type'] == 'OUTLAYER':
-                self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message.format(self.outlayer_values[columns[0]]['min'], self.outlayer_values[columns[0]]['max'], f'{columns}')))
+                msg = 'INFO ({0}): {1}'
+                msg_params = (query['table_name'], info_message.format(self.outlayer_values[columns[0]]['min'], self.outlayer_values[columns[0]]['max'], f'{columns}'))
+                self.info_messages.append(self.tr(msg, list_params=msg_params))
             return
 
         if query['create_layer']:
@@ -413,7 +455,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                         exception_msg += f', {col}'
                 new_feature['Exception'] = exception_msg
                 if not feature['geom_wkt']:
-                    feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error getting geometry for feature "{feature['code']}" on table "{query['table_name']}"'))
+                    msg = 'ERROR-{0} ({1}): Error getting geometry for feature "{2}" on table "{3}"'
+                    msg_params = (query['error_code'], query['query_type'], feature['code'], query['table_name'])
+                    feedback.pushWarning(self.tr(msg, list_params=msg_params))
                     continue
                 new_feature.setGeometry(QgsGeometry.fromWkt(feature['geom_wkt']))
                 features_to_add.append(new_feature)
@@ -446,7 +490,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                             if conditions:
                                 error_msg = exception_message.format(col, conditions.group(1), conditions.group(2), columns_dict[col])
                             else:
-                                feedback.pushWarning(self.tr(f'ERROR-{query['error_code']}: Error getting additional conditions for table[{query['table_name']}]'))
+                                msg = 'ERROR-{0}: Error getting additional conditions for table[{1}]'
+                                msg_params = (query['error_code'], query['table_name'])
+                                feedback.pushWarning(self.tr(msg, list_params=msg_params))
                                 continue
                     else:
                         valid_columns.append(col)
@@ -454,24 +500,36 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 # Save error message
                 if error_msg != '':
                     if query['except_lvl'] == 2:
-                        self.warning_messages.append(self.tr(f'WARNING-{query['error_code']}/{index+1} ({query['table_name']}) ({query['query_type']}): ' + error_msg))
+                        msg = 'WARNING-{0}/{1} ({2}) ({3}): {4}'
+                        msg_params = (query['error_code'], index+1, query['table_name'], query['query_type'], error_msg)
+                        self.warning_messages.append(self.tr(msg, list_params=msg_params))
                     else:
-                        self.error_messages.append(self.tr(f'ERROR-{query['error_code']}/{index+1} ({query['table_name']}) ({query['query_type']}): ' + error_msg))
+                        msg = 'ERROR-{0}/{1} ({2}) ({3}): {4}'
+                        msg_params = (query['error_code'], index+1, query['table_name'], query['query_type'], error_msg)
+                        self.error_messages.append(self.tr(msg, list_params=msg_params))
 
             # Save info message for valid columns
             if len(valid_columns) > 0:
                 if query['query_type'] == 'OUTLAYER':
                     for col in valid_columns:
-                        self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message.format(self.outlayer_values[col]['min'], self.outlayer_values[col]['max'], col)))
+                        msg = 'INFO ({0}): {1}'
+                        msg_params = (query['table_name'], info_message.format(self.outlayer_values[col]['min'], self.outlayer_values[col]['max'], col))
+                        self.info_messages.append(self.tr(msg, list_params=msg_params))
                 else:
                     if query['extra_condition'] is None or query['extra_condition'] == "":
-                        self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message.format(valid_columns)))
+                        msg = 'INFO ({0}): {1}'
+                        msg_params = (query['table_name'], info_message.format(valid_columns))
+                        self.info_messages.append(self.tr(msg, list_params=msg_params))
                     else:
                         conditions: Optional[Match[str]] = re.search(r'AND\s+(\w+)\s*==\s*"([^"]+)"', query['extra_condition'])
                         if conditions:
-                            self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message.format(valid_columns, conditions.group(1), conditions.group(2))))
+                            msg = 'INFO ({0}): {1}'
+                            msg_params = (query['table_name'], info_message.format(valid_columns, conditions.group(1), conditions.group(2)))
+                            self.info_messages.append(self.tr(msg, list_params=msg_params))
                         else:
-                            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['table_name']}) ({query['query_type']}): Error getting additional conditions for table[{query['table_name']}]'))
+                            msg = 'ERROR-{0} ({1}) ({2}): Error getting additional conditions for table[{3}]'
+                            msg_params = (query['error_code'], query['table_name'], query['query_type'], query['table_name'])
+                            feedback.pushWarning(self.tr(msg, list_params=msg_params))
                             return
 
     def postProcessAlgorithm(self, context, feedback: QgsProcessingFeedback):
@@ -483,19 +541,22 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         # Print errors
         if len(self.error_messages) > 0:
-            feedback.setProgressText(self.tr('\nERRORS\n----------'))
+            msg = '\nERRORS\n----------'
+            feedback.setProgressText(self.tr(msg))
             for msg in self.error_messages:
                 feedback.setProgressText(msg)
 
         # Print warnings
         if len(self.warning_messages) > 0:
-            feedback.setProgressText(self.tr('\nWARNINGS\n--------------'))
+            msg = '\nWARNINGS\n--------------'
+            feedback.setProgressText(self.tr(msg))
             for msg in self.warning_messages:
                 feedback.setProgressText(msg)
 
         # Print info
         if not self.bool_show_only_errors and len(self.info_messages) > 0:
-            feedback.setProgressText(self.tr('\nINFO\n------'))
+            msg = '\nINFO\n------'
+            feedback.setProgressText(self.tr(msg))
             for msg in self.info_messages:
                 feedback.setProgressText(msg)
 
@@ -535,7 +596,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         # Get columns
         if query['columns'] is None:
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): No columns found for table "{query['table_name']}"'))
+            msg = 'ERROR-{0} ({1}): No columns found for table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return None, None, None
         columns = query['columns'].strip("{}").split(", ")
         columns_select: Optional[str] = None
@@ -585,14 +648,18 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         if query['error_code'] and query['error_code'] in [102, 104]:
             tolerance = 0.10
         elif query['error_code'] is None:
-            feedback.pushWarning(self.tr(f'ERROR ({query['query_type']}): No error code found for table "{query['table_name']}"'))
+            msg = 'ERROR ({0}): No error code found for table "{1}"'
+            msg_params = (query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
 
         if query['table_name'] in ['arc', 'node']:
             source_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername={query['table_name']}', query['table_name'], 'ogr')
         else:
             source_layer = tools_qgis.get_layer_by_tablename(query['table_name'])
         if source_layer is None:
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): No layer found for table "{query['table_name']}"'))
+            msg = 'ERROR-{0} ({1}): No layer found for table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
         # Convert QGIS layer to GeoPandas DataFrame
@@ -653,7 +720,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         # Create temporal layer
         temporal_layer = QgsVectorLayer(f'{query['geometry_type']}', f'{query['query_type'].replace(" ", "_").lower()}_{query['table_name']}', 'memory')
         if temporal_layer is None:
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error creating temporal layer for table "{query['table_name']}"'))
+            msg = 'ERROR-{0} ({1}): Error creating temporal layer for table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
         temporal_layer.setCrs(QgsProject.instance().crs())
@@ -686,7 +755,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         arc_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=arc', 'arc', 'ogr')
 
         if node_layer is None or arc_layer is None:
-            feedback.pushWarning(self.tr(f'ERROR-{query["error_code"]} ({query["query_type"]}): No layers found for node or arc tables'))
+            msg = 'ERROR-{0} ({1}): No layers found for node or arc tables'
+            msg_params = (query['error_code'], query['query_type'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
         # Get all node codes that are not 'inlet' type
@@ -721,7 +792,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                         if feature['node_2']:
                             referenced_node_codes_db.add(feature['node_2'])
             except Exception as e:
-                feedback.pushWarning(f'Warning: Could not check table {table_name}: {str(e)}')
+                msg = 'Warning: Could not check table {0}: {1}'
+                msg_params = (table_name, str(e))
+                feedback.pushWarning(self.tr(msg, list_params=msg_params))
                 continue
 
         # CHECK 2: Geometric vertex check - Find nodes that are not on any arc vertex
@@ -810,7 +883,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         # Create temporal layer
         temporal_layer = QgsVectorLayer('Point', f'{query["query_type"].replace(" ", "_").lower()}_{query["table_name"]}', 'memory')
         if temporal_layer is None:
-            feedback.pushWarning(self.tr(f'ERROR-{query["error_code"]} ({query["query_type"]}): Error creating temporal layer for table "{query["table_name"]}"'))
+            msg = 'ERROR-{0} ({1}): Error creating temporal layer for table "{2}"'
+            msg_params = (query['error_code'], query['query_type'], query['table_name'])
+            feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
         temporal_layer.setCrs(QgsProject.instance().crs())
@@ -866,12 +941,14 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         # Get roof layer
         roof_layer = tools_qgis.get_layer_by_tablename('roof')
         if roof_layer is None:
-            feedback.pushWarning(self.tr(f'ERROR-1000 (check_roof_volumes): No roof layer found'))
+            msg = 'ERROR-1000 (check_roof_volumes): No roof layer found'
+            feedback.pushWarning(self.tr(msg))
             return
 
         temporal_layer = QgsVectorLayer('MultiPolygon', 'roof_volumes', 'memory')
         if temporal_layer is None:
-            feedback.pushWarning(self.tr(f'ERROR (roof_volumes): Error creating temporal layer for roof volumes check'))
+            msg = 'ERROR (roof_volumes): Error creating temporal layer for roof volumes check'
+            feedback.pushWarning(self.tr(msg))
             return
 
         temporal_layer.setCrs(QgsProject.instance().crs())
@@ -890,7 +967,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             if outlet_vol + street_vol + infiltr_vol != 100:
                 new_feature = QgsFeature(temporal_layer.fields())
                 new_feature['Code'] = feature['code']
-                new_feature['Exception'] = f'The sum of all volumes is not 100 (current volume: {outlet_vol + street_vol + infiltr_vol})'
+                msg = 'The sum of all volumes is not 100 (current volume: {0})'
+                msg_params = (outlet_vol + street_vol + infiltr_vol,)
+                new_feature['Exception'] = self.tr(msg, list_params=msg_params)
                 new_feature.setGeometry(feature.geometry())
                 features_to_add.append(new_feature)
 
@@ -905,9 +984,10 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         return "https://github.com/drain-iber"
 
     def shortHelpString(self):
-        return self.tr("""Checks your project for common data issues such as duplicate or orphan geometries, missing required values, and out-of-range attributes. 
+        msg = """Checks your project for common data issues such as duplicate or orphan geometries, missing required values, and out-of-range attributes. 
                        Results are shown as errors, warnings, or info messages, and problematic features can be highlighted on the map. 
-                       Use this tool to quickly validate and improve your project's data quality.""")
+                       Use this tool to quickly validate and improve your project's data quality."""
+        return self.tr(msg)
 
-    def tr(self, string: str):
-        return QCoreApplication.translate('Processing', string)
+    def tr(self, string: str, list_params: list[Any] = None):
+        return tools_qt.tr(string, list_params=list_params)

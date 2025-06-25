@@ -747,4 +747,9 @@ class DrSchemaI18NManager:
         message = "Database translation failed."
         message = "Database translation canceled."
         message = "There have been errors translating:"
+        message = "SWMM OPTIONS"
+        message = "SWMM RESULTS"
+        message = "IBER OPTIONS"
+        message = "IBER RESULTS"
+        message = "IBER PLUGINS"
     # endregion
