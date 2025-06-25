@@ -70,7 +70,7 @@ class DrExecuteModelButton(DrAction):
             tools_qt.fill_combo_values(self.execute_dlg.cmb_mesh, rows, add_empty=True)
 
     def _go2epa_options(self):
-        self.go2epa_options = DrOptions()
+        self.go2epa_options = DrOptions(parent=self.execute_dlg)
         self.go2epa_options.open_options_dlg()
 
     def _manage_btn_folder_path(self):
@@ -97,12 +97,12 @@ class DrExecuteModelButton(DrAction):
                 return False
 
         # TODO: ask for import
-        do_import = True    
+        do_import = True
 
-        do_generate_inp = True   
+        do_generate_inp = True
         sql = "SELECT value FROM config_param_user WHERE parameter = 'plg_swmm_options'"
         row = global_vars.gpkg_dao_data.get_row(sql)
-        if row and row[0] == '0':                 
+        if row and row[0] == '0':
             do_generate_inp = False
 
         self._save_user_values()

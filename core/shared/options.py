@@ -20,7 +20,7 @@ from ... import global_vars
 
 class DrOptions:
 
-    def __init__(self, tabs_to_show=None):
+    def __init__(self, tabs_to_show=None, parent=None):
         self.epa_options_list = None
         self.dlg_go2epa_options = None
         self.tabs_to_show = tabs_to_show
@@ -31,6 +31,7 @@ class DrOptions:
                             "tab_main": tools_qt.tr("IBER OPTIONS"), "tab_rpt_iber": tools_qt.tr("IBER RESULTS"),
                             "tab_plugins": tools_qt.tr("IBER PLUGINS")
                             }
+        self.parent = parent
 
     def open_options_dlg(self):
         self._go2epa_options()
@@ -42,7 +43,7 @@ class DrOptions:
         self.epa_options_list = []
 
         # Create dialog
-        self.dlg_go2epa_options = DrGo2EpaOptionsUi()
+        self.dlg_go2epa_options = DrGo2EpaOptionsUi(parent=self.parent)
         tools_dr.load_settings(self.dlg_go2epa_options)
 
         # Call getconfig
