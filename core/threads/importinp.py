@@ -12,7 +12,7 @@ from .epa_file_manager import _tables_dict
 from .task import DrTask
 from ..utils.generate_swmm_inp.generate_swmm_import_inp_file import ImportInpFile
 from ..utils import tools_dr
-from ...lib import tools_qgis, tools_db, tools_log, tools_qt
+from ...lib import tools_qgis, tools_log, tools_qt
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ... import global_vars
 from typing import Optional
@@ -256,17 +256,17 @@ class DrImportInpTask(DrTask):
                 if dr_layername in ['inp_junction', 'inp_divider', 'inp_outfall', 'inp_storage']:
                     # For some reason the node table is not detected
                     sql = "SELECT * FROM node"
-                    tools_db.execute_sql(sql, log_sql=True, is_thread=True)
+                    self.dao.execute_sql(sql)
                     if self.dao.last_error:
                         print(self.dao.last_error)
                     sql = f"INSERT INTO node (table_fid, code, geom, table_name) SELECT fid, code, geom, '{dr_layername}' FROM {dr_layername}"
-                    tools_db.execute_sql(sql, log_sql=True, is_thread=True)
+                    self.dao.execute_sql(sql)
                 elif dr_layername in ['inp_conduit', 'inp_pump', 'inp_orifice', 'inp_weir', 'inp_outlet']:
                     # For some reason the arc table is not detected
                     sql = "SELECT * FROM arc"
-                    tools_db.execute_sql(sql, log_sql=True, is_thread=True)
+                    self.dao.execute_sql(sql)
                     sql = f"INSERT INTO arc (table_fid, code, geom, table_name) SELECT fid, code, geom, '{dr_layername}' FROM {dr_layername}"
-                    tools_db.execute_sql(sql, log_sql=True, is_thread=True)
+                    self.dao.execute_sql(sql)
                 if self.dao.last_error:
                     print(self.dao.last_error)
                     title = "Import gpkgs to project"
@@ -277,7 +277,7 @@ class DrImportInpTask(DrTask):
         # Update dividers arc
         for divider in self.dividers_to_update.keys():
             sql = f"UPDATE inp_divider SET divert_arc = '{self.dividers_to_update[divider]}' WHERE code = '{divider}';"
-            tools_db.execute_sql(sql, log_sql=True, is_thread=True)
+            self.dao.execute_sql(sql)
 
     def _insert_data(self, source_layer, target_layer, field_map, batch_size=1000):
         """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
@@ -320,7 +320,7 @@ class DrImportInpTask(DrTask):
     def _save_patterns(self):
         from swmm_api.input_file.section_labels import PATTERNS
 
-        pattern_rows = tools_db.get_rows("SELECT idval FROM cat_pattern")
+        pattern_rows = self.dao.get_rows("SELECT idval FROM cat_pattern")
         patterns_db: list[str] = []
         if pattern_rows:
             patterns_db = [x[0] for x in pattern_rows]
@@ -339,7 +339,7 @@ class DrImportInpTask(DrTask):
 
             pattern_type = pattern.cycle
             sql = f"INSERT INTO cat_pattern (idval, pattern_type) VALUES ('{pattern_name}', '{pattern_type}')"
-            tools_db.execute_sql(sql)
+            self.dao.execute_sql(sql)
             msg = "Inserted pattern {0}, type {1} into cat_pattern"
             msg_params = (pattern_name, pattern_type)
             self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
@@ -353,14 +353,14 @@ class DrImportInpTask(DrTask):
 
             values_str = ", ".join(values)
             sql = f"INSERT INTO cat_pattern_value (pattern, timestep, value) VALUES {values_str}"
-            tools_db.execute_sql(sql)
+            self.dao.execute_sql(sql)
             # self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_FILE, f'Inserted pattern values({values_str}) into cat_pattern_value', True)
             # self.results["patterns"] += 1
 
     def _save_curves(self) -> None:
         from swmm_api.input_file.section_labels import CURVES
 
-        curve_rows = tools_db.get_rows("SELECT idval FROM cat_curve")
+        curve_rows = self.dao.get_rows("SELECT idval FROM cat_curve")
         curves_db: set[str] = set()
         if curve_rows:
             curves_db = {x[0] for x in curve_rows}
@@ -387,7 +387,7 @@ class DrImportInpTask(DrTask):
             curve_type: str = curve.kind
 
             sql = f"INSERT INTO cat_curve (idval, curve_type) VALUES ('{curve_name}', '{curve_type}')"
-            tools_db.execute_sql(sql)
+            self.dao.execute_sql(sql)
             msg = "Inserted curve {0}, type {1} into cat_curve"
             msg_params = (curve_name, curve_type)
             self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
@@ -400,7 +400,7 @@ class DrImportInpTask(DrTask):
                 values.append(values_str)
             values_str = ", ".join(values)
             sql = f"INSERT INTO cat_curve_value (curve, xcoord, ycoord) VALUES {values_str}"
-            tools_db.execute_sql(sql)
+            self.dao.execute_sql(sql)
             # self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'Inserted curve values({values_str}) into cat_curve_value', True)
             # self.results["curves"] += 1
 
@@ -408,7 +408,7 @@ class DrImportInpTask(DrTask):
         from swmm_api.input_file.section_labels import TIMESERIES
         from swmm_api.input_file.sections import TimeseriesFile, TimeseriesData
 
-        ts_rows = tools_db.get_rows("SELECT idval FROM cat_timeseries")
+        ts_rows = self.dao.get_rows("SELECT idval FROM cat_timeseries")
         ts_db: set[str] = set()
         if ts_rows:
             ts_db = {x[0] for x in ts_rows}
@@ -467,7 +467,7 @@ class DrImportInpTask(DrTask):
             if fname:
                 values_str += f", '{fname}'"
             sql = f"INSERT INTO cat_timeseries ({fields_str}) VALUES ({values_str})"
-            tools_db.execute_sql(sql)
+            self.dao.execute_sql(sql)
             msg = "Inserted timeseries({0}) into cat_timeseries"
             msg_params = (values_str,)
             self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
@@ -491,14 +491,14 @@ class DrImportInpTask(DrTask):
                 values.append(f"({values_str})")
             values_str = ", ".join(values)
             sql += f"{values_str}"
-            tools_db.execute_sql(sql)
+            self.dao.execute_sql(sql)
             # self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'Inserted timeseries values({values_str}) into cat_timeseries_value', True)
             # self.results["timeseries"] += 1
 
     def _save_controls(self) -> None:
         from swmm_api.input_file.section_labels import CONTROLS
 
-        controls_rows = tools_db.get_rows("SELECT descript FROM cat_controls")
+        controls_rows = self.dao.get_rows("SELECT descript FROM cat_controls")
         controls_db: set[str] = set()
         if controls_rows:
             controls_db = {x[0] for x in controls_rows}
@@ -516,7 +516,7 @@ class DrImportInpTask(DrTask):
                 self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_NON_VISUAL, tools_qt.tr(msg, list_params=msg_params), True)
                 continue
             sql = f"INSERT INTO cat_controls (descript) VALUES ('{text}')"
-            tools_db.execute_sql(sql)
+            self.dao.execute_sql(sql)
             msg = "Inserted control({0}) into cat_controls"
             msg_params = (text,)
             self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_NON_VISUAL, tools_qt.tr(msg, list_params=msg_params), True)
