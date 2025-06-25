@@ -238,8 +238,8 @@ UPDATE config_form_fields SET label = 'Descarga específica máxima', tooltip = 
 UPDATE config_form_fields SET label = 'Elevación máxima del agua', tooltip = NULL, placeholder = NULL, descript = 'Elevación máxima del agua' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_max_water_elev';
 UPDATE config_form_fields SET label = 'Paso de tiempo local máximo', tooltip = NULL, placeholder = NULL, descript = 'Paso máximo de tiempo local' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_max_localtime_step';
 UPDATE config_form_fields SET label = 'Diámetro crítico máximo:', tooltip = NULL, placeholder = NULL, descript = 'Diámetro crítico máximo' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_max_critical_diameter';
-UPDATE config_form_fields SET label = 'Peligro RD9/2008', tooltip = NULL, placeholder = NULL, descript = 'Peligro RD9/2008' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_hazard_rd9_2008';
-UPDATE config_form_fields SET label = 'Peligro ACA 2003', tooltip = NULL, placeholder = NULL, descript = 'Peligro ACA 2003' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_hazard_aca2003';
+UPDATE config_form_fields SET label = 'Peligro RD9/2008', tooltip = NULL, placeholder = NULL, descript = 'Legislación nacional española [RD 9/2008]' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_hazard_rd9_2008';
+UPDATE config_form_fields SET label = 'Peligro ACA 2003', tooltip = NULL, placeholder = NULL, descript = 'Legislación autonómica catalana [Agencia Catalana del Agua 2003].' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_hazard_aca2003';
 UPDATE config_form_fields SET label = 'Vector de profundidad:', tooltip = NULL, placeholder = NULL, descript = 'Vector de profundidad' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_depth_vector';
 UPDATE config_form_fields SET label = 'Tensión de cizallamiento del lecho:', tooltip = NULL, placeholder = NULL, descript = 'Esfuerzo cortante del lecho' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_bed_shear_stress';
 UPDATE config_form_fields SET label = 'Esfuerzo cortante máximo del lecho:', tooltip = NULL, placeholder = NULL, descript = 'Esfuerzo cortante máximo del lecho' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_max_bed_shear_stress';
@@ -396,11 +396,17 @@ UPDATE config_form_fields SET label = 'patrón4', tooltip = NULL, placeholder = 
 UPDATE config_form_fields SET label = 'código', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'inp_inflow' AND formtype = 'form_feature' AND columnname = 'code';
 UPDATE config_form_fields SET label = 'descripción', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'inp_inflow' AND formtype = 'form_feature' AND columnname = 'descript';
 UPDATE config_form_fields SET label = 'series temporales', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'inp_inflow' AND formtype = 'form_feature' AND columnname = 'timeseries';
-UPDATE config_form_fields SET label = 'Resultados rasterizados', tooltip = NULL, placeholder = NULL, descript = 'Líneas de vapor' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster';
-UPDATE config_form_fields SET label = 'Tamaño de la célula [m]', tooltip = NULL, placeholder = NULL, descript = 'Líneas de vapor' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_cell';
+UPDATE config_form_fields SET label = 'Resultados rasterizados', tooltip = NULL, placeholder = NULL, descript = 'Resultados 2 raster' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster';
+UPDATE config_form_fields SET label = 'Tamaño de la célula [m]', tooltip = NULL, placeholder = NULL, descript = 'Tamaño del píxel [m]' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_cell';
 UPDATE config_form_fields SET label = 'tipo_alcantarilla', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'culvert' AND formtype = 'form_feature' AND columnname = 'culvert_type';
 UPDATE config_form_fields SET label = 'tipo_salida', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'pinlet' AND formtype = 'form_feature' AND columnname = 'outlet_type';
 UPDATE config_form_fields SET label = 'método', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'pinlet' AND formtype = 'form_feature' AND columnname = 'method';
+UPDATE config_form_fields SET label = 'Peatones', tooltip = NULL, placeholder = NULL, descript = 'Stability criteria for pedestrians (Martínez-Gomariz et al. 2016)' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_hazard_pedestrians';
+UPDATE config_form_fields SET label = 'Vehículos', tooltip = NULL, placeholder = NULL, descript = 'Criterios de estabilidad para vehículos parados (Shand et al. 2011)' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_hazard_vehicles';
+UPDATE config_form_fields SET label = 'Máximos al final', tooltip = NULL, placeholder = NULL, descript = 'Sólo escribe la trama de máximos al final de la simulación [sobre].' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_maxs';
+UPDATE config_form_fields SET label = 'Trama de trama', tooltip = NULL, placeholder = NULL, descript = 'Generar trama sólo en un fotograma' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_frame';
+UPDATE config_form_fields SET label = 'XYmin', tooltip = NULL, placeholder = NULL, descript = 'Escriba las coordenadas separadas por una coma' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_xymin';
+UPDATE config_form_fields SET label = 'XYmax', tooltip = NULL, placeholder = NULL, descript = 'Escriba las coordenadas separadas por una coma' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_xymax';
 UPDATE config_csv SET alias = 'Importar patrones inp', descript = 'Función para automatizar la importación de ficheros de patrones inp.
 El archivo csv debe contener las siguientes columnas en la misma posición:
 pattern_id, pattern_type, factor1,.......,factorn.
@@ -555,15 +561,15 @@ UPDATE edit_typevalue SET idval = 'Valor por defecto para las pérdidas al crear
 UPDATE edit_typevalue SET idval = 'Valor por defecto de la rugosidad al crear la malla', descript = NULL WHERE rowid = 150;
 UPDATE edit_typevalue SET idval = 'CIRCULAR', descript = NULL WHERE rowid = 151;
 UPDATE edit_typevalue SET idval = 'RECTANGULAR', descript = NULL WHERE rowid = 152;
-UPDATE sys_message SET text = 'Items with null values in "{0}" column ({1})' WHERE id = '1';
-UPDATE sys_message SET text = 'Items with null values in "{0}" column when "{1}" is "{2}" ({3})' WHERE id = '2';
-UPDATE sys_message SET text = 'Items duplicated ({0})' WHERE id = '3';
-UPDATE sys_message SET text = 'Items duplicated with a tolerance of 10 cm ({0})' WHERE id = '4';
-UPDATE sys_message SET text = 'Orphan nodes ({0})' WHERE id = '5';
-UPDATE sys_message SET text = 'Items with values out of range({0}-{1}) in "{2}" column ({3})' WHERE id = '6';
-UPDATE sys_message SET text = 'No items duplicated' WHERE id = '7';
-UPDATE sys_message SET text = 'No items duplicated with a tolerance of 10 cm' WHERE id = '8';
-UPDATE sys_message SET text = 'All nodes are connected' WHERE id = '9';
-UPDATE sys_message SET text = 'No items with null values in {0} columns' WHERE id = '10';
-UPDATE sys_message SET text = 'No items with null values in {0} columns when "{1}" is "{2}"' WHERE id = '11';
-UPDATE sys_message SET text = 'No items with values out of range({0}-{1}) in {2} columns' WHERE id = '12';
+UPDATE sys_message SET text = 'Elementos con valores nulos en la columna "{0}" ({1})' WHERE id = '1';
+UPDATE sys_message SET text = 'Elementos con valores nulos en la columna "{0}" cuando "{1}" es "{2}" ({3})' WHERE id = '2';
+UPDATE sys_message SET text = 'Elementos duplicados ({0})' WHERE id = '3';
+UPDATE sys_message SET text = 'Artículos duplicados con una tolerancia de 10 cm ({0})' WHERE id = '4';
+UPDATE sys_message SET text = 'Nodos huérfanos ({0})' WHERE id = '5';
+UPDATE sys_message SET text = 'Elementos con valores fuera del intervalo ({0}-{1}) en la columna "{2}" ({3})' WHERE id = '6';
+UPDATE sys_message SET text = 'No hay elementos duplicados' WHERE id = '7';
+UPDATE sys_message SET text = 'Ningún elemento duplicado con una tolerancia de 10 cm' WHERE id = '8';
+UPDATE sys_message SET text = 'Todos los nodos están conectados' WHERE id = '9';
+UPDATE sys_message SET text = 'No hay elementos con valores nulos en {0} columnas' WHERE id = '10';
+UPDATE sys_message SET text = 'No hay elementos con valores nulos en {0} columnas cuando "{1}" es "{2}"' WHERE id = '11';
+UPDATE sys_message SET text = 'No hay elementos con valores fuera del intervalo ({0}-{1}) en {2} columnas' WHERE id = '12';

@@ -23,7 +23,7 @@
 		</message>
 		<message>
 			<source>Database error: {0}</source>
-			<translation>Error de base de datos: {0}</translation>
+			<translation>Database error: {0}</translation>
 		</message>
 		<message>
 			<source>All dialogs updated correctly</source>
@@ -31,7 +31,7 @@
 		</message>
 		<message>
 			<source>widget {0} in tab {1} has not columnname and cant be configured</source>
-			<translation>Widget {0} en pestaña {1} no tiene nombre de columna y no se puede configurar</translation>
+			<translation>widget {0} en pestaña {1} no tiene nombre de columna y no se puede configurar</translation>
 		</message>
 		<message>
 			<source>Connected to {0}</source>
@@ -164,10 +164,6 @@
 		<message>
 			<source>Error getting function name: {0}</source>
 			<translation>Error al obtener el nombre de la función: {0}</translation>
-		</message>
-		<message>
-			<source>has been deprecated. Use</source>
-			<translation>ha quedado obsoleto. Utilice</translation>
 		</message>
 		<message>
 			<source>Please, select a DEM layer!</source>
@@ -378,10 +374,6 @@
 			<translation>Seleccionar carpeta</translation>
 		</message>
 		<message>
-			<source>i18n DML file not found: {0}</source>
-			<translation>Archivo i18n DML no encontrado: {0}</translation>
-		</message>
-		<message>
 			<source>Creating parser for file: {0}</source>
 			<translation>Creando analizador para archivo: {0}</translation>
 		</message>
@@ -478,10 +470,6 @@
 			<translation>Seleccione sólo una malla para mostrar</translation>
 		</message>
 		<message>
-			<source>Error reading file: {0}\n{1}</source>
-			<translation>Error al leer el archivo: {0}\n{1}</translation>
-		</message>
-		<message>
 			<source>This parameter is mandatory. Please, set a value</source>
 			<translation>Este parámetro es obligatorio. Por favor, establezca un valor</translation>
 		</message>
@@ -508,10 +496,6 @@
 		<message>
 			<source>SQL folder not found: {0}</source>
 			<translation>Carpeta SQL no encontrada: {0}</translation>
-		</message>
-		<message>
-			<source>Function '{0}' returned False. Reason: {1}</source>
-			<translation>La función '{0}' devuelve False. Motivo: {1}</translation>
 		</message>
 		<message>
 			<source>No current {0} found</source>
@@ -542,10 +526,6 @@
 			<translation>Excepción en la descarga al borrar {0}: {1}</translation>
 		</message>
 		<message>
-			<source>The connection to the database is broken.</source>
-			<translation>La conexión con la base de datos está interrumpida.</translation>
-		</message>
-		<message>
 			<source>Table_object is not a table name or QTableView</source>
 			<translation>Table_object no es un nombre de tabla o QTableView</translation>
 		</message>
@@ -568,10 +548,6 @@
 		<message>
 			<source>No results found. Please check values set on selector of state and exploitation</source>
 			<translation>No se han encontrado resultados. Por favor, compruebe los valores establecidos en el selector de estado y explotación</translation>
-		</message>
-		<message>
-			<source>{0}\n\n{1}</source>
-			<translation>{0}\n\n{1}</translation>
 		</message>
 		<message>
 			<source>Execute '{0}'</source>
@@ -616,10 +592,6 @@
 		<message>
 			<source>There was an error deleting object values.</source>
 			<translation>Se ha producido un error al borrar valores de objetos.</translation>
-		</message>
-		<message>
-			<source>Couldn't unload the processing provider: {0}</source>
-			<translation>No se ha podido descargar el proveedor de procesamiento: {0}</translation>
 		</message>
 		<message>
 			<source>No meshes found in GPKG file. Create a mesh with Create Mesh button before saving the boundary conditions to it.</source>
@@ -736,10 +708,6 @@
 		<message>
 			<source>To make 'Create Boundary Condition from Polygon' function properly, you must have the ground, roof, and boundary conditions layers included in your project.</source>
 			<translation>Para que 'Crear condición límite a partir de polígono' funcione correctamente, debe tener las capas de suelo, techo y condiciones límite incluidas en su proyecto.</translation>
-		</message>
-		<message>
-			<source>Create schema: Executing function '{1}'</source>
-			<translation>Crear esquema: Ejecutando función '{0}'</translation>
 		</message>
 		<message>
 			<source>No current scenario found.</source>
@@ -887,7 +855,7 @@
 		</message>
 		<message>
 			<source>Task 'Toolbox execute' manage json response with parameters: '{0}', '{1}', '{2}'</source>
-			<translation>La tarea 'Toolbox execute' gestiona respuesta json con parámetros: '{0}', '{1}', '{2}'</translation>
+			<translation>Tarea 'Toolbox execute' gestionar respuesta json con parámetros: '{0}', '{1}', '{2}'</translation>
 		</message>
 		<message>
 			<source>There was an error inserting curve.</source>
@@ -1043,7 +1011,7 @@
 		</message>
 		<message>
 			<source>Go2Epa task is already active!</source>
-			<translation>¡La tarea Ir a EPA ya está activa!</translation>
+			<translation>¡La tarea Go2Epa ya está activa!</translation>
 		</message>
 		<message>
 			<source>Error deleting data</source>
@@ -1066,10 +1034,6 @@
 			<translation>Cualquier registro seleccionado</translation>
 		</message>
 		<message>
-			<source>Error executing i18n DML:\n{0}</source>
-			<translation>Error al ejecutar i18n DML:\n{0}</translation>
-		</message>
-		<message>
 			<source>{0}: Config file is not set</source>
 			<translation>{0}: El archivo de configuración no está configurado</translation>
 		</message>
@@ -1080,10 +1044,6 @@
 		<message>
 			<source>There was an error inserting lid.</source>
 			<translation>Hubo un error al insertar la tapa.</translation>
-		</message>
-		<message>
-			<source>{0}Execution failed.\n{1}</source>
-			<translation>{0}Falló la ejecución.\n{1}</translation>
 		</message>
 		<message>
 			<source>Line number</source>
@@ -1125,6 +1085,450 @@
 			<source>Task canceled.</source>
 			<translation>Tarea cancelada.</translation>
 		</message>
+		<message>
+			<source>Disable triggers</source>
+			<translation>Desactivar activadores</translation>
+		</message>
+		<message>
+			<source>Config GPKG not found: {0}</source>
+			<translation>Config GPKG no encontrada: {0}</translation>
+		</message>
+		<message>
+			<source>Warnings</source>
+			<translation>Advertencias</translation>
+		</message>
+		<message>
+			<source>Error executing i18n DML in config.gpkg: {0}</source>
+			<translation>Error al ejecutar i18n DML en config.gpkg: {0}</translation>
+		</message>
+		<message>
+			<source>Imported results</source>
+			<translation>Resultados importados</translation>
+		</message>
+		<message>
+			<source>Execute after import fct</source>
+			<translation>Ejecutar después de importar fct</translation>
+		</message>
+		<message>
+			<source>Inserted control({0}) into cat_controls</source>
+			<translation>Control({0}) insertado en cat_controls</translation>
+		</message>
+		<message>
+			<source>Creating culvert files...</source>
+			<translation>Creación de archivos de alcantarilla...</translation>
+		</message>
+		<message>
+			<source>Inserted curve {0}, type {1} into cat_curve</source>
+			<translation>Curva {0}, tipo {1} insertada en cat_curve</translation>
+		</message>
+		<message>
+			<source>Save controls</source>
+			<translation>Guardar controles</translation>
+		</message>
+		<message>
+			<source>Selected folder must be inside the same directory as the geopackage file</source>
+			<translation>La carpeta seleccionada debe estar dentro del mismo directorio que el archivo geopackage</translation>
+		</message>
+		<message>
+			<source>Errors</source>
+			<translation>Errores</translation>
+		</message>
+		<message>
+			<source>The timeseries {0} was not imported.</source>
+			<translation>La serie temporal {0} no se ha importado.</translation>
+		</message>
+		<message>
+			<source>Check Project Algorithm.....Finished</source>
+			<translation>Comprobar el algoritmo del proyecto.....Terminado</translation>
+		</message>
+		<message>
+			<source>Exported results</source>
+			<translation>Resultados exportados</translation>
+		</message>
+		<message>
+			<source>NetCDF file created</source>
+			<translation>Archivo NetCDF creado</translation>
+		</message>
+		<message>
+			<source>Skipping {0}, not found in project.</source>
+			<translation>Omitiendo {0}, no se encuentra en el proyecto.</translation>
+		</message>
+		<message>
+			<source>Running Iber software...</source>
+			<translation>Ejecutando el software de Iber...</translation>
+		</message>
+		<message>
+			<source>Exception in ExecuteModel thread: {0}\n {1}</source>
+			<translation>Excepción en el hilo ExecuteModel: {0}\n {1}</translation>
+		</message>
+		<message>
+			<source>Inserted timeseries({0}) into cat_timeseries</source>
+			<translation>Insertar timeseries({0}) en cat_timeseries</translation>
+		</message>
+		<message>
+			<source>IBER PLUGINS</source>
+			<translation>PLUGINS DE IBER</translation>
+		</message>
+		<message>
+			<source>Triggers disabled</source>
+			<translation>Disparadores desactivados</translation>
+		</message>
+		<message>
+			<source>Error inserting nodes or arcs: {0}</source>
+			<translation>Error al insertar nodos o arcos: {0}</translation>
+		</message>
+		<message>
+			<source>Error {0} not executed: {1}</source>
+			<translation>Error {0} no ejecutado: {1}</translation>
+		</message>
+		<message>
+			<source>Processing file...{0}</source>
+			<translation>Procesando archivo...{0}</translation>
+		</message>
+		<message>
+			<source>Generate INP</source>
+			<translation>Generar INP</translation>
+		</message>
+		<message>
+			<source>IBER OPTIONS</source>
+			<translation>OPCIONES DE IBER</translation>
+		</message>
+		<message>
+			<source>Skipping {0}, does not exist.</source>
+			<translation>Saltar {0}, no existe.</translation>
+		</message>
+		<message>
+			<source>SWMM RESULTS</source>
+			<translation>RESULTADOS SWMM</translation>
+		</message>
+		<message>
+			<source>Create schema: Executing function '{0}'</source>
+			<translation>Crear esquema: Ejecutando función '{0}'</translation>
+		</message>
+		<message>
+			<source>Skipping {0}, not found in layermap.</source>
+			<translation>Saltarse {0}, no se encuentra en el mapa de capas.</translation>
+		</message>
+		<message>
+			<source>Save patterns</source>
+			<translation>Guardar patrones</translation>
+		</message>
+		<message>
+			<source>The pattern {0} already exists in database. Skipping...</source>
+			<translation>El patrón {0} ya existe en la base de datos. Omitiendo...</translation>
+		</message>
+		<message>
+			<source>The control {0} is already on database. Skipping...</source>
+			<translation>El control {0} ya está en la base de datos. Omitiendo...</translation>
+		</message>
+		<message>
+			<source>Inserted pattern {0}, type {1} into cat_pattern</source>
+			<translation>Patrón insertado {0}, tipo {1} en cat_pattern</translation>
+		</message>
+		<message>
+			<source>Please select a folder</source>
+			<translation>Seleccione una carpeta</translation>
+		</message>
+		<message>
+			<source>SWMM OPTIONS</source>
+			<translation>OPCIONES DE SWMM</translation>
+		</message>
+		<message>
+			<source>There was an error inserting raster.</source>
+			<translation>Se ha producido un error al insertar la trama.</translation>
+		</message>
+		<message>
+			<source>The timeseries {0} already exists in database. Skipping...</source>
+			<translation>La serie temporal {0} ya existe en la base de datos. Omitiendo...</translation>
+		</message>
+		<message>
+			<source>Couldn't unload the processing providers: {0}</source>
+			<translation>No se han podido descargar los proveedores de procesamiento: {0}</translation>
+		</message>
+		<message>
+			<source>Export files</source>
+			<translation>Exportar archivos</translation>
+		</message>
+		<message>
+			<source>Generating INP...</source>
+			<translation>Generar INP...</translation>
+		</message>
+		<message>
+			<source>Copying static files...</source>
+			<translation>Copiar archivos estáticos...</translation>
+		</message>
+		<message>
+			<source>Error importing results</source>
+			<translation>Error al importar los resultados</translation>
+		</message>
+		<message>
+			<source>Importing results</source>
+			<translation>Importar resultados</translation>
+		</message>
+		<message>
+			<source>The {0} curve does not have a specified curve type and was not imported.</source>
+			<translation>La curva {0} no tiene un tipo de curva especificado y no se ha importado.</translation>
+		</message>
+		<message>
+			<source>Triggers created</source>
+			<translation>Activadores creados</translation>
+		</message>
+		<message>
+			<source>The curve {0} already exists in database. Skipping...</source>
+			<translation>La curva {0} ya existe en la base de datos. Omitiendo...</translation>
+		</message>
+		<message>
+			<source>Creating rain files...</source>
+			<translation>Crear archivos rain...</translation>
+		</message>
+		<message>
+			<source>Exporting results</source>
+			<translation>Exportar resultados</translation>
+		</message>
+		<message>
+			<source>Enable triggers</source>
+			<translation>Activar activadores</translation>
+		</message>
+		<message>
+			<source>Save timeseries</source>
+			<translation>Guardar series temporales</translation>
+		</message>
+		<message>
+			<source>{0} has been deprecated. Use {1} instead.</source>
+			<translation>{0} ha quedado obsoleto. Utilice {1} en su lugar.</translation>
+		</message>
+		<message>
+			<source>Exporting config files...</source>
+			<translation>Exportar archivos de configuración...</translation>
+		</message>
+		<message>
+			<source>IBER RESULTS</source>
+			<translation>RESULTADOS DE IBER</translation>
+		</message>
+		<message>
+			<source>Creating inlet files...</source>
+			<translation>Creación de archivos de entrada...</translation>
+		</message>
+		<message>
+			<source>Importing {0} into project...</source>
+			<translation>Importando {0} al proyecto...</translation>
+		</message>
+		<message>
+			<source>done!</source>
+			<translation>¡Hecho!</translation>
+		</message>
+		<message>
+			<source>ERROR</source>
+			<translation>ERROR</translation>
+		</message>
+		<message>
+			<source>Error</source>
+			<translation>Error</translation>
+		</message>
+		<message>
+			<source>Save curves</source>
+			<translation>Guardar curvas</translation>
+		</message>
+		<message>
+			<source>Invalid folder path</source>
+			<translation>Ruta de carpeta no válida</translation>
+		</message>
+		<message>
+			<source>Creating hyetograph files...</source>
+			<translation>Creación de archivos hyetograph...</translation>
+		</message>
+		<message>
+			<source>Exporting mesh files...</source>
+			<translation>Exportar archivos de malla...</translation>
+		</message>
+		<message>
+			<source>Export results</source>
+			<translation>Exportar resultados</translation>
+		</message>
+		<message>
+			<source>Please enter a raster name</source>
+			<translation>Introduzca un nombre de trama</translation>
+		</message>
+		<message>
+			<source>Error creating NetCDF file</source>
+			<translation>Error al crear un archivo NetCDF</translation>
+		</message>
+		<message>
+			<source>No raster files found in the selected folder</source>
+			<translation>No se han encontrado archivos raster en la carpeta seleccionada</translation>
+		</message>
+		<message>
+			<source>GPKG file created</source>
+			<translation>Archivo GPKG creado</translation>
+		</message>
+		<message>
+			<source>Error reading/executing i18n DML file for config.gpkg: {0}\\n{1}</source>
+			<translation>Error leyendo/ejecutando archivo i18n DML para config.gpkg: {0}\n{1}</translation>
+		</message>
+		<message>
+			<source>Imported {0} into project.</source>
+			<translation>Importado {0} al proyecto.</translation>
+		</message>
+		<message>
+			<source>Error validating folder path</source>
+			<translation>Error al validar la ruta de la carpeta</translation>
+		</message>
+		<message>
+			<source>Run Iber</source>
+			<translation>Ejecutar Iber</translation>
+		</message>
+		<message>
+			<source>Import gpkgs to project</source>
+			<translation>Importar gpkgs al proyecto</translation>
+		</message>
+		<message>
+			<source>WARNING-{0}/{1} ({2}) ({3}): {4}</source>
+			<translation>AVISO-{0}/{1} ({2}) ({3}): {4}</translation>
+		</message>
+		<message>
+			<source>ERROR-{0}/{1} ({2}) ({3}): {4}</source>
+			<translation>ERROR-{0}/{1} ({2}) ({3}): {4}</translation>
+		</message>
+		<message>
+			<source>Validation method {0} not found in validatemesh module</source>
+			<translation>Método de validación {0} no encontrado en el módulo validatemesh</translation>
+		</message>
+		<message>
+			<source>ERROR ({0}): No error code found for table "{1}"</source>
+			<translation>ERROR ({0}): No se ha encontrado ningún código de error para la tabla "{1}"</translation>
+		</message>
+		<message>
+			<source>ERROR-1000 (check_roof_volumes): No roof layer found</source>
+			<translation>ERROR-1000 (check_roof_volumes): No se ha encontrado ninguna capa de techo</translation>
+		</message>
+		<message>
+			<source>\nINFO\n------</source>
+			<translation>\nINFO\n------</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No layer found for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): No se ha encontrado ninguna capa para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error building check query on table "{2}"</source>
+			<translation>ERROR-{0} ({1}): Error al crear consulta de comprobación en la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR: Could not find ground or roof layers</source>
+			<translation>ERROR: No se han encontrado las capas de suelo o techo</translation>
+		</message>
+		<message>
+			<source>The sum of all volumes is not 100 (current volume: {0})</source>
+			<translation>La suma de todos los volúmenes no es 100 (volumen actual: {0})</translation>
+		</message>
+		<message>
+			<source>Warning: Could not check table {0}: {1}</source>
+			<translation>Advertencia: No se pudo comprobar la tabla {0}: {1}</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No layers found for node or arc tables</source>
+			<translation>ERROR-{0} ({1}): No se han encontrado capas para las tablas de nodos o arcos</translation>
+		</message>
+		<message>
+			<source>\nERRORS\n----------</source>
+			<translation>\nERRORS\n----------</translation>
+		</message>
+		<message>
+			<source>Unknown input_layers configuration: {0}</source>
+			<translation>Configuración input_layers desconocida: {0}</translation>
+		</message>
+		<message>
+			<source>INFO (roof): No volume errors detected</source>
+			<translation>INFO (techo): No se han detectado errores de volumen</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error getting messages for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): Error al obtener mensajes para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No columns found for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): No se han encontrado columnas para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}) ({2}): Error getting additional conditions for table[{3}]</source>
+			<translation>ERROR-{0} ({1}) ({2}): Error al obtener condiciones adicionales para la tabla[{3}]</translation>
+		</message>
+		<message>
+			<source>WARNING-{0} ({1}) ({2}): {3}</source>
+			<translation>AVISO-{0} ({1}) ({2}): {3}</translation>
+		</message>
+		<message>
+			<source>ERROR (validatemesh - {0}): Errors detected ({1})</source>
+			<translation>ERROR (validatemesh - {0}): Errores detectados ({1})</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}) ({2}): {3}</source>
+			<translation>ERROR-{0} ({1}) ({2}): {3}</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No messages found for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): No se han encontrado mensajes para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error getting features for table "{2}". {3}</source>
+			<translation>ERROR-{0} ({1}): Error al obtener características para la tabla "{2}". {3}</translation>
+		</message>
+		<message>
+			<source>\nWARNINGS\n--------------</source>
+			<translation>\nWARNINGS\n--------------</translation>
+		</message>
+		<message>
+			<source>INFO (validatemesh - {0}): No errors detected</source>
+			<translation>INFO (validatemesh - {0}): No se han detectado errores</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error getting geometry for feature "{2}" on table "{3}"</source>
+			<translation>ERROR-{0} ({1}): Error al obtener la geometría de la característica "{2}" en la tabla "{3}".</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error getting mandatory columns on table "{2}"</source>
+			<translation>ERROR-{0} ({1}): Error al obtener columnas obligatorias en la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR (roof): Volume errors detected ({0})</source>
+			<translation>ERROR (techo): Errores de volumen detectados ({0})</translation>
+		</message>
+		<message>
+			<source>ERROR (roof_volumes): Error creating temporal layer for roof volumes check</source>
+			<translation>ERROR (volúmenes_techo): Error al crear la capa temporal para la comprobación de los volúmenes del tejado</translation>
+		</message>
+		<message>
+			<source>ERROR: No sys messages found</source>
+			<translation>ERROR: No se han encontrado mensajes sys</translation>
+		</message>
+		<message>
+			<source>ERROR-{0}: Error getting additional conditions for table[{1}]</source>
+			<translation>ERROR-{0}: Error al obtener condiciones adicionales para la tabla[{1}]</translation>
+		</message>
+		<message>
+			<source>ERROR: No check project queries found</source>
+			<translation>ERROR: No se han encontrado consultas del proyecto de comprobación</translation>
+		</message>
+		<message>
+			<source>Executing: {0} - {1}</source>
+			<translation>Ejecutando: {0} - {1}</translation>
+		</message>
+		<message>
+			<source>INFO ({0}): {1}</source>
+			<translation>INFO ({0}): {1}</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error creating temporal layer for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): Error al crear la capa temporal para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No query found for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): No se ha encontrado ninguna consulta para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}) ({2}): Error getting additional conditions for table "{3}"</source>
+			<translation>ERROR-{0} ({1}) ({2}): Error al obtener condiciones adicionales para la tabla "{3}"</translation>
+		</message>
 	</context>
 
 	<!-- UI TRANSLATION -->
@@ -1133,14 +1537,6 @@
 		<message>
 			<source>title</source>
 			<translation>Diálogo</translation>
-		</message>
-		<message>
-			<source>dlg_admin_i18n_manager</source>
-			<translation>Diálogo</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_admin_i18n_manager</source>
-			<translation>None</translation>
 		</message>
 		<message>
 			<source>grp_search_options</source>
@@ -1188,6 +1584,14 @@
 		</message>
 		<message>
 			<source>tooltip_btn_search</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_admin_i18n_manager</source>
+			<translation>Diálogo</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_admin_i18n_manager</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -1346,7 +1750,7 @@
 		</message>
 		<message>
 			<source>lbl_path</source>
-			<translation>Ruta:</translation>
+			<translation>Senda:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_path</source>
@@ -1528,14 +1932,6 @@
 			<translation>Diálogo</translation>
 		</message>
 		<message>
-			<source>dlg_admin_update_translation</source>
-			<translation>Diálogo</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_admin_update_translation</source>
-			<translation>None</translation>
-		</message>
-		<message>
 			<source>grb_i18n_conn</source>
 			<translation>Conexión i18n</translation>
 		</message>
@@ -1639,6 +2035,14 @@
 			<source>tooltip_btn_close</source>
 			<translation>None</translation>
 		</message>
+		<message>
+			<source>dlg_admin_update_translation</source>
+			<translation>Diálogo</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_admin_update_translation</source>
+			<translation>None</translation>
+		</message>
 	</context>
 	<context>
 		<name>bc_form</name>
@@ -1660,7 +2064,7 @@
 		</message>
 		<message>
 			<source>lbl_descript</source>
-			<translation>Describa</translation>
+			<translation>Descripción</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_descript</source>
@@ -1730,14 +2134,6 @@
 			<translation>Escenario de condiciones límite</translation>
 		</message>
 		<message>
-			<source>dlg_bc_scenario</source>
-			<translation>Escenario de condiciones límite</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_bc_scenario</source>
-			<translation>None</translation>
-		</message>
-		<message>
 			<source>lbl_id</source>
 			<translation>ID:</translation>
 		</message>
@@ -1785,20 +2181,20 @@
 			<source>tooltip_btn_cancel</source>
 			<translation>None</translation>
 		</message>
+		<message>
+			<source>dlg_bc_scenario</source>
+			<translation>Escenario de condiciones límite</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_bc_scenario</source>
+			<translation>None</translation>
+		</message>
 	</context>
 	<context>
 		<name>bc_scenario_manager</name>
 		<message>
 			<source>title</source>
 			<translation>Gestor de escenarios de condiciones límite</translation>
-		</message>
-		<message>
-			<source>dlg_bc_scenario_manager</source>
-			<translation>Gestor de escenarios de condiciones límite</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_bc_scenario_manager</source>
-			<translation>None</translation>
 		</message>
 		<message>
 			<source>btn_duplicate_scenario</source>
@@ -1826,7 +2222,7 @@
 		</message>
 		<message>
 			<source>btn_create_scenario</source>
-			<translation>Cree</translation>
+			<translation>Crear</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_create_scenario</source>
@@ -1862,6 +2258,14 @@
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_bc_scenario_manager</source>
+			<translation>Gestor de escenarios de condiciones límite</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_bc_scenario_manager</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -2102,38 +2506,6 @@
 			<translation>None</translation>
 		</message>
 		<message>
-			<source>rb_mesh_iber</source>
-			<translation>Crear malla IBER</translation>
-		</message>
-		<message>
-			<source>tooltip_rb_mesh_iber</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>rb_mesh_qgis</source>
-			<translation>Crear malla QGIS</translation>
-		</message>
-		<message>
-			<source>tooltip_rb_mesh_qgis</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>rb_mesh_iber_from_qgis</source>
-			<translation>Crear malla IBER a partir de malla QGIS</translation>
-		</message>
-		<message>
-			<source>tooltip_rb_mesh_iber_from_qgis</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>btn_mesh_qgis_path</source>
-			<translation>...</translation>
-		</message>
-		<message>
-			<source>tooltip_btn_mesh_qgis_path</source>
-			<translation>None</translation>
-		</message>
-		<message>
 			<source>lbl_name</source>
 			<translation>Nombre de la malla:</translation>
 		</message>
@@ -2287,7 +2659,7 @@
 		</message>
 		<message>
 			<source>tab_infolog</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_infolog</source>
@@ -2299,14 +2671,6 @@
 		<message>
 			<source>title</source>
 			<translation>Importar CSV</translation>
-		</message>
-		<message>
-			<source>dlg_csv</source>
-			<translation>Importar CSV</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_csv</source>
-			<translation>None</translation>
 		</message>
 		<message>
 			<source>btn_cancel</source>
@@ -2446,10 +2810,18 @@
 		</message>
 		<message>
 			<source>tab_info</source>
-			<translation>Info log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_info</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_csv</source>
+			<translation>Importar CSV</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_csv</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -2518,14 +2890,6 @@
 			<translation>Diálogo de entrada</translation>
 		</message>
 		<message>
-			<source>dlg_dlg_lineedit</source>
-			<translation>Diálogo de entrada</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_dlg_lineedit</source>
-			<translation>None</translation>
-		</message>
-		<message>
 			<source>btn_accept</source>
 			<translation>OK</translation>
 		</message>
@@ -2539,6 +2903,14 @@
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_dlg_lineedit</source>
+			<translation>Diálogo de entrada</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_dlg_lineedit</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -2630,7 +3002,7 @@
 		</message>
 		<message>
 			<source>tab_infolog</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_infolog</source>
@@ -2717,7 +3089,7 @@
 		</message>
 		<message>
 			<source>tab_loginfo</source>
-			<translation>Info log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_loginfo</source>
@@ -2866,7 +3238,7 @@
 		</message>
 		<message>
 			<source>tab_infolog</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_infolog</source>
@@ -2913,7 +3285,7 @@
 		</message>
 		<message>
 			<source>btn_create</source>
-			<translation>Cree</translation>
+			<translation>Crear</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_create</source>
@@ -2941,14 +3313,6 @@
 		<message>
 			<source>title</source>
 			<translation>Seleccionar malla</translation>
-		</message>
-		<message>
-			<source>dlg_mesh_selector</source>
-			<translation>Seleccionar malla</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_mesh_selector</source>
-			<translation>None</translation>
 		</message>
 		<message>
 			<source>btn_cancel</source>
@@ -2984,10 +3348,18 @@
 		</message>
 		<message>
 			<source>tab_infolog</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_infolog</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_mesh_selector</source>
+			<translation>Seleccionar malla</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_mesh_selector</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -3090,6 +3462,93 @@
 		</message>
 		<message>
 			<source>tooltip_tbl_curve_value</source>
+			<translation>None</translation>
+		</message>
+	</context>
+	<context>
+		<name>nonvisual_import_raster</name>
+		<message>
+			<source>title</source>
+			<translation>Importar trama</translation>
+		</message>
+		<message>
+			<source>btn_cancel</source>
+			<translation>Cancelar</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_ok</source>
+			<translation>OK</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_ok</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>tab_config</source>
+			<translation>Configurar</translation>
+		</message>
+		<message>
+			<source>tooltip_tab_config</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_timestep</source>
+			<translation>Configure el Timestep:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_timestep</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_input_file</source>
+			<translation>Carpeta Input Rasters:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_input_file</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_push_raster_input_folder</source>
+			<translation>...</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_push_raster_input_folder</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_raster_name</source>
+			<translation>Nombre de la cuadrícula:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_raster_name</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_raster_type</source>
+			<translation>Tipo de trama:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_raster_type</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>tab_infolog</source>
+			<translation>Info Log</translation>
+		</message>
+		<message>
+			<source>tooltip_tab_infolog</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_nonvisual_import_raster</source>
+			<translation>Importar trama</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_nonvisual_import_raster</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -3784,7 +4243,7 @@
 		</message>
 		<message>
 			<source>btn_create</source>
-			<translation>Cree</translation>
+			<translation>Crear</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_create</source>
@@ -3804,6 +4263,14 @@
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_import</source>
+			<translation>Importar</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_import</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -3847,7 +4314,7 @@
 		</message>
 		<message>
 			<source>lbl_descript</source>
-			<translation>Describa</translation>
+			<translation>Descripción</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_descript</source>
@@ -4115,7 +4582,7 @@
 		</message>
 		<message>
 			<source>tab_databaselog</source>
-			<translation>Database log</translation>
+			<translation>Registro de la base de datos</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_databaselog</source>
@@ -4127,6 +4594,14 @@
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>chb_info</source>
+			<translation>Mostrar sólo advertencias y errores</translation>
+		</message>
+		<message>
+			<source>tooltip_chb_info</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -4228,7 +4703,7 @@
 		</message>
 		<message>
 			<source>lbl_export_path</source>
-			<translation>Ruta:</translation>
+			<translation>Senda:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_export_path</source>
@@ -4343,7 +4818,7 @@
 		</message>
 		<message>
 			<source>tab_loginfo</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_loginfo</source>
