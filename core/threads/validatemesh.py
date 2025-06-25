@@ -445,7 +445,7 @@ def validate_roof_layer(
     provider = output_layer.dataProvider()
 
     fid_field = QgsField("fid", QVariant.Int)
-    roughness_field = QgsField("roughness", QVariant.Double)
+    roughness_field = QgsField("roughness", QVariant.String)
     provider.addAttributes([fid_field, roughness_field])
     output_layer.updateFields()
 
@@ -455,29 +455,14 @@ def validate_roof_layer(
         if feedback.isCanceled():
             return
         roughness = feature["roughness"]
-        slope = feature["slope"]
-        width = feature["width"]
-        isconnected = feature["isconnected"]
-        outlet_code = feature["outlet_code"]
-        outlet_vol = feature["outlet_vol"]
-        street_vol = feature["street_vol"]
-        infiltr_vol = feature["infiltr_vol"]
         if (
             type(roughness) in [int, float]
-            and roughness >= 0
-            and type(slope) in [int, float]
-            and type(width) in [int, float]
-            and type(isconnected) == int
-            and type(outlet_vol) in [int, float]
-            and type(street_vol) in [int, float]
-            and type(infiltr_vol) in [int, float]
-            and outlet_vol + street_vol + infiltr_vol == 100
         ):
             continue
 
         invalid_feature = QgsFeature(output_layer.fields())
         invalid_feature.setAttributes(
-            [feature["fid"], feature["roughness"]]
+            [feature["fid"], f'Invalid roughness: {feature["roughness"]}']
         )
         invalid_feature.setGeometry(feature.geometry())
         output_layer.addFeature(invalid_feature)

@@ -13,17 +13,21 @@ from typing import Any, Optional
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
 
 from ...lib.tools_gpkgdao import DrGpkgDao
-from ...lib import tools_qt
+from ...lib import tools_qt, tools_qgis
 from ..utils import tools_dr
 from ... import global_vars
 import re
 from typing import Match
+import geopandas as gpd
+from shapely.geometry import shape, Point
+from ..threads import validatemesh
 
 
 class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
     BOOL_SHOW_ONLY_ERRORS = 'BOOL_SHOW_ONLY_ERRORS'
     temporal_layers_to_add: list[QgsVectorLayer] = []
+    validation_temporal_layers_to_add: list[QgsVectorLayer] = []
     outlayer_values: dict[str, dict[str, Any]] = {}
 
     error_messages: list[str] = []
@@ -31,6 +35,8 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
     info_messages: list[str] = []
 
     bool_show_only_errors: bool = False
+    txt_infolog = None
+    bool_error_on_execution: bool = False
 
     def __init__(self) -> None:
         super().__init__()
@@ -56,12 +62,16 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         self.warning_messages = []
         self.info_messages = []
         self.temporal_layers_to_add = []
+        self.validation_temporal_layers_to_add = []
+        self.txt_infolog = parameters['TXT_INFOLOG'] if 'TXT_INFOLOG' in parameters else None
         self.dao_data: Optional[DrGpkgDao] = global_vars.gpkg_dao_data.clone()
         self.dao_config: Optional[DrGpkgDao] = global_vars.gpkg_dao_config.clone()
         self.bool_show_only_errors = self.parameterAsBool(parameters, self.BOOL_SHOW_ONLY_ERRORS, context)
+        self.bool_error_on_execution = False
 
         if self.dao_data is None or self.dao_config is None:
             feedback.pushWarning(self.tr('ERROR: No dao found for data or config'))
+            self.bool_error_on_execution = True
             return {}
 
         # Get messages from sys_message
@@ -70,6 +80,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         sys_messages_dict: dict[int, str] = {}
         if not sys_messages:
             feedback.pushWarning(self.tr('ERROR: No sys messages found'))
+            self.bool_error_on_execution = True
             return {}
         for msg in sys_messages:
             sys_messages_dict[msg['id']] = msg['text']
@@ -79,15 +90,8 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         queries = self.dao_config.get_rows(sql)
         if not queries:
             feedback.pushWarning(self.tr('ERROR: No check project queries found'))
+            self.bool_error_on_execution = True
             return {}
-
-        # Create harcoded queries
-        harcoded_queries: dict[int, str] = {
-            101: f"""SELECT DISTINCT a1.fid as fid, a1.code as code, AsWKT(CastAutomagic(a1.geom)) as geom_WKT FROM arc a1 JOIN arc a2 ON a1.fid <> a2.fid AND st_equals(CastAutomagic(a1.geom), CastAutomagic(a2.geom))""",
-            102: f"""SELECT DISTINCT n1.fid as fid, n1.code as code, AsWKT(CastAutomagic(n1.geom)) as geom_WKT FROM node n1 JOIN node n2 ON n1.fid <> n2.fid AND st_distance(CastAutomagic(n1.geom), CastAutomagic(n2.geom)) <= 0.10""",
-            103: f"""SELECT n.*, AsWKT(CastAutomagic(n.geom)) as geom_WKT FROM node n LEFT JOIN arc a ON ST_Distance(CastAutomagic(n.geom), ST_StartPoint(CastAutomagic(a.geom))) <= 0.10 OR ST_Distance(CastAutomagic(n.geom), ST_EndPoint(CastAutomagic(a.geom))) <= 0.10 WHERE a.fid IS NULL AND n.table_name not like 'inlet'""",
-            104: f"""SELECT DISTINCT i1.fid as fid, i1.code as code, AsWKT(CastAutomagic(i1.geom)) as geom_WKT FROM inlet i1 JOIN inlet i2 ON i1.fid <> i2.fid AND st_distance(CastAutomagic(i1.geom), CastAutomagic(i2.geom)) <= 0.10"""
-        }
 
         # Create outlayer values map
         self.outlayer_values = {
@@ -148,25 +152,133 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             }
         }
 
+        # Execute checkproject queries
         for index, query in enumerate(queries):
             query_type: str = query['query_type']
+            feedback.setProgressText(f'Executing: {query_type} - {query["table_name"]}')
 
             # region HARCODED QUERIES
             if query_type == 'GEOMETRIC DUPLICATE' or query_type == 'GEOMETRIC ORPHAN':
-                self.check_geometrical_duplicate_or_orphan(query, harcoded_queries, sys_messages_dict, feedback)
+                self.check_geometrical_duplicate_or_orphan(query, sys_messages_dict, feedback)
             # endregion HARCODED QUERIES
 
             # region BUILDED QUERIES
             elif query_type == 'MANDATORY NULL' or query_type == 'OUTLAYER':
-                self.check_mandatory_null_or_outlayer(query, harcoded_queries, sys_messages_dict, feedback)
+                self.check_mandatory_null_or_outlayer(query, sys_messages_dict, feedback)
             # endregion MANDATORY NULL
-            feedback.setProgress(tools_dr.lerp_progress(int(index+1/len(queries)*100), 0, 90))
+
+            feedback.setProgress(tools_dr.lerp_progress(int(index+1/len(queries)*100), 0, 70))
+
+        # Hardcoded checks
+        feedback.setProgressText(f'Executing: hardcoded checks')
+        temporal_layer = self.check_roof_volumes(feedback)
+        if temporal_layer is not None:
+            if temporal_layer.featureCount() > 0:
+                self.temporal_layers_to_add.append(temporal_layer)
+                self.error_messages.append(self.tr(f'ERROR (roof): Volume errors detected ({temporal_layer.featureCount()})'))
+            else:
+                self.info_messages.append(self.tr(f'INFO (roof): No volume errors detected'))
+
+        # Mesh validations
+        ground_layer = tools_qgis.get_layer_by_tablename('ground')
+        roof_layer = tools_qgis.get_layer_by_tablename('roof')
+
+        if ground_layer is None or roof_layer is None:
+            feedback.pushWarning(self.tr('ERROR: Could not find ground or roof layers'))
+            self.bool_error_on_execution = True
+            return {}
+
+        validations = {
+            'check_null_geometries_ground': {
+                'method': 'validate_null_geometry',
+                'input_layers': 'ground',
+                'layer': None
+            },
+            'check_null_geometries_roof': {
+                'method': 'validate_null_geometry',
+                'input_layers': 'roof',
+                'layer': None
+            },
+            'check_geometry_validity_ground': {
+                'method': 'validate_validity',
+                'input_layers': 'ground',
+            },
+            'check_geometry_validity_roof': {
+                'method': 'validate_validity',
+                'input_layers': 'roof',
+                'layer': None
+            },
+            'check_groundroughness_params': {
+                'method': 'validate_ground_layer',
+                'input_layers': 'ground',
+                'layer': None
+            },
+            'check_roof_params': {
+                'method': 'validate_roof_layer',
+                'input_layers': 'roof',
+                'layer': None
+            },
+            'check_intersections': {
+                'method': 'validate_intersect',
+                'input_layers': None,
+                'layer': None
+            }
+        }
+
+        feedback.setProgressText(f'Executing: mesh validations')
+        for index, validation in enumerate(validations):
+            validation_config = validations[validation]
+            method_name = validation_config['method']
+            input_layers = validation_config['input_layers']
+
+            # Get the validation function from validatemesh module
+            if hasattr(validatemesh, method_name):
+                validation_func = getattr(validatemesh, method_name)
+
+                # Call the validation function with appropriate parameters
+                if input_layers == 'ground':
+                    temporal_layer = validation_func(ground_layer, feedback)
+                elif input_layers == 'roof':
+                    temporal_layer = validation_func(roof_layer, feedback)
+                elif input_layers is None:
+                    # For validations that need both layers
+                    temporal_layer = validation_func({
+                        'ground': ground_layer,
+                        'roof': roof_layer
+                    }, feedback)
+                else:
+                    feedback.pushWarning(f'Unknown input_layers configuration: {input_layers}')
+                    continue
+
+                # Add temporal layer to validation_temporal_layers_to_add
+                info_message: bool = True
+                if temporal_layer is not None:
+                    if isinstance(temporal_layer, tuple):
+                        if temporal_layer[0] is not None and temporal_layer[0].featureCount() > 0:
+                            self.validation_temporal_layers_to_add.append(temporal_layer[0])
+                            info_message = False
+                        if temporal_layer[1] is not None and temporal_layer[1].featureCount() > 0 and temporal_layer[1] not in self.validation_temporal_layers_to_add:
+                            self.validation_temporal_layers_to_add.append(temporal_layer[1])
+                            info_message = False
+                    else:
+                        if temporal_layer is not None and temporal_layer.featureCount() > 0:
+                            self.validation_temporal_layers_to_add.append(temporal_layer)
+                            info_message = False
+                    # Add error or info message
+                    if info_message:
+                        self.info_messages.append(self.tr(f'INFO (validatemesh - {validation}): No errors detected'))
+                    else:
+                        self.error_messages.append(self.tr(f'ERROR (validatemesh - {validation}): Errors detected ({temporal_layer.featureCount()})'))
+            else:
+                feedback.pushWarning(f'Validation method {method_name} not found in validatemesh module')
+
+            feedback.setProgress(tools_dr.lerp_progress(int(index+1/len(validations)*100), 80, 90))
 
         self.dao_data.close_db()
         self.dao_config.close_db()
         return {}
 
-    def check_geometrical_duplicate_or_orphan(self, query, harcoded_queries: dict[int, str], sys_messages_dict: dict[int, str], feedback: QgsProcessingFeedback):
+    def check_geometrical_duplicate_or_orphan(self, query, sys_messages_dict: dict[int, str], feedback: QgsProcessingFeedback):
         """ Check geometrical duplicate or orphan """
 
         # Get exception message
@@ -177,54 +289,26 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             return
 
         # Check geometrics
-        if not query['error_code'] in harcoded_queries.keys():
+        if query['query_type'] == 'GEOMETRIC DUPLICATE':
+            temporal_layer = self.check_duplicates(query, feedback)
+        elif query['query_type'] == 'GEOMETRIC ORPHAN':
+            temporal_layer = self.check_orphans(query, feedback)
+        else:
             feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): No query found for table "{query['table_name']}"'))
             return
-        query_data = harcoded_queries[query['error_code']]
-        features = self.dao_data.get_rows(query_data)
-        if not features and self.dao_data.last_error is None:
-            # Save info message
-            self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message))
-            return
-        elif not features and self.dao_data.last_error is not None:
-            # Print error message
-            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error getting features for table "{query['table_name']}". {self.dao_data.last_error}'))
+
+        if temporal_layer is None:
+            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error creating temporal layer for table "{query['table_name']}"'))
             return
 
-        if query['create_layer']:
-            # Create temporal layer
-            temporal_layer = QgsVectorLayer(f'{query['geometry_type']}', f'{query['query_type'].replace(" ", "_").lower()}_{query['table_name']}', 'memory')
-            temporal_layer.setCrs(QgsProject.instance().crs())
-            temporal_layer.dataProvider().addAttributes([QgsField('Code', QVariant.String), QgsField('Exception', QVariant.String)])
-            temporal_layer.updateFields()
-            features_to_add: list[QgsFeature] = []
-
-        # Build exception message
-        for feature in features:
-            if query['create_layer']:
-                # Create new feature
-                new_feature = QgsFeature(temporal_layer.fields())
-                new_feature['Code'] = feature['code']
-                exception_msg: Optional[str] = None
-                if query['query_type'] == 'GEOMETRIC DUPLICATE':
-                    exception_msg = 'Duplicated feature'
-                else:
-                    exception_msg = 'Orphan feature'
-                new_feature['Exception'] = exception_msg
-                if not feature['geom_WKT']:
-                    feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error getting geometry for feature "{feature['code']}" on table "{query['table_name']}"'))
-                    continue
-                new_feature.setGeometry(QgsGeometry.fromWkt(feature['geom_WKT']))
-                features_to_add.append(new_feature)
-
-        if query['create_layer'] and len(features) > 0 and temporal_layer is not None:
-            # Add features to temporal layer
-            temporal_layer.startEditing()
-            temporal_layer.addFeatures(features_to_add)
-            temporal_layer.commitChanges()
+        if query['create_layer'] and temporal_layer.featureCount() > 0:
             self.temporal_layers_to_add.append(temporal_layer)
 
-        msg = exception_message.format(len(features))
+        if temporal_layer.featureCount() == 0:
+            self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message))
+            return
+
+        msg = exception_message.format((temporal_layer.featureCount()))
         if query['except_lvl'] == 2:
             # Save warning message
             self.warning_messages.append(self.tr(f'WARNING-{query['error_code']} ({query['table_name']}) ({query['query_type']}): ' + msg))
@@ -232,7 +316,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             # Save error message
             self.error_messages.append(self.tr(f'ERROR-{query['error_code']} ({query['table_name']}) ({query['query_type']}): ' + msg))
 
-    def check_mandatory_null_or_outlayer(self, query, harcoded_queries: dict[int, str], sys_messages_dict: dict[int, str], feedback: QgsProcessingFeedback):
+    def check_mandatory_null_or_outlayer(self, query, sys_messages_dict: dict[int, str], feedback: QgsProcessingFeedback):
         """ Check mandatory null or outlayer """
 
         # Get exception message
@@ -243,7 +327,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             return
 
         # Build check query
-        query_data, query_data_nogeom, columns = self.build_check_query(query, feedback)
+        query_data, query_data_nogeom, columns = self._build_check_query(query, feedback)
         if query_data is None:
             feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error building check query on table "{query['table_name']}"'))
             return
@@ -388,29 +472,55 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
     def postProcessAlgorithm(self, context, feedback: QgsProcessingFeedback):
         """ Create temporal layers on main thread """
 
-        feedback.setProgressText(self.tr('\nERRORS\n----------'))
-        for msg in self.error_messages:
-            feedback.setProgressText(msg)
-        feedback.setProgressText(self.tr('\nWARNINGS\n--------------'))
-        for msg in self.warning_messages:
-            feedback.setProgressText(msg)
-        if not self.bool_show_only_errors:
+        # Clear text edit
+        if self.txt_infolog is not None and not self.bool_error_on_execution:
+            self.txt_infolog.clear()
+
+        # Print errors
+        if len(self.error_messages) > 0:
+            feedback.setProgressText(self.tr('\nERRORS\n----------'))
+            for msg in self.error_messages:
+                feedback.setProgressText(msg)
+
+        # Print warnings
+        if len(self.warning_messages) > 0:
+            feedback.setProgressText(self.tr('\nWARNINGS\n--------------'))
+            for msg in self.warning_messages:
+                feedback.setProgressText(msg)
+
+        # Print info
+        if not self.bool_show_only_errors and len(self.info_messages) > 0:
             feedback.setProgressText(self.tr('\nINFO\n------'))
             for msg in self.info_messages:
                 feedback.setProgressText(msg)
 
-        if len(self.temporal_layers_to_add) > 0:
-            group_name = "Check Project Temporal Layers"
+        # Add temporal layers
+        group_name = "CHECK PROJECT TEMPORAL LAYERS"
+        group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+        if group is None and len(self.temporal_layers_to_add) > 0:
+            QgsProject.instance().layerTreeRoot().insertGroup(0, group_name)
             group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
-            if group is None:
-                QgsProject.instance().layerTreeRoot().insertGroup(0, group_name)
-                group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+        elif group is not None:
+            group.removeAllChildren()
+        mesh_group = group.findGroup("MESH VALIDATIONS")
+        if mesh_group is None and len(self.validation_temporal_layers_to_add) > 0:
+            group.insertGroup(0, "MESH VALIDATIONS")
+            mesh_group = group.findGroup("MESH VALIDATIONS")
+        elif mesh_group is not None:
+            mesh_group.removeAllChildren()
+
+        if group is not None and len(self.temporal_layers_to_add) > 0:
             for layer in self.temporal_layers_to_add:
                 QgsProject.instance().addMapLayer(layer, False)
                 group.addLayer(layer)
+        if mesh_group is not None and len(self.validation_temporal_layers_to_add) > 0:
+            for layer in self.validation_temporal_layers_to_add:
+                QgsProject.instance().addMapLayer(layer, False)
+                mesh_group.addLayer(layer)
+
         return {}
 
-    def build_check_query(self, query, feedback: QgsProcessingFeedback) -> tuple[Optional[str], Optional[str], Optional[list[str]]]:
+    def _build_check_query(self, query, feedback: QgsProcessingFeedback) -> tuple[Optional[str], Optional[str], Optional[list[str]]]:
         """ Build check query and return columns to check """
 
         check_query: Optional[str] = None
@@ -460,13 +570,348 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         return check_query, check_query_nogeom, columns_checked
 
+    def check_duplicates(self, query, feedback: QgsProcessingFeedback) -> Optional[QgsVectorLayer]:
+        """ Check duplicates using GeoPandas for faster geometry comparison """
+
+        temporal_layer: Optional[QgsVectorLayer] = None
+        tolerance: float = 0
+
+        if query['error_code'] and query['error_code'] in [102, 104]:
+            tolerance = 0.10
+        elif query['error_code'] is None:
+            feedback.pushWarning(self.tr(f'ERROR ({query['query_type']}): No error code found for table "{query['table_name']}"'))
+
+        if query['table_name'] in ['arc', 'node']:
+            source_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername={query['table_name']}', query['table_name'], 'ogr')
+        else:
+            source_layer = tools_qgis.get_layer_by_tablename(query['table_name'])
+        if source_layer is None:
+            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): No layer found for table "{query['table_name']}"'))
+            return
+
+        # Convert QGIS layer to GeoPandas DataFrame
+        features = list(source_layer.getFeatures())
+        geometries = []
+        codes = []
+
+        for feature in features:
+            if feature.geometry() is None:
+                continue
+            if query['table_name'] == 'node' and feature['table_name'] == 'inlet':
+                continue
+
+            geometries.append(shape(feature.geometry()))
+            codes.append(feature['code'])
+
+        gdf = gpd.GeoDataFrame({'code': codes}, geometry=geometries)
+
+        # Find duplicates using GeoPandas
+        if tolerance > 0:
+            # For tolerance > 0, use buffer and contains
+            gdf['buffer'] = gdf.geometry.buffer(tolerance)
+            duplicates = []
+
+            # Use spatial index for faster intersection checks
+            spatial_index = gdf.sindex
+
+            for idx, row in gdf.iterrows():
+                # Get potential candidates using spatial index
+                possible_matches = list(spatial_index.intersection(row.buffer.bounds))
+
+                # Check each potential match
+                for match_idx in possible_matches:
+                    if idx != match_idx:  # Don't compare with self
+                        if row.buffer.contains(gdf.iloc[match_idx].geometry):
+                            duplicates.append(idx)
+                            duplicates.append(match_idx)
+        else:
+            # For tolerance = 0, use exact geometry comparison
+            duplicates = []
+            # Use spatial index for faster intersection checks
+            spatial_index = gdf.sindex
+
+            for idx, row in gdf.iterrows():
+                # Get potential candidates using spatial index
+                possible_matches = list(spatial_index.intersection(row.geometry.bounds))
+
+                # Check each potential match
+                for match_idx in possible_matches:
+                    if idx != match_idx:  # Don't compare with self
+                        if row.geometry.equals(gdf.iloc[match_idx].geometry):
+                            duplicates.append(idx)
+                            duplicates.append(match_idx)
+
+        # Remove duplicates from the list
+        duplicates = list(set(duplicates))
+
+        # Create temporal layer
+        temporal_layer = QgsVectorLayer(f'{query['geometry_type']}', f'{query['query_type'].replace(" ", "_").lower()}_{query['table_name']}', 'memory')
+        if temporal_layer is None:
+            feedback.pushWarning(self.tr(f'ERROR-{query['error_code']} ({query['query_type']}): Error creating temporal layer for table "{query['table_name']}"'))
+            return
+
+        temporal_layer.setCrs(QgsProject.instance().crs())
+        temporal_layer.dataProvider().addAttributes([QgsField('Code', QVariant.String), QgsField('Exception', QVariant.String)])
+        temporal_layer.updateFields()
+
+        # Add duplicated features to temporal layer
+        features_to_add: list[QgsFeature] = []
+        for idx in duplicates:
+            new_feature = QgsFeature(temporal_layer.fields())
+            new_feature['Code'] = gdf.iloc[idx]['code']
+            new_feature['Exception'] = f'Duplicated feature (tolerance: {tolerance}m)' if tolerance > 0 else 'Duplicated feature'
+            new_feature.setGeometry(QgsGeometry.fromWkt(gdf.iloc[idx].geometry.wkt))
+            features_to_add.append(new_feature)
+
+        if features_to_add:
+            temporal_layer.startEditing()
+            temporal_layer.addFeatures(features_to_add)
+            temporal_layer.commitChanges()
+
+        return temporal_layer
+
+    def check_orphans(self, query, feedback: QgsProcessingFeedback) -> Optional[QgsVectorLayer]:
+        """ Check orphans using both database relationships (node1/node2 fields) and geometric vertex proximity """
+
+        temporal_layer: Optional[QgsVectorLayer] = None
+
+        # Get node and arc layers
+        node_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=node', 'node', 'ogr')
+        arc_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=arc', 'arc', 'ogr')
+
+        if node_layer is None or arc_layer is None:
+            feedback.pushWarning(self.tr(f'ERROR-{query["error_code"]} ({query["query_type"]}): No layers found for node or arc tables'))
+            return
+
+        # Get all node codes that are not 'inlet' type
+        node_codes = set()
+        node_features = list(node_layer.getFeatures())
+
+        for feature in node_features:
+            if feature['table_name'] != 'inlet':
+                node_codes.add(feature['code'])
+
+        # CHECK 1: Database relationship check - Get all node codes referenced in arc tables (node1 and node2 fields)
+        referenced_node_codes_db = set()
+
+        # Get all arc tables from arc features
+        arc_tables = set()
+        for feature in arc_layer.getFeatures():
+            if feature['table_name']:
+                arc_tables.add(feature['table_name'])
+
+        for table_name in arc_tables:
+            try:
+                table_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername={table_name}', table_name, 'ogr')
+                if table_layer is None:
+                    continue
+
+                # Check if the layer has node1 and node2 fields
+                field_names = [field.name() for field in table_layer.fields()]
+                if 'node_1' in field_names and 'node_2' in field_names:
+                    for feature in table_layer.getFeatures():
+                        if feature['node_1']:
+                            referenced_node_codes_db.add(feature['node_1'])
+                        if feature['node_2']:
+                            referenced_node_codes_db.add(feature['node_2'])
+            except Exception as e:
+                feedback.pushWarning(f'Warning: Could not check table {table_name}: {str(e)}')
+                continue
+
+        # CHECK 2: Geometric vertex check - Find nodes that are not on any arc vertex
+        referenced_node_codes_geom = set()
+
+        # Convert nodes to GeoPandas for spatial operations
+        node_geometries = []
+        node_codes_list = []
+
+        for feature in node_features:
+            if feature.geometry() is None or feature.geometry().isEmpty():
+                continue
+            if feature['table_name'] == 'inlet':
+                continue
+
+            node_geometries.append(shape(feature.geometry()))
+            node_codes_list.append(feature['code'])
+
+        nodes_gdf = gpd.GeoDataFrame({'code': node_codes_list}, geometry=node_geometries)
+
+        # Convert arcs to GeoPandas
+        arc_features = list(arc_layer.getFeatures())
+        arc_geometries = []
+
+        for feature in arc_features:
+            if feature.geometry() is None or feature.geometry().isEmpty():
+                continue
+            arc_geometries.append(shape(feature.geometry()))
+
+        arcs_gdf = gpd.GeoDataFrame(geometry=arc_geometries)
+
+        # Create spatial index for arcs
+        arcs_sindex = arcs_gdf.sindex
+
+        # Check each node against arc vertices
+        tolerance = 0
+        for idx, node in nodes_gdf.iterrows():
+            # Get potential intersecting arcs using spatial index
+            possible_matches = list(arcs_sindex.intersection(node.geometry.bounds))
+
+            # Check if node is on any arc vertex (start or end point)
+            is_connected = False
+            for arc_idx in possible_matches:
+                arc_geom = arcs_gdf.iloc[arc_idx].geometry
+
+                # Check distance to start and end points of the arc
+                if arc_geom.geom_type == 'LineString':
+                    start_point = arc_geom.coords[0]
+                    end_point = arc_geom.coords[-1]
+
+                    # Check if node is on start or end point
+                    if (node.geometry.distance(Point(start_point)) <= tolerance or
+                        node.geometry.distance(Point(end_point)) <= tolerance):
+                        is_connected = True
+                        break
+
+                elif arc_geom.geom_type == 'MultiLineString':
+                    # Handle MultiLineString case
+                    for line in arc_geom.geoms:
+                        start_point = line.coords[0]
+                        end_point = line.coords[-1]
+
+                        if (node.geometry.distance(Point(start_point)) <= tolerance or
+                            node.geometry.distance(Point(end_point)) <= tolerance):
+                            is_connected = True
+                            break
+                    if is_connected:
+                        break
+
+            if is_connected:
+                referenced_node_codes_geom.add(node['code'])
+
+        # Combine results: nodes that are orphaned in BOTH database and geometric checks
+        orphan_node_codes_db = node_codes - referenced_node_codes_db
+        orphan_node_codes_geom = node_codes - referenced_node_codes_geom
+
+        # Nodes that are orphaned in both checks
+        orphan_node_codes_both = orphan_node_codes_db & orphan_node_codes_geom
+
+        # Nodes that are orphaned in database check only
+        orphan_node_codes_db_only = orphan_node_codes_db - orphan_node_codes_geom
+
+        # Nodes that are orphaned in geometric check only
+        orphan_node_codes_geom_only = orphan_node_codes_geom - orphan_node_codes_db
+
+        # Create temporal layer
+        temporal_layer = QgsVectorLayer('Point', f'{query["query_type"].replace(" ", "_").lower()}_{query["table_name"]}', 'memory')
+        if temporal_layer is None:
+            feedback.pushWarning(self.tr(f'ERROR-{query["error_code"]} ({query["query_type"]}): Error creating temporal layer for table "{query["table_name"]}"'))
+            return
+
+        temporal_layer.setCrs(QgsProject.instance().crs())
+        temporal_layer.dataProvider().addAttributes([QgsField('Code', QVariant.String), QgsField('Exception', QVariant.String)])
+        temporal_layer.updateFields()
+
+        # Add orphan features to temporal layer
+        features_to_add: list[QgsFeature] = []
+
+        # Add nodes orphaned in both checks
+        for node_code in orphan_node_codes_both:
+            for feature in node_features:
+                if feature['code'] == node_code:
+                    new_feature = QgsFeature(temporal_layer.fields())
+                    new_feature['Code'] = node_code
+                    new_feature['Exception'] = 'Orphan node (not referenced in arcs AND not on arc vertices)'
+                    new_feature.setGeometry(feature.geometry())
+                    features_to_add.append(new_feature)
+                    break
+
+        # Add nodes orphaned in database check only
+        for node_code in orphan_node_codes_db_only:
+            for feature in node_features:
+                if feature['code'] == node_code:
+                    new_feature = QgsFeature(temporal_layer.fields())
+                    new_feature['Code'] = node_code
+                    new_feature['Exception'] = 'Orphan node (not referenced in arc node1/node2 fields)'
+                    new_feature.setGeometry(feature.geometry())
+                    features_to_add.append(new_feature)
+                    break
+
+        # Add nodes orphaned in geometric check only
+        for node_code in orphan_node_codes_geom_only:
+            for feature in node_features:
+                if feature['code'] == node_code:
+                    new_feature = QgsFeature(temporal_layer.fields())
+                    new_feature['Code'] = node_code
+                    new_feature['Exception'] = 'Orphan node (not on any arc vertex)'
+                    new_feature.setGeometry(feature.geometry())
+                    features_to_add.append(new_feature)
+                    break
+
+        if features_to_add:
+            temporal_layer.startEditing()
+            temporal_layer.addFeatures(features_to_add)
+            temporal_layer.commitChanges()
+
+        return temporal_layer
+
+    def check_roof_volumes(self, feedback: QgsProcessingFeedback):
+        """ Check roof volumes """
+
+        # Get roof layer
+        roof_layer = tools_qgis.get_layer_by_tablename('roof')
+        if roof_layer is None:
+            feedback.pushWarning(self.tr(f'ERROR-1000 (check_roof_volumes): No roof layer found'))
+            return
+
+        temporal_layer = QgsVectorLayer('MultiPolygon', 'roof_volumes', 'memory')
+        if temporal_layer is None:
+            feedback.pushWarning(self.tr(f'ERROR (roof_volumes): Error creating temporal layer for roof volumes check'))
+            return
+
+        temporal_layer.setCrs(QgsProject.instance().crs())
+        temporal_layer.dataProvider().addAttributes([QgsField('Code', QVariant.String), QgsField('Exception', QVariant.String)])
+        temporal_layer.updateFields()
+
+        features_to_add: list[QgsFeature] = []
+
+        # Check roof volumes
+        for feature in roof_layer.getFeatures():
+            # Check if outlet or street volume is null
+            if feature['outlet_vol'] in (None, 'null', 'NULL') or feature['street_vol'] in (None, 'null', 'NULL'):
+                new_feature = QgsFeature(temporal_layer.fields())
+                new_feature['Code'] = feature['code']
+                new_feature['Exception'] = 'Outlet or street volume is null'
+                new_feature.setGeometry(feature.geometry())
+                features_to_add.append(new_feature)
+            # Check if infiltration volume is null and the sum of outlet and street volumes is not 100
+            elif feature['infiltr_vol'] in (None, 'null', 'NULL') and (feature['outlet_vol'] + feature['street_vol'] != 100):
+                new_feature = QgsFeature(temporal_layer.fields())
+                new_feature['Code'] = feature['code']
+                new_feature['Exception'] = f'The sum of all volumes is not 100 ({feature['outlet_vol'] + feature['street_vol']})'
+                new_feature.setGeometry(feature.geometry())
+                features_to_add.append(new_feature)
+            # Check if infiltration volume is not null and the sum of all volumes is not 100
+            elif feature['infiltr_vol'] not in (None, 'null', 'NULL') and (feature['outlet_vol'] + feature['street_vol'] + feature['infiltr_vol'] != 100):
+                new_feature = QgsFeature(temporal_layer.fields())
+                new_feature['Code'] = feature['code']
+                new_feature['Exception'] = f'The sum of all volumes is not 100 ({feature["outlet_vol"] + feature["street_vol"] + feature["infiltr_vol"]})'
+                new_feature.setGeometry(feature.geometry())
+                features_to_add.append(new_feature)
+
+        if features_to_add:
+            temporal_layer.startEditing()
+            temporal_layer.addFeatures(features_to_add)
+            temporal_layer.commitChanges()
+
+        return temporal_layer
+
     def helpUrl(self):
         return "https://github.com/drain-iber"
 
     def shortHelpString(self):
         return self.tr("""Checks your project for common data issues such as duplicate or orphan geometries, missing required values, and out-of-range attributes. 
                        Results are shown as errors, warnings, or info messages, and problematic features can be highlighted on the map. 
-                       Use this tool to quickly validate and improve your project’s data quality.""")
+                       Use this tool to quickly validate and improve your project's data quality.""")
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

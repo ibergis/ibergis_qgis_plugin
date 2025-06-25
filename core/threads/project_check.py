@@ -38,6 +38,7 @@ class DrProjectCheckTask(DrTask):
         self.process = None
         self.context = None
         self.output = None
+        self.txt_infolog = self.params['txt_infolog'] if self.params else None
 
         self.log_messages = []
         self.log_features_arc = []
@@ -55,7 +56,7 @@ class DrProjectCheckTask(DrTask):
         self.process = DrCheckProjectAlgorithm()
         self.process.initAlgorithm(None)
         self.context = QgsProcessingContext()
-        self.output = self.process.processAlgorithm({'BOOL_SHOW_INFO': self.show_only_errors}, self.context, self.feedback)
+        self.output = self.process.processAlgorithm({'BOOL_SHOW_INFO': self.show_only_errors, 'TXT_INFOLOG': self.txt_infolog}, self.context, self.feedback)
         if self.output:
             return
 
@@ -94,7 +95,7 @@ class DrProjectCheckTask(DrTask):
             return
 
         self.progressUpdate.emit(None, 100, None, True)
-        self.progressUpdate.emit(None, None, "Check Project Algorithm.....Executed", True)
+        self.progressUpdate.emit(None, None, "Check Project Algorithm.....Finished", True)
 
         if self.timer:
             self.timer.stop()

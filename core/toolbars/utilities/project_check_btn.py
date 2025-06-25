@@ -52,7 +52,8 @@ class DrProjectCheckButton(DrAction):
 
         # Create task
         params = {
-            'chb_info': self.dlg_audit_project.chb_info.isChecked()
+            'chb_info': self.dlg_audit_project.chb_info.isChecked(),
+            'txt_infolog': self.dlg_audit_project.findChild(QTextEdit, 'txt_infolog')
         }
         self.check_project_task = DrProjectCheckTask('check_project', params=params, timer=self.timer)
         self.check_project_task.progressUpdate.connect(partial(self._progress_update))
