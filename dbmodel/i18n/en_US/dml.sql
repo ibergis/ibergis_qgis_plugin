@@ -307,14 +307,20 @@ UPDATE config_form_fields SET label = 'transect', tooltip = NULL, placeholder = 
 UPDATE config_form_fields SET label = 'data_group', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_transects_value' AND formtype = 'form_feature' AND columnname = 'data_group';
 UPDATE config_form_fields SET label = 'value', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_transects_value' AND formtype = 'form_feature' AND columnname = 'value';
 UPDATE config_form_fields SET label = 'curve', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_curve_value' AND formtype = 'form_feature' AND columnname = 'curve';
-UPDATE config_form_fields SET label = 'timser_type
-times_type
+UPDATE config_form_fields SET label = 'timser_type
+
+times_type
+
 descript', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries' AND formtype = 'form_feature' AND columnname = 'timser_type';
-UPDATE config_form_fields SET label = 'timser_type
-times_type
+UPDATE config_form_fields SET label = 'timser_type
+
+times_type
+
 descript', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries' AND formtype = 'form_feature' AND columnname = 'times_type';
-UPDATE config_form_fields SET label = 'timser_type
-times_type
+UPDATE config_form_fields SET label = 'timser_type
+
+times_type
+
 descript', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries' AND formtype = 'form_feature' AND columnname = 'descript';
 UPDATE config_form_fields SET label = 'timeseries', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries_value' AND formtype = 'form_feature' AND columnname = 'timeseries';
 UPDATE config_form_fields SET label = 'date', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries_value' AND formtype = 'form_feature' AND columnname = 'date';
@@ -407,10 +413,14 @@ UPDATE config_form_fields SET label = 'Maximums at the end', tooltip = NULL, pla
 UPDATE config_form_fields SET label = 'Raster frame', tooltip = NULL, placeholder = NULL, descript = 'Generate raster only in a frame' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_frame';
 UPDATE config_form_fields SET label = 'XYmin', tooltip = NULL, placeholder = NULL, descript = 'Type coordinates separed by a comma' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_xymin';
 UPDATE config_form_fields SET label = 'XYmax', tooltip = NULL, placeholder = NULL, descript = 'Type coordinates separed by a comma' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_xymax';
-UPDATE config_csv SET alias = 'Import inp patterns', descript = 'Function to automatize the import of inp patterns files. 
-The csv file must containts next columns on same position: 
-pattern_id, pattern_type, factor1,.......,factorn. 
-For WS use up factor18, repeating rows if you like. 
+UPDATE config_csv SET alias = 'Import inp patterns', descript = 'Function to automatize the import of inp patterns files. 
+
+The csv file must containts next columns on same position: 
+
+pattern_id, pattern_type, factor1,.......,factorn. 
+
+For WS use up factor18, repeating rows if you like. 
+
 For UD use up factor24. More than one row for pattern is not allowed' WHERE id = 386;
 UPDATE edit_typevalue SET idval = 'UNDEFINED', descript = NULL WHERE rowid = 1;
 UPDATE edit_typevalue SET idval = 'Order 0', descript = NULL WHERE rowid = 2;
@@ -554,7 +564,7 @@ UPDATE edit_typevalue SET idval = 'OUTFLOWS', descript = NULL WHERE rowid = 142;
 UPDATE edit_typevalue SET idval = 'RAINFALL', descript = NULL WHERE rowid = 143;
 UPDATE edit_typevalue SET idval = 'RDII', descript = NULL WHERE rowid = 144;
 UPDATE edit_typevalue SET idval = 'RUNOFF', descript = NULL WHERE rowid = 145;
-UPDATE edit_typevalue SET idval = NULL, descript = NULL WHERE rowid = 146;
+UPDATE edit_typevalue SET idval = 'None', descript = NULL WHERE rowid = 146;
 UPDATE edit_typevalue SET idval = 'Linear interpolation', descript = NULL WHERE rowid = 147;
 UPDATE edit_typevalue SET idval = 'Nearest interpolation', descript = NULL WHERE rowid = 148;
 UPDATE edit_typevalue SET idval = 'Default value for losses when creating the mesh', descript = NULL WHERE rowid = 149;
