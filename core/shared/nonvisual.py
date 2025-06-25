@@ -94,7 +94,7 @@ class DrNonVisual:
         self.manager_dlg.finished.connect(partial(tools_dr.close_dialog, self.manager_dlg))
 
         # Open dialog
-        tools_dr.open_dialog(self.manager_dlg, dlg_name='dlg_nonvisual_manager')
+        tools_dr.open_dialog(self.manager_dlg, dlg_name='nonvisual_manager')
 
     def _manage_tabs_manager(self):
         """ Creates and populates manager tabs """
@@ -318,7 +318,7 @@ class DrNonVisual:
         tools_qt.set_tableview_config(tbl_curve_value, sectionResizeMode=1, edit_triggers=QTableView.DoubleClicked)
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_curve')
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_curve')
 
     def _paste_curve_values(self, tbl_curve_value):
         selected = tbl_curve_value.selectedRanges()
@@ -341,8 +341,8 @@ class DrNonVisual:
 
         curve_type_list = []
         curve_type_headers = {}
-        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = "SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
+        rows = tools_db.get_rows(sql)
 
         if rows:
             curve_type_list = [[row[0], row[1]] for row in rows]
@@ -741,7 +741,7 @@ class DrNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_pattern_{global_vars.project_type}')
+        tools_dr.open_dialog(self.dialog, dlg_name=f'nonvisual_pattern_{global_vars.project_type}')
 
     def _manage_ud_patterns_dlg(self, pattern, duplicate=False):
         # Variables
@@ -757,8 +757,8 @@ class DrNonVisual:
             paste_shortcut = QShortcut(QKeySequence.Paste, table)
             paste_shortcut.activated.connect(partial(self._paste_patterns_values, table))
 
-        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
+        rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_pattern_type, rows)
 
@@ -1065,7 +1065,7 @@ class DrNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_controls')
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_controls')
 
     def _populate_controls_widgets(self, control_id):
         """ Fills in all the values for control dialog """
@@ -1198,7 +1198,7 @@ class DrNonVisual:
         self._manage_times_type(tbl_timeseries_value, tools_qt.get_combo_value(self.dialog, cmb_times_type))
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_timeseries')
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_timeseries')
 
     def _paste_timeseries_values(self, tbl_timeseries_value):
         selected = tbl_timeseries_value.selectedRanges()
@@ -1223,15 +1223,15 @@ class DrNonVisual:
         """ Populates timeseries dialog combos """
 
         timeser_type_headers = {}
-        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_timeseries_type'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = "SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_timeseries_type'"
+        rows = tools_db.get_rows(sql)
         if rows:
             timeser_type_list = [[row[0], row[1]] for row in rows]
             timeser_type_headers = {row[0]: json.loads(row[2]).get('header') for row in rows if row[2]}
             tools_qt.fill_combo_values(cmb_timeser_type, timeser_type_list, index_to_show=1)
 
-        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval FROM edit_typevalue WHERE typevalue = 'inp_timeseries_timestype'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_timeseries_timestype'"
+        rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_times_type, rows, index_to_show=1)
 
@@ -1603,7 +1603,7 @@ class DrNonVisual:
             self._load_lids_widgets(self.dialog)
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_lids')
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_lids')
 
     def _open_help(self):
         webbrowser.open('https://giswater.gitbook.io/giswater-manual/7.-export-import-of-the-hydraulic-model')
@@ -1977,7 +1977,7 @@ class DrNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name='dlg_nonvisual_raster')
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_raster')
 
     def _paste_raster_values(self, tbl_raster_value):
         """ Paste values from clipboard to table """
@@ -2002,8 +2002,8 @@ class DrNonVisual:
         """ Populates raster dialog combos """
 
         raster_type_headers = {}
-        sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_rain_format'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = "SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_rain_format'"
+        rows = tools_db.get_rows(sql)
         if rows:
             raster_type_list = [[row[0], row[1]] for row in rows]
             raster_type_headers = {row[0]: json.loads(row[2]).get('header') for row in rows if row[2]}
@@ -2280,7 +2280,7 @@ class DrNonVisual:
 
 
         # Open dialog
-        tools_dr.open_dialog(self.raster_import_dlg, dlg_name='dlg_nonvisual_raster_import')
+        tools_dr.open_dialog(self.raster_import_dlg, dlg_name='nonvisual_raster_import')
 
     def _import_rasters_accept(self, dialog: DrNonVisualRasterImportUi):
         """ Check raster files and save them to database """

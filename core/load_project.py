@@ -489,7 +489,7 @@ class DrLoadProject(QObject):
                 sql_content = f.read()
                 # Splitting by semicolon and filtering out empty statements
                 for sql_statement in filter(None, sql_content.split(';')):
-                    status_exec = global_vars.gpkg_dao_config.execute_script_sql(sql_statement.strip())
+                    status_exec = global_vars.gpkg_dao_data.execute_script_sql(sql_statement.strip())
                     if not status_exec:
                         msg = "Error executing i18n DML in config.gpkg: {0}"
                         msg_params = (global_vars.gpkg_dao_config.last_error,)

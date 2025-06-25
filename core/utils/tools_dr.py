@@ -22,7 +22,7 @@ from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QSt
     QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, QToolButton, \
-    QWidget, QDockWidget
+    QWidget, QDockWidget, QApplication
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
@@ -267,6 +267,10 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=False, title=None, hide_config_w
 
     # Create btn_help
     add_btn_help(dlg)
+
+    # Center dialog
+    screen_geometry = QApplication.primaryScreen().geometry()
+    dlg.move(screen_geometry.center() - dlg.rect().center())
 
     dlg.show()
     # Open dialog

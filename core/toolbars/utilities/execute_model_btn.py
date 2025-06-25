@@ -61,7 +61,7 @@ class DrExecuteModelButton(DrAction):
 
         self.execute_dlg.btn_cancel.setVisible(False)
 
-        tools_dr.open_dialog(self.execute_dlg, 'dlg_execute_model')
+        tools_dr.open_dialog(self.execute_dlg, 'execute_model')
 
     def _populate_mesh_cmb(self):
         sql = "SELECT id, name as idval FROM cat_file"

@@ -61,7 +61,7 @@ class DrMeshManagerButton(DrAction):
         tbl_mesh_mng.doubleClicked.connect(partial(self._view_mesh))
         btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_manager))
 
-        tools_dr.open_dialog(self.dlg_manager, dlg_name="dlg_mesh_manager")
+        tools_dr.open_dialog(self.dlg_manager, dlg_name="mesh_manager")
 
     def _set_active_mesh_label(self):
 

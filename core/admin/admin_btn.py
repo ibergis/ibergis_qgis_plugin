@@ -27,6 +27,7 @@ from ..utils import tools_dr
 from ..threads.project_gpkg_schema_create import DrGpkgCreateSchemaTask
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
+import traceback
 
 
 class DrGpkgBase:
@@ -90,6 +91,7 @@ class DrGpkgBase:
                 if status is False:
                     self.error_count += 1
                     msg = "Error executing file: {0}\nDatabase error: {1}"
+                    print(msg)
                     msg_params = (os.path.basename(filepath), self.gpkg_dao_data.last_error,)
                     tools_log.log_warning(msg, msg_params=msg_params)
                     tools_qt.show_info_box(msg)
@@ -113,56 +115,56 @@ class DrGpkgBase:
 
         # Geom tables
         sql = "SELECT table_name, index_col FROM tables_geom;"
-        rows = tools_db.get_rows(sql, dao=self.gpkg_dao_data)
+        rows = tools_db.get_rows(sql)
         list_tbl_geom = [(row[0], row[1]) for row in rows] if rows else []
 
         for tablename, index_col in list_tbl_geom:
             if index_col:
                 sql = f"""CREATE INDEX idx_{index_col}_{tablename} ON {tablename} ({index_col});"""
-                tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+                tools_db.execute_sql(sql, commit=False)
 
             aux_str = "AFTER"
             if 'v_' in tablename or 'vi_' in tablename:
                 aux_str = "INSTEAD OF"
             sql = f"""CREATE VIRTUAL TABLE rtree_{tablename}_geom USING rtree(id, minx, maxx, miny, maxy);"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER trigger_delete_feature_count_{tablename} {aux_str} DELETE ON {tablename} BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER trigger_insert_feature_count_{tablename} {aux_str} INSERT ON {tablename} BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_delete {aux_str} DELETE ON {tablename} WHEN (old.geom NOT NULL) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_insert {aux_str} INSERT ON {tablename} WHEN (new.geom NOT NULL AND NOT ST_IsEmpty(NEW.geom)) BEGIN INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW."geom") ); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update1 {aux_str} UPDATE OF geom ON {tablename} WHEN OLD.fid = NEW.fid AND (NEW.geom NOTNULL AND NOT ST_IsEmpty(NEW.geom) ) BEGIN INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW.geom)); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update2 {aux_str} UPDATE OF geom ON {tablename} WHEN OLD.fid = NEW.fid AND (NEW.geom ISNULL OR ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update3 {aux_str} UPDATE ON {tablename} WHEN OLD.fid != NEW.fid AND (NEW.geom NOTNULL AND NOT ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW.geom)); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update4 {aux_str} UPDATE ON {tablename} WHEN OLD.fid != NEW.fid AND (NEW.geom ISNULL OR ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id IN (OLD.fid, NEW.fid); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
 
             self.gpkg_dao_data.commit()
 
         # No-geom tables
         sql = "SELECT table_name, index_col FROM tables_nogeom;"
-        rows = tools_db.get_rows(sql, dao=self.gpkg_dao_data)
+        rows = tools_db.get_rows(sql)
 
         list_tbl_nogeom = [(row[0], row[1]) for row in rows] if rows else []
 
         for tablename, index_col in list_tbl_nogeom:
             if index_col:
                 sql = f"""CREATE INDEX idx_{index_col}_{tablename} ON {tablename} ({index_col});"""
-                tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+                tools_db.execute_sql(sql, commit=False)
 
             aux_str = "AFTER"
             if 'v_' in tablename or 'vi_' in tablename:
                 aux_str = "INSTEAD OF"
             sql = f"""CREATE TRIGGER "trigger_delete_feature_count_{tablename}" {aux_str} DELETE ON "{tablename}" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER "trigger_insert_feature_count_{tablename}" {aux_str} INSERT ON "{tablename}" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            tools_db.execute_sql(sql, commit=False)
             self.gpkg_dao_data.commit()
 
 
@@ -354,11 +356,12 @@ class DrAdminButton(DrGpkgBase):
         """"""
 
         for folder in dict_folders.keys():
-            if str(folder).endswith("trg"):
-                self._execute_trg_creation()
-            status = self._execute_files(folder)
-            if not status:
-                return False
+            if "i18n" not in folder:
+                if str(folder).endswith("trg"):
+                    self._execute_trg_creation()
+                status = self._execute_files(folder)
+                if not status:
+                    return False
         return True
 
     def load_sample_data(self):
@@ -660,10 +663,13 @@ class DrAdminButton(DrGpkgBase):
         msg = "Create schema: Executing function {0}"
         msg_params = ("calculate_number_of_files",)
         tools_log.log_info(msg, msg_params=msg_params)
+
         self.total_sql_files = self.calculate_number_of_files()
+
         msg = "Number of SQL files '{0}': {1}"
         msg_params = ("TOTAL", self.total_sql_files,)
         tools_log.log_info(msg, msg_params=msg_params)
+
         status = self.load_base(self.dict_folders_process['load_base'])
         return status
 
@@ -676,24 +682,28 @@ class DrAdminButton(DrGpkgBase):
             tools_log.log_info(msg, msg_params=msg_params)
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
             load_sample = self.load_sample_data()
+            print(load_sample)
             if not load_sample:
                 return
+            print(self.populate_config_params(config_dao))
             return self.populate_config_params(config_dao)
         elif self.rdb_data.isChecked():
             msg = "Execute '{0}' (empty data)"
             msg_params = ("load_sample_data",)
             tools_log.log_info(msg, msg_params=msg_params)
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
+            print(self.populate_config_params(config_dao))
             return self.populate_config_params(config_dao)
 
-    def populate_config_params(self, config_dao=None):
+    def populate_config_params(self, data_dao=None):
         """Populate table config_param_user"""
 
-        if not config_dao:
-            config_dao = self.gpkg_dao_config
+        if not data_dao:
+            data_dao = self.gpkg_dao_data
 
         sql_select = "SELECT columnname, vdefault FROM config_form_fields WHERE formtype = 'form_options'"
-        rows = config_dao.get_rows(sql_select)
+        rows = data_dao.get_rows(sql_select)
+        print(f"rows-{rows}")
 
         if not rows:
             return False

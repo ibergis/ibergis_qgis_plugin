@@ -54,18 +54,18 @@ class DrOptions:
         v_sql = "SELECT distinct tabname " \
                 "FROM config_form_fields " \
                 "WHERE formname = 'dlg_options' AND tabname IS NOT NULL"
-        tab_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        tab_list = global_vars.gpkg_dao_data.get_rows(v_sql)
         tab_list = sorted(tab_list, key=lambda tab: self.tabs_to_show.index(tab[0]) if tab[0] in self.tabs_to_show else float('inf'))
 
         v_sql = "select distinct (layoutname), tabname " \
                 "FROM config_form_fields " \
                 "WHERE formname = 'dlg_options' AND layoutname IS NOT NULL"
-        lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        lyt_list = global_vars.gpkg_dao_data.get_rows(v_sql)
 
-        v_sql = "SELECT id, COALESCE(i18n_idval, idval) AS idval " \
+        v_sql = "SELECT id, idval " \
                 "FROM edit_typevalue " \
                 "WHERE typevalue = 'dlg_options_layout'"
-        titles_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        titles_list = global_vars.gpkg_dao_data.get_rows(v_sql)
         titles_dict = {row[0]: row[1] for row in titles_list}
 
         main_tab = self.dlg_go2epa_options.findChild(QTabWidget, 'main_tab')

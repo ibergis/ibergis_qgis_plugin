@@ -25,20 +25,20 @@ def getconfig(p_input: dict) -> dict:
     try:
 
         # get widgets from sys_param_user
-        column_names = ['columnname', 'COALESCE(i18n_label, label) AS label', 'datatype', 'widgettype',
-                        'COALESCE(i18n_descript, descript) AS descript', 'layoutname', 'layoutorder', 'vdefault',
+        column_names = ['columnname', 'label', 'datatype', 'widgettype',
+                        'descript', 'layoutname', 'layoutorder', 'vdefault',
                         'placeholder', 'columnname AS widgetname', 
                         'false AS isparent', 'tabname', 'dv_querytext', 'dv_orderby_id', 
                         'CASE WHEN dv_isnullvalue = 1 THEN True ELSE False END AS isNullValue',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
-                        'vdefault AS value', 'COALESCE(i18n_tooltip, tooltip) AS tooltip', 'addparam'
+                        'vdefault AS value', 'tooltip', 'addparam'
                         ]
         v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM config_form_fields " \
                 f"WHERE formname = 'dlg_options' " \
                 f"ORDER BY layoutname, layoutorder, columnname"
-        v_raw_widgets = global_vars.gpkg_dao_config.get_rows(v_sql)
+        v_raw_widgets = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         # format widgets as a json
         v_widgets = []
@@ -79,7 +79,7 @@ def getconfig(p_input: dict) -> dict:
 
                         # Execute on config gpkg if not configured
                         if not result and not executed:
-                            result = global_vars.gpkg_dao_config.get_row(v_querystring)
+                            result = global_vars.gpkg_dao_data.get_row(v_querystring) ## TODO: change to data gpkg
                         if result:
                             cmb_ids = result[0]
                             cmb_names = result[1]

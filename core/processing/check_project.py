@@ -75,8 +75,8 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             return {}
 
         # Get messages from sys_message
-        sql: str = "SELECT id, COALESCE(i18n_text, text) AS text FROM sys_message"
-        sys_messages = self.dao_config.get_rows(sql)
+        sql: str = "SELECT id, text FROM sys_message"
+        sys_messages = self.dao_data.get_rows(sql)
         sys_messages_dict: dict[int, str] = {}
         if not sys_messages:
             feedback.pushWarning(self.tr('ERROR: No sys messages found'))
@@ -87,7 +87,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         # Get queries from checkproject_query table
         sql: str = "SELECT * FROM checkproject_query ORDER BY query_type, id"
-        queries = self.dao_config.get_rows(sql)
+        queries = self.dao_data.get_rows(sql)
         if not queries:
             feedback.pushWarning(self.tr('ERROR: No check project queries found'))
             self.bool_error_on_execution = True

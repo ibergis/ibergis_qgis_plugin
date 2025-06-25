@@ -135,7 +135,7 @@ class DrGpkgCreateSchemaTask(DrTask):
             msg = "Function '{0}' returned {1}"
             msg_params = ("main_execution", "False",)
             tools_log.log_info(msg, msg_params=msg_params)
-            return False
+            return False 
 
         msg = "Create schema: Executing function '{0}'"
         msg_params = ("custom_execution",)

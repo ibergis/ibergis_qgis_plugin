@@ -11,15 +11,9 @@ from .. import global_vars
 from . import tools_log, tools_qt
 
 
-def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_thread=False, dao=None):
-    """ Execute SQL. Check its result in log tables, and show it to the user """
+def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_thread=False):
 
-    if dao is None:
-        dao = global_vars.gpkg_dao_data
-    if dao is None:
-        msg = "The connection to the database is broken."
-        tools_log.log_warning(msg, parameter=sql)
-        return None
+    dao = global_vars.gpkg_dao_data
     if log_sql:
         tools_log.log_db(sql, bold='b', stack_level_increase=2)
     row = dao.get_row(sql, commit, aux_conn=aux_conn)
@@ -36,15 +30,10 @@ def get_row(sql, log_info=True, log_sql=False, commit=True, aux_conn=None, is_th
     return row
 
 
-def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False, is_thread=False, dao=None):
+def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False, is_thread=False):
     """ Execute SQL. Check its result in log tables, and show it to the user """
 
-    if dao is None:
-        dao = global_vars.gpkg_dao_data
-    if dao is None:
-        msg = "The connection to the database is broken."
-        tools_log.log_warning(msg, parameter=sql)
-        return None
+    dao = global_vars.gpkg_dao_data
     if log_sql:
         tools_log.log_db(sql, bold='b', stack_level_increase=2)
     rows = None
@@ -67,11 +56,10 @@ def get_rows(sql, log_info=True, log_sql=False, commit=True, add_empty_row=False
     return rows
 
 
-def execute_sql(sql, log_sql=False, log_error=False, commit=True, filepath=None, is_thread=False, show_exception=True, dao=None):
+def execute_sql(sql, log_sql=False, log_error=False, commit=True, filepath=None, is_thread=False, show_exception=True):
     """ Execute SQL. Check its result in log tables, and show it to the user """
 
-    if dao is None:
-        dao = global_vars.gpkg_dao_data
+    dao = global_vars.gpkg_dao_data
     if log_sql:
         tools_log.log_db(sql, stack_level_increase=1)
     result = dao.execute_sql(sql, commit)

@@ -76,18 +76,21 @@ class DrProjectCheckTask(DrTask):
             self.output = self.process.postProcessAlgorithm(self.context, self.feedback)
 
             # Emit error messages
-            self.progressUpdate.emit(None, None, "\nERRORS\n----------", True)
+            msg = "Errors"
+            self.progressUpdate.emit(None, None, f"\n{tools_qt.tr(msg)}\n----------", True)
             for msg in self.process.error_messages:
                 self.progressUpdate.emit(None, None, msg, True)
 
             # Emit warning messages
-            self.progressUpdate.emit(None, None, "\nWARNINGS\n--------------", True)
+            msg = "Warnings"
+            self.progressUpdate.emit(None, None, f"\n{tools_qt.tr(msg)}\n--------------", True)
             for msg in self.process.warning_messages:
                 self.progressUpdate.emit(None, None, msg, True)
 
             # Emit info messages if enabled
             if not self.show_only_errors:
-                self.progressUpdate.emit(None, None, "\nINFO\n------", True)
+                msg = "Info"
+                self.progressUpdate.emit(None, None, f"\n{tools_qt.tr(msg)}\n------", True)
                 for msg in self.process.info_messages:
                     self.progressUpdate.emit(None, None, msg, True)
 
@@ -95,7 +98,8 @@ class DrProjectCheckTask(DrTask):
             return
 
         self.progressUpdate.emit(None, 100, None, True)
-        self.progressUpdate.emit(None, None, "Check Project Algorithm.....Finished", True)
+        msg = "Check Project Algorithm.....Finished"
+        self.progressUpdate.emit(None, None, tools_qt.tr(msg), True)
 
         if self.timer:
             self.timer.stop()

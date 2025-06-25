@@ -33,7 +33,7 @@ class DrImportINPButton(DrAction):
         self._load_user_values()
         self._set_initial_signals()
         tools_dr.disable_tab_log(dlg)
-        tools_dr.open_dialog(dlg, dlg_name="import")
+        tools_dr.open_dialog(dlg, dlg_name="import_inp")
 
     def _execute_process(self):
         # Show tab log
