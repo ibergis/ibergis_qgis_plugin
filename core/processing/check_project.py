@@ -388,6 +388,11 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                     include_min = self.outlayer_values[column]['include_min']
                     include_max = self.outlayer_values[column]['include_max']
 
+                    if value is None or value == 'NULL' or value == 'null':
+                        invalid_columns.append(column)
+                        columns_dict[column] += 1
+                        continue
+
                     # Check if value is outside bounds considering inclusion flags
                     is_below_min = value < min_val if include_min else value <= min_val
                     is_above_max = value > max_val if include_max else value >= max_val
@@ -496,13 +501,14 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         # Add temporal layers
         group_name = "CHECK PROJECT TEMPORAL LAYERS"
+        mesh_group = None
         group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
-        if group is None and len(self.temporal_layers_to_add) > 0:
+        if group is None and (len(self.temporal_layers_to_add) > 0 or len(self.validation_temporal_layers_to_add) > 0):
             QgsProject.instance().layerTreeRoot().insertGroup(0, group_name)
             group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+            mesh_group = group.findGroup("MESH VALIDATIONS")
         elif group is not None:
             group.removeAllChildren()
-        mesh_group = group.findGroup("MESH VALIDATIONS")
         if mesh_group is None and len(self.validation_temporal_layers_to_add) > 0:
             group.insertGroup(0, "MESH VALIDATIONS")
             mesh_group = group.findGroup("MESH VALIDATIONS")
@@ -876,25 +882,15 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         # Check roof volumes
         for feature in roof_layer.getFeatures():
+            outlet_vol = feature['outlet_vol'] if feature['outlet_vol'] not in (None, 'NULL', 'null') else 0
+            street_vol = feature['street_vol'] if feature['street_vol'] not in (None, 'NULL', 'null') else 0
+            infiltr_vol = feature['infiltr_vol'] if feature['infiltr_vol'] not in (None, 'NULL', 'null') else 0
+
             # Check if outlet or street volume is null
-            if feature['outlet_vol'] in (None, 'null', 'NULL') or feature['street_vol'] in (None, 'null', 'NULL'):
+            if outlet_vol + street_vol + infiltr_vol != 100:
                 new_feature = QgsFeature(temporal_layer.fields())
                 new_feature['Code'] = feature['code']
-                new_feature['Exception'] = 'Outlet or street volume is null'
-                new_feature.setGeometry(feature.geometry())
-                features_to_add.append(new_feature)
-            # Check if infiltration volume is null and the sum of outlet and street volumes is not 100
-            elif feature['infiltr_vol'] in (None, 'null', 'NULL') and (feature['outlet_vol'] + feature['street_vol'] != 100):
-                new_feature = QgsFeature(temporal_layer.fields())
-                new_feature['Code'] = feature['code']
-                new_feature['Exception'] = f'The sum of all volumes is not 100 ({feature['outlet_vol'] + feature['street_vol']})'
-                new_feature.setGeometry(feature.geometry())
-                features_to_add.append(new_feature)
-            # Check if infiltration volume is not null and the sum of all volumes is not 100
-            elif feature['infiltr_vol'] not in (None, 'null', 'NULL') and (feature['outlet_vol'] + feature['street_vol'] + feature['infiltr_vol'] != 100):
-                new_feature = QgsFeature(temporal_layer.fields())
-                new_feature['Code'] = feature['code']
-                new_feature['Exception'] = f'The sum of all volumes is not 100 ({feature["outlet_vol"] + feature["street_vol"] + feature["infiltr_vol"]})'
+                new_feature['Exception'] = f'The sum of all volumes is not 100 (current volume: {outlet_vol + street_vol + infiltr_vol})'
                 new_feature.setGeometry(feature.geometry())
                 features_to_add.append(new_feature)
 
