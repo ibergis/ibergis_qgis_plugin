@@ -735,7 +735,7 @@ class DrSchemaI18NManager:
         message = "Widgettype is wrongly configured. Needs to be in "
         message = "Layoutorder not found."
         message = "Python function"
-        message = "has been deprecated. Use"
+        message = "{0} has been deprecated. Use {1} instead."
         message = "instead."
         message = "translation successful"
         message = "translation failed in table"

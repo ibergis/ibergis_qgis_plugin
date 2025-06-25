@@ -23,7 +23,7 @@
 		</message>
 		<message>
 			<source>Database error: {0}</source>
-			<translation>Database error: {0}</translation>
+			<translation>Error de base de datos: {0}</translation>
 		</message>
 		<message>
 			<source>All dialogs updated correctly</source>
@@ -31,7 +31,7 @@
 		</message>
 		<message>
 			<source>widget {0} in tab {1} has not columnname and cant be configured</source>
-			<translation>widget {0} en pestaña {1} no tiene nombre de columna y no se puede configurar</translation>
+			<translation>Widget {0} en pestaña {1} no tiene nombre de columna y no se puede configurar</translation>
 		</message>
 		<message>
 			<source>Connected to {0}</source>
@@ -887,7 +887,7 @@
 		</message>
 		<message>
 			<source>Task 'Toolbox execute' manage json response with parameters: '{0}', '{1}', '{2}'</source>
-			<translation>Tarea 'Toolbox execute' gestionar respuesta json con parámetros: '{0}', '{1}', '{2}'</translation>
+			<translation>La tarea 'Toolbox execute' gestiona respuesta json con parámetros: '{0}', '{1}', '{2}'</translation>
 		</message>
 		<message>
 			<source>There was an error inserting curve.</source>
@@ -1043,7 +1043,7 @@
 		</message>
 		<message>
 			<source>Go2Epa task is already active!</source>
-			<translation>¡La tarea Go2Epa ya está activa!</translation>
+			<translation>¡La tarea Ir a EPA ya está activa!</translation>
 		</message>
 		<message>
 			<source>Error deleting data</source>
@@ -1346,7 +1346,7 @@
 		</message>
 		<message>
 			<source>lbl_path</source>
-			<translation>Senda:</translation>
+			<translation>Ruta:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_path</source>
@@ -1378,7 +1378,7 @@
 		</message>
 		<message>
 			<source>btn_gpkg_accept</source>
-			<translation>Acepte</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_gpkg_accept</source>
@@ -1410,7 +1410,7 @@
 		</message>
 		<message>
 			<source>btn_qgis_accept</source>
-			<translation>Acepte</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_qgis_accept</source>
@@ -1949,7 +1949,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Acepte</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -2318,7 +2318,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Acepte</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -2496,7 +2496,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Acepte</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -2669,7 +2669,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Acepte</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -2803,7 +2803,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Acepte</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -3934,7 +3934,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Acepte</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -4123,7 +4123,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Acepte</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -4228,7 +4228,7 @@
 		</message>
 		<message>
 			<source>lbl_export_path</source>
-			<translation>Senda:</translation>
+			<translation>Ruta:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_export_path</source>

@@ -386,7 +386,7 @@ class DrI18NGenerator:
             :param path: Full destination path (String)
             :return: (Boolean)
         """
-
+        print(table)
         values_by_context = {}
         forenames = [col.split("_")[0] for col in columns if col.endswith("en_us")]
 
@@ -418,31 +418,31 @@ class DrI18NGenerator:
             values_by_context[context].append((row, texts))
 
         with open(path, "a", encoding="utf-8") as file:
+            query = ""
             for context, data in values_by_context.items():
-                query = ""
                 if 'dbconfig_form_fields' in table:
                     for item_row, txt in data:
-                        query += (f"UPDATE {context} SET i18n_label = {txt[0]}, i18n_tooltip = {txt[1]}, "
-                                 f"i18n_placeholder = {txt[2]}, i18n_descript = {txt[3]} WHERE "
+                        query += (f"UPDATE {context} SET label = {txt[0]}, tooltip = {txt[1]}, "
+                                 f"placeholder = {txt[2]}, descript = {txt[3]} WHERE "
                                  f"formname = '{item_row['formname']}' AND formtype = '{item_row['formtype']}' AND "
                                  f"columnname = '{item_row['source']}';\n")
 
                 elif "dbtexts" in table:
                     if context == "sys_message":
                         for item_row, txt in data:
-                            query += (f"UPDATE {context} SET i18n_text = {txt[0]} WHERE id = '{item_row['source']}';\n")
+                            query += (f"UPDATE {context} SET text = {txt[0]} WHERE id = '{item_row['source']}';\n")
 
                     elif context == "config_csv":
                         for item_row, txt in data:
-                            query += (f"UPDATE {context} SET i18n_alias = {txt[0]}, i18n_descript = {txt[1]} WHERE "
+                            query += (f"UPDATE {context} SET alias = {txt[0]}, descript = {txt[1]} WHERE "
                                      f"id = {item_row['source']};\n")
 
                     elif context == "edit_typevalue":
                         for item_row, txt in data:
-                            query += (f"UPDATE {context} SET i18n_idval = {txt[0]}, i18n_descript = {txt[1]} WHERE "
+                            query += (f"UPDATE {context} SET idval = {txt[0]}, descript = {txt[1]} WHERE "
                                      f"rowid = {item_row['source']};\n")
                             
-                    file.write(query)
+            file.write(query)
         del file
 
     # endregion

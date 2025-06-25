@@ -31,7 +31,7 @@
 		</message>
 		<message>
 			<source>widget {0} in tab {1} has not columnname and cant be configured</source>
-			<translation>widget {0} in tab {1} has not columnname and cant be configured</translation>
+			<translation>Widget {0} in tab {1} has not columnname and cant be configured</translation>
 		</message>
 		<message>
 			<source>Connected to {0}</source>
