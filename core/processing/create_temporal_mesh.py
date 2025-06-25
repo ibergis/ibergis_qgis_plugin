@@ -17,7 +17,8 @@ from qgis.core import (
     QgsProcessingOutputVectorLayer,
     QgsFeatureSink,
     QgsProcessingUtils,
-    QgsProject
+    QgsProject,
+    QgsProcessingParameterBoolean
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis
@@ -38,6 +39,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
     TEMPORAL_MESH = 'TEMPORAL_MESH'
     IS_VALID = 'IS_VALID'
     MESH_OUTPUT = 'MESH_OUTPUT'
+    VALIDATE_LAYERS = 'VALIDATE_LAYERS'
 
     roof_layer: Optional[QgsVectorLayer] = None
     ground_layer: Optional[QgsVectorLayer] = None
@@ -70,6 +72,13 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             )
         )
         self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.VALIDATE_LAYERS,
+                self.tr('Validate layers'),
+                defaultValue=True
+            )
+        )
+        self.addParameter(
             QgsProcessingParameterFeatureSink(
                 self.MESH_OUTPUT,
                 self.tr("Simplified Mesh Temp Layer"),
@@ -93,32 +102,35 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         self.thread_triangulation = None
         self.validation_layer_intersect = None
         self.validation_layer_vert_edge = None
+        self.validate_layers = self.parameterAsBoolean(parameters, self.VALIDATE_LAYERS, context)
 
         if self.ground_layer is None or self.roof_layer is None:
             feedback.pushWarning(self.tr('Error getting source layers.'))
             return {}
 
         # Validate intersection
-        self.validation_layer_intersect = validatemesh.validate_intersect_v2(
-            {"ground": self.ground_layer, "roof": self.roof_layer}, feedback, True
-        )
-        if self.validation_layer_intersect is None:
-            feedback.pushWarning("Intersection validation layer not found")
-            self.validation_layer_intersect = None
+        if self.validate_layers:
+            self.validation_layer_intersect = validatemesh.validate_intersect(
+                {"ground": self.ground_layer}, feedback
+            )
+            if self.validation_layer_intersect is None:
+                feedback.pushWarning("Intersection validation layer not found")
+                self.validation_layer_intersect = None
 
-        if self.validation_layer_intersect is not None and self.validation_layer_intersect.featureCount() > 0:
-            return {}
+            if self.validation_layer_intersect is not None and self.validation_layer_intersect.featureCount() > 0:
+                return {}
 
         # Validate vertex-edge
-        self.validation_layer_vert_edge = validatemesh.validate_vert_edge_v2(
-            {"ground": self.ground_layer, "roof": self.roof_layer}, feedback, True
-        )
-        if self.validation_layer_vert_edge is None:
-            feedback.pushWarning("Vertex-edge validation layer not found")
-            self.validation_layer_vert_edge = None
+        if self.validate_layers:
+            self.validation_layer_vert_edge = validatemesh.validate_vert_edge_v2(
+                {"ground": self.ground_layer, "roof": self.roof_layer}, feedback, True
+            )
+            if self.validation_layer_vert_edge is None:
+                feedback.pushWarning("Vertex-edge validation layer not found")
+                self.validation_layer_vert_edge = None
 
-        if self.validation_layer_vert_edge is not None and self.validation_layer_vert_edge.featureCount() > 0:
-            return {}
+            if self.validation_layer_vert_edge is not None and self.validation_layer_vert_edge.featureCount() > 0:
+                return {}
 
         # Create mesh
         self.thread_triangulation = DrCreateMeshTask(

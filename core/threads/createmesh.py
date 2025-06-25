@@ -103,7 +103,7 @@ class DrCreateMeshTask(DrTask):
                 project = QgsProject.instance()
                 layer_ids = (x.id() for x in project.mapLayersByName("Mesh Temp Layer"))
                 project.removeMapLayers(layer_ids)
-                group_name = "Mesh inputs errors & warnings"
+                group_name = "MESH INPUTS ERRORS & WARNINGS"
                 temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
                 if temp_group is not None:
                     project.removeMapLayers(temp_group.findLayerIds())
@@ -554,7 +554,7 @@ class DrCreateMeshTask(DrTask):
                 # Check for triangles with more than one inlet
                 inlet_warning = validate_inlets_in_triangles(temp_layer, layers["inlet"])
                 if inlet_warning.hasFeatures():
-                    group_name = "Mesh inputs errors & warnings"
+                    group_name = "MESH INPUTS ERRORS & WARNINGS"
                     tools_qt.add_layer_to_toc(inlet_warning, group_name, create_groups=True)
                     project.layerTreeRoot().removeChildrenGroupWithoutLayers()
                     iface.layerTreeView().model().sourceModel().modelReset.emit()
