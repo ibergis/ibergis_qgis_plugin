@@ -564,7 +564,7 @@ UPDATE edit_typevalue SET idval = 'OUTFLOWS', descript = NULL WHERE rowid = 142;
 UPDATE edit_typevalue SET idval = 'RAINFALL', descript = NULL WHERE rowid = 143;
 UPDATE edit_typevalue SET idval = 'RDII', descript = NULL WHERE rowid = 144;
 UPDATE edit_typevalue SET idval = 'RUNOFF', descript = NULL WHERE rowid = 145;
-UPDATE edit_typevalue SET idval = 'None', descript = NULL WHERE rowid = 146;
+UPDATE edit_typevalue SET idval = 'No raster results', descript = NULL WHERE rowid = 146;
 UPDATE edit_typevalue SET idval = 'Linear interpolation', descript = NULL WHERE rowid = 147;
 UPDATE edit_typevalue SET idval = 'Nearest interpolation', descript = NULL WHERE rowid = 148;
 UPDATE edit_typevalue SET idval = 'Default value for losses when creating the mesh', descript = NULL WHERE rowid = 149;

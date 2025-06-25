@@ -629,7 +629,7 @@ INSERT INTO edit_typevalue
 VALUES(145, 'inp_typevalue_file_type', 'RUNOFF', 'RUNOFF', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(146, 'result_results_raster', '0', 'None', NULL, NULL);
+VALUES(146, 'result_results_raster', '0', 'No raster results', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(147, 'result_results_raster', '1', 'Linear interpolation', NULL, NULL);
