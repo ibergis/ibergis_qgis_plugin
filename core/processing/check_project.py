@@ -330,16 +330,16 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message))
             return
 
-        msg = exception_message.format((temporal_layer.featureCount()))
+        msg_text = exception_message.format((temporal_layer.featureCount()))
         if query['except_lvl'] == 2:
             # Save warning message
             msg = 'WARNING-{0} ({1}) ({2}): {3}'
-            msg_params = (query['error_code'], query['table_name'], query['query_type'], msg)
+            msg_params = (query['error_code'], query['table_name'], query['query_type'], msg_text)
             self.warning_messages.append(self.tr(msg, list_params=msg_params))
         else:
             # Save error message
             msg = 'ERROR-{0} ({1}) ({2}): {3}'
-            msg_params = (query['error_code'], query['table_name'], query['query_type'], msg)
+            msg_params = (query['error_code'], query['table_name'], query['query_type'], msg_text)
             self.error_messages.append(self.tr(msg, list_params=msg_params))
 
     def check_mandatory_null_or_outlayer(self, query, sys_messages_dict: dict[int, str], feedback: QgsProcessingFeedback):

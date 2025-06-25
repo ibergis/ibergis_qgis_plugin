@@ -157,7 +157,7 @@ VALUES
 (24, 'MANDATORY NULL', 'inp_pump', '{code, state, startup, shutoff, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 115),
 (25, 'MANDATORY NULL', 'inp_storage', '{code, elev, ymax, y0, ysur, storage_type}', NULL, 0, 'Point', 1, 10, 3, 116),
 (26, 'MANDATORY NULL', 'inp_weir', '{code, flap, weir_type, geom1, geom2, cd2, ec, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 117),
-(27, 'MANDATORY NULL', 'roof', '{code, slope, width, roughness, isconnected, outlet_code, outlet_vol, street_vol}', NULL, 0, 'MultiPolygon', 1, 10, 3, 118),
+(27, 'MANDATORY NULL', 'roof', '{code, slope, width, roughness, isconnected, outlet_code, outlet_vol, street_vol, infiltr_vol}', NULL, 0, 'MultiPolygon', 1, 10, 3, 118),
 (28, 'GEOMETRIC DUPLICATE', 'arc', NULL, NULL, 1, 'LineString', 3, 7, 3, 101),
 (29, 'GEOMETRIC DUPLICATE', 'node', NULL, NULL, 1, 'Point', 4, 8, 3, 102),
 (30, 'GEOMETRIC ORPHAN', 'node', NULL, NULL, 1, 'Point', 5, 9, 3, 103),
