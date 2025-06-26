@@ -91,6 +91,7 @@ class DrProjectCheckButton(DrAction):
 
         self.dlg_audit_project.btn_accept.clicked.connect(self._run_check_project)
         self.dlg_audit_project.rejected.connect(partial(tools_dr.save_settings, self.dlg_audit_project))
+        self.dlg_audit_project.txt_infolog.setReadOnly(True)
 
         # Open dialog
         tools_dr.open_dialog(self.dlg_audit_project, dlg_name='project_check')

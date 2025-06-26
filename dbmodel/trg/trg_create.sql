@@ -41,11 +41,11 @@ CREATE TRIGGER trg_ins_inp_outfall AFTER INSERT ON inp_outfall FOR EACH ROW BEGI
 CREATE TRIGGER trg_ins_inp_divider AFTER INSERT ON inp_divider FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_divider'); END;
 CREATE TRIGGER trg_ins_inp_inlet AFTER INSERT ON inlet FOR EACH ROW BEGIN INSERT INTO node (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inlet'); END;
 
-CREATE TRIGGER trg_upd_code_inp_junction AFTER UPDATE of code on inp_junction FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_junction'; END;
-CREATE TRIGGER trg_upd_code_inp_storage AFTER UPDATE of code on inp_storage FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_storage'; END;
-CREATE TRIGGER trg_upd_code_inp_outfall AFTER UPDATE of code on inp_outfall FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_outfall'; END;
-CREATE TRIGGER trg_upd_code_inp_divider AFTER UPDATE of code on inp_divider FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_divider'; END;
-CREATE TRIGGER trg_upd_code_inp_inlet AFTER UPDATE of code on inlet FOR EACH ROW BEGIN update node set code = NEW.code where table_fid = NEW.fid and table_name = 'inlet'; END;
+CREATE TRIGGER trg_upd_code_inp_junction AFTER UPDATE of code, geom on inp_junction FOR EACH ROW BEGIN update node set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inp_junction'; END;
+CREATE TRIGGER trg_upd_code_inp_storage AFTER UPDATE of code, geom on inp_storage FOR EACH ROW BEGIN update node set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inp_storage'; END;
+CREATE TRIGGER trg_upd_code_inp_outfall AFTER UPDATE of code, geom on inp_outfall FOR EACH ROW BEGIN update node set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inp_outfall'; END;
+CREATE TRIGGER trg_upd_code_inp_divider AFTER UPDATE of code, geom on inp_divider FOR EACH ROW BEGIN update node set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inp_divider'; END;
+CREATE TRIGGER trg_upd_code_inp_inlet AFTER UPDATE of code, geom on inlet FOR EACH ROW BEGIN update node set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inlet'; END;
 
 CREATE TRIGGER trg_del_inp_junction AFTER DELETE on inp_junction FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_junction'; END;
 CREATE TRIGGER trg_del_inp_storage AFTER DELETE on inp_storage FOR EACH ROW BEGIN delete from node where code = OLD.code and table_name = 'inp_storage'; END;
@@ -61,11 +61,11 @@ CREATE TRIGGER trg_ins_inp_orifice AFTER INSERT ON inp_orifice FOR EACH ROW BEGI
 CREATE TRIGGER trg_ins_inp_pump AFTER INSERT ON inp_pump FOR EACH ROW BEGIN INSERT INTO arc (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_pump'); END;
 CREATE TRIGGER trg_ins_inp_conduit AFTER INSERT ON inp_conduit FOR EACH ROW BEGIN INSERT INTO arc (table_fid, code, geom, table_name) VALUES (NEW.fid, NEW.code, NEW.geom, 'inp_conduit'); END;
 
-CREATE TRIGGER trg_upd_code_inp_outlet AFTER UPDATE of code on inp_outlet FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_outlet'; END;
-CREATE TRIGGER trg_upd_code_inp_weir AFTER UPDATE of code on inp_weir FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_weir'; END;
-CREATE TRIGGER trg_upd_code_inp_orifice AFTER UPDATE of code on inp_orifice FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_orifice'; END;
-CREATE TRIGGER trg_upd_code_inp_pump AFTER UPDATE of code on inp_pump FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_pump'; END;
-CREATE TRIGGER trg_upd_code_inp_conduit AFTER UPDATE of code on inp_conduit FOR EACH ROW BEGIN update arc set code = NEW.code where table_fid = NEW.fid and table_name = 'inp_conduit'; END;
+CREATE TRIGGER trg_upd_code_inp_outlet AFTER UPDATE of code, geom on inp_outlet FOR EACH ROW BEGIN update arc set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inp_outlet'; END;
+CREATE TRIGGER trg_upd_code_inp_weir AFTER UPDATE of code, geom on inp_weir FOR EACH ROW BEGIN update arc set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inp_weir'; END;
+CREATE TRIGGER trg_upd_code_inp_orifice AFTER UPDATE of code, geom on inp_orifice FOR EACH ROW BEGIN update arc set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inp_orifice'; END;
+CREATE TRIGGER trg_upd_code_inp_pump AFTER UPDATE of code, geom on inp_pump FOR EACH ROW BEGIN update arc set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inp_pump'; END;
+CREATE TRIGGER trg_upd_code_inp_conduit AFTER UPDATE of code, geom on inp_conduit FOR EACH ROW BEGIN update arc set code = NEW.code, geom = NEW.geom where table_fid = NEW.fid and table_name = 'inp_conduit'; END;
 
 CREATE TRIGGER trg_del_inp_outlet AFTER DELETE on inp_outlet FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_outlet'; END;
 CREATE TRIGGER trg_del_inp_orifice AFTER DELETE on inp_orifice FOR EACH ROW BEGIN delete from arc where code = OLD.code and table_name = 'inp_orifice'; END;
