@@ -986,6 +986,8 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
                     if widgetcontrols and widgetcontrols.get('regexpControl') is not None:
                         pass
                     widget.editingFinished.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+                    if field['columnname'] in ['inp_options_start_time', 'inp_options_end_time']:
+                        widget.editingFinished.connect(partial(update_tmax, dialog))
                     widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
                     datatype = field.get('datatype')
                     if datatype == 'int':
@@ -1020,6 +1022,8 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
                         date = QDate.fromString(field['value'].replace('/', '-'), 'yyyy-MM-dd')
                         widget.setDate(date)
                     widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+                    if field['columnname'] in ['inp_options_start_date', 'inp_options_end_date']:
+                        widget.editingFinished.connect(partial(update_tmax, dialog))
                     widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
                 elif field['widgettype'] == 'spinbox':
                     widget = QDoubleSpinBox()
@@ -1144,6 +1148,80 @@ def get_dialog_changed_values(dialog, chk, widget, field, list, value=None):
         list.pop(idx_del)
 
     list.append(elem)
+
+
+def update_tmax(dialog):
+    """ Update the tmax field based on SWMM options """
+
+    # Get widgets
+    start_time = dialog.findChild(QLineEdit, 'inp_options_start_time')
+    end_time = dialog.findChild(QLineEdit, 'inp_options_end_time')
+    start_date = dialog.findChild(QgsDateTimeEdit, 'inp_options_start_date')
+    end_date = dialog.findChild(QgsDateTimeEdit, 'inp_options_end_date')
+    tmax = dialog.findChild(QLineEdit, 'options_tmax')
+
+    # Get widget values
+    start_time_text = tools_qt.get_text(dialog, start_time, return_string_null=False)
+    end_time_text = tools_qt.get_text(dialog, end_time, return_string_null=False)
+    start_date_str = tools_qt.get_calendar_date(dialog, start_date)
+    end_date_str = tools_qt.get_calendar_date(dialog, end_date)
+
+    try:
+        from datetime import datetime, timedelta
+
+        # Parse time strings (assuming format like "HH:MM:SS" or "HH:MM")
+        def parse_time(time_str: str) -> tuple[int, int, int]:
+            """Parse time string and return (hours, minutes, seconds)"""
+            if not time_str or time_str.strip() == "":
+                return 0, 0, 0
+
+            time_parts = time_str.strip().split(':')
+            if len(time_parts) == 2:
+                # Format: HH:MM
+                hours = int(time_parts[0])
+                minutes = int(time_parts[1])
+                seconds = 0
+            elif len(time_parts) == 3:
+                # Format: HH:MM:SS
+                hours = int(time_parts[0])
+                minutes = int(time_parts[1])
+                seconds = int(time_parts[2])
+            else:
+                return 0, 0, 0
+
+            return hours, minutes, seconds
+
+        # Parse dates and times
+        if start_date_str and end_date_str:
+            # Parse date strings (yyyy/MM/dd format) into QDate objects
+            start_date_obj = QDate.fromString(start_date_str, 'yyyy/MM/dd')
+            end_date_obj = QDate.fromString(end_date_str, 'yyyy/MM/dd')
+
+            if start_date_obj.isValid() and end_date_obj.isValid():
+                start_h, start_m, start_s = parse_time(start_time_text)
+                end_h, end_m, end_s = parse_time(end_time_text)
+
+                # Create datetime objects
+                start_datetime = datetime.combine(start_date_obj.toPyDate(), datetime.min.time().replace(
+                    hour=start_h, minute=start_m, second=start_s
+                ))
+                end_datetime = datetime.combine(end_date_obj.toPyDate(), datetime.min.time().replace(
+                    hour=end_h, minute=end_m, second=end_s
+                ))
+
+                # Calculate time difference
+                time_diff = end_datetime - start_datetime
+                seconds = int(time_diff.total_seconds())
+
+                # Update the tmax field
+                if tmax:
+                    tools_qt.set_widget_text(dialog, 'options_tmax', str(seconds))
+                    # Manually emit editingFinished signal to trigger any connected functions
+                    tmax.editingFinished.emit()
+
+    except Exception as e:
+        msg = f"Error calculating time difference: {e}"
+        tools_log.log_warning(msg)
 
 
 def add_button(**kwargs):

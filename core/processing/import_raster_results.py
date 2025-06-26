@@ -215,7 +215,13 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         temporal.setIsActive(True)
         temporal.setMode(Qgis.RasterTemporalMode.FixedRangePerBand)
 
-        start_time: QDateTime = QDateTime(self.start_date, self.start_time).addSecs(3600)
+        # Get current UTC offset in seconds
+        current_utc_offset = QDateTime.currentDateTime().offsetFromUtc()
+
+        start_time: QDateTime = QDateTime(self.start_date, self.start_time)
+        # Add UTC offset instead of converting to UTC
+        start_time = start_time.addSecs(current_utc_offset)
+
         interval_seconds: Optional[int] = None
         if self.step_time is not None:
             interval_seconds = (self.step_time.hour * 60 + self.step_time.minute) * 60 + self.step_time.second
@@ -247,9 +253,13 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         # Calculate each value color
         color_items: list[QgsColorRampShader.ColorRampItem] = []
+        last_color: QColor = QColor(0, 0, 0)  # Default color for edge cases
+
         for val in values:
             # Get parent main colors
             keys: list[float] = sorted(main_colors.keys())
+            color = QColor(0, 0, 0)  # Default color
+
             for i in range(len(keys)-1):
                 if keys[i] <= val <= keys[i+1]:
                     ratio = (val - keys[i]) / (keys[i+1] - keys[i])
@@ -265,11 +275,16 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                     break
             else:
                 color = QColor(0, 0, 0)  # Default color
+
+            last_color = color  # Store the last calculated color
             # Store color into color list
             color_items.append(QgsColorRampShader.ColorRampItem(val, color, f"{val}".replace('.', ',')))
+
         if min_invisible:
             # Set minimum value(-9999) invisible
             color_items.insert(0, QgsColorRampShader.ColorRampItem(-9999.0, QColor(0, 0, 0, 0), "-9999.0"))
+            # Set maximum value(9999) like the last color
+            color_items.append(QgsColorRampShader.ColorRampItem(9999.0, last_color, "9999.0"))
 
         return color_items
 

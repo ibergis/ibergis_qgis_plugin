@@ -1271,7 +1271,7 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_delta_time', 'lyt_main_1_2', 3, 'integer', 'text', 'Delta time:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Increase of maximum time', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_tmax', 'lyt_main_2_1', 2, 'integer', 'text', 'Tmax:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '18000', 'Maximum time of simulation', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_tmax', 'lyt_main_2_1', 2, 'integer', 'text', 'Tmax:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, '10800', 'Maximum time of simulation', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_rank_results', 'lyt_main_2_1', 3, 'integer', 'text', 'Rank results:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '300', 'Rank of results', NULL);
