@@ -1459,12 +1459,31 @@ class DrNonVisual:
                     value = item.data(0)
                     if x == 1 and type(value) == str:
                         # Convert to HH:mm time format
-                        for i in range(0, len(time_formats_list)):
-                            value = QTime.fromString(item.data(0), time_formats_list[i])  # Try to convert
-                            if not value.isNull():
-                                value = value.toString(output_time_format if time_formats_list[i] != 'HH:mm:ss' else output_time_format+':ss')  # Convert QTime to string
-                                break
-                        if type(value) != str and value.isNull():
+                        #for i in range(0, len(time_formats_list)):
+                            #value = QTime.fromString(item.data(0), time_formats_list[i])  # Try to convert
+                            #if not value.isNull():
+                            #    value = value.toString(output_time_format if time_formats_list[i] != 'HH:mm:ss' else output_time_format+':ss')  # Convert QTime to string
+                            #    break
+                        #if type(value) != str and value.isNull():
+                        #    invalid_times.append(item.data(0))
+
+                        time_values = item.data(0).split(':')
+                        if len(time_values) == 2:
+                            # Check if both values are integers
+                            try:
+                                hours = int(time_values[0])
+                                # Add 0 if minutes is a single digit
+                                if len(time_values[1]) == 1:
+                                    time_values[1] = f"{time_values[1]}0"
+                                minutes = int(time_values[1])
+                                # Validate minutes range (00-59)
+                                if 0 <= minutes <= 59:
+                                    value = f"{hours}:{minutes}"
+                                else:
+                                    invalid_times.append(item.data(0))
+                            except ValueError:
+                                invalid_times.append(item.data(0))
+                        else:
                             invalid_times.append(item.data(0))
                     elif x == 0 and type(value) == str:
                         # Convert to MM/dd/yyyy date format

@@ -179,7 +179,7 @@ def extract_xy_from_line(line_geom):
             extract_xyz_from_simple_point(
                 'nan',
                 point_simple
-            ) for point_simple in 
+            ) for point_simple in
                 vertices_list
         ]
     extr_coords_df = pd.DataFrame(
@@ -342,7 +342,7 @@ def get_timeseries_from_table(ts_raw, name_col, feedback):
                         feedback.pushWarning(
                                 'Warning: At least one date in the timeseries file is missing. Date will be set to start date')
                     ts_df['Date'] = ''
-                else: 
+                else:
                     ts_df['Date'] = adjust_datetime(
                         ts_df['Date'],
                         'Date',
@@ -350,13 +350,13 @@ def get_timeseries_from_table(ts_raw, name_col, feedback):
                         ts_name,
                         feedback = None
                     )
-                ts_df['Time'] = adjust_datetime(
-                    ts_df['Time'],
-                    'Time',
-                    'HH:mm',
-                    ts_name,
-                    feedback
-                )
+                # ts_df['Time'] = adjust_datetime(
+                #     ts_df['Time'],
+                #     'Time',
+                #     'HH:mm',
+                #     ts_name,
+                #     feedback
+                # )
             if annotation_field_name in ts_df.columns:
                 ts_annotation = ts_df[annotation_field_name].fillna('').unique()[0]
             else:
@@ -394,7 +394,7 @@ def check_deprecated(
             )
             df = df.rename(columns={dep_col: cols_deprecated[dep_col]})
     return df
-        
+
 
 def check_columns(
     swmm_data_file,
@@ -415,4 +415,3 @@ def check_columns(
         err_message = err_message+'. Please add columns or check if the correct file/layer was selected. '
         err_message = err_message+'For further advice regarding columns, read the documentation file in the plugin folder.'
         raise QgsProcessingException(err_message)
-

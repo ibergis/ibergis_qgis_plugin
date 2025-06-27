@@ -684,13 +684,13 @@ def get_timeseries_from_table(ts_raw, name_col, feedback):
                         ts_name,
                         feedback
                     )
-                ts_df['Time'] = adjust_datetime(
-                    ts_df['Time'],
-                    'Time',
-                    'HH:mm',
-                    ts_name,
-                    feedback
-                )
+                # ts_df['Time'] = adjust_datetime(
+                #     ts_df['Time'],
+                #     'Time',
+                #     'HH:mm',
+                #     ts_name,
+                #     feedback
+                # )
             if annotation_field_name in ts_df.columns:
                 ts_annotation = ts_df[annotation_field_name].fillna('').unique()[0]
             else:
