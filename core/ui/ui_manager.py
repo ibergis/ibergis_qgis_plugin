@@ -228,6 +228,24 @@ FORM_CLASS = _get_ui_class('project_check.ui', 'utilities')
 
 class DrProjectCheckUi(DrDialog, FORM_CLASS):
     pass
+
+
+UINAME = "profile"
+FORM_CLASS = _get_ui_class(f'{UINAME}.ui', 'utilities')
+
+
+class DrProfileUi(DrMainWindow, FORM_CLASS):
+    pass
+
+
+UINAME = "profile_list"
+FORM_CLASS = _get_ui_class(f'{UINAME}.ui', 'utilities')
+
+
+class DrProfilesListUi(DrDialog, FORM_CLASS):
+    pass
+
+
 # endregion
 
 

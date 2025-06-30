@@ -22,6 +22,7 @@ from .utilities.options_btn import DrOptionsButton
 from .utilities.project_check_btn import DrProjectCheckButton
 from .utilities.bc_polygon_btn import DrCreateBCFromPolygon
 from .utilities.execute_model_btn import DrExecuteModelButton
+from .utilities.profile_btn import DrProfileButton
 from .utilities.mesh_manager_btn import DrMeshManagerButton
 
 # ToC
