@@ -104,7 +104,7 @@ class DrProfileButton(DrAction):
         self.composers_path = self.dlg_draw_profile.findChild(QLineEdit, "composers_path")
 
         # Set layer_node
-        self.layer_node = tools_qgis.get_layer_by_tablename('v_edit_node', show_warning_=False)
+        self.layer_node = tools_qgis.get_layer_by_tablename('inp_junction', show_warning_=False)
 
         # Toolbar actions
         action = self.dlg_draw_profile.findChild(QAction, "actionProfile")
@@ -145,12 +145,8 @@ class DrProfileButton(DrAction):
         tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_title,
                                  tools_dr.get_config_parser('btn_profile', 'title_profile', "user", "session"))
 
-        # Show form in docker
-        tools_dr.init_docker('qgis_form_docker')
-        if global_vars.session_vars['dialog_docker']:
-            tools_dr.docker_dialog(self.dlg_draw_profile)
-        else:
-            tools_dr.open_dialog(self.dlg_draw_profile, dlg_name='profile')
+        # Show form
+        tools_dr.open_dialog(self.dlg_draw_profile, dlg_name='profile')
 
     # region private functions
 
@@ -394,101 +390,183 @@ class DrProfileButton(DrAction):
         event_point = self.snapper_manager.get_event_point(point=point)
 
         # Snapping
-        result = self.snapper_manager.snap_to_current_layer(event_point)
+        result = self.snapper_manager.snap_to_project_config_layers(event_point)
 
         if result.isValid():
-            # Check feature
-            layer = self.snapper_manager.get_snapped_layer(result)
-            if layer == self.layer_node:
-                # Get the point
-                snapped_feat = self.snapper_manager.get_snapped_feature(result)
-                element_id = snapped_feat.attribute('node_id')
-                self.element_id = str(element_id)
+            # Get the feature
+            snapped_feat = self.snapper_manager.get_snapped_feature(result)
+            element_id = snapped_feat.attribute('code')
+            self.element_id = str(element_id)
 
-                if self.first_node and not self.add_points:
-                    self.initNode = element_id
-                    self.first_node = False
-                    msg = "Node 1 selected"
-                    tools_qgis.show_info(msg, parameter=element_id)
-                else:
-                    if self.element_id == self.initNode or self.element_id == self.endNode \
-                            or self.element_id in self.add_points_list:
-                        msg = "Node already selected"
-                        param = element_id
-                        tools_qgis.show_warning(msg, parameter=param)
-                        if not self.add_points:
-                            tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
-                            tools_dr.disconnect_signal('profile')
-                            self.dlg_draw_profile.btn_save_profile.setEnabled(False)
-                            self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
-                            self.action_add_point.setDisabled(True)
-                            # Clear old list arcs
-                            self.dlg_draw_profile.tbl_list_arc.clear()
-
-                            self._remove_selection()
-                    else:
-                        if self.add_points:
-                            self.add_points_list.append(element_id)
-                        else:
-                            self.endNode = element_id
+            if self.first_node and not self.add_points:
+                self.initNode = element_id
+                self.first_node = False
+                msg = "Node 1 selected"
+                tools_qgis.show_info(msg, parameter=element_id)
+            else:
+                if self.element_id == self.initNode or self.element_id == self.endNode \
+                        or self.element_id in self.add_points_list:
+                    msg = "Node already selected"
+                    param = element_id
+                    tools_qgis.show_warning(msg, parameter=param)
+                    if not self.add_points:
                         tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
                         tools_dr.disconnect_signal('profile')
-                        self.dlg_draw_profile.btn_draw_profile.setEnabled(True)
-                        self.dlg_draw_profile.btn_save_profile.setEnabled(True)
-
+                        self.dlg_draw_profile.btn_save_profile.setEnabled(False)
+                        self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
+                        self.action_add_point.setDisabled(True)
                         # Clear old list arcs
                         self.dlg_draw_profile.tbl_list_arc.clear()
 
-                        # Populate list arcs
-                        extras = f'"initNode":"{self.initNode}", "endNode":"{self.endNode}"'
-                        if self.add_points and self.add_points_list:
-                            points_list = str(self.add_points_list).replace("'", "")
-                            extras += f', "midNodes":{points_list}'
-                        body = tools_dr.create_body(extras=extras)
-                        result = tools_dr.execute_procedure('gw_fct_getprofilevalues', body)
-                        if result is None or result['status'] == 'Failed':
-                            return
-                        self.layer_arc = tools_qgis.get_layer_by_tablename("v_edit_arc")
-
-                        # Manage level and message from query result
-                        if result['message']:
-                            level = int(result['message']['level'])
-                            msg = result['message']['text']
-                            tools_qgis.show_message(msg, level)
-                            if result['message']['level'] != 3:
-                                # If error reset profile
-                                self._clear_profile()
-                                return
-
                         self._remove_selection()
-                        list_arcs = []
-                        for arc in result['body']['data']['arc']:
-                            item_arc = QListWidgetItem(str(arc['arc_id']))
-                            self.dlg_draw_profile.tbl_list_arc.addItem(item_arc)
-                            list_arcs.append(arc['arc_id'])
-
-                        expr_filter = "\"arc_id\" IN ("
-                        for arc in result['body']['data']['arc']:
-                            expr_filter += f"'{arc['arc_id']}', "
-                        expr_filter = expr_filter[:-2] + ")"
-                        expr = QgsExpression(expr_filter)
-                        # Get a featureIterator from this expression:
-                        it = self.layer_arc.getFeatures(QgsFeatureRequest(expr))
-
-                        self.id_list = [i.id() for i in it]
-                        self.layer_arc.selectByIds(self.id_list)
-
-                        self.action_add_point.setDisabled(False)
-
-                    # Next profile will be done from scratch
-                    self.first_node = True
+                else:
                     if self.add_points:
-                        self.add_points = False
+                        self.add_points_list.append(element_id)
+                    else:
+                        self.endNode = element_id
+                    tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
+                    tools_dr.disconnect_signal('profile')
+                    self.dlg_draw_profile.btn_draw_profile.setEnabled(True)
+                    self.dlg_draw_profile.btn_save_profile.setEnabled(True)
+
+                    # Clear old list arcs
+                    self.dlg_draw_profile.tbl_list_arc.clear()
+
+                    # Draw profile
+                    self._draw_profile_v2()
+                    return
+
+                    # Populate list arcs
+                    extras = f'"initNode":"{self.initNode}", "endNode":"{self.endNode}"'
+                    if self.add_points and self.add_points_list:
+                        points_list = str(self.add_points_list).replace("'", "")
+                        extras += f', "midNodes":{points_list}'
+                    body = tools_dr.create_body(extras=extras)
+                    result = tools_dr.execute_procedure('gw_fct_getprofilevalues', body)
+                    if result is None or result['status'] == 'Failed':
+                        return
+                    self.layer_arc = tools_qgis.get_layer_by_tablename("v_edit_arc")
+
+                    # Manage level and message from query result
+                    if result['message']:
+                        level = int(result['message']['level'])
+                        msg = result['message']['text']
+                        tools_qgis.show_message(msg, level)
+                        if result['message']['level'] != 3:
+                            # If error reset profile
+                            self._clear_profile()
+                            return
+
+                    self._remove_selection()
+                    list_arcs = []
+                    for arc in result['body']['data']['arc']:
+                        item_arc = QListWidgetItem(str(arc['arc_id']))
+                        self.dlg_draw_profile.tbl_list_arc.addItem(item_arc)
+                        list_arcs.append(arc['arc_id'])
+
+                    expr_filter = "\"arc_id\" IN ("
+                    for arc in result['body']['data']['arc']:
+                        expr_filter += f"'{arc['arc_id']}', "
+                    expr_filter = expr_filter[:-2] + ")"
+                    expr = QgsExpression(expr_filter)
+                    # Get a featureIterator from this expression:
+                    it = self.layer_arc.getFeatures(QgsFeatureRequest(expr))
+
+                    self.id_list = [i.id() for i in it]
+                    self.layer_arc.selectByIds(self.id_list)
+
+                    self.action_add_point.setDisabled(False)
+
+                # Next profile will be done from scratch
+                self.first_node = True
+                if self.add_points:
+                    self.add_points = False
 
     def _action_pan(self):
         if self.first_node:
             # Set action pan
             self.iface.actionPan().trigger()
+
+    def _draw_profile_v2(self):
+        """ Draw profile """
+        from swmm_api import __version__ as swmm_api_version
+        from swmm_api import read_inp_file, read_out_file
+        import pandas as pd
+        from ...utils.profile_utils import plot_longitudinal, create_gif
+        import sys
+
+        # Definir la ruta de los ficheros
+        inputfile   = r"C:\Users\usuario\Desktop\QGIS Projects\drain\drain_sample_94_2\Iber_SWMM.inp"
+        inifile     = r"C:\Users\usuario\Desktop\QGIS Projects\drain\drain_sample_94_2\Iber_SWMM.ini"
+        outputfile  = r"C:\Users\usuario\Desktop\QGIS Projects\drain\drain_sample_94_2\Iber_SWMM.out"
+
+        # Cargar la simulación
+        inp = read_inp_file(inputfile)
+        out = read_out_file(outputfile)
+
+        res_out = out.to_frame()
+
+        # Versiones de SWMM API y librería de SWMM. Informativo.
+        print(f'SWMM API version - {swmm_api_version}')
+        swmm_version = out.swmm_version
+        print(f'SWMM version - {swmm_version}')
+
+        # Dataframe con todos los resultados
+        # db_out = out2frame(outputfile)
+
+        # Parámetros temporales
+        write_time_step = out.report_interval
+        start_date = out.start_date
+        end_date = start_date + out.n_periods * out.report_interval
+
+        print(f"Start date = {start_date}")
+        print(f"End date   = {end_date}")
+
+
+        # Tipo de gráfico: 0 - Estático, 1 - Dinámico (serie temporal)
+        plot_type = 1
+
+        # Resultado en tiempo concreto 0 - Estático
+        timestamp = pd.Timestamp('2021-06-10 00:30:00')
+
+        # Periodo de resultados, 1 - Dinámico (serie temporal)
+        custom_start = pd.Timestamp('2021-06-10 00:01:00')
+        custom_end   = pd.Timestamp('2021-06-10 00:59:00')
+
+        # Nodos
+        start_node  ='MH1'
+        end_node    ='O5'
+
+        # Parámetros de visualización
+        c_inv = "black"
+        c_ground_line = "brown"
+        c_crown = "black"
+        c_ground = "brown"
+        lw = 1
+        c_water = "blue"
+        c_pipe = "grey"
+        mh_width = 0.5
+        offset_ymax = 0.5
+
+        offsets = 0 # 0 - Depth, # 1 - Elevation
+
+        if plot_type == 0:
+            # Verificación para timestamp
+            if not (start_date <= timestamp <= end_date):
+                print("Warning: The selected time must be within the simulation period.")
+                sys.exit(1)
+            _, ax = plot_longitudinal(inp, start_node, end_node, c_inv, c_ground_line, c_crown, c_ground, c_water, c_pipe, lw, mh_width, timestamp, offset_ymax,
+                    offsets, out=out, depth_agg_func=lambda x: x.max(), add_node_labels=False)
+
+        elif plot_type == 1:
+            # Verificación para custom_start y custom_end
+            if not (start_date <= custom_start <= end_date) or not (start_date <= custom_end <= end_date):
+                print("Warning: The selected time range must be within the simulation period.")
+                sys.exit(1)
+            elif custom_end <= custom_start:
+                print("Warning: The end time must be bigger than the start time.")
+                sys.exit(1)
+            create_gif(start_node, end_node, write_time_step, out, custom_start, custom_end)
 
     def _draw_profile(self, arcs, nodes, terrains):
         """ Parent function - Draw profiles """
