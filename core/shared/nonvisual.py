@@ -1472,12 +1472,14 @@ class DrNonVisual:
                             # Check if both values are integers
                             try:
                                 hours = int(time_values[0])
-                                # Add 0 if minutes is a single digit
-                                if len(time_values[1]) == 1:
-                                    time_values[1] = f"{time_values[1]}0"
                                 minutes = int(time_values[1])
                                 # Validate minutes range (00-59)
                                 if 0 <= minutes <= 59:
+                                    # Add 0 if minutes or hours are a single digit
+                                    if hours < 10:
+                                        hours = f"0{hours}"
+                                    if minutes < 10:
+                                        minutes = f"0{minutes}"
                                     value = f"{hours}:{minutes}"
                                 else:
                                     invalid_times.append(item.data(0))
