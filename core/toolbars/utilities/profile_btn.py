@@ -100,9 +100,7 @@ class DrProfileButton(DrAction):
         self.dlg_draw_profile = DrProfileUi()
         tools_dr.load_settings(self.dlg_draw_profile)
 
-        # Declare composer path widget
-        self.composers_path = self.dlg_draw_profile.findChild(QLineEdit, "composers_path")
-
+        self.dlg_draw_profile.grb_profile.setVisible(False)
         # Set layer_node
         self.layer_node = tools_qgis.get_layer_by_tablename('inp_junction', show_warning_=False)
 
