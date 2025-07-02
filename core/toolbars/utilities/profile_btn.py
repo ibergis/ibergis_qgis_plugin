@@ -108,13 +108,13 @@ class DrProfileButton(DrAction):
 
         # Toolbar actions
         action = self.dlg_draw_profile.findChild(QAction, "actionProfile")
-        tools_dr.add_icon(action, "131")
+        tools_dr.add_icon(action, "131", sub_folder="24x24")
         action.triggered.connect(partial(self._activate_add_points, False))
         action.triggered.connect(partial(self._activate_snapping_node))
         self.action_profile = action
 
         action = self.dlg_draw_profile.findChild(QAction, "actionAddPoint")
-        tools_dr.add_icon(action, "111")
+        tools_dr.add_icon(action, "111", sub_folder="24x24")
         action.triggered.connect(partial(self._activate_add_points, True))
         action.triggered.connect(partial(self._activate_snapping_node))
         self.action_add_point = action
@@ -549,7 +549,7 @@ class DrProfileButton(DrAction):
         lw = 1
         c_water = "blue"
         c_pipe = "grey"
-        mh_width = 0.5
+        mh_width = 2  # TODO: make it scale with the plot size
         offset_ymax = 0.5
 
         # Create profile plotter
@@ -574,7 +574,7 @@ class DrProfileButton(DrAction):
             elif custom_end <= custom_start:
                 print("Warning: The end time must be bigger than the start time.")
                 return
-            profile_plotter.create_gif(start_node, end_node, write_time_step, custom_start, custom_end)
+            profile_plotter.show_with_slider(start_node, end_node, write_time_step, custom_start, custom_end)
 
     def _clear_profile(self):
         """ Manage button clear profile and leave form empty """

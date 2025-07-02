@@ -9,6 +9,8 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider, Button
+from qgis.PyQt.QtCore import QTimer
 
 import pandas as pd
 
@@ -361,43 +363,47 @@ class ProfilePlotter:
 
         fig.show()
 
-    def create_gif(self, start_node, end_node, write_time_step, custom_start, custom_end, fps=10):
-        # Set the parameters
+    def show_with_slider(self, start_node, end_node, write_time_step, custom_start, custom_end):
         timestamp_range = pd.date_range(start=custom_start, end=custom_end, freq=write_time_step)
+        fig, ax = plt.subplots()
+        plt.subplots_adjust(bottom=0.3)
+        self.plot_longitudinal(start_node, end_node, timestamp_range[0], ax=ax)
+        slider_ax = fig.add_axes((0.15, 0.1, 0.7, 0.03))
+        slider = Slider(slider_ax, 'Timestep', 0, len(timestamp_range)-1, valinit=0, valstep=1)
 
-        images = []
-        temp_files = []  # List to store temporary file names
-        save_path = r"C:\python_scripts\animation.gif"
+        play_ax = fig.add_axes((0.45, 0.02, 0.1, 0.05))
+        play_button = Button(play_ax, 'Play')
+        is_playing = {'value': False}
 
-        for timestamp in timestamp_range:
-            # Generate the plot for each timestamp
-            fig, ax = self.plot_longitudinal(
-                start_node, end_node, timestamp, add_node_labels=False
-            )
+        timer = QTimer()
+        timer.setInterval(200)  # ms
 
-            # Convert the timestamp to a safe format for filenames
-            safe_timestamp = timestamp.strftime("%Y%m%d_%H%M%S")
-            temp_path = f"temp_{safe_timestamp}.png"
-            print(temp_path)
+        def update(val):
+            ax.clear()
+            self.plot_longitudinal(start_node, end_node, timestamp_range[int(slider.val)], ax=ax)
+            fig.canvas.draw_idle()
 
-            # Adjust the layout before saving
-            fig.tight_layout()
+        slider.on_changed(update)
 
-            # Save the image and store the name
-            fig.savefig(temp_path)
-            temp_files.append(temp_path)
-            plt.show()
-            plt.close(fig)
+        def play(event):
+            if not is_playing['value']:
+                is_playing['value'] = True
+                play_button.label.set_text('Pause')
+                timer.start()
+            else:
+                is_playing['value'] = False
+                play_button.label.set_text('Play')
+                timer.stop()
 
-        # Load the images correctly
-        # for temp_path in temp_files:
-        #     images.append(imageio.imread(temp_path))  # Read the images correctly
+        def advance():
+            current = int(slider.val)
+            if current < len(timestamp_range) - 1:
+                slider.set_val(current + 1)
+            else:
+                is_playing['value'] = False
+                play_button.label.set_text('Play')
+                timer.stop()
 
-        # Save all images as a GIF
-        # imageio.mimsave(save_path, images, fps=fps)
-
-        # Delete the temporary images correctly
-        # for temp_path in temp_files:
-        #     os.remove(temp_path)
-
-        # print(f"GIF saved at: {save_path}")
+        play_button.on_clicked(play)
+        timer.timeout.connect(advance)
+        plt.show()
