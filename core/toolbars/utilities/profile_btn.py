@@ -158,10 +158,8 @@ class DrProfileButton(DrAction):
         self._manage_timestamp_widgets()
 
         # Set last parameters
-        # tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_min_distance,
-        #                          tools_dr.get_config_parser('btn_profile', 'min_distance_profile', "user", "session"))
-        # tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_title,
-        #                          tools_dr.get_config_parser('btn_profile', 'title_profile', "user", "session"))
+        tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder,
+                                 tools_dr.get_config_parser('btn_profile', 'results_folder', "user", "session"))
 
         # Show form
         tools_dr.open_dialog(self.dlg_draw_profile, dlg_name='profile')
@@ -204,13 +202,12 @@ class DrProfileButton(DrAction):
         self.links = []
         self.none_values = []
 
+        # Save profile values
+        results_folder = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder)
+        tools_dr.set_config_parser('btn_profile', 'results_folder', f'{results_folder}')
+
         # Execute draw profile
         self._draw_profile_v2()
-
-        # # Save profile values
-        # tools_dr.set_config_parser('btn_profile', 'min_distance_profile', f'{links_distance}')
-        # title = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_title, False, False)
-        # tools_dr.set_config_parser('btn_profile', 'title_profile', f'{title}')
 
         # # Maximize window (after drawing)
         # self.plot.show()
@@ -498,6 +495,7 @@ class DrProfileButton(DrAction):
         custom_start: str = self.dlg_draw_profile.dtm_start.dateTime().toString('yyyy-MM-dd HH:mm:ss')
         custom_end: str = self.dlg_draw_profile.dtm_end.dateTime().toString('yyyy-MM-dd HH:mm:ss')
         offsets: int = 0 if self.dlg_draw_profile.rb_depth.isChecked() else 1  # 0 - Depth, 1 - Elevation
+        plot_type: int = 0 if self.dlg_draw_profile.rb_instant.isChecked() else 1  # 0 - Static, 1 - Dynamic (time series)
 
         # Define the path of the files
         inputfile   = f"{results_folder}{os.sep}Iber_SWMM.inp"
@@ -525,9 +523,6 @@ class DrProfileButton(DrAction):
 
         print(f"Start date = {start_date}")
         print(f"End date   = {end_date}")
-
-        # Plot type: 0 - Static, 1 - Dynamic (time series)
-        plot_type = 0
 
         # Result at a specific time 0 - Static
         print(f"Timestamp = {timestamp}")
