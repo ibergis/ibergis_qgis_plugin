@@ -87,7 +87,7 @@ class ProfilePlotter:
         if out is not None:
             if depth_agg_func is None:
                 depth_agg_func = lambda s: s.mean()
-            nodes_depth = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.DEPTH)).to_dict() #Esto me da los máximos.
+            nodes_depth = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.DEPTH)).to_dict() # This gives me the maximums.
             nodes_depth_dic = out.get_part(OBJECTS.NODE, None, VARIABLES.NODE.DEPTH).to_dict()
             nodes_flooding = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.FLOODING)).to_dict()
             nodes_flooding_dic = out.get_part(OBJECTS.NODE, None, VARIABLES.NODE.FLOODING).to_dict()
@@ -112,13 +112,13 @@ class ProfilePlotter:
                     water = sok + node_depth[timestamp]
                     flooding = node_flooding[timestamp]
                 else:
-                    water = None  # O algún valor predeterminado en caso de que falte el timestamp
-                    flooding = None  # O algún valor predeterminado en caso de que falte el timestamp
+                    water = None  # Or some default value in case the timestamp is missing
+                    flooding = None  # Or some default value in case the timestamp is missing
             else:
                 water = None
                 flooding = None
 
-            # Obtiene las conducciones (Conduit, Weir, Orifice, etc.) conectadas al nodo
+            # Gets the conduits (Conduit, Weir, Orifice, etc.) connected to the node
             prior_conduit, following_conduit = links_connected(inp, node, sub_graph)
 
             if prior_conduit:
@@ -171,7 +171,7 @@ class ProfilePlotter:
 
 
             # print(res)
-        return res  # Devuelve el diccionario con los datos longitudinales
+        return res  # Returns the dictionary with the longitudinal data
 
 
     def iter_over_inp_(self, sub_list, sub_graph):
@@ -209,15 +209,15 @@ class ProfilePlotter:
     @staticmethod
     def interpolate_x_at_intersection(x1, y1a, x2, y2a, y1b, y2b):
         """
-        Devuelve el punto x donde las dos líneas se cruzan.
-        Línea A: (x1, y1a)-(x2, y2a)
-        Línea B: (x1, y1b)-(x2, y2b)
+        Returns the x point where the two lines intersect.
+        Line A: (x1, y1a)-(x2, y2a)
+        Line B: (x1, y1b)-(x2, y2b)
         """
         dy_a = y2a - y1a
         dy_b = y2b - y1b
-        dy = (y1b - y1a)  # diferencia inicial
+        dy = (y1b - y1a)  # initial difference
 
-        # Evitamos división por cero
+        # Avoid division by zero
         if dy_a == dy_b:
             return None  # líneas paralelas
 
@@ -251,17 +251,17 @@ class ProfilePlotter:
 
             diameter = res[COLS.CROWN_ELEV_OFF][i]-res[COLS.OUT_OFFSET][i]
 
-            # Fondo del conducto
+            # Bottom of the conduit
             y1_down = res[COLS.OUT_OFFSET][i]
             y2_down = res[COLS.IN_OFFSET][i + 1]
             ax.plot([x1, x2], [y1_down, y2_down], c="black", lw=self.lw, zorder=12)
 
-            # Cima del conducto
+            # Top of the conduit
             y1_top = res[COLS.CROWN_ELEV_OFF][i]
             y2_top = res[COLS.CROWN_ELEV_IN][i + 1]
             ax.plot([x1, x2], [y1_top, y2_top], c="black", lw=self.lw, zorder=12)
 
-            # Elevación del agua (recortada al conducto)
+            # Water elevation (clipped to the conduit)
             water_elev_up = res[COLS.WATER][i]
             water_elev_down = res[COLS.WATER][i+1]
             if water_elev_up <= y1_down:
@@ -277,46 +277,46 @@ class ProfilePlotter:
             y2_w = water_elev_down
 
 
-            # Línea de agua
+            # Water line
             ax.plot([x1, x2], [y1_w, y2_w], c=self.c_water, lw=self.lw)
 
-            # Línea de energia
+            # Energy line
             if res[COLS.WATER][i] >= y1_top or res[COLS.WATER][i+1] >= y2_top:
                 y1_energy = res[COLS.WATER][i]
                 y2_energy = res[COLS.WATER][i+1]
                 ax.plot([x1, x2], [y1_energy, y2_energy], c=self.c_water, lw=self.lw)
 
 
-                # ¿Se cruzan?
+                # Do they cross?
                 cross = (y1_energy - y1_top) * (y2_energy - y2_top) < 0
 
                 if cross:
-                    # Sí se cruzan encontrar punto de intersección
+                    # If they cross, find the intersection point
                     x_int, y_int = self.interpolate_x_at_intersection(
                         x1, y1_energy, x2, y2_energy, y1_top, y2_top
                     )
 
-                    # Subtramo izquierdo
+                    # Left subsegment
                     if y1_energy > y1_top:
                         ax.fill_between([x1, x_int], [y1_down, y_int-diameter], [y1_top, y_int], color=self.c_water, alpha=1, zorder =10)
                     else:
                         ax.fill_between([x1, x_int], [y1_down, y_int-diameter], [y1_energy, y_int], color=self.c_water, alpha=1, zorder =10)
-                        #Revisar
+                        #Review
 
-                    # Subtramo derecho
+                    # Right subsegment
                     if y2_energy < y2_top:
                         ax.fill_between([x_int, x2], [y_int-diameter, y2_energy], [y_int, y2_energy], color=self.c_water, alpha=1, zorder =10)
                     else:
                         ax.fill_between([x_int, x2], [y_int, y2_down], [y_int, y2_top], color=self.c_water, alpha=1, zorder =10)
-                        #Revisar
+                        #Review
 
-            # Relleno entre el nivel del agua y el fondo de la tubería
+            # Fill between the water level and the bottom of the pipe
             ax.fill_between([x1, x2], [y1_down, y2_down], [y1_top, y2_top], color=self.c_pipe, alpha=1)
             ax.fill_between([x1, x2], [y1_w, y2_w], [y1_down, y2_down], color=self.c_water, alpha=1)
 
             bottom = ax.get_ylim()[0]
 
-        # Dibuja pozos de registro en todos los nodos
+        # Draw manholes at all nodes
         for i in range(len(res[COLS.STATION])):
             x = res[COLS.STATION][i]
             invert_elev = res[COLS.INVERT_ELEV][i]
@@ -337,7 +337,7 @@ class ProfilePlotter:
                                            edgecolor='black', facecolor=self.c_water, alpha=1, zorder=14)
                 ax.add_patch(rect_water)
 
-                # Añadir el texto del valor io_flooding centrado en la parte superior del pozo
+                # Add the text of the io_flooding value centered at the top of the manhole
                 ax.text(x, ground_elev + 0.1, f"{io_flooding:.2f}",  # Ajusta el +0.1 según la escala de tu eje y
                         ha='center', va='bottom', fontsize=8, rotation=0, color='red', zorder=15)
 
@@ -362,118 +362,42 @@ class ProfilePlotter:
         fig.show()
 
     def create_gif(self, start_node, end_node, write_time_step, custom_start, custom_end, fps=10):
-        # Establece los parámetros
+        # Set the parameters
         timestamp_range = pd.date_range(start=custom_start, end=custom_end, freq=write_time_step)
 
         images = []
-        temp_files = []  # Lista para almacenar nombres de archivos temporales
+        temp_files = []  # List to store temporary file names
         save_path = r"C:\python_scripts\animation.gif"
 
         for timestamp in timestamp_range:
-            # Genera el gráfico para cada timestamp
+            # Generate the plot for each timestamp
             fig, ax = self.plot_longitudinal(
                 start_node, end_node, timestamp, add_node_labels=False
             )
 
-            # Convierte el timestamp a un formato seguro para nombres de archivo
+            # Convert the timestamp to a safe format for filenames
             safe_timestamp = timestamp.strftime("%Y%m%d_%H%M%S")
             temp_path = f"temp_{safe_timestamp}.png"
             print(temp_path)
 
-            # Ajusta el layout antes de guardar
+            # Adjust the layout before saving
             fig.tight_layout()
 
-            # Guarda la imagen y almacena el nombre
+            # Save the image and store the name
             fig.savefig(temp_path)
             temp_files.append(temp_path)
             plt.show()
             plt.close(fig)
 
-        # Cargar las imágenes correctamente
+        # Load the images correctly
         # for temp_path in temp_files:
-        #     images.append(imageio.imread(temp_path))  # Lee las imágenes correctamente
+        #     images.append(imageio.imread(temp_path))  # Read the images correctly
 
-        # # Guarda todas las imágenes como un GIF
+        # Save all images as a GIF
         # imageio.mimsave(save_path, images, fps=fps)
 
-        # # Elimina las imágenes temporales correctamente
+        # Delete the temporary images correctly
         # for temp_path in temp_files:
         #     os.remove(temp_path)
 
-        # print(f"GIF guardado en: {save_path}")
-
-
-# # INICIO PROGRAMA
-
-# # Definir la ruta de los ficheros
-# inputfile   = r"E:\Test1_street-scale_B.SurchagedConditions_IberPlus_HR.gid\Iber_SWMM.inp"
-# inifile     = r"E:\Test1_street-scale_B.SurchagedConditions_IberPlus_HR.gid\Iber_SWMM.ini"
-# outputfile  = r"E:\Test1_street-scale_B.SurchagedConditions_IberPlus_HR.gid\Iber_SWMM.out"
-
-# # Cargar la simulación
-# inp = read_inp_file(inputfile)
-# out = read_out_file(outputfile)
-
-# res_out = out.to_frame()
-
-# # Versiones de SWMM API y librería de SWMM. Informativo.
-# print(f'SWMM API version - {swmm_api_version}')
-# swmm_version = out.swmm_version
-# print(f'SWMM version - {swmm_version}')
-
-# # Dataframe con todos los resultados
-# # db_out = out2frame(outputfile)
-
-# # Parámetros temporales
-# write_time_step = out.report_interval
-# start_date = out.start_date
-# end_date = start_date + out.n_periods * out.report_interval
-
-# print(f"Start date = {start_date}")
-# print(f"End date   = {end_date}")
-
-
-# # Tipo de gráfico: 0 - Estático, 1 - Dinámico (serie temporal)
-# plot_type = 0
-
-# # Resultado en tiempo concreto 0 - Estático
-# timestamp = pd.Timestamp('2021-06-10 00:30:00')
-
-# # Periodo de resultados, 1 - Dinámico (serie temporal)
-# custom_start = pd.Timestamp('2021-06-10 00:01:00')
-# custom_end   = pd.Timestamp('2021-06-10 00:59:00')
-
-# # Nodos
-# start_node  ='MH1'
-# end_node    ='O5'
-
-# # Parámetros de visualización
-# c_inv = "black"
-# c_ground_line = "brown"
-# c_crown = "black"
-# c_ground = "brown"
-# lw = 1
-# c_water = "blue"
-# c_pipe = "grey"
-# mh_width = 0.5
-# offset_ymax = 0.5
-
-# offsets = 0 # 0 - Depth, # 1 - Elevation
-
-# if plot_type == 0:
-#     # Verificación para timestamp
-#     if not (start_date <= timestamp <= end_date):
-#         print("Warning: The selected time must be within the simulation period.")
-#         sys.exit(1)
-#     _, ax = plot_longitudinal(inp, start_node, end_node, c_inv, c_ground_line, c_crown, c_ground, c_water, c_pipe, lw, mh_width, timestamp, offset_ymax,
-#             offsets, out=out, depth_agg_func=lambda x: x.max(), add_node_labels=False)
-
-# elif plot_type == 1:
-#     # Verificación para custom_start y custom_end
-#     if not (start_date <= custom_start <= end_date) or not (start_date <= custom_end <= end_date):
-#         print("Warning: The selected time range must be within the simulation period.")
-#         sys.exit(1)
-#     elif custom_end <= custom_start:
-#         print("Warning: The end time must be bigger than the start time.")
-#         sys.exit(1)
-#     create_gif(start_node, end_node, write_time_step, out, custom_start, custom_end)
+        # print(f"GIF saved at: {save_path}")
