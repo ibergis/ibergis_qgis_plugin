@@ -15,7 +15,7 @@ from functools import partial
 
 from qgis.PyQt.QtCore import QDate
 from qgis.PyQt.QtGui import QDoubleValidator
-from qgis.PyQt.QtWidgets import QListWidgetItem, QLineEdit, QAction
+from qgis.PyQt.QtWidgets import QListWidgetItem, QLineEdit, QAction, QButtonGroup
 from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression
 from qgis.gui import QgsMapToolEmitPoint
 
@@ -120,14 +120,25 @@ class DrProfileButton(DrAction):
         self.action_add_point = action
         self.action_add_point.setDisabled(True)
 
+        # Set radio button groups
+        self.rbg_timestamp = QButtonGroup()
+        self.rbg_timestamp.addButton(self.dlg_draw_profile.rb_instant)
+        self.rbg_timestamp.addButton(self.dlg_draw_profile.rb_period)
+
+        self.rbg_offsets = QButtonGroup()
+        self.rbg_offsets.addButton(self.dlg_draw_profile.rb_depth)
+        self.rbg_offsets.addButton(self.dlg_draw_profile.rb_elevation)
+
         # Set validators
-        self.dlg_draw_profile.txt_min_distance.setValidator(QDoubleValidator())
+        # self.dlg_draw_profile.txt_min_distance.setValidator(QDoubleValidator())
 
         # Triggers
         self.dlg_draw_profile.btn_draw_profile.clicked.connect(partial(self._get_profile))
         self.dlg_draw_profile.btn_save_profile.clicked.connect(self._save_profile)
         self.dlg_draw_profile.btn_load_profile.clicked.connect(self._open_profile)
         self.dlg_draw_profile.btn_clear_profile.clicked.connect(self._clear_profile)
+        self.dlg_draw_profile.rb_instant.clicked.connect(partial(self._manage_timestamp_widgets))
+        self.dlg_draw_profile.rb_period.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.dlg_closed.connect(partial(tools_dr.save_settings, self.dlg_draw_profile))
         self.dlg_draw_profile.dlg_closed.connect(partial(self._remove_selection, actionpan=True))
         self.dlg_draw_profile.dlg_closed.connect(partial(self._reset_profile_variables))
@@ -137,13 +148,20 @@ class DrProfileButton(DrAction):
         self.dlg_draw_profile.key_escape.connect(partial(tools_dr.close_dialog, self.dlg_draw_profile))
 
         # Set calendar date as today
-        tools_qt.set_calendar(self.dlg_draw_profile, "date", None)
+        # tools_qt.set_calendar(self.dlg_draw_profile, "dtm_instant", None)
+        # tools_qt.set_calendar(self.dlg_draw_profile, "dtm_start", None)
+        # tools_qt.set_calendar(self.dlg_draw_profile, "dtm_end", None)
+
+        # Set default values
+        self.dlg_draw_profile.rb_instant.setChecked(True)
+        self.dlg_draw_profile.rb_depth.setChecked(True)
+        self._manage_timestamp_widgets()
 
         # Set last parameters
-        tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_min_distance,
-                                 tools_dr.get_config_parser('btn_profile', 'min_distance_profile', "user", "session"))
-        tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_title,
-                                 tools_dr.get_config_parser('btn_profile', 'title_profile', "user", "session"))
+        # tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_min_distance,
+        #                          tools_dr.get_config_parser('btn_profile', 'min_distance_profile', "user", "session"))
+        # tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_title,
+        #                          tools_dr.get_config_parser('btn_profile', 'title_profile', "user", "session"))
 
         # Show form
         tools_dr.open_dialog(self.dlg_draw_profile, dlg_name='profile')
@@ -165,6 +183,18 @@ class DrProfileButton(DrAction):
             self.add_points_list = []
             self.endNode = None
 
+    def _manage_timestamp_widgets(self):
+        if self.dlg_draw_profile.rb_instant.isChecked():
+            self.dlg_draw_profile.dtm_start.setEnabled(False)
+            self.dlg_draw_profile.dtm_end.setEnabled(False)
+            self.dlg_draw_profile.lbl_period_sep.setEnabled(False)
+            self.dlg_draw_profile.dtm_instant.setEnabled(True)
+        elif self.dlg_draw_profile.rb_period.isChecked():
+            self.dlg_draw_profile.dtm_start.setEnabled(True)
+            self.dlg_draw_profile.dtm_end.setEnabled(True)
+            self.dlg_draw_profile.lbl_period_sep.setEnabled(True)
+            self.dlg_draw_profile.dtm_instant.setEnabled(False)
+
     def _get_profile(self):
 
         # Clear main variables
@@ -174,53 +204,22 @@ class DrProfileButton(DrAction):
         self.links = []
         self.none_values = []
 
-        # Get parameters
-        links_distance = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_min_distance, False, False)
-        if links_distance in ("", "None", None):
-            links_distance = 1
-
-        # Create variable with all the content of the form
-        extras = f'"initNode":"{self.initNode}", "endNode":"{self.endNode}", ' \
-                 f'"linksDistance":{links_distance}, "scale":{{ "eh":1000, "ev":1000}}'
-        if self.add_points_list:
-            points_list = str(self.add_points_list).replace("'", "")
-            extras += f', "midNodes":{points_list}'
-
-        body = tools_dr.create_body(extras=extras)
-
-        # Execute query
-        self.profile_json = tools_dr.execute_procedure('gw_fct_getprofilevalues', body)
-        if self.profile_json is None or self.profile_json['status'] == 'Failed':
-            return
-
-        # Manage level and message from query result
-        if self.profile_json['message']:
-            level = int(self.profile_json['message']['level'])
-            msg = self.profile_json['message']['text']
-            tools_qgis.show_message(msg, level)
-            if self.profile_json['message']['level'] != 3:
-                return
-
-        if not self.profile_json:
-            return
-
         # Execute draw profile
-        self._draw_profile(self.profile_json['body']['data']['arc'], self.profile_json['body']['data']['node'],
-                           self.profile_json['body']['data']['terrain'])
+        self._draw_profile_v2()
 
-        # Save profile values
-        tools_dr.set_config_parser('btn_profile', 'min_distance_profile', f'{links_distance}')
-        title = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_title, False, False)
-        tools_dr.set_config_parser('btn_profile', 'title_profile', f'{title}')
+        # # Save profile values
+        # tools_dr.set_config_parser('btn_profile', 'min_distance_profile', f'{links_distance}')
+        # title = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_title, False, False)
+        # tools_dr.set_config_parser('btn_profile', 'title_profile', f'{title}')
 
-        # Maximize window (after drawing)
-        self.plot.show()
-        mng = self.plot.get_current_fig_manager()
-        mng.window.showMaximized()
+        # # Maximize window (after drawing)
+        # self.plot.show()
+        # mng = self.plot.get_current_fig_manager()
+        # mng.window.showMaximized()
 
-        if len(self.none_values) > 0:
-            msg = "There are missing values in these nodes:"
-            tools_qt.show_info_box(msg, inf_text=self.none_values)
+        # if len(self.none_values) > 0:
+        #     msg = "There are missing values in these nodes:"
+        #     tools_qt.show_info_box(msg, inf_text=self.none_values)
 
     def _save_profile(self):
         """ Save profile """
@@ -432,8 +431,6 @@ class DrProfileButton(DrAction):
                     # Clear old list arcs
                     self.dlg_draw_profile.tbl_list_arc.clear()
 
-                    # Draw profile
-                    self._draw_profile_v2()
                     return
 
                     # Populate list arcs
@@ -492,29 +489,36 @@ class DrProfileButton(DrAction):
         from swmm_api import __version__ as swmm_api_version
         from swmm_api import read_inp_file, read_out_file
         import pandas as pd
-        from ...utils.profile_utils import plot_longitudinal, create_gif
+        from ...utils.profile_utils import ProfilePlotter
         import sys
 
-        # Definir la ruta de los ficheros
-        inputfile   = r"C:\Users\usuario\Desktop\QGIS Projects\drain\drain_sample_94_2\Iber_SWMM.inp"
-        inifile     = r"C:\Users\usuario\Desktop\QGIS Projects\drain\drain_sample_94_2\Iber_SWMM.ini"
-        outputfile  = r"C:\Users\usuario\Desktop\QGIS Projects\drain\drain_sample_94_2\Iber_SWMM.out"
+        # Get parameters
+        results_folder = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder)
+        timestamp: str = self.dlg_draw_profile.dtm_instant.dateTime().toString('yyyy-MM-dd HH:mm:ss')
+        custom_start: str = self.dlg_draw_profile.dtm_start.dateTime().toString('yyyy-MM-dd HH:mm:ss')
+        custom_end: str = self.dlg_draw_profile.dtm_end.dateTime().toString('yyyy-MM-dd HH:mm:ss')
+        offsets: int = 0 if self.dlg_draw_profile.rb_depth.isChecked() else 1  # 0 - Depth, 1 - Elevation
 
-        # Cargar la simulación
+        # Define the path of the files
+        inputfile   = f"{results_folder}{os.sep}Iber_SWMM.inp"
+        inifile     = f"{results_folder}{os.sep}Iber_SWMM.ini"
+        outputfile  = f"{results_folder}{os.sep}Iber_SWMM.out"
+
+        # Load the simulation
         inp = read_inp_file(inputfile)
         out = read_out_file(outputfile)
 
         res_out = out.to_frame()
 
-        # Versiones de SWMM API y librería de SWMM. Informativo.
+        # SWMM API and SWMM library versions. Informative.
         print(f'SWMM API version - {swmm_api_version}')
         swmm_version = out.swmm_version
         print(f'SWMM version - {swmm_version}')
 
-        # Dataframe con todos los resultados
+        # Dataframe with all results
         # db_out = out2frame(outputfile)
 
-        # Parámetros temporales
+        # Temporal parameters
         write_time_step = out.report_interval
         start_date = out.start_date
         end_date = start_date + out.n_periods * out.report_interval
@@ -522,22 +526,27 @@ class DrProfileButton(DrAction):
         print(f"Start date = {start_date}")
         print(f"End date   = {end_date}")
 
+        # Plot type: 0 - Static, 1 - Dynamic (time series)
+        plot_type = 0
 
-        # Tipo de gráfico: 0 - Estático, 1 - Dinámico (serie temporal)
-        plot_type = 1
+        # Result at a specific time 0 - Static
+        print(f"Timestamp = {timestamp}")
+        timestamp = pd.Timestamp(timestamp)
+        print(f"Timestamp = {timestamp}")
 
-        # Resultado en tiempo concreto 0 - Estático
-        timestamp = pd.Timestamp('2021-06-10 00:30:00')
+        # Period of results, 1 - Dynamic (time series)
+        custom_start = pd.Timestamp(custom_start)
+        custom_end   = pd.Timestamp(custom_end)
+        print(f"Custom start = {custom_start}")
+        print(f"Custom end   = {custom_end}")
 
-        # Periodo de resultados, 1 - Dinámico (serie temporal)
-        custom_start = pd.Timestamp('2021-06-10 00:01:00')
-        custom_end   = pd.Timestamp('2021-06-10 00:59:00')
+        # Nodes
+        start_node = self.initNode
+        end_node = self.endNode
+        print(f"Start node = {start_node}")
+        print(f"End node   = {end_node}")
 
-        # Nodos
-        start_node  ='MH1'
-        end_node    ='O5'
-
-        # Parámetros de visualización
+        # Visualization parameters
         c_inv = "black"
         c_ground_line = "brown"
         c_crown = "black"
@@ -548,25 +557,29 @@ class DrProfileButton(DrAction):
         mh_width = 0.5
         offset_ymax = 0.5
 
-        offsets = 0 # 0 - Depth, # 1 - Elevation
+        # Create profile plotter
+        profile_plotter = ProfilePlotter(
+            inp, out, c_inv, c_ground_line, c_crown, c_ground, c_water, c_pipe,
+            lw, mh_width, offset_ymax, offsets
+        )
 
         if plot_type == 0:
-            # Verificación para timestamp
+            # Check for timestamp
             if not (start_date <= timestamp <= end_date):
                 print("Warning: The selected time must be within the simulation period.")
-                sys.exit(1)
-            _, ax = plot_longitudinal(inp, start_node, end_node, c_inv, c_ground_line, c_crown, c_ground, c_water, c_pipe, lw, mh_width, timestamp, offset_ymax,
-                    offsets, out=out, depth_agg_func=lambda x: x.max(), add_node_labels=False)
+                return
+            fig, ax = profile_plotter.plot_longitudinal(start_node, end_node, timestamp, add_node_labels=False)
+            fig.show()
 
         elif plot_type == 1:
-            # Verificación para custom_start y custom_end
+            # Check for custom_start and custom_end
             if not (start_date <= custom_start <= end_date) or not (start_date <= custom_end <= end_date):
                 print("Warning: The selected time range must be within the simulation period.")
-                sys.exit(1)
+                return
             elif custom_end <= custom_start:
                 print("Warning: The end time must be bigger than the start time.")
-                sys.exit(1)
-            create_gif(start_node, end_node, write_time_step, out, custom_start, custom_end)
+                return
+            profile_plotter.create_gif(start_node, end_node, write_time_step, custom_start, custom_end)
 
     def _draw_profile(self, arcs, nodes, terrains):
         """ Parent function - Draw profiles """
