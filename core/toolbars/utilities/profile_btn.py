@@ -13,7 +13,7 @@ from collections import OrderedDict
 from decimal import Decimal
 from functools import partial
 
-from qgis.PyQt.QtCore import QDate
+from qgis.PyQt.QtCore import QDate, QDateTime
 from qgis.PyQt.QtGui import QDoubleValidator
 from qgis.PyQt.QtWidgets import QListWidgetItem, QLineEdit, QAction, QButtonGroup
 from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression
@@ -159,6 +159,19 @@ class DrProfileButton(DrAction):
         # Set last parameters
         tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder,
                                  tools_dr.get_config_parser('btn_profile', 'results_folder', "user", "session"))
+        # Restore datetime values
+        dtm_instant_val = tools_dr.get_config_parser('btn_profile', 'dtm_instant', "user", "session")
+        dtm_start_val = tools_dr.get_config_parser('btn_profile', 'dtm_start', "user", "session")
+        dtm_end_val = tools_dr.get_config_parser('btn_profile', 'dtm_end', "user", "session")
+        if dtm_instant_val:
+            dtm_instant_qdt = QDateTime.fromString(dtm_instant_val, 'yyyy-MM-dd HH:mm:ss')
+            self.dlg_draw_profile.dtm_instant.setDateTime(dtm_instant_qdt)
+        if dtm_start_val:
+            dtm_start_qdt = QDateTime.fromString(dtm_start_val, 'yyyy-MM-dd HH:mm:ss')
+            self.dlg_draw_profile.dtm_start.setDateTime(dtm_start_qdt)
+        if dtm_end_val:
+            dtm_end_qdt = QDateTime.fromString(dtm_end_val, 'yyyy-MM-dd HH:mm:ss')
+            self.dlg_draw_profile.dtm_end.setDateTime(dtm_end_qdt)
 
         # Show form
         tools_dr.open_dialog(self.dlg_draw_profile, dlg_name='profile')
@@ -210,6 +223,13 @@ class DrProfileButton(DrAction):
         # Save profile values
         results_folder = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder)
         tools_dr.set_config_parser('btn_profile', 'results_folder', f'{results_folder}')
+        # Save datetime values
+        dtm_instant_val = self.dlg_draw_profile.dtm_instant.dateTime().toString('yyyy-MM-dd HH:mm:ss')
+        dtm_start_val = self.dlg_draw_profile.dtm_start.dateTime().toString('yyyy-MM-dd HH:mm:ss')
+        dtm_end_val = self.dlg_draw_profile.dtm_end.dateTime().toString('yyyy-MM-dd HH:mm:ss')
+        tools_dr.set_config_parser('btn_profile', 'dtm_instant', dtm_instant_val)
+        tools_dr.set_config_parser('btn_profile', 'dtm_start', dtm_start_val)
+        tools_dr.set_config_parser('btn_profile', 'dtm_end', dtm_end_val)
 
         # Execute draw profile
         self._draw_profile_v2()
@@ -566,7 +586,8 @@ class DrProfileButton(DrAction):
         if plot_type == 0:
             # Check for timestamp
             if not (start_date <= timestamp <= end_date):
-                print("Warning: The selected time must be within the simulation period.")
+                msg_params = (start_date.strftime('%d-%m-%Y %H:%M:%S'), end_date.strftime('%d-%m-%Y %H:%M:%S'))
+                tools_qgis.show_warning("The selected time must be within the simulation period. ({0} - {1})", msg_params=msg_params)
                 return
             fig, ax = profile_plotter.plot_longitudinal(start_node, end_node, timestamp, add_node_labels=False)
             fig.show()
@@ -574,10 +595,12 @@ class DrProfileButton(DrAction):
         elif plot_type == 1:
             # Check for custom_start and custom_end
             if not (start_date <= custom_start <= end_date) or not (start_date <= custom_end <= end_date):
-                print("Warning: The selected time range must be within the simulation period.")
+                msg_params = (start_date.strftime('%d-%m-%Y %H:%M:%S'), end_date.strftime('%d-%m-%Y %H:%M:%S'))
+                tools_qgis.show_warning("The selected time range must be within the simulation period. ({0} - {1})", msg_params=msg_params)
                 return
             elif custom_end <= custom_start:
-                print("Warning: The end time must be bigger than the start time.")
+                msg_params = (custom_start.strftime('%d-%m-%Y %H:%M:%S'), custom_end.strftime('%d-%m-%Y %H:%M:%S'))
+                tools_qgis.show_warning("The end time must be bigger than the start time. ({0} >= {1})", msg_params=msg_params)
                 return
             profile_plotter.show_with_slider(start_node, end_node, write_time_step, custom_start, custom_end)
 
