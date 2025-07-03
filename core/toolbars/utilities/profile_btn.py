@@ -23,7 +23,7 @@ from ..dialog import DrAction
 from ...ui.ui_manager import DrProfileUi, DrProfilesListUi
 from ...utils import tools_dr
 from ...utils.snap_manager import DrSnapManager
-from ....lib import tools_qt, tools_log, tools_qgis
+from ....lib import tools_qt, tools_log, tools_qgis, tools_os
 from .... import global_vars
 
 try:
@@ -135,6 +135,7 @@ class DrProfileButton(DrAction):
         self.dlg_draw_profile.btn_save_profile.clicked.connect(self._save_profile)
         self.dlg_draw_profile.btn_load_profile.clicked.connect(self._open_profile)
         self.dlg_draw_profile.btn_clear_profile.clicked.connect(self._clear_profile)
+        self.dlg_draw_profile.btn_results_path.clicked.connect(self._select_results_path)
         self.dlg_draw_profile.rb_instant.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.rb_period.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.dlg_closed.connect(partial(tools_dr.save_settings, self.dlg_draw_profile))
@@ -190,6 +191,12 @@ class DrProfileButton(DrAction):
             self.dlg_draw_profile.dtm_end.setEnabled(True)
             self.dlg_draw_profile.lbl_period_sep.setEnabled(True)
             self.dlg_draw_profile.dtm_instant.setEnabled(False)
+
+    def _select_results_path(self):
+        """ Open folder dialog and set path to textbox """
+        path = tools_os.open_folder_path()
+        if path:
+            tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_results_folder', str(path))
 
     def _get_profile(self):
 
