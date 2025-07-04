@@ -568,18 +568,19 @@ class DrProfileButton(DrAction):
 
         # Visualization parameters
         c_inv = "black"
-        c_ground_line = "brown"
+        c_ground_line = "black"
+        ground_line_style = "dashed"
         c_crown = "black"
-        c_ground = "brown"
+        c_ground = "lightgray"
         lw = 1
-        c_water = "blue"
+        c_water = "cyan"
         c_pipe = "grey"
         mh_width = 2  # TODO: make it scale with the plot size
         offset_ymax = 0.5
 
         # Create profile plotter
         profile_plotter = ProfilePlotter(
-            inp, out, c_inv, c_ground_line, c_crown, c_ground, c_water, c_pipe,
+            inp, out, c_inv, c_ground_line, ground_line_style, c_crown, c_ground, c_water, c_pipe,
             lw, mh_width, offset_ymax, offsets
         )
 

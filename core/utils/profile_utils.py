@@ -41,11 +41,12 @@ class COLS:
     LABEL = 'label'
 
 class ProfilePlotter:
-    def __init__(self, inp=None, out=None, c_inv="black", c_ground_line="brown", c_crown="black", c_ground="brown", c_water="blue", c_pipe="grey", lw=1, mh_width=0.5, offset_ymax=0.5, offsets=0, zero_node=None, depth_agg_func=None):
+    def __init__(self, inp=None, out=None, c_inv="black", c_ground_line="brown", ground_line_style="dashed", c_crown="black", c_ground="brown", c_water="blue", c_pipe="grey", lw=1, mh_width=0.5, offset_ymax=0.5, offsets=0, zero_node=None, depth_agg_func=None):
         self.inp = inp
         self.out = out
         self.c_inv = c_inv
         self.c_ground_line = c_ground_line
+        self.ground_line_style = ground_line_style
         self.c_crown = c_crown
         self.c_ground = c_ground
         self.c_water = c_water
@@ -237,7 +238,8 @@ class ProfilePlotter:
         else:
             fig = ax.get_figure()
 
-        ax.plot(res[COLS.STATION], res[COLS.GROUND_ELEV], c=self.c_ground_line, lw=self.lw)
+        ax.set_axisbelow(True)
+        ax.plot(res[COLS.STATION], res[COLS.GROUND_ELEV], c=self.c_ground_line, lw=self.lw, ls=self.ground_line_style)
 
         for i in range(len(res[COLS.STATION]) - 1):
 
@@ -344,8 +346,9 @@ class ProfilePlotter:
                         ha='center', va='bottom', fontsize=8, rotation=0, color='red', zorder=15)
 
 
-        ax.fill_between(res[COLS.STATION], bottom, res[COLS.GROUND_ELEV], color=self.c_ground, alpha=0.9, zorder=0)
+        ax.fill_between(res[COLS.STATION], bottom, res[COLS.GROUND_ELEV], color=self.c_ground, alpha=0.7, zorder=0)
 
+        ax.grid(True, zorder=-10)
 
         ax.set_xlim(res[COLS.STATION][0], res[COLS.STATION][-1])
         ax.set_ylim(bottom=bottom, top = (max(res[COLS.GROUND_ELEV]) + self.offset_ymax))
