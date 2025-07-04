@@ -149,6 +149,12 @@ FROM_CLASS = _get_ui_class('nonvisual_import_raster.ui', 'main')
 class DrNonVisualRasterImportUi(DrDialog, FROM_CLASS):
     pass
 
+FROM_CLASS = _get_ui_class('bridge.ui', 'main')
+
+
+class DrBridgeUi(DrDialog, FROM_CLASS):
+    pass
+
 # endregion
 
 

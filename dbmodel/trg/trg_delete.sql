@@ -97,3 +97,10 @@ DROP TRIGGER IF EXISTS trg_upd_nodes_inp_orifice;
 ---- inp_outlet
 DROP TRIGGER IF EXISTS trg_ins_nodes_inp_outlet;
 DROP TRIGGER IF EXISTS trg_upd_nodes_inp_outlet;
+
+
+--------------------------------------------------------------------------------------------------------------
+-- TRIGGERS TO MANAGE BRIDGE VALUES
+-- -----------------------------------------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_ins_bridge;
+DROP TRIGGER IF EXISTS trg_upd_bridge;

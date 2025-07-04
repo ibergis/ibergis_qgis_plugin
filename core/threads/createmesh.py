@@ -594,6 +594,11 @@ class DrCreateMeshTask(DrTask):
             ORDER BY distance
         """)
         distances = pd.DataFrame(rows, columns=["bridge_code", "distance"])
+        # Normalize distances by bridge length
+        for value in distances.itertuples():
+            bridge = self.dao.get_row(f"SELECT length FROM bridge WHERE code = '{value.bridge_code}'")
+            if bridge is not None:
+                distances.loc[value.Index, "distance"] = round(value.distance / bridge[0], 3)
         distances = distances.set_index("bridge_code")
         distances = distances.groupby("bridge_code")["distance"].apply(list)
 
@@ -720,12 +725,12 @@ class DrCreateMeshTask(DrTask):
                     # Get bridge values based on code and distance
                     bridge_values = None
                     if bridge.code in bridges_values_dict:
-                        # Get values with distance >= relative_distance
+                        # Get values with distance <= relative_distance
                         matching_values = [v for v in bridges_values_dict[bridge.code]
-                                           if v["distance"] >= relative_distance]
+                                           if v["distance"] <= relative_distance]
                         if matching_values:
-                            # Take the first matching value (smallest distance >= relative_distance)
-                            bridge_values = matching_values[0]
+                            # Take the last matching value (smallest distance <= relative_distance)
+                            bridge_values = matching_values[-1]
 
                     # Set values from bridge_values if found, otherwise use defaults
                     lowerdeckelev = bridge_values["lowelev"] if bridge_values else None
@@ -767,10 +772,16 @@ class DrCreateMeshTask(DrTask):
         bridge_values_dict = {}
         rows = self.dao.get_rows("SELECT * FROM bridge_value ORDER BY bridge_code, distance ASC")
         for value in rows:
+            bridge = self.dao.get_row(f"SELECT length FROM bridge WHERE code = '{value['bridge_code']}'")
+            if bridge is not None:
+                length = bridge[0]
+            else:
+                continue
+
             if value["bridge_code"] not in bridge_values_dict.keys():
                 bridge_values_dict[value["bridge_code"]] = []
             bridge_values_dict[value["bridge_code"]].append({
-                "distance": value["distance"],
+                "distance": round(value["distance"] / length, 3),
                 "topelev": value["topelev"],
                 "lowelev": value["lowelev"],
                 "openingval": value["openingval"]

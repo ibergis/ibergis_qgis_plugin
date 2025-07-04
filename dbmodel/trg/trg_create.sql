@@ -169,3 +169,22 @@ BEGIN
 END;
 
 PRAGMA foreign_keys = ON;
+
+
+
+--------------------------------------------------------------------------------------------------------------
+-- TRIGGERS TO MANAGE BRIDGE VALUES
+-- -----------------------------------------------------------------------------------------------------------
+CREATE TRIGGER trg_ins_bridge AFTER INSERT ON bridge FOR EACH ROW
+BEGIN
+    UPDATE bridge SET
+        length = round(ST_Length(NEW.geom), 3)
+    WHERE fid = NEW.fid;
+END;
+
+CREATE TRIGGER trg_upd_bridge AFTER UPDATE OF geom ON bridge FOR EACH ROW
+BEGIN
+    UPDATE bridge SET
+        length = round(ST_Length(NEW.geom), 3)
+    WHERE fid = NEW.fid;
+END;

@@ -73,7 +73,7 @@ create table checkproject_query (
 	create_layer boolean CHECK (typeof(create_layer) IN (0,1,NULL)) DEFAULT  0,
 	geometry_type text check (typeof(geometry_type) in ('text', null) and geometry_type in ('Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon')),
 	error_message_id integer CHECK (typeof(error_message_id)='integer' OR error_message_id = NULL),
-	info_message_id integer CHECK (typeof(info_message_id)='integer' OR info_message_id = NULL),	
+	info_message_id integer CHECK (typeof(info_message_id)='integer' OR info_message_id = NULL),
 	except_lvl integer CHECK (typeof(except_lvl) in ('integer', NULL) AND except_lvl IN (1, 2, 3)),
 	error_code integer CHECK (typeof(error_code)='integer' OR error_code = NULL),
 	FOREIGN KEY (error_message_id) references sys_message (id) on update cascade on delete restrict,
@@ -331,10 +331,10 @@ CREATE TABLE pinlet (
 create table bridge (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-    deck_cd real CHECK (typeof(deck_cd)='real' OR deck_cd = NULL),
-    freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL),
-    sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL),
-    gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL),
+    deck_cd real CHECK (typeof(deck_cd)='real' OR deck_cd = NULL) DEFAULT 1.7 NOT NULL,
+    freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL) DEFAULT 0.6 NOT NULL,
+    sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL) DEFAULT 0.8 NOT NULL,
+    gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL) DEFAULT 1 NOT NULL,
 	length real CHECK (typeof(gaugenumber)='real' OR gaugenumber = NULL),
     descript text unique check (typeof(descript) = 'text' or descript = null),
     geom geometry
@@ -342,11 +342,11 @@ create table bridge (
 
 create table bridge_value (
     id integer primary key,
-    bridge_code text CHECK (typeof(bridge_code)='text' OR bridge_code = NULL),
-    distance float unique check (typeof(distance) = 'float' or distance = null),
-    topelev real CHECK (typeof(topelev)='real' OR topelev = NULL),
-    lowelev real CHECK (typeof(lowelev)='real' OR lowelev = NULL),
-    openingval real CHECK (typeof(openingval)='real' OR openingval = NULL),
+    bridge_code text CHECK (typeof(bridge_code)='text' OR bridge_code = NULL) NOT NULL,
+    distance real check (typeof(distance) = 'real' or distance = null) NOT NULL,
+    topelev real CHECK (typeof(topelev)='real' OR topelev = NULL) DEFAULT 0 NOT NULL,
+    lowelev real CHECK (typeof(lowelev)='real' OR lowelev = NULL) DEFAULT 0 NOT NULL,
+    openingval real CHECK (typeof(openingval)='real' OR openingval = NULL) DEFAULT 100 NOT NULL,
     FOREIGN KEY (bridge_code) references bridge(code) on update cascade on delete restrict
 );
 

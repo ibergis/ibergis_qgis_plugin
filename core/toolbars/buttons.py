@@ -10,6 +10,8 @@ or (at your option) any later version.
 # Main
 from .main.go2epa_button import DrGo2IberButton
 from .main.nonvisual_manager_button import DrNonVisualManagerButton
+from .main.bridge_add_btn import DrBridgeAddButton
+from .main.bridge_edit_btn import DrBridgeEditButton
 
 # Utilities
 from .utilities.bc_scenario_manager import DrBCScenarioManagerButton
