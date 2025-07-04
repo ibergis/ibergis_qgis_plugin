@@ -24,7 +24,7 @@ from qgis.core import (
     QgsInterval,
     QgsTemporalNavigationObject
 )
-from qgis.PyQt.QtCore import QCoreApplication, QDateTime
+from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QTimeZone
 from qgis.PyQt.QtGui import QColor, QAction
 from ...core.utils import Feedback
 from typing import Optional
@@ -215,12 +215,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         temporal.setIsActive(True)
         temporal.setMode(Qgis.RasterTemporalMode.FixedRangePerBand)
 
-        # Get current UTC offset in seconds
-        current_utc_offset = QDateTime.currentDateTime().offsetFromUtc()
-
-        start_time: QDateTime = QDateTime(self.start_date, self.start_time)
-        # Add UTC offset instead of converting to UTC
-        start_time = start_time.addSecs(current_utc_offset)
+        start_time: QDateTime = QDateTime(self.start_date, self.start_time, QTimeZone.utc())
 
         interval_seconds: Optional[int] = None
         if self.step_time is not None:
