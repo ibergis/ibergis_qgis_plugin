@@ -285,7 +285,7 @@ class DrExecuteModel(DrTask):
 
             if self.isCanceled():
                 return False
-            
+
             # INP file
             title = "Generate INP"
             if self.do_generate_inp:
@@ -805,6 +805,8 @@ class DrExecuteModel(DrTask):
         self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(10, self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
 
         with open(file_name, "w") as file:
+            file.write(f"{gdf.featureCount()}\n")
+
             for i, ht_row in enumerate(gdf_features, start=1):
                 # 1 - fid
                 file.write(f"{ht_row.id()} ")
@@ -836,7 +838,11 @@ class DrExecuteModel(DrTask):
                     file.write("1 ")
 
                 # 10, 11, 12, 13 - geom2(width), geom1(height), manning, code
-                file.write(f"{0 if str(ht_row["geom2"]) == "NULL" else ht_row["geom2"]} {0 if str(ht_row["geom1"]) == "NULL" else ht_row["geom1"]} {0 if str(ht_row["manning"]) == "NULL" else ht_row["manning"]} {ht_row["code"] }\n")
+                file.write(f"{0 if str(ht_row["geom2"]) == "NULL" else ht_row["geom2"]} " +
+                           f"{0 if str(ht_row["geom1"]) == "NULL" else ht_row["geom1"]} " +
+                           f"{0 if str(ht_row["manning"]) == "NULL" else ht_row["manning"]} " +
+                           f"{0 if str(ht_row["collapse_moment"]) == "NULL" else ht_row["collapse_moment"]} " +
+                           f"{ht_row["code"]}\n")
 
                 self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
 
@@ -859,7 +865,7 @@ class DrExecuteModel(DrTask):
 
     def _run_iber(self):
         # iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"  # TODO: Add checkbox to select between Iber and IberPlus
-        iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}Iber.exe"
+        iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"
         title = "Run Iber"
 
         if not os.path.exists(iber_exe_path):

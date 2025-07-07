@@ -303,6 +303,7 @@ create table culvert (
     z_end real CHECK (typeof(z_end)='real' OR z_end = NULL),
     manning real CHECK (typeof(manning)='real' OR manning = NULL),
     iscalculate boolean CHECK (typeof(iscalculate) IN (0,1,NULL)) DEFAULT  1,
+    collapse_moment real CHECK (typeof(collapse_moment)='real' OR collapse_moment = NULL),
     geom geometry
 );
 
@@ -347,7 +348,7 @@ create table bridge_value (
     topelev real CHECK (typeof(topelev)='real' OR topelev = NULL) DEFAULT 0 NOT NULL,
     lowelev real CHECK (typeof(lowelev)='real' OR lowelev = NULL) DEFAULT 0 NOT NULL,
     openingval real CHECK (typeof(openingval)='real' OR openingval = NULL) DEFAULT 100 NOT NULL,
-    FOREIGN KEY (bridge_code) references bridge(code) on update cascade on delete restrict
+    FOREIGN KEY (bridge_code) references bridge(code) on update cascade on delete cascade
 );
 
 
