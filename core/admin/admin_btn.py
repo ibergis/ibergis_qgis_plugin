@@ -26,8 +26,7 @@ from ..i18n.i18n_manager import DrSchemaI18NManager
 from ..utils import tools_dr
 from ..threads.project_gpkg_schema_create import DrGpkgCreateSchemaTask
 from ... import global_vars
-from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
-
+from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao
 
 class DrGpkgBase:
     """Base class for geopackage operations"""
@@ -90,6 +89,7 @@ class DrGpkgBase:
                 if status is False:
                     self.error_count += 1
                     msg = "Error executing file: {0}\nDatabase error: {1}"
+                    print(msg)
                     msg_params = (os.path.basename(filepath), self.gpkg_dao_data.last_error,)
                     tools_log.log_warning(msg, msg_params=msg_params)
                     tools_qt.show_info_box(msg)
@@ -100,7 +100,7 @@ class DrGpkgBase:
             msg = "Error executing file: {0}\n{1}"
             msg_params = (os.path.basename(filepath), str(e),)
             tools_log.log_warning(msg, msg_params=msg_params)
-            tools_qt.show_info_box(msg)
+            tools_qt.show_info_box(msg, msg_params=msg_params)
             status = False
 
         finally:
@@ -113,56 +113,56 @@ class DrGpkgBase:
 
         # Geom tables
         sql = "SELECT table_name, index_col FROM tables_geom;"
-        rows = tools_db.get_rows(sql, dao=self.gpkg_dao_data)
+        rows = self.gpkg_dao_data.get_rows(sql)
         list_tbl_geom = [(row[0], row[1]) for row in rows] if rows else []
 
         for tablename, index_col in list_tbl_geom:
             if index_col:
                 sql = f"""CREATE INDEX idx_{index_col}_{tablename} ON {tablename} ({index_col});"""
-                tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+                self.gpkg_dao_data.execute_sql(sql, commit=False)
 
             aux_str = "AFTER"
             if 'v_' in tablename or 'vi_' in tablename:
                 aux_str = "INSTEAD OF"
             sql = f"""CREATE VIRTUAL TABLE rtree_{tablename}_geom USING rtree(id, minx, maxx, miny, maxy);"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER trigger_delete_feature_count_{tablename} {aux_str} DELETE ON {tablename} BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER trigger_insert_feature_count_{tablename} {aux_str} INSERT ON {tablename} BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_delete {aux_str} DELETE ON {tablename} WHEN (old.geom NOT NULL) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_insert {aux_str} INSERT ON {tablename} WHEN (new.geom NOT NULL AND NOT ST_IsEmpty(NEW.geom)) BEGIN INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW."geom") ); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update1 {aux_str} UPDATE OF geom ON {tablename} WHEN OLD.fid = NEW.fid AND (NEW.geom NOTNULL AND NOT ST_IsEmpty(NEW.geom) ) BEGIN INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW.geom)); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update2 {aux_str} UPDATE OF geom ON {tablename} WHEN OLD.fid = NEW.fid AND (NEW.geom ISNULL OR ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update3 {aux_str} UPDATE ON {tablename} WHEN OLD.fid != NEW.fid AND (NEW.geom NOTNULL AND NOT ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id= OLD.fid; INSERT OR REPLACE INTO rtree_{tablename}_geom VALUES (NEW.fid, ST_MinX(NEW.geom), ST_MaxX(NEW.geom), ST_MinY(NEW.geom), ST_MaxY(NEW.geom)); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER rtree_{tablename}_geom_update4 {aux_str} UPDATE ON {tablename} WHEN OLD.fid != NEW.fid AND (NEW.geom ISNULL OR ST_IsEmpty(NEW.geom) ) BEGIN DELETE FROM rtree_{tablename}_geom WHERE id IN (OLD.fid, NEW.fid); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
 
             self.gpkg_dao_data.commit()
 
         # No-geom tables
         sql = "SELECT table_name, index_col FROM tables_nogeom;"
-        rows = tools_db.get_rows(sql, dao=self.gpkg_dao_data)
+        rows = self.gpkg_dao_data.get_rows(sql)
 
         list_tbl_nogeom = [(row[0], row[1]) for row in rows] if rows else []
 
         for tablename, index_col in list_tbl_nogeom:
             if index_col:
                 sql = f"""CREATE INDEX idx_{index_col}_{tablename} ON {tablename} ({index_col});"""
-                tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+                self.gpkg_dao_data.execute_sql(sql, commit=False)
 
             aux_str = "AFTER"
             if 'v_' in tablename or 'vi_' in tablename:
                 aux_str = "INSTEAD OF"
             sql = f"""CREATE TRIGGER "trigger_delete_feature_count_{tablename}" {aux_str} DELETE ON "{tablename}" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count - 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             sql = f"""CREATE TRIGGER "trigger_insert_feature_count_{tablename}" {aux_str} INSERT ON "{tablename}" BEGIN UPDATE gpkg_ogr_contents SET feature_count = feature_count + 1 WHERE lower(table_name) = lower("{tablename}"); END;"""
-            tools_db.execute_sql(sql, commit=False, dao=self.gpkg_dao_data)
+            self.gpkg_dao_data.execute_sql(sql, commit=False)
             self.gpkg_dao_data.commit()
 
 
@@ -183,6 +183,7 @@ class DrAdminButton(DrGpkgBase):
         self.total_sql_files = 0    # Total number of SQL files to process
         self.current_sql_file = 0   # Current number of SQL file
         self.gpkg_dao_config = None
+        self.last_srid = None
 
     def init_sql(self):
         """ Button 100: Execute SQL. Info show info """
@@ -190,9 +191,11 @@ class DrAdminButton(DrGpkgBase):
         # Connect to sqlite database
         self.gpkg_dao_config = tools_gpkgdao.DrGpkgDao()
 
+        # Add transaltor lobby translator
+        tools_qt._add_translator()
+
         # Create the dialog and signals
         self._init_show_database()
-
 
     def create_project_data_schema(self):
         """"""
@@ -215,7 +218,6 @@ class DrAdminButton(DrGpkgBase):
         self.project_epsg = project_srid
         self.locale = project_locale
 
-
         self.gpkg_full_path = project_path + "/" + gpkg_name + ".gpkg"
         if os.path.exists(self.gpkg_full_path):
             msg = "Geopackage already exists. Do you want to overwrite it?"
@@ -227,8 +229,9 @@ class DrAdminButton(DrGpkgBase):
             os.remove(self.gpkg_full_path)
 
         log_suffix = '%Y%m%d %H:%M:%S'
-        self.project_params = {"project_name": self.gpkg_name, "project_descript": self.project_descript, "project_user": getpass.getuser(),
-                              "project_tstamp": str(time.strftime(log_suffix)),"project_version": self.plugin_version}
+        self.project_params = {"project_name": self.gpkg_name, "project_descript": self.project_descript,
+                               "project_user": getpass.getuser(), "project_tstamp": str(time.strftime(log_suffix)),
+                               "project_version": self.plugin_version}
 
         # Save in settings
         tools_dr.set_config_parser('btn_admin', 'gpkg_name', f'{self.gpkg_name}', prefix=False)
@@ -255,18 +258,16 @@ class DrAdminButton(DrGpkgBase):
         QgsApplication.taskManager().addTask(self.create_gpkg_thread)
         QgsApplication.taskManager().triggerTask(self.create_gpkg_thread)
 
-
     def change_tab(self):
 
         self.dlg_readsql.tab_main.setCurrentIndex(1)
         gpkg_name = tools_dr.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
                                                False, force_reload=True)
         gpkg_path = tools_dr.get_config_parser('btn_admin', 'project_path', "user", "session",
-                                                              False, force_reload=True)
+                                               False, force_reload=True)
         self.dlg_readsql.txt_gis_file.setText(gpkg_name)
         self.dlg_readsql.txt_gis_gpkg.setText(f"{gpkg_path}/{gpkg_name}.gpkg")
         self.dlg_readsql.txt_gis_folder.setText(gpkg_path)
-
 
     def manage_process_result(self, is_utils=False, dlg=None):
         """"""
@@ -287,7 +288,6 @@ class DrAdminButton(DrGpkgBase):
         global_vars.gpkg_dao_data = global_vars.gpkg_dao_data.clone()
         self.change_tab()
 
-
     def init_dialog_create_project(self):
         """ Initialize dialog (only once) """
 
@@ -302,13 +302,13 @@ class DrAdminButton(DrGpkgBase):
 
         # Load user values
         self.txt_gpkg_name.setText(tools_dr.get_config_parser('btn_admin', 'gpkg_name', "user", "session",
-                                                             False, force_reload=True))
+                                                              False, force_reload=True))
         self.txt_description.setText(tools_dr.get_config_parser('btn_admin', 'project_description', "user", "session",
                                                                 False, force_reload=True))
         self.txt_data_path.setText(tools_dr.get_config_parser('btn_admin', 'project_path', "user", "session",
                                                               False, force_reload=True))
         self.txt_srid.setText(tools_dr.get_config_parser('btn_admin', 'project_srid', "user", "session",
-                                                              False, force_reload=True))
+                                                         False, force_reload=True))
 
         # Manage SRID
         self._manage_srid()
@@ -333,6 +333,12 @@ class DrAdminButton(DrGpkgBase):
             msg_params = (db_filepath,)
             tools_log.log_warning(msg, msg_params=msg_params)
 
+        # Disable locale combo if sample is selected
+        if self.rdb_sample.isChecked():
+            self.txt_srid.setEnabled(False)
+        else:
+            self.txt_srid.setEnabled(True)
+
         # Set shortcut keys
         self.dlg_readsql.key_escape.connect(
             partial(tools_dr.close_dialog, self.dlg_readsql, False))
@@ -348,20 +354,19 @@ class DrAdminButton(DrGpkgBase):
         """"""
 
         for folder in dict_folders.keys():
-            if str(folder).endswith("trg"):
-                self._execute_trg_creation()
-            status = self._execute_files(folder)
-            if not status:
-                return False
+            if "i18n" not in folder:
+                if str(folder).endswith("trg"):
+                    self._execute_trg_creation()
+                status = self._execute_files(folder)
+                if not status:
+                    return False
         return True
-
 
     def load_sample_data(self):
 
         folder_example = os.path.join(self.sql_dir, "example")
         status = self._execute_files(folder_example)
         return status
-
 
     def _init_show_database(self):
         """ Initialization code of the form (to be executed only once) """
@@ -418,7 +423,6 @@ class DrAdminButton(DrGpkgBase):
 
         self._open_form_create_gis_project()
 
-
     def _gis_create_project(self):
         """"""
 
@@ -447,7 +451,6 @@ class DrAdminButton(DrGpkgBase):
         # Generate QGIS project
         self._generate_qgis_project(gis_folder, gis_file, gpkg_file, self.project_epsg)
 
-
     def _generate_qgis_project(self, gis_folder, gis_file, gpkg_file, srid):
         """ Generate QGIS project """
 
@@ -456,7 +459,6 @@ class DrAdminButton(DrGpkgBase):
         self._close_dialog_admin(self.dlg_readsql)
         if result:
             self._open_project(qgs_path)
-
 
     def _open_project(self, qgs_path):
         """ Open a QGis project """
@@ -467,7 +469,6 @@ class DrAdminButton(DrGpkgBase):
         # Reload plugin
         file_name = os.path.basename(self.plugin_dir)
         reloadPlugin(f"{file_name}")
-
 
     def _open_form_create_gis_project(self):
         """"""
@@ -493,11 +494,9 @@ class DrAdminButton(DrGpkgBase):
         # Set shortcut keys
         self.dlg_readsql.key_escape.connect(partial(tools_dr.close_dialog, self.dlg_readsql))
 
-
     def _close_dialog_admin(self, dlg):
         """ Close dialog """
         tools_dr.close_dialog(dlg, delete_dlg=False)
-
 
     def _update_locale(self):
         """"""
@@ -505,16 +504,23 @@ class DrAdminButton(DrGpkgBase):
         cmb_locale = tools_qt.get_combo_value(self.dlg_readsql, self.cmb_locale, 0)
         self.folder_locale = os.path.join(self.sql_dir, 'i18n', cmb_locale)
 
+        if self.rdb_sample.isChecked():
+            tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, '25831')
+            self.txt_srid.setEnabled(False)
+        else:
+            if self.last_srid is not None:
+                tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, self.last_srid)
+            self.txt_srid.setEnabled(True)
 
     def _manage_srid(self):
         """ Manage SRID configuration """
 
         self.filter_srid = self.dlg_readsql.findChild(QLineEdit, 'srid_id')
         tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, '25831')
+        self.txt_srid.setEnabled(False)
         self.tbl_srid = self.dlg_readsql.findChild(QTableView, 'tbl_srid')
         self.tbl_srid.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tbl_srid.clicked.connect(partial(self._set_selected_srid))
-
 
     def _set_selected_srid(self, index):
 
@@ -523,15 +529,13 @@ class DrAdminButton(DrGpkgBase):
         srid = model.data(model.index(row, 0), Qt.DisplayRole)
         tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, srid)
 
-
     def _filter_srid_changed(self):
         """"""
-
         filter_value = tools_qt.get_text(self.dlg_readsql, self.filter_srid)
         if filter_value == 'null':
             filter_value = ''
         sql = ("SELECT srid  as " + '"SRID"' + ",description as " + '"Description"' +
-                "FROM srs WHERE CAST(srid AS TEXT) LIKE '" + str(filter_value))
+               "FROM srs WHERE CAST(srid AS TEXT) LIKE '" + str(filter_value))
         sql += "%' order by srs_id DESC"
 
         self.last_srids = self.gpkg_dao_config.get_rows(sql)
@@ -550,6 +554,8 @@ class DrAdminButton(DrGpkgBase):
         self.tbl_srid.setColumnWidth(1, 300)
         self.tbl_srid.horizontalHeader().setStretchLastSection(True)
 
+        if self.rdb_data.isChecked():
+            self.last_srid = filter_value
 
     def _set_signals_create_project(self):
         """"""
@@ -565,13 +571,14 @@ class DrAdminButton(DrGpkgBase):
         self.dlg_readsql.btn_i18n.clicked.connect(partial(self._i18n_manager))
         self.dlg_readsql.btn_update_translation.clicked.connect(partial(self._update_translations))
         self.dlg_readsql.btn_translation.clicked.connect(partial(self._manage_translations))
+        self.dlg_readsql.rdb_sample.clicked.connect(partial(self._update_locale))
+        self.dlg_readsql.rdb_data.clicked.connect(partial(self._update_locale))
 
     def _manage_translations(self):
         """ Initialize the translation functionalities """
-        
+
         qm_gen = DrI18NGenerator()
         qm_gen.init_dialog()
-
 
     def _update_translations(self):
         """ Initialize the translation functionalities """
@@ -579,13 +586,11 @@ class DrAdminButton(DrGpkgBase):
         qm_i18n_up = DrSchemaI18NUpdate()
         qm_i18n_up.init_dialog()
 
-
     def _i18n_manager(self):
         """ Initialize the i18n functionalities """
 
         qm_i18n_manager = DrSchemaI18NManager()
         qm_i18n_manager.init_dialog()
-
 
     def _select_path(self):
         """ Select file path"""
@@ -600,7 +605,6 @@ class DrAdminButton(DrGpkgBase):
         message = tools_qt.tr("Select GPKG path")
         file_path = QFileDialog.getExistingDirectory(None, message)
         self.dlg_readsql.data_path.setText(file_path)
-
 
     def _select_file_gpkg(self):
         """ Select GPKG file """
@@ -618,7 +622,6 @@ class DrAdminButton(DrGpkgBase):
         message = tools_qt.tr("Select GPKG file")
         file_gpkg, filter_ = QFileDialog.getOpenFileName(None, message, "", '*.gpkg')
         self.dlg_readsql.txt_gis_gpkg.setText(file_gpkg)
-
 
     def _execute_files(self, filedir):
         """"""
@@ -652,20 +655,21 @@ class DrAdminButton(DrGpkgBase):
 
         return status
 
-
     def create_schema_main_execution(self):
         """ Main common execution """
 
         msg = "Create schema: Executing function {0}"
         msg_params = ("calculate_number_of_files",)
         tools_log.log_info(msg, msg_params=msg_params)
+
         self.total_sql_files = self.calculate_number_of_files()
+
         msg = "Number of SQL files '{0}': {1}"
         msg_params = ("TOTAL", self.total_sql_files,)
         tools_log.log_info(msg, msg_params=msg_params)
+
         status = self.load_base(self.dict_folders_process['load_base'])
         return status
-
 
     def create_schema_custom_execution(self, config_dao=None):
         """ Custom execution """
@@ -676,34 +680,38 @@ class DrAdminButton(DrGpkgBase):
             tools_log.log_info(msg, msg_params=msg_params)
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_sample', prefix=False)
             load_sample = self.load_sample_data()
+            print(load_sample)
             if not load_sample:
                 return
+            print(self.populate_config_params(config_dao))
             return self.populate_config_params(config_dao)
         elif self.rdb_data.isChecked():
             msg = "Execute '{0}' (empty data)"
             msg_params = ("load_sample_data",)
             tools_log.log_info(msg, msg_params=msg_params)
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
+            print(self.populate_config_params(config_dao))
             return self.populate_config_params(config_dao)
 
-    def populate_config_params(self, config_dao=None):
+    def populate_config_params(self, data_dao=None):
         """Populate table config_param_user"""
 
-        if not config_dao:
-            config_dao = self.gpkg_dao_config
+        if not data_dao:
+            data_dao = self.gpkg_dao_data
 
-        sql_select = f"SELECT columnname, vdefault FROM config_form_fields WHERE formtype = 'form_options'"
-        rows = config_dao.get_rows(sql_select)
+        sql_select = "SELECT columnname, vdefault FROM config_form_fields WHERE formtype = 'form_options'"
+        rows = data_dao.get_rows(sql_select)
+        print(f"rows-{rows}")
 
         if not rows:
             return False
 
         for row in rows:
             data = (row[0], row[1])
-            sql_insert = f"INSERT INTO config_param_user (parameter, value) VALUES (?,?)"
+            sql_insert = "INSERT INTO config_param_user (parameter, value) VALUES (?,?)"
             try:
                 global_vars.gpkg_dao_data.execute_sql_placeholder(sql_insert, data)
-            except Exception as e:
+            except Exception:
                 msg = "Error executing SQL: {0}\nDatabase error: {1}"
                 msg_params = (sql_insert, global_vars.gpkg_dao_data.last_error,)
                 tools_log.log_warning(msg, msg_params=msg_params)
@@ -714,7 +722,6 @@ class DrAdminButton(DrGpkgBase):
 
         return True
 
-
     def populate_project_params(self):
         """Populate project params in config_param_user"""
 
@@ -722,13 +729,12 @@ class DrAdminButton(DrGpkgBase):
             sql = f"UPDATE config_param_user SET value = '{value}' WHERE parameter='{key}'"
             try:
                 global_vars.gpkg_dao_data.execute_sql(sql)
-            except Exception as e:
+            except Exception:
                 msg = "Error executing SQL: {0}\nDatabase error: {1}"
                 msg_params = (sql, global_vars.gpkg_dao_data.last_error,)
                 tools_log.log_warning(msg, msg_params=msg_params)
                 tools_qt.show_info_box(msg)
                 return False
-
 
     def create_gpkg(self):
         """ Create Geopackage """
@@ -746,7 +752,6 @@ class DrAdminButton(DrGpkgBase):
         dataset = driver.Create(self.gpkg_full_path, 0, 0, 0, gdal.GDT_Unknown)
         del dataset
         return True
-
 
     def calculate_number_of_files(self):
         """ Calculate total number of SQL to execute """
@@ -769,11 +774,10 @@ class DrAdminButton(DrGpkgBase):
 
         return total_sql_files
 
-
     def get_number_of_files_process(self, process_name: str):
         """ Calculate number of files of all folders of selected @process_name """
 
-        msg = "Create schema: Executing function {0}"  
+        msg = "Create schema: Executing function {0}"
         msg_params = (f"get_folders_process('{process_name}')",)
         tools_log.log_info(msg, msg_params=msg_params)
         dict_folders = self.get_folders_process(process_name)
@@ -788,7 +792,6 @@ class DrAdminButton(DrGpkgBase):
 
         return dict_folders, number_of_files
 
-
     def get_folders_process(self, process_name):
         """ Get list of folders related with this @process_name """
 
@@ -800,7 +803,6 @@ class DrAdminButton(DrGpkgBase):
             dict_folders[os.path.join(self.folder_software, self.file_pattern_trg)] = 0
 
         return dict_folders
-
 
     def _manage_result_message(self, status, msg_ok=None, msg_error=None, parameter=None):
         """ Manage message depending result @status """
@@ -814,13 +816,11 @@ class DrAdminButton(DrGpkgBase):
                 msg_error = "Process finished with some errors"
             tools_qgis.show_warning(msg_error, parameter=parameter, dialog=self.dlg_readsql)
 
-
     def _select_active_locales(self):
 
-        sql = f"SELECT locale as id, name as idval FROM locales WHERE active = 1"
+        sql = "SELECT locale as id, name as idval FROM locales WHERE active = 1"
         rows = self.gpkg_dao_config.get_rows(sql)
         return rows
-
 
     def _on_timer_timeout(self):
         # Update timer

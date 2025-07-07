@@ -19,16 +19,18 @@ from qgis.core import (
     QgsSymbol,
     QgsRendererCategory,
     QgsCategorizedSymbolRenderer,
-    QgsFeature
+    QgsFeature,
+    QgsFeatureRequest,
+    QgsProcessingFeatureSourceDefinition
 )
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt.QtWidgets import QApplication
 from ...lib import tools_qgis, tools_gpkgdao
 from ...lib.tools_gpkgdao import DrGpkgDao
-from ..utils import Feedback
+from ..utils import Feedback, tools_dr
 from typing import Optional, List
-from ... import global_vars
-import processing, os
+import processing
 
 
 class SetOutletForRoofs(QgsProcessingAlgorithm):
@@ -39,8 +41,9 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
     FILE_ELEV_RASTER = 'FILE_ELEV_RASTER'
     FILE_OUTLETS = 'FILE_OUTLETS'
     BOOL_FORCE_BELOWS = 'BOOL_FORCE_BELOWS'
+    BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
 
-    nearest_valid_roof_outlets: Optional[dict[str,Optional[str]]] = None
+    nearest_valid_roof_outlets: Optional[dict[str, Optional[str]]] = None
 
     file_roofs: QgsVectorLayer = None
     roof_elev_layer: QgsVectorLayer = None
@@ -48,6 +51,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
     skipped_roofs: list[str] = []
     below_roofs: list[str] = []
     skipped_from_near: int = 0
+    bool_selected_features: bool = False
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -57,32 +61,38 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         """
         roof_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('roof')
         roof_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_ROOFS,
-                description=self.tr('Roof layer'),
-                types=[QgsProcessing.SourceType.VectorPolygon],
-                optional=True
-            )
+            name=self.FILE_ROOFS,
+            description=self.tr('Roof layer'),
+            types=[QgsProcessing.SourceType.VectorPolygon],
+            optional=True
+        )
         if roof_layer:
             roof_layer_param.setDefaultValue(roof_layer)
         self.addParameter(roof_layer_param)
 
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
+
         elev_raster_layer: QgsRasterLayer = tools_qgis.get_layer_by_layername('dem')
         elev_raster_layer_param = QgsProcessingParameterRasterLayer(
-                name=self.FILE_ELEV_RASTER,
-                description=self.tr('Elevation raster layer'),
-                optional=True
-            )
+            name=self.FILE_ELEV_RASTER,
+            description=self.tr('Elevation raster layer'),
+            optional=True
+        )
         if elev_raster_layer:
             elev_raster_layer_param.setDefaultValue(elev_raster_layer)
         self.addParameter(elev_raster_layer_param)
 
         outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
         outlet_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_OUTLETS,
-                description=self.tr('Outlets layer'),
-                types=[QgsProcessing.SourceType.VectorPoint],
-                optional=False
-            )
+            name=self.FILE_OUTLETS,
+            description=self.tr('Outlets layer'),
+            types=[QgsProcessing.SourceType.VectorPoint],
+            optional=False
+        )
         if outlet_layer:
             outlet_layer_param.setDefaultValue(outlet_layer)
         self.addParameter(outlet_layer_param)
@@ -110,6 +120,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         file_elev_raster: QgsRasterLayer = self.parameterAsRasterLayer(parameters, self.FILE_ELEV_RASTER, context)
         file_outlets: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_OUTLETS, context)
         self.bool_force_belows: bool = self.parameterAsBoolean(parameters, self.BOOL_FORCE_BELOWS, context)
+        self.bool_selected_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_FEATURES, context)
         feedback.setProgress(10)
 
         # Get roof layer with minimum elevation for each feature
@@ -127,8 +138,9 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                 nearest_roof_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
                     'INPUT': self.roof_elev_layer,
                     'INPUT_2': file_outlets,
-                    'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                    'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                    'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                    'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                })['OUTPUT']
                 self.nearest_valid_roof_outlets = self.getNearestValidOutlets(nearest_roof_outlets, feedback)
             except:
                 self.nearest_valid_roof_outlets = None
@@ -140,12 +152,12 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         if self.file_roofs and self.nearest_valid_roof_outlets is None:
             feedback.pushWarning(self.tr("Error getting nearest valid outlet for roofs."))
         elif self.file_roofs and self.nearest_valid_roof_outlets is not None and 'result' in self.nearest_valid_roof_outlets.keys() and self.nearest_valid_roof_outlets['result'] == 'blank':
-            feedback.setProgressText(self.tr(f"No roofs without outlet assigned."))
+            feedback.setProgressText(self.tr("No roofs without outlet assigned."))
             self.nearest_valid_roof_outlets = {}
         elif self.file_roofs and self.nearest_valid_roof_outlets is not None and 'result' not in self.nearest_valid_roof_outlets.keys():
             feedback.setProgressText(self.tr(f"Roofs without outlet assigned: {len(self.nearest_valid_roof_outlets)}"))
 
-        feedback.setProgress(60)
+        feedback.setProgress(80)
 
         return {}
 
@@ -154,19 +166,38 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         roof_point_layer: Optional[QgsVectorLayer] = None
 
         try:
-            result = processing.run("native:zonalstatisticsfb", {
-                'INPUT':roof_layer,
-                'INPUT_RASTER':raster_layer,
-                'RASTER_BAND':1,'COLUMN_PREFIX':'elev_','STATISTICS':[5],'OUTPUT':'memory:'})
+            if not self.bool_selected_features:
+                result = processing.run("native:zonalstatisticsfb", {
+                    'INPUT': roof_layer,
+                    'INPUT_RASTER': raster_layer,
+                    'RASTER_BAND': 1, 'COLUMN_PREFIX': 'elev_', 'STATISTICS': [5], 'OUTPUT': 'memory:'
+                })
+            else:
+                result = processing.run("native:zonalstatisticsfb", {
+                    'INPUT': QgsProcessingFeatureSourceDefinition(roof_layer.source(),
+                                                                  selectedFeaturesOnly=True, featureLimit=-1,
+                                                                  geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                    'INPUT_RASTER': raster_layer,
+                    'RASTER_BAND': 1, 'COLUMN_PREFIX': 'elev_', 'STATISTICS': [5], 'OUTPUT': 'memory:'
+                })
             if result:
                 roof_point_layer = result['OUTPUT']
-        except:
+        except Exception:
             roof_point_layer = None
 
         return roof_point_layer
 
-    def postProcessAlgorithm(self, context, feedback: Feedback):
+    def postProcessAlgorithm(self, context, feedback: Feedback, batch_size: int = 5000):
         """ Update features and create temporal layers """
+
+        current_updated_roofs: int = 0
+        updated_roofs: int = 0
+        progress_index: int = 0
+
+        roof_features: dict[str, QgsFeature] = {}
+        for feature in self.file_roofs.getFeatures():
+            roof_features[feature['code']] = feature
+
         # Set outlet code for roof
         if self.nearest_valid_roof_outlets is not None:
             self.file_roofs.startEditing()
@@ -177,27 +208,34 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                 if outlet_code is None:
                     self.skipped_roofs.append(str(roof_code))
                     continue
+                if not self.file_roofs.isEditable():
+                    self.file_roofs.startEditing()
                 # Update outlet code in the roof layer
-                for feature in self.file_roofs.getFeatures():
-                    try:
-                        if feature['code'] == roof_code:
-                            feature['outlet_code'] = outlet_code
-                            self.file_roofs.updateFeature(feature)
-                            break
-                    except Exception as e:
-                        self.file_roofs.rollBack()
-                        feedback.pushWarning(self.tr(f"Error updating roof {roof_code}: {str(e)}"))
-                        self.skipped_roofs.append(str(roof_code))
+                try:
+                    if roof_code in roof_features.keys():
+                        roof_features[roof_code]['outlet_code'] = outlet_code
+                        self.file_roofs.updateFeature(roof_features[roof_code])
+                        current_updated_roofs += 1
+                        updated_roofs += 1
+                        if current_updated_roofs >= batch_size:
+                            self.file_roofs.commitChanges()
+                            current_updated_roofs = 0
+                            feedback.setProgressText(self.tr(f"Roofs updated with a batch of {batch_size} [{(updated_roofs+self.skipped_from_near)}/{len(self.nearest_valid_roof_outlets)+self.skipped_from_near}]"))
+                            feedback.setProgress(tools_dr.lerp_progress(int(((progress_index+1)/(len(self.nearest_valid_roof_outlets.keys())/batch_size))*100), 80, 98))
+                            progress_index += 1
+                            QApplication.processEvents()
+                except Exception as e:
+                    self.file_roofs.rollBack()
+                    feedback.pushWarning(self.tr(f"Error updating roof {roof_code}: {str(e)}"))
+                    self.skipped_roofs.append(str(roof_code))
             if self.file_roofs.isEditable():
                 self.file_roofs.commitChanges()
             self.skipped_roofs = list(dict.fromkeys(self.skipped_roofs))
             self.below_roofs = list(dict.fromkeys(self.below_roofs))
-            feedback.setProgressText(self.tr(f"Roofs skipped[{len(self.skipped_roofs)}]: {self.skipped_roofs}"))
-            feedback.setProgressText(self.tr(f"Roofs setted below[{len(self.below_roofs)}]: {self.below_roofs}"))
+            feedback.setProgressText(self.tr(f"Roofs skipped: ({len(self.skipped_roofs)})"))
+            feedback.setProgressText(self.tr(f"Roofs setted below: ({len(self.below_roofs)})"))
             feedback.setProgressText(self.tr(f"Roofs updated[{(len(self.nearest_valid_roof_outlets)+self.skipped_from_near)-len(self.skipped_roofs)}/{len(self.nearest_valid_roof_outlets)+self.skipped_from_near}]"))
-            feedback.setProgressText(self.tr(f"Outlets assigned for roofs."))
-
-            feedback.setProgress(90)
+            feedback.setProgressText(self.tr("Outlets assigned for roofs."))
 
             if len(self.skipped_roofs) > 0 or len(self.below_roofs) > 0:
                 # Create a temporal layer with skipped features and load it on QGIS
@@ -248,17 +286,20 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         feedback.setProgress(100)
         return {}
 
-    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback) -> Optional[dict[str,Optional[str]]]:
+    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback) -> Optional[dict[str, Optional[str]]]:
         """
         Get nearest valid outlet for each roof from nearest layer.
         """
-        nearest_outlets: dict[str,Optional[str]] = {}
+        nearest_outlets: dict[str, Optional[str]] = {}
         nearest_outlets_list = {}
+        min_progress = 10
+        max_progress = 80
 
         # Group nearest outlets by roof code
         necessary_fields: List[str] = ['code', 'code_2', 'elev', 'elev_min', 'distance']
         skipped_near_features: list[str] = []
-        for feature in nearest_layer.getFeatures():
+        for index, feature in enumerate(nearest_layer.getFeatures()):
+            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/nearest_layer.featureCount())*100), min_progress, max_progress))
             valid_attributes = True
             if feedback.isCanceled():
                 return None
@@ -290,14 +331,15 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
             if roof_code in nearest_outlets_list.keys():
                 nearest_outlets_list[roof_code]['outlets'].append(outlet_values)
             else:
-                nearest_outlets_list[roof_code] = {'elev' : feature['elev_min'], 'outlets': [outlet_values]}
+                nearest_outlets_list[roof_code] = {'elev': feature['elev_min'], 'outlets': [outlet_values]}
             if roof_code in skipped_near_features and roof_code in nearest_outlets_list:
                 if nearest_outlets_list[roof_code] is not None:
                     self.skipped_roofs.remove(str(feature['code']))
                     self.skipped_from_near -= 1
 
         # Get nearest valid outlet for each roof
-        for roof_code, values in nearest_outlets_list.items():
+        for index, (roof_code, values) in enumerate(nearest_outlets_list.items()):
+            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/len(nearest_outlets_list.keys()))*100), min_progress, max_progress))
             if feedback.isCanceled():
                 return None
             if len(values['outlets']) == 1:
@@ -318,7 +360,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                         break
                 if roof_code not in nearest_outlets.keys():
                     # Set outlet as None or set the minimum one. Depends on checkbox parameter "bool_force_belows"
-                    if self.bool_force_belows and min_outlet != None:
+                    if self.bool_force_belows and min_outlet is not None:
                         nearest_outlets[roof_code] = min_outlet['code']
                         self.below_roofs.append(roof_code)
                     else:
@@ -336,23 +378,22 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         outlet_layer = parameters[self.FILE_OUTLETS]
 
         if roof_layer is None:
-            error_message += self.tr(f'Roof layer not found in this schema.\n\n')
+            error_message += self.tr('Roof layer not found in this schema.\n\n')
 
         if elev_raster_layer is None:
-            error_message += self.tr(f'Missing raster layer\n')
+            error_message += self.tr('Missing raster layer\n')
 
         if outlet_layer is None:
-            error_message += self.tr(f'Outlet layer not found in this schema.\n\n')
+            error_message += self.tr('Outlet layer not found in this schema.\n\n')
 
         if len(error_message) > 0:
             return False, error_message
         return True, ''
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to set the nearest and valid outlet to the roof features which do not have an outlet assigned.\n
-        This algorithm will only work if the roof, outlet, and raster layers are valid.\n
-        The last parameter is a checkbox which let you decide if the roof features with no valid outlet have to be setted as none or with the minor outlet ignoring if its valid or not.\n
-        There are some attributes that cannot be None from Roof(code), Outlet(code, elev).""")
+        return self.tr("""Assigns the nearest valid outlet to roof features that do not have an outlet set, using elevation data if available. 
+                       Works with roof, outlet, and elevation raster layers, and offers an option to force assignment even if only a lower outlet is available. 
+                       Use this tool to quickly connect roofs to their appropriate outlets.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -361,13 +402,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         return 'SetOutletForRoofs'
 
     def displayName(self):
-        return self.tr('Set Outlet for Roofs')
-
-    def group(self):
-        return self.tr(self.groupId())
-
-    def groupId(self):
-        return ''
+        return self.tr('Set Outlet For Roofs')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

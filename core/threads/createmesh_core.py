@@ -52,7 +52,6 @@ def triangulate_roof(
     only_selected: bool,
     feedback: QgsFeedback
 ) -> Optional[tuple[pd.DataFrame, pd.DataFrame]]:
-# processing.run("3d:tessellate", {'INPUT':QgsProcessingFeatureSourceDefinition('Z:/sample2/sample2.gpkg|layername=roof', selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),'OUTPUT':'TEMPORARY_OUTPUT'})
     res = processing.run("3d:tessellate", {
         "INPUT": QgsProcessingFeatureSourceDefinition(
             roof_layer.source(),

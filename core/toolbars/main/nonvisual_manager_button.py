@@ -18,7 +18,6 @@ class DrNonVisualManagerButton(DrAction):
 
         self.nonvisual = DrNonVisual()
 
-
     def clicked_event(self):
         self.nonvisual.manage_nonvisual()
 

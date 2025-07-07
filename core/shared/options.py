@@ -14,25 +14,27 @@ from qgis.PyQt.QtWidgets import QWidget, QComboBox, QGroupBox, QSpacerItem, QSiz
 from qgis.PyQt.QtCore import QDateTime
 from ..ui.ui_manager import DrGo2EpaOptionsUi
 from ..utils import tools_dr
-from ...lib import tools_qgis, tools_qt, tools_db, tools_log
+from ...lib import tools_qgis, tools_qt
 from ... import global_vars
 
 
 class DrOptions:
 
-    def __init__(self, tabs_to_show=None):
+    def __init__(self, tabs_to_show=None, parent=None):
         self.epa_options_list = None
         self.dlg_go2epa_options = None
         self.tabs_to_show = tabs_to_show
         if self.tabs_to_show is None:
             self.tabs_to_show = ["tab_inp_swmm", "tab_rpt_swmm", "tab_main", "tab_rpt_iber", "tab_plugins"]
-        self.tab_aliases = {"tab_inp_swmm": "SWMM OPTIONS", "tab_rpt_swmm": "SWMM RESULTS",
-                            "tab_main": "IBER OPTIONS", "tab_rpt_iber": "IBER RESULTS", "tab_plugins": "IBER PLUGINS",
+        con_name = "dlg_options"
+        self.tab_aliases = {"tab_inp_swmm": tools_qt.tr("SWMM OPTIONS"), "tab_rpt_swmm": tools_qt.tr("SWMM RESULTS"),
+                            "tab_main": tools_qt.tr("IBER OPTIONS"), "tab_rpt_iber": tools_qt.tr("IBER RESULTS"),
+                            "tab_plugins": tools_qt.tr("IBER PLUGINS")
                             }
+        self.parent = parent
 
     def open_options_dlg(self):
         self._go2epa_options()
-
 
     def _go2epa_options(self):
         """ Button 23: Open form to set INP, RPT and project """
@@ -41,7 +43,7 @@ class DrOptions:
         self.epa_options_list = []
 
         # Create dialog
-        self.dlg_go2epa_options = DrGo2EpaOptionsUi()
+        self.dlg_go2epa_options = DrGo2EpaOptionsUi(parent=self.parent)
         tools_dr.load_settings(self.dlg_go2epa_options)
 
         # Call getconfig
@@ -52,21 +54,21 @@ class DrOptions:
             return False
 
         # Get sys_param values
-        v_sql = f"SELECT distinct tabname " \
-                f"FROM config_form_fields " \
-                f"WHERE formname = 'dlg_options' AND tabname IS NOT NULL"
-        tab_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        v_sql = "SELECT distinct tabname " \
+                "FROM config_form_fields " \
+                "WHERE formname = 'dlg_options' AND tabname IS NOT NULL"
+        tab_list = global_vars.gpkg_dao_data.get_rows(v_sql)
         tab_list = sorted(tab_list, key=lambda tab: self.tabs_to_show.index(tab[0]) if tab[0] in self.tabs_to_show else float('inf'))
 
-        v_sql = f"select distinct (layoutname), tabname " \
-                f"FROM config_form_fields " \
-                f"WHERE formname = 'dlg_options' AND layoutname IS NOT NULL"
-        lyt_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        v_sql = "select distinct (layoutname), tabname " \
+                "FROM config_form_fields " \
+                "WHERE formname = 'dlg_options' AND layoutname IS NOT NULL"
+        lyt_list = global_vars.gpkg_dao_data.get_rows(v_sql)
 
-        v_sql = f"SELECT id, idval " \
-                f"FROM edit_typevalue " \
-                f"WHERE typevalue = 'dlg_options_layout'"
-        titles_list = global_vars.gpkg_dao_config.get_rows(v_sql)
+        v_sql = "SELECT id, idval " \
+                "FROM edit_typevalue " \
+                "WHERE typevalue = 'dlg_options_layout'"
+        titles_list = global_vars.gpkg_dao_data.get_rows(v_sql)
         titles_dict = {row[0]: row[1] for row in titles_list}
 
         main_tab = self.dlg_go2epa_options.findChild(QTabWidget, 'main_tab')
@@ -128,7 +130,6 @@ class DrOptions:
 
         tools_dr.open_dialog(self.dlg_go2epa_options, dlg_name='go2epa_options')
 
-
     def _update_values(self, _json):
 
         _json = self._parse_values_json(_json)
@@ -147,7 +148,6 @@ class DrOptions:
         # Close dialog
         tools_dr.close_dialog(self.dlg_go2epa_options)
 
-
     def _get_event_combo_parent(self, complet_result):
 
         for field in complet_result['body']['form']['formTabs'][0]["fields"]:
@@ -155,7 +155,6 @@ class DrOptions:
                 widget = self.dlg_go2epa_options.findChild(QComboBox, field['widgetname'])
                 if widget:
                     widget.currentIndexChanged.connect(partial(self._fill_child, self.dlg_go2epa_options, widget))
-
 
     def _fill_child(self, dialog, widget):
 

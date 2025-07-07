@@ -5,19 +5,19 @@ import glob
 import numpy as np
 import rasterio
 import xarray as xr
-import rioxarray
 from typing import List, Tuple, Optional
 try:
     from qgis.PyQt.QtCore import pyqtSignal
 except ImportError:
     pyqtSignal = None
 
-#TODO import proj.db from qgis or packages. if its not imported, the script will use the postgres one which is on a lower version
+# TODO import proj.db from qgis or packages. if its not imported, the script will use the postgres one which is on a lower version
+
 
 def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed: Optional[pyqtSignal]) -> None:
     if not os.path.exists(input_folder) and not os.path.isdir(input_folder):
         if progress_changed:
-            progress_changed.emit('Export results', None, f"Error: The rasters folder does not exist.", True)
+            progress_changed.emit('Export results', None, "Error: The rasters folder does not exist.", True)
         print("Error: The rasters folder does not exist.")
         return
 
@@ -100,7 +100,7 @@ def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed:
 
     if len(datasets) == 0:
         if progress_changed:
-            progress_changed.emit('Export results', None, f"Error: No data found in the dataset.", True)
+            progress_changed.emit('Export results', None, "Error: No data found in the dataset.", True)
         print("Error: No data found in the dataset.")
         return
 
@@ -119,8 +119,9 @@ def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed:
             progress_changed.emit('Export results', None, f"NetCDF file created successfully: {output_file}", True)
     print(f"NetCDF file created successfully: {output_file}")
 
+
 if __name__ == "__main__":
     # Example usage
-    input_folder = sys.argv[1] # Results folder with the rasters
-    output_file = sys.argv[2] # Output NetCDF file
+    input_folder = sys.argv[1]  # Results folder with the rasters
+    output_file = sys.argv[2]  # Output NetCDF file
     convert_asc_to_netcdf(input_folder, output_file, None)

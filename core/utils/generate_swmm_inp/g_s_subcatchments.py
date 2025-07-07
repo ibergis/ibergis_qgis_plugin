@@ -109,6 +109,7 @@ def get_subcatchments_from_layer(
     export_params['all_subcatchments'] = list(subcatchments_df['Name'])
     return subcatchments_df, subareas_df, infiltration_df
 
+
 # import
 # infiltration
 def prepare_infiltration_inp_lines(
@@ -148,6 +149,7 @@ InfiltrDtypes = [
     'CurveNum'
 ]
    
+
 def create_infiltr_df(infiltr_row):
     """
     creates a pd.DataFrame for infiltration values
@@ -186,6 +188,7 @@ def create_infiltr_df(infiltr_row):
             infiltr_row[c] = np.nan
     return infiltr_row
 
+
 # geometries
 def get_polygon_from_verts(polyg_name, dict_all_vals):
     """
@@ -208,6 +211,7 @@ def get_polygon_from_verts(polyg_name, dict_all_vals):
             [[x.asPoint() for x in verts['geometry']]] 
         )
     return [polyg_name, polyg_geom]
+
 
 def create_polygons_df(df_processed, dict_all_vals, feedback):
     """
@@ -233,6 +237,7 @@ def create_polygons_df(df_processed, dict_all_vals, feedback):
     ).set_index('Name')
     feedback.setProgress(100)
     return polygons_created
+
 
 # import of rain gages
 def get_raingages_from_inp(rg_line, feedback):
@@ -270,6 +275,7 @@ def get_raingages_from_inp(rg_line, feedback):
         rg_line[3]  # SCF
     ] + list(rg_source.values())
     return rg_list
+
 
 # export of rain gages
 def get_raingage_from_qgis_row(rg_row):

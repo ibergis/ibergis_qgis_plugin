@@ -1,5 +1,6 @@
 from qgis.processing import alg
 from qgis.core import (
+    QgsFields,
     QgsVectorLayer,
     QgsProcessingContext,
     QgsFeature,
@@ -34,7 +35,7 @@ try:
     def get_vertices():
         # getNodes returns: node_tags, coord, parametric_coord
         vertices: np.ndarray
-        _, vertices, _ = gmsh.model.mesh.getNodes() # type: ignore
+        _, vertices, _ = gmsh.model.mesh.getNodes()  # type: ignore
         # Return x and y
         return vertices.reshape((-1, 3))[:, :2]
 
@@ -42,7 +43,7 @@ try:
     def get_faces():
         element_types: np.ndarray
         node_tags: np.ndarray
-        element_types, _, node_tags = gmsh.model.mesh.getElements() # type: ignore
+        element_types, _, node_tags = gmsh.model.mesh.getElements()  # type: ignore
         tags = {etype: tags for etype, tags in zip(element_types, node_tags)}
         _TRIANGLE = 2
         _QUAD = 3
@@ -65,10 +66,8 @@ try:
         # convert to 0-based index
         return faces - 1
 
-    def clean_geometries(
-            gdf: gpd.GeoDataFrame, tolerance: float, feedback: QgsFeedback
-        ) -> Optional[gpd.GeoDataFrame]:
-        data: gpd.GeoDataFrame = gdf.copy() # type: ignore
+    def clean_geometries(gdf: gpd.GeoDataFrame, tolerance: float, feedback: QgsFeedback) -> Optional[gpd.GeoDataFrame]:
+        data: gpd.GeoDataFrame = gdf.copy()  # type: ignore
 
         # Extract vertices from polygons. Keep information on how to reconstruct the polygon
         points = []
@@ -97,12 +96,12 @@ try:
                 "moved": False,
                 "anchor": False,
             },
-        ) # type: ignore
+        )  # type: ignore
 
         join: gpd.GeoDataFrame = vertices.sjoin_nearest(
             vertices, max_distance=tolerance, distance_col="dist", exclusive=True
         )
-        join = join[join["dist"] > 1e-5] # type: ignore
+        join = join[join["dist"] > 1e-5]  # type: ignore
 
         indices, counts = np.unique(join.index, return_counts=True)
         for i, count in zip(indices, counts):
@@ -144,7 +143,7 @@ try:
             data.loc[polygon_id, "geometry"] = shapely.Polygon(exterior, interiors)
 
         data.geometry = data.geometry.buffer(0)
-        data = data[~data.is_empty] # type: ignore
+        data = data[~data.is_empty]  # type: ignore
         return data
 
     def layer_to_gdf(layer: QgsVectorLayer, fields: list = [], only_selected: bool = False) -> gpd.GeoDataFrame:
@@ -172,11 +171,85 @@ try:
                 val = feature[field]
                 data[field].append(val if val else None)
 
-        gdf = gpd.GeoDataFrame(geometry=geoms, data=data) # type: ignore
-        gdf: gpd.GeoDataFrame = gdf.explode(ignore_index=True) # type: ignore
-        gdf["geometry"] = gdf["geometry"].normalize() # type: ignore
+        # gdf = gpd.GeoDataFrame(geometry=geoms, data=data, crs=layer.crs().authid())  # type: ignore
+        gdf = gpd.GeoDataFrame(geometry=geoms, data=data)  # type: ignore
+        gdf: gpd.GeoDataFrame = gdf.explode(ignore_index=True)  # type: ignore
+        gdf["geometry"] = gdf["geometry"].normalize()  # type: ignore
 
         return gdf
+
+    def gdf_to_qgis_layer(gdf: gpd.GeoDataFrame, layer_name: str) -> QgsVectorLayer:
+        # Validate input
+        if not hasattr(gdf, 'geometry') or not hasattr(gdf, 'crs'):
+            raise ValueError("Input is not a valid GeoDataFrame")
+
+        # Map GeoPandas geometry types to QGIS WKB types
+        geom_mapping = {
+            'Point': 'Point',
+            'LineString': 'LineString',
+            'Polygon': 'Polygon',
+            'MultiPoint': 'MultiPoint',
+            'MultiLineString': 'MultiLineString',
+            'MultiPolygon': 'MultiPolygon'
+        }
+
+        # Determine geometry type from first feature
+        geom_type = gdf.geometry.iloc[0].geom_type if not gdf.empty else 'Point'
+        qgis_geom_type = geom_mapping.get(geom_type, 'Point')
+
+        # Create memory layer
+        uri = f"{qgis_geom_type}?crs={gdf.crs.to_string()}"
+        layer = QgsVectorLayer(uri, layer_name, "memory")
+
+        # Prepare fields
+        fields = QgsFields()
+        for col_name, col_type in gdf.dtypes.items():
+            if col_name == gdf.geometry.name:  # Skip geometry column
+                continue
+            # Map pandas dtypes to QVariant types
+            if col_type in ['int64', 'int32']:
+                qgis_type = QVariant.Int
+            elif col_type in ['float64', 'float32']:
+                qgis_type = QVariant.Double
+            elif col_type == 'bool':
+                qgis_type = QVariant.Bool
+            elif col_type == 'datetime64[ns]':
+                qgis_type = QVariant.DateTime
+            else:  # Default to string
+                qgis_type = QVariant.String
+            fields.append(QgsField(col_name, qgis_type))
+
+        # Start editing layer
+        provider = layer.dataProvider()
+        provider.addAttributes(fields)
+        layer.updateFields()
+
+        # Add features
+        features = []
+        for _, row in gdf.iterrows():
+            feat = QgsFeature()
+            # Set geometry
+            if not row.geometry.is_empty:
+                geom = QgsGeometry.fromWkt(row.geometry.wkt)
+                feat.setGeometry(geom)
+            # Set attributes
+            attributes = []
+            for col in gdf.columns:
+                if col == gdf.geometry.name:
+                    continue
+                attributes.append(row[col])
+            feat.setAttributes(attributes)
+            features.append(feat)
+
+        provider.addFeatures(features)
+        layer.updateExtents()
+
+        # Validate layer creation
+        if not layer.isValid():
+            raise RuntimeError("Failed to create valid QGIS layer")
+
+        return layer
+
 
     # 2D algorithms: https://gmsh.info/doc/texinfo/gmsh.html#Mesh-options
     ALGORITHMS = {
@@ -194,8 +267,8 @@ try:
     def triangulate_custom(
         source_layer: QgsVectorLayer,
         extra_fields: list[str] = [],
-        line_anchor_layer: Optional[QgsVectorLayer] = None,
-        point_anchor_layer: Optional[QgsVectorLayer] = None,
+        line_anchors: Optional[gpd.GeoDataFrame] = None,
+        point_anchors: Optional[gpd.GeoDataFrame] = None,
         do_clean_up: bool = True,
         only_selected_features: bool = False,
         clean_tolerance: float = 0.5,
@@ -216,21 +289,15 @@ try:
         fields = ["cellsize"]
         data = layer_to_gdf(source_layer, fields + extra_fields, only_selected_features)
 
-        line_anchors = None
-        if line_anchor_layer is not None:
-            line_anchors = layer_to_gdf(line_anchor_layer, fields, only_selected_features)
-        else:
+        if line_anchors is None:
             line_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": []}, crs=data.crs
-            ) # type: ignore
+            )  # type: ignore
 
-        point_anchors = None
-        if point_anchor_layer is not None:
-            point_anchors = layer_to_gdf(point_anchor_layer, fields + ["z_value"], only_selected_features)
-        else:
+        if point_anchors is None:
             point_anchors = gpd.GeoDataFrame(
                 geometry=[], data={"cellsize": [], "z_value": []}, crs=data.crs
-            ) # type: ignore
+            )  # type: ignore
         print(f"Done! {time.time() - start}s")
 
         if do_clean_up:
@@ -393,7 +460,8 @@ except ImportError:
 
 import shapely
 
-def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] = None) -> QgsVectorLayer:
+
+def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] = None, layer_name: str = "Mesh Temp Layer") -> QgsVectorLayer:
     c1 = mesh.vertices.loc[mesh.polygons["v1"], ['x', 'y', 'z']]
     c2 = mesh.vertices.loc[mesh.polygons["v2"], ['x', 'y', 'z']]
     c3 = mesh.vertices.loc[mesh.polygons["v3"], ['x', 'y', 'z']]
@@ -416,7 +484,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
     det = v1x * v2y - v1y * v2x
     optmized_df['is_ccw'] = det > 0
 
-    optmized_df['no_area'] = det < 1e-10
+    optmized_df['area'] = 0.5 * abs(det)
 
     def get_feature(row):
         geom = QgsTriangle(
@@ -433,13 +501,13 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
             row.roughness,
             row.scs_cn,
             row.is_ccw,
-            row.no_area,
+            row.area,
         ])
         return feature
 
     features = map(get_feature, optmized_df.itertuples())
 
-    layer = QgsVectorLayer("Polygon", "Mesh Temp Layer", "memory")
+    layer = QgsVectorLayer("Polygon", layer_name, "memory")
     layer.setCrs(QgsProject.instance().crs())
     provider = layer.dataProvider()
     fields = [
@@ -452,7 +520,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
         QgsField("roughness", QVariant.Double),
         QgsField("scs_cn", QVariant.Double),
         QgsField("is_ccw", QVariant.Bool),
-        QgsField("no_area", QVariant.Bool),
+        QgsField("area", QVariant.Double),
     ]
     provider.addAttributes(fields)
     layer.updateFields()
@@ -470,6 +538,7 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
     return layer
 
 
+# TODO: Remove this function when the new method is tested
 def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, mesh_anchor_lines_layer: QgsVectorLayer, bridges_layer: QgsVectorLayer, dao, bridge_cellsize: float = 10) -> tuple[QgsVectorLayer, QgsVectorLayer]:
     """Create virtual layers for point and line anchors combining mesh anchor points and bridge features."""
     # Create virtual layer for point anchors
@@ -526,7 +595,7 @@ def create_anchor_layers(mesh_anchor_points_layer: QgsVectorLayer, mesh_anchor_l
     for feature in bridges_layer.getFeatures():
         # Get vertices from bridge_value table
         rows = dao.get_rows(f"""
-            SELECT distance 
+            SELECT distance
             FROM bridge_value
             WHERE bridge_code = '{feature["code"]}'
             ORDER BY distance

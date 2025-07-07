@@ -10,7 +10,7 @@ from datetime import datetime
 
 # -*- coding: utf-8 -*-
 from ... import global_vars
-from ...lib import tools_gpkgdao, tools_qgis, tools_qt, tools_db
+from ...lib import tools_db
 
 
 def getconfig(p_input: dict) -> dict:
@@ -25,9 +25,11 @@ def getconfig(p_input: dict) -> dict:
     try:
 
         # get widgets from sys_param_user
-        column_names = ['columnname', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
-                        'placeholder', 'columnname AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
-                        'dv_orderby_id', 'CASE WHEN dv_isnullvalue = 1 THEN True ELSE False END AS isNullValue',
+        column_names = ['columnname', 'label', 'datatype', 'widgettype',
+                        'descript', 'layoutname', 'layoutorder', 'vdefault',
+                        'placeholder', 'columnname AS widgetname', 
+                        'false AS isparent', 'tabname', 'dv_querytext', 'dv_orderby_id', 
+                        'CASE WHEN dv_isnullvalue = 1 THEN True ELSE False END AS isNullValue',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
                         'vdefault AS value', 'tooltip', 'addparam'
@@ -36,7 +38,7 @@ def getconfig(p_input: dict) -> dict:
                 f"FROM config_form_fields " \
                 f"WHERE formname = 'dlg_options' " \
                 f"ORDER BY layoutname, layoutorder, columnname"
-        v_raw_widgets = global_vars.gpkg_dao_config.get_rows(v_sql)
+        v_raw_widgets = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         # format widgets as a json
         v_widgets = []
@@ -50,9 +52,9 @@ def getconfig(p_input: dict) -> dict:
             v_widgets.append(widget_dict)
 
         # put values into widgets
-        v_sql = f"SELECT parameter, value " \
-                f"FROM config_param_user " \
-                f"ORDER BY parameter"
+        v_sql = "SELECT parameter, value " \
+                "FROM config_param_user " \
+                "ORDER BY parameter"
         v_raw_values = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         # Iterate through the raw values and update the corresponding widgets in v_widgets
@@ -77,7 +79,7 @@ def getconfig(p_input: dict) -> dict:
 
                         # Execute on config gpkg if not configured
                         if not result and not executed:
-                            result = global_vars.gpkg_dao_config.get_row(v_querystring)
+                            result = global_vars.gpkg_dao_data.get_row(v_querystring) ## TODO: change to data gpkg
                         if result:
                             cmb_ids = result[0]
                             cmb_names = result[1]
@@ -162,11 +164,11 @@ def getselectors(p_input: dict) -> dict:
         v_return["body"]["form"]["currentTab"] = "tab_scenario"
         v_return["body"]["form"]["formTabs"] = []
 
-        v_sql = f"SELECT parameter, value from config_param_user WHERE parameter like 'basic_selector_%'"
+        v_sql = "SELECT parameter, value from config_param_user WHERE parameter like 'basic_selector_%'"
         rows = global_vars.gpkg_dao_data.get_rows(v_sql)
 
         for row in rows:
-            tab_json = json.loads(row[1].replace('/',''))
+            tab_json = json.loads(row[1].replace('/', ''))
             tabname = row[0].replace("basic_selector_", "")
             tabLabel = tabname.replace("tab_", "")
             table = tab_json["table"]
@@ -185,7 +187,7 @@ def getselectors(p_input: dict) -> dict:
                     f" CASE WHEN {table_id} IN (SELECT * FROM {selector}) THEN 'true' ELSE 'false' END AS value" \
                     f" from {table}"
             column_names = [f'{table_id}', 'label', 'orderBy', 'name', 'widgetname', 'columnname', 'type',
-                            'dataType', 'value' ]
+                            'dataType', 'value']
             rows_fields = global_vars.gpkg_dao_data.get_rows(v_sql)
 
             v_fields = []
@@ -196,17 +198,16 @@ def getselectors(p_input: dict) -> dict:
                     widget_dict[key] = value
                 v_fields.append(widget_dict)
 
-
             v_fields_aux = {
-                'fields':v_fields,
-                'tabName':f'{tabname}',
-                'tableName':f'{selector}',
+                'fields': v_fields,
+                'tabName': f'{tabname}',
+                'tableName': f'{selector}',
                 'tabLabel': f'{tabLabel.capitalize()}',
                 'tooltip': f'{tabLabel.capitalize()}',
                 'selectorType': 'selector_basic',
                 'manageAll': f'{manageAll}',
                 'selectionMode': 'keepPrevious',
-                'typeaheadForced':f'{typeaheadForced}'
+                'typeaheadForced': f'{typeaheadForced}'
             }
 
             if typeaheadFilter:
@@ -214,7 +215,7 @@ def getselectors(p_input: dict) -> dict:
 
             v_return["body"]["form"]["formTabs"].append(v_fields_aux)
 
-        v_message="Process done succesfully."
+        v_message = "Process done succesfully."
 
     except Exception as e:
         print(f"EXCEPTION IN getselectors: {e}")
@@ -258,14 +259,13 @@ def setselectors(p_input: dict) -> dict:
                 global_vars.gpkg_dao_data.execute_sql(v_sql)
         else:
             if checkAll == 'True':
-                v_sql =f"INSERT INTO {selector_table} SELECT {data_table_id} FROM {data_table}"
+                v_sql = f"INSERT INTO {selector_table} SELECT {data_table_id} FROM {data_table}"
                 global_vars.gpkg_dao_data.execute_sql(v_sql)
             else:
                 v_sql = f"DELETE FROM {selector_table} WHERE {column_id} IN (SELECT {data_table_id} FROM {data_table})"
                 global_vars.gpkg_dao_data.execute_sql(v_sql)
 
-
-        v_sql =f"SELECT {column_id} FROM {selector_table}"
+        v_sql = f"SELECT {column_id} FROM {selector_table}"
         rows = global_vars.gpkg_dao_data.get_rows(v_sql)
         id_list = [row[0] for row in rows]
 
@@ -282,20 +282,22 @@ def setselectors(p_input: dict) -> dict:
     v_return = _create_return(v_return, accepted=accepted, message=v_message)
     return v_return
 
+
 def get_sectors():
     sectors = 'NULL'
 
-    sql = f'SELECT sector_id FROM selector_sector'
+    sql = 'SELECT sector_id FROM selector_sector'
     rows = global_vars.gpkg_dao_data.get_rows(sql)
     if rows:
         sectors = ", ".join(str(x[0]) for x in rows)
 
     return sectors
 
+
 def get_scenarios():
     scenarios = 'NULL'
 
-    sql = f'SELECT scenario_id FROM selector_scenario'
+    sql = 'SELECT scenario_id FROM selector_scenario'
     rows = global_vars.gpkg_dao_data.get_rows(sql)
     if rows:
         scenarios = ", ".join(str(x[0]) for x in rows)
@@ -432,7 +434,6 @@ def getinfofromid(p_input: dict) -> dict:
                     widget['iseditable'] = bool(widget['iseditable'])
                 if 'hidden' in widget:
                     widget['hidden'] = bool(widget['hidden'])
-
 
         v_return["body"] = {"data": {}, "form": {}}
         v_return["body"]["data"] = {

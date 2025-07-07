@@ -261,11 +261,13 @@ def get_outl_curve(outl_row):
     else:
         return outl_row['CurveName']
 
+
 def get_outl_qexpon(outl_row):
     if outl_row['RateCurve'] in ['FUNCTIONAL/DEPTH', 'FUNCTIONAL/HEAD']:
         return outl_row['Qexpon'].fillna('')
     else:
         return ''
+
 
 def get_outlets_from_shapefile(outlets_raw):
     """prepares outlets data for writing an input file"""
@@ -436,7 +438,6 @@ def create_lines_for_section(df_processed, dict_all_vals, feedback):
     return lines_created
 
 
-
 # z coordinates
 def get_elevation_from_node(node_name, dict_all_vals):
     for section_i in ['JUNCTIONS', 'OUTFALLS', 'DIVIDERS', 'STORAGE']:
@@ -447,6 +448,7 @@ def get_elevation_from_node(node_name, dict_all_vals):
                 z_coord = float(z_coord)
                 break
     return z_coord
+
 
 def add_z_to_lines(sr, import_parameters_dict, dict_all_vals):
     """

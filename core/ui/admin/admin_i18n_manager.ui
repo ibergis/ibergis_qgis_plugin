@@ -40,13 +40,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="chk_for_su_tables">
-        <property name="text">
-         <string>Check for basic DB tables (cat_feature...)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QCheckBox" name="chk_py_messages">
         <property name="text">
          <string>Check for PY Messages</string>

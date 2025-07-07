@@ -1,1 +1,1 @@
-from .feedback import Feedback
+from .feedback import Feedback as Feedback

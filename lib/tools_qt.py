@@ -31,6 +31,7 @@ from qgis.utils import iface
 from . import tools_log, tools_os, tools_qgis
 from .. import global_vars
 from .ui.ui_manager import DialogTextUi
+from .tools_gpkgdao import DrGpkgDao
 
 translator = QTranslator()
 dlg_text = DialogTextUi()
@@ -669,7 +670,6 @@ def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableMode
     :return:
     """
 
-
     # Set model
     model = QSqlTableModel(db=global_vars.db_qsql_data)
     model.setTable(table_name)
@@ -1127,27 +1127,6 @@ def tr(message, context_name=None, aux_context='ui_message', default=None, list_
 
 def manage_translation(context_name, dialog=None, log_info=False):
     """ Manage locale and corresponding 'i18n' file """
-
-    # Get locale of QGIS application
-    locale = tools_qgis.get_locale()
-
-    locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_{locale}.qm')
-    if not os.path.exists(locale_path):
-        msg = "Locale not found: {0}"
-        msg_params = (locale_path,)
-        tools_log.log_info(msg, msg_params=msg_params)
-        locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_en_US.qm')
-        # If English locale file not found, exit function
-        # It means that probably that form has not been translated yet
-        if not os.path.exists(locale_path):
-            msg = "Locale not found: {0}"
-            msg_params = (locale_path,)
-            tools_log.log_info(msg, msg_params=msg_params)
-            return
-
-    # Add translation file
-    _add_translator(locale_path)
-
     # If dialog is set, then translate form
     if dialog:
         _translate_form(dialog, context_name)
@@ -1230,7 +1209,6 @@ def show_exception_message(title=None, msg="", window_title="Information about e
         pattern = "File\\sname:|Function\\sname:|Line\\snumber:|SQL:|SQL\\sfile:|Detail:|Context:|Description|Schema " \
                   "name|Message\\serror:"
     set_text_bold(dlg_text.txt_infolog, pattern)
-
 
     dlg_text.show()
 
@@ -1344,12 +1322,29 @@ def create_datetime(object_name, allow_null=True, set_cal_popup=True, display_fo
     btn_calendar.clicked.connect(partial(set_calendar_empty, widget))
     return widget
 
+
 # region private functions
-
-
-def _add_translator(locale_path, log_info=False):
+def _add_translator(log_info=False):
     """ Add translation file to the list of translation files to be used for translations """
 
+    # Get locale of QGIS application
+    locale = tools_qgis.get_locale()
+    print(locale)
+    locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_{locale}.qm')
+    if not os.path.exists(locale_path):
+        msg = "Locale not found: {0}"
+        msg_params = (locale_path,)
+        tools_log.log_info(msg, msg_params=msg_params)
+        locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_en_US.qm')
+        # If English locale file not found, exit function
+        # It means that probably that form has not been translated yet
+        if not os.path.exists(locale_path):
+            msg = "Locale not found: {0}"
+            msg_params = (locale_path,)
+            tools_log.log_info(msg, msg_params=msg_params)
+            return
+
+    # Add translator
     if os.path.exists(locale_path):
         translator.load(locale_path)
         QCoreApplication.installTranslator(translator)

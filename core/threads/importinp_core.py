@@ -112,7 +112,7 @@ _tables = (
             "Height": "elev",
         },
     },
-     {
+    {
         "table_name": "inp_weir",
         "section": "XSECTIONS",
         "mapper": {

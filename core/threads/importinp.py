@@ -1,20 +1,18 @@
 import traceback
 import os
-import pandas as pd
 import math
 
 from datetime import datetime
 from itertools import count
 
-from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsCoordinateReferenceSystem, QgsProject, QgsFeature
+from qgis.core import QgsProcessingContext, QgsFeature
 from qgis.PyQt.QtCore import pyqtSignal
 
-from . import importinp_core as core
 from .epa_file_manager import _tables_dict
 from .task import DrTask
 from ..utils.generate_swmm_inp.generate_swmm_import_inp_file import ImportInpFile
 from ..utils import tools_dr
-from ...lib import tools_qgis, tools_db, tools_log
+from ...lib import tools_qgis, tools_log, tools_qt
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ... import global_vars
 from typing import Optional
@@ -36,7 +34,7 @@ class DrImportInpTask(DrTask):
         self.gpkg_path = gpkg_path
         self.save_folder = save_folder
         self.feedback = feedback
-        self.dividers_to_update: dict[str,str] = {}
+        self.dividers_to_update: dict[str, str] = {}
 
     def cancel(self):
         super().cancel()
@@ -60,7 +58,8 @@ class DrImportInpTask(DrTask):
             return True
         except Exception:
             self.exception = traceback.format_exc()
-            self.progress_changed.emit("Error", None, self.exception, True)
+            title = "Error"
+            self.progress_changed.emit(tools_qt.tr(title), None, self.exception, True)
             return False
 
     def finished(self, result):
@@ -87,7 +86,6 @@ class DrImportInpTask(DrTask):
         # Enable triggers
         self._enable_triggers(True)
 
-
     def _import_file(self):
 
         self.process = ImportInpFile()
@@ -110,12 +108,15 @@ class DrImportInpTask(DrTask):
             msg = "Error {0} not executed"
             msg_params = (fct_path,)
             tools_log.log_error(msg, msg_params=msg_params)
-            self.progress_changed.emit("Execute after import fct", self.PROGRESS_IMPORT_GPKGS, f"Error {fct_path} not executed", True)
+            title = "Execute after import fct"
+            msg = "Error {0} not executed"
+            msg_params = (fct_path,)
+            self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_GPKGS, tools_qt.tr(msg, list_params=msg_params), True)
 
     def _manage_params(self) -> dict:
         params = {
             "INP_FILE": self.input_file,
-            "GEODATA_DRIVER": 1, # 1: GPKG
+            "GEODATA_DRIVER": 1,  # 1: GPKG
             "SAVE_FOLDER": self.save_folder,
             "PREFIX": "",
             "DATA_CRS": f"EPSG:{global_vars.project_epsg}",
@@ -140,14 +141,24 @@ class DrImportInpTask(DrTask):
             print(f"Error {f_to_read} not executed")
             print(self.dao.last_error)
             if enable:
-                self.progress_changed.emit("Enable triggers", self.PROGRESS_IMPORT_GPKGS, f"Error {f_to_read} not executed: {self.dao.last_error}", True)
+                title = "Enable triggers"
+                msg = "Error {0} not executed: {1}"
+                msg_params = (f_to_read, self.dao.last_error)
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_GPKGS, tools_qt.tr(msg, list_params=msg_params), True)
             else:
-                self.progress_changed.emit("Disable triggers", self.PROGRESS_IMPORT_NON_VISUAL, f"Error {f_to_read} not executed: {self.dao.last_error}", True)
+                title = "Disable triggers"
+                msg = "Error {0} not executed: {1}"
+                msg_params = (f_to_read, self.dao.last_error)
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_NON_VISUAL, tools_qt.tr(msg, list_params=msg_params), True)
         else:
             if enable:
-                self.progress_changed.emit("Enable triggers", self.PROGRESS_END, f"Triggers created", True)
+                title = "Enable triggers"
+                msg = "Triggers created"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_END, tools_qt.tr(msg), True)
             else:
-                self.progress_changed.emit("Disable triggers", self.PROGRESS_IMPORT_NON_VISUAL, f"Triggers disabled", True)
+                title = "Disable triggers"
+                msg = "Triggers disabled"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_NON_VISUAL, tools_qt.tr(msg), True)
 
     def _import_non_visual_data(self):
         """ Import the non-visual data from the xlsx to the gpkg """
@@ -194,11 +205,16 @@ class DrImportInpTask(DrTask):
                 return
             self.PROGRESS_IMPORT_GPKGS = int(math.ceil((len(gpkgs)/10))*(gpkgs.index(gpkg)+1)+self.PROGRESS_IMPORT_NON_VISUAL)
             gpkg_file = f"{self.save_folder}{os.sep}{gpkg}.gpkg"
-            self.progress_changed.emit("Import gpkgs to project", self.PROGRESS_IMPORT_GPKGS, f"Processing file...{gpkg_file}", True)
+            title = "Import gpkgs to project"
+            msg = "Processing file...{0}"
+            msg_params = (gpkg_file,)
+            self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_GPKGS, tools_qt.tr(msg, list_params=msg_params), True)
 
             if not os.path.exists(gpkg_file):
                 print(f"Skipping {gpkg_file}, does not exist.")
-                self.progress_changed.emit("Import gpkgs to project", self.PROGRESS_IMPORT_GPKGS, f"Skipping {gpkg_file}, does not exist.", True)
+                msg = "Skipping {0}, does not exist."
+                msg_params = (gpkg_file,)
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_GPKGS, tools_qt.tr(msg, list_params=msg_params), True)
                 continue
 
             imported_layers = tools_dr.load_gpkg(str(gpkg_file))
@@ -209,48 +225,59 @@ class DrImportInpTask(DrTask):
                 dr_layername = layermap.get(layer_name)
                 if not dr_layername:
                     print(f"Skipping {dr_layername}, not found in layermap.")
-                    self.progress_changed.emit("Import gpkgs to project", self.PROGRESS_IMPORT_GPKGS, f"Skipping {dr_layername}, not found in layermap.", True)
+                    msg = "Skipping {0}, not found in layermap."
+                    msg_params = (dr_layername,)
+                    self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_GPKGS, tools_qt.tr(msg, list_params=msg_params), True)
                     continue
 
                 target_layer = tools_qgis.get_layer_by_tablename(dr_layername)
 
                 if not target_layer:
                     print(f"Skipping {dr_layername}, not found in project.")
-                    self.progress_changed.emit("Import gpkgs to project", self.PROGRESS_IMPORT_GPKGS, f"Skipping {dr_layername}, not found in project.", True)
+                    msg = "Skipping {0}, not found in project."
+                    msg_params = (dr_layername,)
+                    self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_GPKGS, tools_qt.tr(msg, list_params=msg_params), True)
                     continue
 
                 target_layer = target_layer
                 field_map = _tables_dict[dr_layername]["mapper"]
                 print(f"Importing {dr_layername} into project...")
-                self.progress_changed.emit("Import gpkgs to project", self.PROGRESS_IMPORT_GPKGS, f"Importing {dr_layername} into project...", True)
+                msg = "Importing {0} into project..."
+                msg_params = (dr_layername,)
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_GPKGS, tools_qt.tr(msg, list_params=msg_params), True)
                 self._insert_data(source_layer, target_layer, field_map, batch_size=50000)
 
                 print(f"Imported {dr_layername} into project.")
-                self.progress_changed.emit("Import gpkgs to project", self.PROGRESS_IMPORT_GPKGS, f"Imported {dr_layername} into project.", True)
+                msg = "Imported {0} into project."
+                msg_params = (dr_layername,)
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_GPKGS, tools_qt.tr(msg, list_params=msg_params), True)
 
                 # Insert junctions, dividers, outfalls, storages into node table
                 if dr_layername in ['inp_junction', 'inp_divider', 'inp_outfall', 'inp_storage']:
                     # For some reason the node table is not detected
                     sql = "SELECT * FROM node"
-                    tools_db.execute_sql(sql, log_sql=True, is_thread=True, dao=self.dao)
+                    self.dao.execute_sql(sql)
                     if self.dao.last_error:
                         print(self.dao.last_error)
                     sql = f"INSERT INTO node (table_fid, code, geom, table_name) SELECT fid, code, geom, '{dr_layername}' FROM {dr_layername}"
-                    tools_db.execute_sql(sql, log_sql=True, is_thread=True, dao=self.dao)
+                    self.dao.execute_sql(sql)
                 elif dr_layername in ['inp_conduit', 'inp_pump', 'inp_orifice', 'inp_weir', 'inp_outlet']:
                     # For some reason the arc table is not detected
                     sql = "SELECT * FROM arc"
-                    tools_db.execute_sql(sql, log_sql=True, is_thread=True, dao=self.dao)
+                    self.dao.execute_sql(sql)
                     sql = f"INSERT INTO arc (table_fid, code, geom, table_name) SELECT fid, code, geom, '{dr_layername}' FROM {dr_layername}"
-                    tools_db.execute_sql(sql, log_sql=True, is_thread=True, dao=self.dao)
+                    self.dao.execute_sql(sql)
                 if self.dao.last_error:
                     print(self.dao.last_error)
-                    self.progress_changed.emit("Import gpkgs to project", self.PROGRESS_IMPORT_GPKGS, f"Error inserting nodes or arcs: {self.dao.last_error}", True)
+                    title = "Import gpkgs to project"
+                    msg = "Error inserting nodes or arcs: {0}"
+                    msg_params = (self.dao.last_error,)
+                    self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_GPKGS, tools_qt.tr(msg, list_params=msg_params), True)
 
         # Update dividers arc
         for divider in self.dividers_to_update.keys():
             sql = f"UPDATE inp_divider SET divert_arc = '{self.dividers_to_update[divider]}' WHERE code = '{divider}';"
-            tools_db.execute_sql(sql, log_sql=True, is_thread=True, dao=self.dao)
+            self.dao.execute_sql(sql)
 
     def _insert_data(self, source_layer, target_layer, field_map, batch_size=1000):
         """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
@@ -293,25 +320,29 @@ class DrImportInpTask(DrTask):
     def _save_patterns(self):
         from swmm_api.input_file.section_labels import PATTERNS
 
-        pattern_rows = tools_db.get_rows("SELECT idval FROM cat_pattern", dao=self.dao)
+        pattern_rows = self.dao.get_rows("SELECT idval FROM cat_pattern")
         patterns_db: list[str] = []
         if pattern_rows:
             patterns_db = [x[0] for x in pattern_rows]
 
         # self.results["patterns"] = 0
+        title = "Save patterns"
         for pattern_name, pattern in self.network[PATTERNS].items():
             if self.isCanceled():
                 return
             if pattern_name in patterns_db:
-                message = f'The pattern "{pattern_name}" already exists in database. Skipping...'
-                print(message)
-                self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_FILE, f'The pattern "{pattern_name}" already exists in database. Skipping...', True)
+                msg = "The pattern {0} already exists in database. Skipping..."
+                msg_params = (pattern_name,)
+                print(tools_qt.tr(msg, list_params=msg_params))
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
                 continue
 
             pattern_type = pattern.cycle
             sql = f"INSERT INTO cat_pattern (idval, pattern_type) VALUES ('{pattern_name}', '{pattern_type}')"
-            tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_FILE, f'Inserted pattern {pattern_name}, type {pattern_type} into cat_pattern', True)
+            self.dao.execute_sql(sql)
+            msg = "Inserted pattern {0}, type {1} into cat_pattern"
+            msg_params = (pattern_name, pattern_type)
+            self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
 
             values = []
             for idx, f in enumerate(pattern.factors):
@@ -322,39 +353,44 @@ class DrImportInpTask(DrTask):
 
             values_str = ", ".join(values)
             sql = f"INSERT INTO cat_pattern_value (pattern, timestep, value) VALUES {values_str}"
-            tools_db.execute_sql(sql, dao=self.dao)
+            self.dao.execute_sql(sql)
             # self.progress_changed.emit("Save patterns", self.PROGRESS_IMPORT_FILE, f'Inserted pattern values({values_str}) into cat_pattern_value', True)
             # self.results["patterns"] += 1
 
     def _save_curves(self) -> None:
         from swmm_api.input_file.section_labels import CURVES
 
-        curve_rows = tools_db.get_rows("SELECT idval FROM cat_curve", dao=self.dao)
+        curve_rows = self.dao.get_rows("SELECT idval FROM cat_curve")
         curves_db: set[str] = set()
         if curve_rows:
             curves_db = {x[0] for x in curve_rows}
 
         # self.results["curves"] = 0
+        title = "Save curves"
         for curve_name, curve in self.network[CURVES].items():
             if self.isCanceled():
                 return
             if curve.kind is None:
-                message = f'The "{curve_name}" curve does not have a specified curve type and was not imported.'
-                print(message)
-                self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'The "{curve_name}" curve does not have a specified curve type and was not imported.', True)
+                msg = "The {0} curve does not have a specified curve type and was not imported."
+                msg_params = (curve_name,)
+                print(tools_qt.tr(msg, list_params=msg_params))
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
                 continue
 
             if curve_name in curves_db:
-                message = f'The curve "{curve_name}" already exists in database. Skipping...'
-                print(message)
-                self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'The curve "{curve_name}" already exists in database. Skipping...', True)
+                msg = "The curve {0} already exists in database. Skipping..."
+                msg_params = (curve_name,)
+                print(tools_qt.tr(msg, list_params=msg_params))
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
                 continue
 
             curve_type: str = curve.kind
 
             sql = f"INSERT INTO cat_curve (idval, curve_type) VALUES ('{curve_name}', '{curve_type}')"
-            tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'Inserted curve {curve_name}, type {curve_type} into cat_curve', True)
+            self.dao.execute_sql(sql)
+            msg = "Inserted curve {0}, type {1} into cat_curve"
+            msg_params = (curve_name, curve_type)
+            self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
 
             values = []
             for x, y in curve.points:
@@ -364,7 +400,7 @@ class DrImportInpTask(DrTask):
                 values.append(values_str)
             values_str = ", ".join(values)
             sql = f"INSERT INTO cat_curve_value (curve, xcoord, ycoord) VALUES {values_str}"
-            tools_db.execute_sql(sql, dao=self.dao)
+            self.dao.execute_sql(sql)
             # self.progress_changed.emit("Save curves", self.PROGRESS_IMPORT_FILE, f'Inserted curve values({values_str}) into cat_curve_value', True)
             # self.results["curves"] += 1
 
@@ -372,7 +408,7 @@ class DrImportInpTask(DrTask):
         from swmm_api.input_file.section_labels import TIMESERIES
         from swmm_api.input_file.sections import TimeseriesFile, TimeseriesData
 
-        ts_rows = tools_db.get_rows("SELECT idval FROM cat_timeseries", dao=self.dao)
+        ts_rows = self.dao.get_rows("SELECT idval FROM cat_timeseries")
         ts_db: set[str] = set()
         if ts_rows:
             ts_db = {x[0] for x in ts_rows}
@@ -381,6 +417,7 @@ class DrImportInpTask(DrTask):
             ts_data_f = tuple()
             if not ts_data:
                 return ts_data_f
+
             def format_time(time, value) -> tuple:
                 if isinstance(time, float):
                     total_minutes = int(time * 60)
@@ -397,19 +434,22 @@ class DrImportInpTask(DrTask):
             return ts_data_f
 
         # self.results["timeseries"] = 0
+        title = "Save timeseries"
         for ts_name, ts in self.network[TIMESERIES].items():
             if self.isCanceled():
                 return
             if ts is None:
-                message = f'The timeseries "{ts_name}" was not imported.'
-                print(message)
-                self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'The timeseries "{ts_name}" was not imported.', True)
+                msg = "The timeseries {0} was not imported."
+                msg_params = (ts_name,)
+                print(tools_qt.tr(msg, list_params=msg_params))
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
                 continue
 
             if ts_name in ts_db:
-                message = f'The timeseries "{ts_name}" already exists in database. Skipping...'
-                print(message)
-                self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'The timeseries "{ts_name}" already exists in database. Skipping...', True)
+                msg = "The timeseries {0} already exists in database. Skipping..."
+                msg_params = (ts_name,)
+                print(tools_qt.tr(msg, list_params=msg_params))
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
                 continue
 
             fname = None
@@ -427,8 +467,10 @@ class DrImportInpTask(DrTask):
             if fname:
                 values_str += f", '{fname}'"
             sql = f"INSERT INTO cat_timeseries ({fields_str}) VALUES ({values_str})"
-            tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'Inserted timeseries({values_str}) into cat_timeseries', True)
+            self.dao.execute_sql(sql)
+            msg = "Inserted timeseries({0}) into cat_timeseries"
+            msg_params = (values_str,)
+            self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
 
             match times_type:
                 case "RELATIVE":
@@ -449,31 +491,35 @@ class DrImportInpTask(DrTask):
                 values.append(f"({values_str})")
             values_str = ", ".join(values)
             sql += f"{values_str}"
-            tools_db.execute_sql(sql, dao=self.dao)
+            self.dao.execute_sql(sql)
             # self.progress_changed.emit("Save timeseries", self.PROGRESS_IMPORT_FILE, f'Inserted timeseries values({values_str}) into cat_timeseries_value', True)
             # self.results["timeseries"] += 1
 
     def _save_controls(self) -> None:
         from swmm_api.input_file.section_labels import CONTROLS
 
-        controls_rows = tools_db.get_rows("SELECT descript FROM cat_controls", dao=self.dao)
+        controls_rows = self.dao.get_rows("SELECT descript FROM cat_controls")
         controls_db: set[str] = set()
         if controls_rows:
             controls_db = {x[0] for x in controls_rows}
 
         # self.results["controls"] = 0
+        title = "Save controls"
         for control_name, control in self.network[CONTROLS].items():
             if self.isCanceled():
                 return
             text = control.to_inp_line()
             if text in controls_db:
-                msg = f"The control '{control_name}' is already on database. Skipping..."
-                print(msg)
-                self.progress_changed.emit("Save controls", self.PROGRESS_IMPORT_NON_VISUAL, f"The control '{control_name}' is already on database. Skipping...", True)
+                msg = "The control {0} is already on database. Skipping..."
+                msg_params = (control_name,)
+                print(tools_qt.tr(msg, list_params=msg_params))
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_NON_VISUAL, tools_qt.tr(msg, list_params=msg_params), True)
                 continue
             sql = f"INSERT INTO cat_controls (descript) VALUES ('{text}')"
-            tools_db.execute_sql(sql, dao=self.dao)
-            self.progress_changed.emit("Save controls", self.PROGRESS_IMPORT_NON_VISUAL, f'Inserted control({text}) into cat_controls', True)
+            self.dao.execute_sql(sql)
+            msg = "Inserted control({0}) into cat_controls"
+            msg_params = (text,)
+            self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_NON_VISUAL, tools_qt.tr(msg, list_params=msg_params), True)
             # self.results["controls"] += 1
 
     def _save_lids(self) -> None:

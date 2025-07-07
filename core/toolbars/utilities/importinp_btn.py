@@ -33,7 +33,7 @@ class DrImportINPButton(DrAction):
         self._load_user_values()
         self._set_initial_signals()
         tools_dr.disable_tab_log(dlg)
-        tools_dr.open_dialog(dlg, dlg_name="import")
+        tools_dr.open_dialog(dlg, dlg_name="import_inp")
 
     def _execute_process(self):
         # Show tab log
@@ -44,7 +44,7 @@ class DrImportINPButton(DrAction):
             self._progress_changed("EPSG Error", None, f"Invalid or missing EPSG: {global_vars.project_epsg}", True)
             return False
         dlg = self.dlg_import
-        self.feedback = Feedback(0,70,40)
+        self.feedback = Feedback(0, 70, 40)
         if not self._validate_inputs():
             return
         self._save_user_values()
@@ -86,13 +86,11 @@ class DrImportINPButton(DrAction):
         QgsApplication.taskManager().addTask(self.thread)
         QgsApplication.taskManager().triggerTask(self.thread)
 
-
     def _delete_folder(self, folder):
         for file in glob.glob(folder + "/*"):
             os.remove(file)
         os.rmdir(folder)
         
-
     def _progress_changed(self, process, progress, text, new_line):
         # Progress bar
         if progress is not None:

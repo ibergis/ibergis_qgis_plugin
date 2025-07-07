@@ -12,22 +12,21 @@ from pathlib import Path
 import threading
 import traceback
 import processing
+import time
 
-from qgis.PyQt.QtCore import pyqtSignal, QMetaMethod
-from qgis.PyQt.QtWidgets import QTextEdit
-from qgis.core import QgsProcessingContext, QgsProcessingFeedback, QgsVectorLayer, QgsField, QgsFields, QgsFeature, \
+from qgis.PyQt.QtCore import pyqtSignal
+from qgis.core import QgsProcessingContext, QgsVectorLayer, QgsFeature, \
     QgsMeshLayer
 
-from ..utils.generate_swmm_inp.generate_swmm_inp_file import GenerateSwmmInpFile
 from ..utils.feedback import Feedback
 from ..utils import tools_dr, mesh_parser
 from ... import global_vars
-from ...lib import tools_log, tools_qt, tools_db, tools_qgis, tools_os
+from ...lib import tools_log, tools_qt, tools_qgis
 from ...lib.tools_gpkgdao import DrGpkgDao
 from .task import DrTask
 from .epa_file_manager import DrEpaFileManager
 from ..admin.admin_btn import DrRptGpkgCreate
-from ..processing.import_execute_results import ImportExecuteResults
+from ..processing.import_raster_results import ImportRasterResults
 from ...resources.scripts.convert_asc_to_netcdf import convert_asc_to_netcdf
 from typing import Optional, List
 from ..utils.meshing_process import create_temp_mesh_layer
@@ -71,10 +70,9 @@ class DrExecuteModel(DrTask):
         self.init_params()
         self.generate_inp_infolog = None
         self.feedback = feedback
-        self.process: Optional[ImportExecuteResults] = None
+        self.process: Optional[ImportRasterResults] = None
         self.output = None
         self.import_results_infolog = None
-
 
     def init_params(self):
         self.dialog = self.params.get('dialog')
@@ -83,7 +81,6 @@ class DrExecuteModel(DrTask):
         self.do_export = self.params.get('do_export', True)
         self.do_run = self.params.get('do_run', True)
         self.do_import = self.params.get('do_import', True)
-
 
     def run(self):
 
@@ -98,7 +95,6 @@ class DrExecuteModel(DrTask):
         # self._close_dao()
 
         return status
-
 
     def finished(self, result):
 
@@ -122,7 +118,6 @@ class DrExecuteModel(DrTask):
         if global_vars.session_vars['last_error']:
             tools_qt.show_exception_message(msg=global_vars.session_vars['last_error_msg'])
 
-
     def cancel(self):
 
         msg = "Task canceled - {0}"
@@ -131,11 +126,12 @@ class DrExecuteModel(DrTask):
         # self._close_file()
         super().cancel()
 
-
     def _create_results_folder(self):
         """Create results folder and generate results GPKG and NetCDF files"""
 
-        self.progress_changed.emit("Export results", None, "Exporting results", True)
+        msg = "Exporting results"
+        title = "Export results"
+        self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
 
         if not os.path.exists(f'{self.folder_path}{os.sep}DrainResults'):
             os.mkdir(f'{self.folder_path}{os.sep}DrainResults')
@@ -143,7 +139,8 @@ class DrExecuteModel(DrTask):
         # Create report geopackage
         self.rpt_result = DrRptGpkgCreate("results", f'{self.folder_path}{os.sep}DrainResults')
         self.rpt_result.create_rpt_gpkg()
-        self.progress_changed.emit("Export results", None, f'GPKG file created', True)
+        msg = "GPKG file created"
+        self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
 
         # Create NetCDF file
         created_netcdf: bool = False
@@ -151,14 +148,18 @@ class DrExecuteModel(DrTask):
         netcdf_file: str = f'{self.folder_path}{os.sep}DrainResults{os.sep}rasters.nc'
         try:
             convert_asc_to_netcdf(raster_files, netcdf_file, self.progress_changed)
-        except Exception as e:
-            self.progress_changed.emit("Export results", None, "Error creating NetCDF file", True)
+        except Exception:
+            msg = "Error creating NetCDF file"
+            self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
         if os.path.exists(netcdf_file):
-            self.progress_changed.emit("Export results", None, "NetCDF file created", True)
-            self.progress_changed.emit("Export results", self.EXPORT_RESULTS, "Exported results", True)
+            msg = "NetCDF file created"
+            self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+            msg = "Exported results"
+            self.progress_changed.emit(tools_qt.tr(title), self.EXPORT_RESULTS, tools_qt.tr(msg), True)
             created_netcdf = True
         else:
-            self.progress_changed.emit("Export results", None, "Error creating NetCDF file", True)
+            msg = "Error creating NetCDF file"
+            self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
 
         if self.isCanceled():
             return
@@ -168,32 +169,33 @@ class DrExecuteModel(DrTask):
             title = 'Import results'
             result: Optional[bool] = tools_qt.show_question(msg, title, force_action=True)
             if result is not None and result:
-                # Execute ImportExecuteResults algorithm
-                self.progress_changed.emit("Import results", None, "Importing results", True)
+                # Execute ImportRasterResults algorithm
+                msg = "Importing results"
+                self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
                 self.feedback = Feedback()
                 self.feedback.progress_changed.connect(self._import_results_progress_changed)
-                self.process = ImportExecuteResults()
+                self.process = ImportRasterResults()
                 self.process.initAlgorithm(None)
-                params: dict = {'FOLDER_RESULTS':f'{self.folder_path}','CUSTOM_NAME':f'{os.path.basename(str(self.folder_path))}'}
+                params: dict = {'FOLDER_RESULTS': f'{self.folder_path}', 'CUSTOM_NAME': f'{os.path.basename(str(self.folder_path))}'}
                 context: QgsProcessingContext = QgsProcessingContext()
                 self.output = self.process.processAlgorithm(params, context, self.feedback)
                 if not bool(self.output):
-                    self.progress_changed.emit("Import results", None, "Error importing results", True)
+                    msg = "Error importing results"
+                    self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
                     return
                 else:
                     self.output = self.process.postProcessAlgorithm(context, self.feedback)
                     if not bool(self.output):
-                        self.progress_changed.emit("Import results", None, "Error importing results", True)
+                        msg = "Error importing results"
+                        self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
                         return
-                self.progress_changed.emit("Import results", None, "Imported results", True)
+                msg = "Imported results"
+                self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
         self.progress_changed.emit(None, self.PROGRESS_END, None, False)
 
-
     def _import_results_progress_changed(self, process, progress, text, new_line):
-        self.progress_changed.emit("Import results", None, text, new_line)
+        self.progress_changed.emit(tools_qt.tr("Import results"), None, text, new_line)
         self.import_results_infolog = text
-
-
 
     def _close_dao(self, dao=None):
 
@@ -207,90 +209,113 @@ class DrExecuteModel(DrTask):
         except Exception:
             pass
 
-
     # region private functions
 
     def _execute_model(self):
+        title = "Export files"
         try:
             if self.isCanceled():
                 return False
             # Mesh files
             if self.do_export:
                 # Export config
-                self.progress_changed.emit("Export files", self.PROGRESS_INIT, "Exporting config files...", False)
+                msg = "Exporting config files..."
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_INIT, tools_qt.tr(msg), False)
                 self._create_config_files()
-                self.progress_changed.emit("Export files", self.PROGRESS_CONFIG, "done!", True)
+                msg = "done!"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_CONFIG, tools_qt.tr(msg), True)
 
                 if self.isCanceled():
                     return False
 
                 # Export mesh
-                self.progress_changed.emit("Export files", self.PROGRESS_CONFIG, "Exporting mesh files...", False)
+                msg = "Exporting mesh files..."
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_CONFIG, tools_qt.tr(msg), False)
                 mesh_id = tools_qt.get_combo_value(self.dialog, 'cmb_mesh')
                 self._copy_mesh_files(mesh_id)
-                self.progress_changed.emit("Export files", self.PROGRESS_MESH_FILES, "done!", True)
+                msg = "done!"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_MESH_FILES, tools_qt.tr(msg), True)
 
                 if self.isCanceled():
                     return False
 
                 # Copy static files
-                self.progress_changed.emit("Export files", self.PROGRESS_MESH_FILES, "Copying static files...", False)
+                msg = "Copying static files..."
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_MESH_FILES, tools_qt.tr(msg), False)
                 self._copy_static_files()
-                self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "done!", True)
+                msg = "done!"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_STATIC_FILES, tools_qt.tr(msg), True)
 
                 if self.isCanceled():
                     return False
 
                 # Create inlet file
-                self.progress_changed.emit("Export files", self.PROGRESS_STATIC_FILES, "Creating inlet files...", False)
+                msg = "Creating inlet files..."
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_STATIC_FILES, tools_qt.tr(msg), False)
                 self._create_inlet_file(mesh_id)
-                self.progress_changed.emit("Export files", self.PROGRESS_INLET, "done!", True)
+                msg = "done!"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_INLET, tools_qt.tr(msg), True)
 
                 if self.isCanceled():
                     return False
 
                 # Create hyetograph file
-                self.progress_changed.emit("Export files", self.PROGRESS_INLET, "Creating hyetograph files...", False)
+                msg = "Creating hyetograph files..."
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_INLET, tools_qt.tr(msg), False)
                 self._create_hyetograph_file()
-                self.progress_changed.emit("Export files", self.PROGRESS_HYETOGRAPHS, "done!", True)
+                msg = "done!"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_HYETOGRAPHS, tools_qt.tr(msg), True)
 
                 if self.isCanceled():
                     return False
 
                 # Create rain file
-                self.progress_changed.emit("Export files", self.PROGRESS_HYETOGRAPHS, "Creating rain files...", False)
+                msg = "Creating rain files..."
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_HYETOGRAPHS, tools_qt.tr(msg), False)
                 self._create_rain_file()
-                self.progress_changed.emit("Export files", self.PROGRESS_RAIN, "done!", True)
+                msg = "done!"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_RAIN, tools_qt.tr(msg), True)
 
                 # Create culvert file
-                self.progress_changed.emit("Export files", self.PROGRESS_RAIN, "Creating culvert files...", False)
+                msg = "Creating culvert files..."
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_RAIN, tools_qt.tr(msg), False)
                 self._create_culvert_file()
-                self.progress_changed.emit("Export files", self.PROGRESS_CULVERTS, "done!", True)
+                msg = "done!"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_CULVERTS, tools_qt.tr(msg), True)
 
             if self.isCanceled():
                 return False
 
             # INP file
+            title = "Generate INP"
             if self.do_generate_inp:
-                self.progress_changed.emit("Generate INP", self.PROGRESS_CULVERTS, "Generating INP...", False)
+                msg = "Generating INP..."
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_CULVERTS, tools_qt.tr(msg), False)
                 self._generate_inp()
-                self.progress_changed.emit("Generate INP", self.PROGRESS_INP, "done!", True)
-                self.progress_changed.emit("Generate INP", self.PROGRESS_INP, self.generate_inp_infolog, True)
+                msg = "done!"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_INP, tools_qt.tr(msg), True)
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_INP, self.generate_inp_infolog, True)
 
             if self.isCanceled():
                 return False
 
+            title = "Run Iber"
             if self.do_run:
-                self.progress_changed.emit("Run Iber", self.PROGRESS_INP, "Running Iber software...", False)
+                msg = "Running Iber software..."
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_INP, tools_qt.tr(msg), False)
                 self._run_iber()
-                self.progress_changed.emit("Run Iber", self.PROGRESS_IBER, "done!", True)
+                msg = "done!"
+                self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IBER, tools_qt.tr(msg), True)
 
             if self.isCanceled():
                 return False
 
         except Exception as e:
             print(f"Exception in ExecuteModel thread: {e}")
-            self.progress_changed.emit("ERROR", None, f"Exception in ExecuteModel thread: {e}\n {traceback.format_exc()}", True)
+            title = "ERROR"
+            msg = "Exception in ExecuteModel thread: {0}\n {1}"
+            msg_params = (e, traceback.format_exc())
+            self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg, list_params=msg_params), True)
             return False
 
         return True
@@ -298,40 +323,47 @@ class DrExecuteModel(DrTask):
     def _create_config_files(self):
         # Iber_Results.dat
         file_name = Path(self.folder_path) / "Iber_Results.dat"
-        mapper = {
-            "result_depth": "Depth",
-            "result_vel": "Velocity",
-            "result_specific_discharge": "Specific_Discharge",
-            "result_water_elevation": "Water_Elevation",
-            "result_fronde_number": "Froude_Number",
-            "result_localtime_step": "Local_Time_Step",
-            "result_manning_coefficient": "Manning_Coefficient",
-            "result_critical_diameter": "Critical_Diameter",
-            "result_max_depth": "Maximum_Depth",
-            "result_max_vel": "Maximum_Velocity",
-            "result_max_spec_discharge": "Maximum_Spec_Discharge",
-            "result_max_water_elev": "Maximum_Water_Elev",
-            "result_max_localtime_step": "Maximum_Local_Time_Step",
-            "result_max_critical_diameter": "Maximum_Critical_Diameter",
-            "result_hazard_rd9_2008": "Hazard RD9/2008",
-            "result_hazard_aca2003": "Hazard ACA2003",
-            "result_depth_vector": "Depth_vector",
-            "result_bed_shear_stress": "Bed_Shear_Stress",
-            "result_max_bed_shear_stress": "Maximum_Bed_Shear_Stress",
-            "result_energy": "Energy",
-            "result_steamlines": "Streamlines",
-            "result_results_raster": "Raster interpolation",
-            "result_results_raster_cell": "Raster cell size",
-        }
+        mapper = [
+            {"parameter": "result_depth", "tag": "Depth"},
+            {"parameter": "result_vel", "tag": "Velocity"},
+            {"parameter": "result_specific_discharge", "tag": "Specific_Discharge"},
+            {"parameter": "result_water_elevation", "tag": "Water_Elevation"},
+            {"parameter": "result_fronde_number", "tag": "Froude_Number"},
+            {"parameter": "result_localtime_step", "tag": "Local_Time_Step"},
+            {"parameter": "result_manning_coefficient", "tag": "Manning_Coefficient"},
+            {"parameter": "result_critical_diameter", "tag": "Critical_Diameter"},
+            {"parameter": "result_max_depth", "tag": "Maximum_Depth"},
+            {"parameter": "result_max_vel", "tag": "Maximum_Velocity"},
+            {"parameter": "result_max_spec_discharge", "tag": "Maximum_Spec_Discharge"},
+            {"parameter": "result_max_water_elev", "tag": "Maximum_Water_Elev"},
+            {"parameter": "result_max_localtime_step", "tag": "Maximum_Local_Time_Step"},
+            {"parameter": "result_max_critical_diameter", "tag": "Maximum_Critical_Diameter"},
+            {"parameter": "result_hazard_rd9_2008", "tag": "Hazard RD9/2008"},
+            {"parameter": "result_hazard_aca2003", "tag": "Hazard ACA2003"},
+            {"parameter": "result_hazard_pedestrians", "tag": "Pedestrians Hazard"},
+            {"parameter": "result_hazard_vehicles", "tag": "Vehicles Hazard"},
+            {"parameter": "result_depth_vector", "tag": "Depth_vector"},
+            {"parameter": "result_bed_shear_stress", "tag": "Bed_Shear_Stress"},
+            {"parameter": "result_max_bed_shear_stress", "tag": "Maximum_Bed_Shear_Stress"},
+            {"parameter": "result_energy", "tag": "Energy"},
+            {"parameter": "result_steamlines", "tag": "Streamlines"},
+            {"parameter": "result_results_raster", "tag": "Results2Raster"},
+            {"parameter": "result_results_raster_cell", "tag": "esults2Raster - Cell size"},
+            {"parameter": "result_results_raster_maxs", "tag": "Results2Raster MAX"},
+            {"parameter": "result_results_raster_frame", "tag": ""},
+            {"parameter": "result_results_raster_xymax", "tag": ""},
+            {"parameter": "result_results_raster_xymin", "tag": ""},
+        ]
         sql = "SELECT parameter, value FROM config_param_user WHERE parameter like 'result_%'"
         rows = self.dao.get_rows(sql)
         if rows:
+            parameters = {row['parameter']: row['value'] for row in rows}
             with open(file_name, 'w', newline='') as dat_file:
-                for row in rows:
-                    value = row['value']
+                for item in mapper:
+                    value = parameters.get(item['parameter'], -9999)
                     if value in (None, "True", "False"):
                         value = "1" if value == "True" else "0"
-                    parameter = mapper.get(row['parameter'], row['parameter'])
+                    parameter = item['tag']
                     line = f"{value}\t{parameter}\n"
                     dat_file.write(line)
 
@@ -378,7 +410,8 @@ class DrExecuteModel(DrTask):
 
         sql = f"SELECT iber2d, roof, losses, bridge FROM cat_file WHERE id = '{mesh_id}'"
         row = self.dao.get_row(sql)
-        self.progress_changed.emit("Export files", tools_dr.lerp_progress(10, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+        title = "Export files"
+        self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(10, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
         if row:
             iber2d_content, roof_content, losses_content, bridges_content = row
 
@@ -397,11 +430,11 @@ class DrExecuteModel(DrTask):
             #     iber2d_content = '\n'.join(iber2d_lines)
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber2D.dat', iber2d_content)
-            self.progress_changed.emit("Export files", tools_dr.lerp_progress(30, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+            self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(30, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             if roof_content:
                 self._write_to_file(f'{self.folder_path}{os.sep}Iber_SWMM_roof.dat', roof_content)
-            self.progress_changed.emit("Export files", tools_dr.lerp_progress(40, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+            self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(40, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             if not losses_content:
                 losses_content = '0'
@@ -413,35 +446,35 @@ class DrExecuteModel(DrTask):
                 if losses_method == '0':
                     losses_content = '0'
                 else:
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(50, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(50, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # cn_multiplier
                     sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_cn_multiplier'"
                     row = self.dao.get_row(sql)
                     cn_multiplier = row[0] if row else 1
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(55, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(55, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # ia_coeff
                     sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_scs_ia_coefficient'"
                     row = self.dao.get_row(sql)
                     ia_coeff = row[0] if row else 0.2
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(60, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # start_time
                     sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_starttime'"
                     row = self.dao.get_row(sql)
                     start_time = row[0] if row else 0
-                    self.progress_changed.emit("Export files", tools_dr.lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+                    self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(70, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
                     # Replace first line
                     new_first_line = f"{losses_method} {cn_multiplier} {ia_coeff} {start_time}"
                     losses_content_lines = losses_content.split('\n')
                     losses_content_lines[0] = new_first_line
                     losses_content = '\n'.join(losses_content_lines)
-            self.progress_changed.emit("Export files", tools_dr.lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+            self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(80, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             self._write_to_file(f'{self.folder_path}{os.sep}Iber_Losses.dat', losses_content)
-            self.progress_changed.emit("Export files", tools_dr.lerp_progress(90, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+            self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(90, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             if bridges_content:
                 self._write_to_file(f'{self.folder_path}{os.sep}Iber_Internal_cond.dat', bridges_content)
-            self.progress_changed.emit("Export files", tools_dr.lerp_progress(100, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
+            self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(100, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
     def _get_iber2d_options(self):
 
@@ -487,7 +520,6 @@ class DrExecuteModel(DrTask):
         options_str = f"{options_delta_time} {options_tmax} {options_rank_results} {options_order} {options_cfl} {options_wetdry_edge} {options_viscosity_coeff} {options_t0} {options_simulation_details} {options_simulation_new} {options_plan_id} {options_simulation_plan} {options_timeseries}"
         return project_name, result_iber_format, options_str
 
-
     def _write_to_file(self, file_path, content):
         with open(file_path, 'w') as file:
             file.write(content)
@@ -495,9 +527,10 @@ class DrExecuteModel(DrTask):
     def _copy_static_files(self):
         folder = Path(global_vars.plugin_dir) / "resources" / "drain"
         file_names = ["Iber_Problemdata.dat", "Iber_SWMM.ini"]
+        title = "Export files"
         for i, file_name in enumerate(file_names):
             shutil.copy(folder / file_name, self.folder_path)
-            self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 0, len(file_names)), self.PROGRESS_MESH_FILES, self.PROGRESS_STATIC_FILES), '', False)
+            self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(tools_dr.lerp_progress(i, 0, len(file_names)), self.PROGRESS_MESH_FILES, self.PROGRESS_STATIC_FILES), '', False)
 
     def _create_inlet_file(self, selected_mesh: Optional[QgsMeshLayer] = None):
         file_name = Path(self.folder_path) / "Iber_SWMM_inlet_info.dat"
@@ -529,7 +562,7 @@ class DrExecuteModel(DrTask):
                 dat_file.write(values_str)
             if converted_inlets:
                 # Write converted inlets
-                ordered_keys =['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
+                ordered_keys = ['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
                 for feature in converted_inlets:
                     values = []
                     for value in ordered_keys:
@@ -540,7 +573,6 @@ class DrExecuteModel(DrTask):
                     values.insert(4, str(feature.geometry().asPoint().y()))
                     values_str = f"{' '.join(values)}\n"
                     dat_file.write(values_str)
-
 
     def _convert_pinlets_into_inlets(self, selected_mesh: Optional[int] = None,  gometry_layer_name: Optional[str] = 'pinlet', minimum_size: Optional[float] = 2) -> Optional[List[QgsFeature]]:
         """Convert pinlets into inlets"""
@@ -553,7 +585,7 @@ class DrExecuteModel(DrTask):
             return None
 
         # Get mesh layer data
-        sql = f"SELECT name, iber2d, roof, losses FROM cat_file WHERE id = {selected_mesh};"
+        sql = f"SELECT name, iber2d, roof, losses, bridge FROM cat_file WHERE id = {selected_mesh};"
         if not self.dao:
             return None
         row = self.dao.get_row(sql)
@@ -562,7 +594,7 @@ class DrExecuteModel(DrTask):
             return None
 
         # Create mesh layer
-        mesh = mesh_parser.loads(row["iber2d"], row["roof"], row["losses"])
+        mesh = mesh_parser.loads(row["iber2d"], row["roof"], row["losses"], row["bridge"])
         mesh_layer = create_temp_mesh_layer(mesh)
 
         if mesh_layer is None:
@@ -571,9 +603,10 @@ class DrExecuteModel(DrTask):
         # Split pinlet polygons by lines into a layer using QGIS processing algorithm: Split with lines
         splited_pinlets = processing.run(
             "native:splitwithlines", {
-            'INPUT':pinlet_layer,
-            'LINES':mesh_layer,
-            'OUTPUT':f'memory:'}
+                'INPUT': pinlet_layer,
+                'LINES': mesh_layer,
+                'OUTPUT': 'memory:'
+            }
         )
         splited_pinlets_layer: QgsVectorLayer = splited_pinlets['OUTPUT']
         if splited_pinlets_layer is None:
@@ -582,7 +615,7 @@ class DrExecuteModel(DrTask):
 
         # Group splited polygons by pinlet
         converted_inlets: List[QgsFeature] = []
-        grouped_splited_polygons: dict[str,List[QgsFeature]] = {}
+        grouped_splited_polygons: dict[str, List[QgsFeature]] = {}
         for feature in splited_polygons:
             if feature['code'] in grouped_splited_polygons.keys():
                 grouped_splited_polygons[f'{feature['code']}'].append(feature)
@@ -651,7 +684,6 @@ class DrExecuteModel(DrTask):
 
         return converted_inlets
 
-
     def _create_hyetograph_file(self):
         file_name = Path(self.folder_path) / "Iber_Hyetograph.dat"
 
@@ -670,7 +702,8 @@ class DrExecuteModel(DrTask):
 
         gdf = QgsVectorLayer(global_vars.gpkg_dao_data.db_filepath + "|layername=hyetograph", "hyetograph", "ogr")
         gdf_features = gdf.getFeatures()
-        self.progress_changed.emit("Export files", tools_dr.lerp_progress(10, self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
+        title = "Export files"
+        self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(10, self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
         with open(file_name, "w") as file:
             file.write("Hyetographs\n")
@@ -693,10 +726,9 @@ class DrExecuteModel(DrTask):
                         hours, minutes = map(int, ts_row["time"].split(":"))
                         seconds = hours * 3600 + minutes * 60
                         file.write(f"{seconds} {ts_row['value']}\n")
-                self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
+                self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
             file.write("End\n")
-
 
     def _create_rain_file(self):
         file_name = Path(self.folder_path) / "Iber_Rain.dat"
@@ -704,7 +736,8 @@ class DrExecuteModel(DrTask):
         sql = "SELECT value FROM config_param_user WHERE parameter = 'options_rain_class'"
         row = self.dao.get_row(sql)
         rain_class = int(row[0]) if row and row[0] else 0
-        self.progress_changed.emit("Export files", tools_dr.lerp_progress(50, self.PROGRESS_HYETOGRAPHS, self.PROGRESS_RAIN), '', False)
+        title = "Export files"
+        self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(50, self.PROGRESS_HYETOGRAPHS, self.PROGRESS_RAIN), '', False)
 
         if rain_class != 2:
             file_name.write_text(f"{rain_class} 0\n")
@@ -744,12 +777,7 @@ class DrExecuteModel(DrTask):
         if not raster_rows:
             raise Exception(f"Raster values not found. Raster idval: {raster_idval}.")
 
-        def str2seconds(time: str) -> int:
-            hours, minutes = map(int, time.split(":"))
-            seconds = hours * 3600 + minutes * 60
-            return seconds
-
-        times = [str2seconds(row["time"]) for row in raster_rows]
+        times = [row["time"] for row in raster_rows]
         paths = [Path(row["fname"]) for row in raster_rows]
 
         project_folder = Path(self.dao.db_filepath).parent
@@ -773,9 +801,12 @@ class DrExecuteModel(DrTask):
 
         gdf = QgsVectorLayer(global_vars.gpkg_dao_data.db_filepath + "|layername=culvert", "culvert", "ogr")
         gdf_features = gdf.getFeatures()
-        self.progress_changed.emit("Export files", tools_dr.lerp_progress(10, self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
+        title = "Export files"
+        self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(10, self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
 
         with open(file_name, "w") as file:
+            file.write(f"{gdf.featureCount()}\n")
+
             for i, ht_row in enumerate(gdf_features, start=1):
                 # 1 - fid
                 file.write(f"{ht_row.id()} ")
@@ -791,12 +822,12 @@ class DrExecuteModel(DrTask):
                 file.write(f"{ht_row.geometry().asPolyline()[1].x()} {ht_row.geometry().asPolyline()[1].y()} ")
                 # 7 - z_start
                 if ht_row["z_start"] is None or str(ht_row["z_start"]) == "NULL":
-                    file.write(f"0 ")
+                    file.write("0 ")
                 else:
                     file.write(f"{ht_row["z_start"]} ")
                 # 8 - z_end
                 if ht_row["z_end"] is None or str(ht_row["z_end"]) == "NULL":
-                    file.write(f"0 ")
+                    file.write("0 ")
                 else:
                     file.write(f"{ht_row["z_end"]} ")
 
@@ -807,9 +838,13 @@ class DrExecuteModel(DrTask):
                     file.write("1 ")
 
                 # 10, 11, 12, 13 - geom2(width), geom1(height), manning, code
-                file.write(f"{0 if str(ht_row["geom2"]) == "NULL" else ht_row["geom2"]} {0 if str(ht_row["geom1"]) == "NULL" else ht_row["geom1"]} {0 if str(ht_row["manning"]) == "NULL" else ht_row["manning"]} {ht_row["code"] }\n")
+                file.write(f"{0 if str(ht_row["geom2"]) == "NULL" else ht_row["geom2"]} " +
+                           f"{0 if str(ht_row["geom1"]) == "NULL" else ht_row["geom1"]} " +
+                           f"{0 if str(ht_row["manning"]) == "NULL" else ht_row["manning"]} " +
+                           f"{0 if str(ht_row["collapse_moment"]) == "NULL" else ht_row["collapse_moment"]} " +
+                           f"{ht_row["code"]}\n")
 
-                self.progress_changed.emit("Export files", tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
+                self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
 
     def _generate_inp(self):
         go2epa_params = {"dialog": self.dialog, "export_file_path": f"{self.folder_path}{os.sep}Iber_SWMM.inp", "is_subtask": True}
@@ -821,15 +856,17 @@ class DrExecuteModel(DrTask):
         return result
 
     def _generate_inp_progress_changed(self, process, progress, text, new_line):
+        title = "Generate INP"
         if progress:
-            self.progress_changed.emit("Generate INP", tools_dr.lerp_progress(progress, self.PROGRESS_INP, self.PROGRESS_RAIN), text, new_line)
+            self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(progress, self.PROGRESS_INP, self.PROGRESS_RAIN), text, new_line)
         else:
-            self.progress_changed.emit("Generate INP", progress, self.PROGRESS_INP, text, new_line)
+            self.progress_changed.emit(tools_qt.tr(title), progress, self.PROGRESS_INP, text, new_line)
             self.generate_inp_infolog = text
 
     def _run_iber(self):
         # iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"  # TODO: Add checkbox to select between Iber and IberPlus
-        iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}Iber.exe"
+        iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"
+        title = "Run Iber"
 
         if not os.path.exists(iber_exe_path):
             self.error_msg = f"File not found: {iber_exe_path}"
@@ -848,7 +885,10 @@ class DrExecuteModel(DrTask):
             shutil.copy2(source_path, destination_path)  # shutil.copy2 preserves metadata
 
         init_progress = tools_dr.lerp_progress(10, self.PROGRESS_INP, self.PROGRESS_IBER)
-        self.progress_changed.emit("Run Iber", init_progress, '', False)
+        self.progress_changed.emit(tools_qt.tr(title), init_progress, '', False)
+
+        # Add a small delay to ensure the files are copied
+        time.sleep(1)
 
         process = subprocess.Popen([iber_exe_path],
                                    stdout=subprocess.PIPE,
@@ -860,7 +900,7 @@ class DrExecuteModel(DrTask):
 
         # Read output in real-time
         while not self.isCanceled():
-            output = process.stdout.readline()
+            output = process.stdout.readline()  # TODO: Read the output from the file proceso.rep
             if output == '' and process.poll() is not None:
                 break
             if output:
@@ -871,7 +911,7 @@ class DrExecuteModel(DrTask):
                     iber_percentage = tools_dr.lerp_progress(int(float(output_percentage)), init_progress, self.PROGRESS_IBER)
                 except:
                     iber_percentage = None
-                self.progress_changed.emit("Run Iber", iber_percentage, f'{output.strip()}', True)
+                self.progress_changed.emit(tools_qt.tr(title), iber_percentage, f'{output.strip()}', True)
 
         if process.poll() is None:
             process.terminate()
@@ -881,7 +921,6 @@ class DrExecuteModel(DrTask):
 
         print(f"IberPlus execution finished. Return code: {return_code}")
 
-        self.progress_changed.emit("Run Iber", tools_dr.lerp_progress(100, self.PROGRESS_INP, self.PROGRESS_IBER), f'', True)
-
+        self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(100, self.PROGRESS_INP, self.PROGRESS_IBER), '', True)
 
     # endregion

@@ -1,18 +1,16 @@
-import qgis
 from qgis.processing import alg
-from qgis.core import (QgsVectorLayer, QgsProcessingContext, QgsPointXY, 
-    QgsFeature, QgsGeometry, QgsField)
+from qgis.core import (QgsVectorLayer, QgsProcessingContext, QgsPointXY, QgsFeature, QgsGeometry, QgsField)
 
-from qgis.PyQt.QtCore import QPoint, QVariant
+from qgis.PyQt.QtCore import QVariant
 
 import pandamesh as pm
 
 import geopandas as gpd
-import matplotlib.pyplot as plt
 import shapely
 import numpy as np
 import time
 from packages.gmsh import gmsh
+
 
 # From pandamesh
 def get_vertices():
@@ -20,6 +18,7 @@ def get_vertices():
     _, vertices, _ = gmsh.model.mesh.getNodes()
     # Return x and y
     return vertices.reshape((-1, 3))[:, :2]
+
 
 # From pandamesh
 def get_faces():
@@ -46,14 +45,15 @@ def get_faces():
     # convert to 0-based index
     return faces - 1
 
+
 def clean_geometries(gdf: gpd.GeoDataFrame, feedback):
     data = gdf.copy()
-    
+
     # Extract vertices from polygons. Keep information on how to reconstruct the polygon
     points = []
     polygon_index = []
     ring = []
-    #for i in tqdm(range(len(data)), desc="Polygon -> Vertex"):
+    # for i in tqdm(range(len(data)), desc="Polygon -> Vertex"):
     for i in range(len(data)):
         if feedback.isCanceled():
             return {}
@@ -109,23 +109,24 @@ def clean_geometries(gdf: gpd.GeoDataFrame, feedback):
                 vertices.loc[other_i, "anchor"] = True
 
     # Reconstruct the polygons from the modified vertices
-    #for polygon_id, group in tqdm(vertices.groupby("polygon"), desc="Vertex -> Polygon"):
+    # for polygon_id, group in tqdm(vertices.groupby("polygon"), desc="Vertex -> Polygon"):
     for polygon_id, group in vertices.groupby("polygon"):
         exterior = group[group["ring"] == -1].geometry
         exterior = [(np.round(p.x, 5), np.round(p.y, 5)) for p in exterior]
-        
+
         rings = group[group["ring"] != -1].groupby("ring")
         interiors = [group.geometry for interior_id, group in rings]
         for i in range(len(interiors)):
             interiors[i] = [(np.round(p.x, 5), np.round(p.y, 5)) for p in interiors[i]]
             if feedback.isCanceled():
                 return {}
-            
+
         data.loc[polygon_id, "geometry"] = shapely.Polygon(exterior, interiors)
-    
+
     data.geometry = data.geometry.buffer(0)
     data = data[~data.is_empty]
     return data
+
 
 def layer_to_gdf(layer, feedback):
     geoms = []
@@ -138,28 +139,30 @@ def layer_to_gdf(layer, feedback):
         except Exception as e:
             print(e, wkt)
         sizes.append(feature['cellsize'])
-        
+
         feedback.setProgress(100 * i / total)
         if feedback.isCanceled():
             return {}
-    
+
     gdf = gpd.GeoDataFrame(geometry=geoms, data={"cellsize": sizes})
     gdf = gdf.explode(ignore_index=True)
-    
+
     return gdf
+
 
 # 2D algorithms: https://gmsh.info/doc/texinfo/gmsh.html#Mesh-options
 ALGORITHMS = {
-    "MeshAdapt": 1, 
-    "Automatic": 2, 
-    "Initial mesh only": 3, 
-    "Delaunay": 5, 
-    "Frontal-Delaunay": 6, 
-    "BAMG": 7, 
-    "Frontal-Delaunay for Quads": 8, 
-    "Packing of Parallelograms": 9, 
+    "MeshAdapt": 1,
+    "Automatic": 2,
+    "Initial mesh only": 3,
+    "Delaunay": 5,
+    "Frontal-Delaunay": 6,
+    "BAMG": 7,
+    "Frontal-Delaunay for Quads": 8,
+    "Packing of Parallelograms": 9,
     "Quasi-structured Quad": 11
 }
+
 
 @alg(name='triangulate_custom', label='Hopefully triangulate',
      group='drain_scripts', group_label='Drain')
@@ -179,39 +182,39 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
     Description of the algorithm.
     """
     print(parameters)
-    
+
     start = time.time()
     print("Getting data... ", end='')
     transition_slope = parameters["TRANSITION_SLOPE"]
     transition_start = parameters["TRANSITION_START"]
     transition_extent = parameters["TRANSITION_EXTENT"]
-    
+
     source_layer = instance.parameterAsLayer(parameters, "INPUT", context)
     line_anchor_layer = instance.parameterAsLayer(parameters, "LINE_ANCHOR", context)
     point_anchor_layer = instance.parameterAsLayer(parameters, "POINT_ANCHOR", context)
-    
+
     data = layer_to_gdf(source_layer, feedback)
-   
+
     line_anchors = None
     if line_anchor_layer is not None:
-        line_anchors = layer_to_gdf(line_anchor_layer, feedback) 
+        line_anchors = layer_to_gdf(line_anchor_layer, feedback)
     else:
         line_anchors = gpd.GeoDataFrame(geometry=[], data={"cellsize": []}, crs=data.crs)
-        
+
     point_anchors = None
     if point_anchor_layer is not None:
-        point_anchors = layer_to_gdf(point_anchor_layer, feedback) 
+        point_anchors = layer_to_gdf(point_anchor_layer, feedback)
     else:
         point_anchors = gpd.GeoDataFrame(geometry=[], data={"cellsize": []}, crs=data.crs)
     print(f"Done! {time.time() - start}s")
-    
+
     start = time.time()
     print("Cleaning polygons... ", end='')
     data = clean_geometries(data, feedback)
     print(f"Done! {time.time() - start}s")
-    
-    #start = time.time()
-    #print("Initializing messher... ", end='')
+
+    # start = time.time()
+    # print("Initializing messher... ", end='')
     try:
         gmsh.finalize()
     except Exception:
@@ -229,7 +232,7 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
 
     gmsh.option.setNumber("Mesh.MeshSizeFromPoints", True)
     gmsh.option.setNumber("Mesh.Algorithm", list(ALGORITHMS.values())[parameters["ALGORITHM"]])
-    
+
     start = time.time()
     print("Generating Mesh (1/2)... ", end='')
     gmsh.model.mesh.generate(dim=2)
@@ -277,7 +280,7 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
 
         start = time.time()
         print("Generating Mesh (2/2)... ", end='')
-        #vertices, triangles = mesher.generate()
+        # vertices, triangles = mesher.generate()
         gmsh.model.mesh.generate(dim=2)
         print(f"Done! {time.time() - start}s")
     else:
@@ -296,8 +299,8 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
     triangles = get_faces()
 
     print("Done :)")
-    #gmsh.fltk.run()
-    
+    # gmsh.fltk.run()
+
     start = time.time()
     print("Creating temp layer... ", end='')
     poly_layer = QgsVectorLayer("Polygon", "temp", "memory")
@@ -330,13 +333,13 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
             int(tri[0]) + 1
         ])
         provider.addFeature(feature)
-        
-    #for f in layer.getFeatures():
+
+    # for f in layer.getFeatures():
     #    print("Feature:", f.id(), f.attributes(), f.geometry())
     poly_layer.updateExtents()
-    
+
     context.temporaryLayerStore().addMapLayer(poly_layer)
-    context.addLayerToLoadOnCompletion(poly_layer.id(),QgsProcessingContext.LayerDetails('MESH_OUTPUT',context.project(),'LAYER'))
+    context.addLayerToLoadOnCompletion(poly_layer.id(), QgsProcessingContext.LayerDetails('MESH_OUTPUT', context.project(), 'LAYER'))
     print(f"Done! {time.time() - start}s")
-    
+
     return {"OUTPUT": poly_layer}

@@ -628,30 +628,30 @@ INSERT INTO inp_conduit (shape, geom1, geom2, length, z1, z2, geom) VALUES('CIRC
 -- CAT_RASTER
 -- ----------
 INSERT INTO cat_raster (id, idval, raster_type) VALUES(1, 'demo-rain', 'Volume');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(1, 'demo-rain', '00:00', 'rain\20200121_00.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(2, 'demo-rain', '01:00', 'rain\20200121_01.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(3, 'demo-rain', '02:00', 'rain\20200121_02.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(4, 'demo-rain', '03:00', 'rain\20200121_03.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(5, 'demo-rain', '04:00', 'rain\20200121_04.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(6, 'demo-rain', '05:00', 'rain\20200121_05.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(7, 'demo-rain', '06:00', 'rain\20200121_06.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(8, 'demo-rain', '07:00', 'rain\20200121_07.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(9, 'demo-rain', '08:00', 'rain\20200121_08.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(10, 'demo-rain', '09:00', 'rain\20200121_09.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(11, 'demo-rain', '10:00', 'rain\20200121_10.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(12, 'demo-rain', '11:00', 'rain\20200121_11.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(13, 'demo-rain', '12:00', 'rain\20200121_12.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(14, 'demo-rain', '13:00', 'rain\20200121_13.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(15, 'demo-rain', '14:00', 'rain\20200121_14.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(16, 'demo-rain', '15:00', 'rain\20200121_15.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(17, 'demo-rain', '16:00', 'rain\20200121_16.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(18, 'demo-rain', '17:00', 'rain\20200121_17.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(19, 'demo-rain', '18:00', 'rain\20200121_18.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(20, 'demo-rain', '19:00', 'rain\20200121_19.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(21, 'demo-rain', '20:00', 'rain\20200121_20.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(22, 'demo-rain', '21:00', 'rain\20200121_21.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(23, 'demo-rain', '22:00', 'rain\20200121_22.tif');
-INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(24, 'demo-rain', '23:00', 'rain\20200121_23.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(1, 'demo-rain', 0, 'rain\20200121_00.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(2, 'demo-rain', 3600, 'rain\20200121_01.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(3, 'demo-rain', 7200, 'rain\20200121_02.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(4, 'demo-rain', 10800, 'rain\20200121_03.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(5, 'demo-rain', 14400, 'rain\20200121_04.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(6, 'demo-rain', 18000, 'rain\20200121_05.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(7, 'demo-rain', 21600, 'rain\20200121_06.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(8, 'demo-rain', 25200, 'rain\20200121_07.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(9, 'demo-rain', 28800, 'rain\20200121_08.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(10, 'demo-rain', 32400, 'rain\20200121_09.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(11, 'demo-rain', 36000, 'rain\20200121_10.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(12, 'demo-rain', 39600, 'rain\20200121_11.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(13, 'demo-rain', 43200, 'rain\20200121_12.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(14, 'demo-rain', 46800, 'rain\20200121_13.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(15, 'demo-rain', 50400, 'rain\20200121_14.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(16, 'demo-rain', 54000, 'rain\20200121_15.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(17, 'demo-rain', 57600, 'rain\20200121_16.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(18, 'demo-rain', 61200, 'rain\20200121_17.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(19, 'demo-rain', 64800, 'rain\20200121_18.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(20, 'demo-rain', 68400, 'rain\20200121_19.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(21, 'demo-rain', 72000, 'rain\20200121_20.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(22, 'demo-rain', 75600, 'rain\20200121_21.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(23, 'demo-rain', 79200, 'rain\20200121_22.tif');
+INSERT INTO cat_raster_value (id, raster, time, fname) VALUES(24, 'demo-rain', 82800, 'rain\20200121_23.tif');
 
 
 INSERT INTO hyetograph (timeseries, geom) VALUES('T5-5m', ST_GeomFromText('POINT (418491.9487122135 4577974.670495977)', <SRID_VALUE>));
@@ -670,7 +670,7 @@ UPDATE inp_dwf set pattern4='WEEKEND_PATTERN', avg_value=0.0003 where fid>45;
 update inp_junction set y0 = 0, ysur = 0, apond = 0;
 
 -- roof
-UPDATE roof SET slope = 1.5, width = 30, outlet_type = 1, outlet_vol =100, street_vol=0, infiltr_vol=0, roughness = 0.018;
+UPDATE roof SET slope = 1.5, width = 30, outlet_vol =100, street_vol=0, infiltr_vol=0, roughness = 0.018;
 UPDATE roof SET isconnected=1;
 
 -- inlet

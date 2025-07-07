@@ -154,12 +154,12 @@ class DrSaveToMeshTask(DrTask):
                     WHERE timeseries IN (
                         SELECT idval
                         FROM cat_timeseries
-                        WHERE id = {timeseries_id}
+                        WHERE idval = '{timeseries_id}'
                     )
                 """
                 rows = dao.get_rows(sql)
                 if rows is None:
-                    self.message = f"Timeseries id {timeseries_id} is empty."
+                    self.message = f"Timeseries idval {timeseries_id} is empty."
                     return False
                 timeseries_dict = {}
                 for row in rows:
@@ -226,15 +226,11 @@ class DrSaveToMeshTask(DrTask):
             self.feedback.setProgressText("Saving the result...")
             self.feedback.setProgress(80)
 
-            # Delete old mesh
-            sql = f"DELETE FROM cat_file WHERE name = '{self.mesh_name}'"
-            dao.execute_sql(sql)
-
             # Save mesh
             sql = f"""
-              INSERT INTO cat_file (name, iber2d, roof, losses)
-              VALUES
-                  ('{self.mesh_name}', '{new_mesh_str}', '{new_roof_str}', '{new_losses_str}')
+              UPDATE cat_file
+              SET iber2d = '{new_mesh_str}', roof = '{new_roof_str}', losses = '{new_losses_str}'
+              WHERE name = '{self.mesh_name}'
             """
             dao.execute_sql(sql)
 

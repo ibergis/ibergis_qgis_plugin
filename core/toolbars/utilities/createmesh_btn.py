@@ -1,20 +1,20 @@
 import datetime
 from functools import partial
-from pathlib import Path
 from time import time
 
-from qgis.core import Qgis, QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer, QgsGeometry, QgsFeature, QgsField
-from qgis.PyQt.QtCore import Qt, QTimer, QVariant
+from qgis.core import Qgis, QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
+from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox, QTextEdit
 
 from ..dialog import DrAction
 from ...threads.createmesh import DrCreateMeshTask
 from ...threads.validatemesh import validations_dict
 from ...ui.ui_manager import DrCreateMeshUi
-from ...utils import Feedback, tools_dr, mesh_parser
+from ...utils import Feedback, tools_dr
 from ...utils.meshing_process import create_anchor_layers
 from .... import global_vars
 from ....lib import tools_qt, tools_os
+from qgis.utils import iface
 
 
 class DrCreateMeshButton(DrAction):
@@ -41,18 +41,9 @@ class DrCreateMeshButton(DrAction):
         tools_qt.double_validator(dlg.txt_slope)
         tools_qt.double_validator(dlg.txt_start)
         tools_qt.double_validator(dlg.txt_extent)
-        dlg.cmb_mesh_qgis_layer.setFilters(Qgis.LayerFilter.MeshLayer)
 
         # Hide grb_cleanup
         dlg.grb_cleanup_data.setVisible(False)
-
-        # Disable widgets of the radio buttons
-        dlg.txt_mesh_qgis_path.setEnabled(False)
-        dlg.btn_mesh_qgis_path.setEnabled(False)
-        dlg.cmb_mesh_qgis_layer.setEnabled(False)
-        # Temporary disable the iber_from_qgis radio button
-        dlg.rb_mesh_qgis.setEnabled(False)  # TODO: enable when code is done
-        dlg.rb_mesh_iber_from_qgis.setEnabled(False)
 
         # Fill raster layers combos
         project = QgsProject.instance()
@@ -95,16 +86,6 @@ class DrCreateMeshButton(DrAction):
         dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_start.setEnabled)
         dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
-        # Radio button IBER mesh
-        dlg.rb_mesh_iber.toggled.connect(dlg.grb_roughness.setEnabled)
-        dlg.rb_mesh_iber.toggled.connect(dlg.grb_losses.setEnabled)
-        # Radio button QGIS mesh
-        dlg.rb_mesh_qgis.toggled.connect(dlg.txt_mesh_qgis_path.setEnabled)
-        dlg.rb_mesh_qgis.toggled.connect(dlg.btn_mesh_qgis_path.setEnabled)
-        # Radio button IBER mesh from QGIS mesh
-        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.cmb_mesh_qgis_layer.setEnabled)
-        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.grb_roughness.setEnabled)
-        dlg.rb_mesh_iber_from_qgis.toggled.connect(dlg.grb_losses.setEnabled)
         # Dialog buttons
         dlg.btn_ok.clicked.connect(self._execute_process)
         dlg.btn_cancel.clicked.connect(dlg.reject)
@@ -204,7 +185,6 @@ class DrCreateMeshButton(DrAction):
 
             num_triangles += geom.area() / triangle_area
 
-
         print(f"Estimated number of triangles: {num_triangles}")
         # self.feedback.setProgressText(f"Estimated number of triangles: >{num_triangles}")
 
@@ -234,15 +214,32 @@ class DrCreateMeshButton(DrAction):
         mesh_anchor_points_lyr = self._get_layer(self.dao, "mesh_anchor_points")
         mesh_anchor_lines_lyr = self._get_layer(self.dao, "mesh_anchor_lines")
         bridge_lyr = self._get_layer(self.dao, "bridge")
-        point_anchor_layer, line_anchor_layer = create_anchor_layers(
-            mesh_anchor_points_lyr,
-            mesh_anchor_lines_lyr,
-            bridge_lyr,
-            self.dao,
-            lowest_cellsize
-        )
+
         # Reset txt_infolog
         tools_qt.set_widget_text(dlg, 'txt_infolog', "")
+
+        # Load input layers
+        db_path = self.dao.db_filepath.replace('\\', '/')
+        path = f"{db_path}|layername="
+
+        # Load ground and roof layers from the QGIS project
+        layers = {}
+        for layer in ["ground", "roof"]:
+            layer_path = f"{path}{layer}"
+            lyrs = []
+            for lyr in QgsProject.instance().mapLayers().values():
+                if lyr.source() == layer_path:
+                    print(f"Layer: {lyr.name()} - {lyr.source()}")
+                    lyrs.append(lyr)
+
+            if len(lyrs) == 0:
+                self.message = f"Layer '{layer}' not found in the QGIS project."
+                return False
+            elif len(lyrs) > 1:
+                self.message = f"Layer '{layer}' found multiple times in the QGIS project."
+                return False
+            else:
+                layers[layer] = lyrs[0]
 
         self.feedback = Feedback()
         self.thread_triangulation = DrCreateMeshTask(
@@ -259,9 +256,15 @@ class DrCreateMeshButton(DrAction):
             roughness_layer,
             losses_layer,
             mesh_name,
-            point_anchor_layer=point_anchor_layer,
-            line_anchor_layer=line_anchor_layer,
+            point_anchor_layer=mesh_anchor_points_lyr,
+            line_anchor_layer=mesh_anchor_lines_lyr,
+            bridge_layer=bridge_lyr,
             feedback=self.feedback,
+            ground_layer=layers["ground"],
+            roof_layer=layers["roof"],
+            inlet_layer=None,
+            temporal_mesh=False,
+            temp_layer_name="Mesh Temp Layer"
         )
         thread = self.thread_triangulation
 
@@ -288,7 +291,6 @@ class DrCreateMeshButton(DrAction):
         dlg.rejected.connect(self.timer.stop)
 
         QgsApplication.taskManager().addTask(thread)
-
 
     def _progress_changed(self, process, progress, text, new_line):
         # Progress bar
@@ -318,7 +320,6 @@ class DrCreateMeshButton(DrAction):
         # Scroll to the bottom
         scrollbar = txt_infolog.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
-
 
     def _load_widget_values(self):
         dlg = self.dlg_mesh
@@ -411,6 +412,11 @@ class DrCreateMeshButton(DrAction):
         dlg = self.dlg_mesh
         dlg.meshes_saved = False
 
+        # Add temp layer to TOC
+        tools_qt.add_layer_to_toc(self.thread_triangulation.temp_layer, group="DRAIN TEMPORAL")
+        iface.setActiveLayer(self.thread_triangulation.temp_layer)
+        iface.zoomToActiveLayer()
+
     def _on_task_end(self):
         thread = self.thread_triangulation
         message = "Task canceled." if thread.isCanceled() else thread.message
@@ -426,7 +432,7 @@ class DrCreateMeshButton(DrAction):
 
         # Add errors to TOC
         if thread.error_layers or thread.warning_layers:
-            group_name = "Mesh inputs errors & warnings"
+            group_name = "MESH INPUTS ERRORS & WARNINGS"
             for layer in thread.error_layers:
                 tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
             for layer in thread.warning_layers:
@@ -438,7 +444,6 @@ class DrCreateMeshButton(DrAction):
         dlg.btn_cancel.clicked.disconnect()
         dlg.btn_cancel.clicked.connect(dlg.reject)
         dlg.mainTab.setTabEnabled(0, True)
-        dlg.btn_ok.setEnabled(True)
 
     def _on_task_terminated(self):
         self._on_task_end()

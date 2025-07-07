@@ -19,7 +19,6 @@ class DrPgDao(object):
         self.cursor = None
         self.pid = None
 
-
     def get_cursor(self, aux_conn=None):
 
         if aux_conn:
@@ -27,7 +26,6 @@ class DrPgDao(object):
         else:
             cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         return cursor
-
 
     def get_rows(self, sql, commit=False):
         """ Get multiple rows from selected query """
@@ -46,7 +44,6 @@ class DrPgDao(object):
                 self.rollback()
         finally:
             return rows
-
 
     def get_row(self, sql, commit=False, aux_conn=None):
         """ Get single row from selected query """
@@ -70,7 +67,6 @@ class DrPgDao(object):
         finally:
             return row
 
-
     def execute_sql(self, sql, commit=True):
         """ Execute selected query """
 
@@ -89,7 +85,6 @@ class DrPgDao(object):
         finally:
             return status
 
-
     def commit(self, aux_conn=None):
         """ Commit current database transaction """
 
@@ -100,7 +95,6 @@ class DrPgDao(object):
             self.conn.commit()
         except Exception:
             pass
-
 
     def rollback(self, aux_conn=None):
         """ Rollback current database transaction """

@@ -4,7 +4,7 @@ from time import time
 
 from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
-from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView
+from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTextEdit
 from qgis.PyQt.QtSql import QSqlTableModel
 
 from ..dialog import DrAction
@@ -20,7 +20,7 @@ def set_bc_filter():
     layer_name = 'boundary_conditions'
     bc_layer = tools_qgis.get_layer_by_tablename(layer_name)
 
-    sql = f"""SELECT idval FROM cat_bscenario WHERE active = 1"""
+    sql = """SELECT idval FROM cat_bscenario WHERE active = 1"""
     row = tools_db.get_row(sql)
     if not row:
         msg = "No current {0} found"
@@ -28,7 +28,7 @@ def set_bc_filter():
         tools_log.log_warning(msg, msg_params=msg_params)
         if bc_layer is None:
             return
-        bc_layer.setSubsetString(f"FALSE")
+        bc_layer.setSubsetString("FALSE")
         return
     cur_scenario = row['idval']
 
@@ -426,8 +426,28 @@ class DrBCScenarioManagerButton(DrAction):
             msg = "There was an error inserting the scenario"
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
+
+        # Set all scenarios as not active
+        sql = f"""UPDATE {self.tablename} SET active = 0"""
+        status = tools_db.execute_sql(sql)
+        if status is False:
+            msg = "There was an error setting the scenario as active"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
+            return
+
+        # Set current scenario as active
+        idval = idval.replace("'", "")
+        sql = f"""UPDATE {self.tablename} SET active = 1 WHERE idval = '{idval}'"""
+        status = tools_db.execute_sql(sql)
+        if status is False:
+            msg = "There was an error setting the scenario as active"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
+            return
+        self._set_lbl_current_scenario(idval)
+
         tools_dr.close_dialog(self.dlg_bc)
         self._reload_manager_table()
+        set_bc_filter()
 
     def _accept_edit_scenario(self):
         txt_id = self.dlg_bc.txt_id
@@ -515,9 +535,13 @@ class DrBCScenarioManagerButton(DrAction):
             bcscenario,
             mesh_name,
             mesh,
-            feedback=self.feedback,
+            feedback=self.feedback
         )
         thread = self.thread_savetomesh
+
+        # Show tab log
+        tools_dr.set_tabs_enabled(self.dlg_ms)
+        self.dlg_ms.mainTab.setCurrentIndex(1)
 
         # Set signals
         self.dlg_ms.btn_ok.setEnabled(False)
@@ -526,8 +550,7 @@ class DrBCScenarioManagerButton(DrAction):
         self.dlg_ms.btn_cancel.clicked.connect(partial(self.dlg_ms.btn_cancel.setText, "Canceling..."))
         thread.taskCompleted.connect(self._on_s2m_completed)
         thread.taskTerminated.connect(self._on_s2m_terminated)
-        thread.feedback.progressText.connect(self._set_progress_text)
-        thread.feedback.progressChanged.connect(self.dlg_ms.progress_bar.setValue)
+        thread.feedback.progress_changed.connect(self._set_progress_text)
 
         # Timer
         self.t0 = time()
@@ -569,14 +592,23 @@ class DrBCScenarioManagerButton(DrAction):
         text = str(datetime.timedelta(seconds=round(elapsed_time)))
         self.dlg_ms.lbl_timer.setText(text)
 
-    def _set_progress_text(self, txt):
-        tools_dr.fill_tab_log(
-            self.dlg_ms,
-            {"info": {"values": [{"message": txt}]}},
-            reset_text=False,
-            close=False,
-        )
-        sb = self.dlg_ms.txt_infolog.verticalScrollBar()
-        sb.setValue(sb.maximum())
+    def _set_progress_text(self, process, progress, text, new_line):
+        # Progress bar
+        if progress is not None:
+            self.dlg_ms.progress_bar.setValue(progress)
+
+        # TextEdit log
+        txt_infolog = self.dlg_ms.findChild(QTextEdit, 'txt_infolog')
+        cur_text = tools_qt.get_text(self.dlg_ms, txt_infolog, return_string_null=False)
+
+        end_line = '\n' if new_line else ''
+        if text:
+            txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        else:
+            txt_infolog.setText(f"{cur_text}{end_line}")
+        txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
 
     # endregion

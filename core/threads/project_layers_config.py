@@ -6,11 +6,11 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import Qgis, QgsEditFormConfig, QgsRasterLayer
+from qgis.core import Qgis, QgsEditFormConfig
 
 from .task import DrTask
 from ..utils import tools_dr, tools_fct
-from ...lib import tools_log, tools_qgis, tools_qt, tools_db, tools_os
+from ...lib import tools_log, tools_qgis, tools_qt, tools_os
 
 
 class DrProjectLayersConfig(DrTask):
@@ -29,7 +29,6 @@ class DrProjectLayersConfig(DrTask):
         self.vr_errors = None
         self.vr_missing = None
 
-
     def run(self):
 
         super().run()
@@ -42,15 +41,14 @@ class DrProjectLayersConfig(DrTask):
 
         return True
 
-
     def finished(self, result):
 
         super().finished(result)
 
-        sql = f"SELECT gw_fct_getinfofromid("
+        sql = "SELECT gw_fct_getinfofromid("
         if self.body:
             sql += f"{self.body}"
-        sql += f");"
+        sql += ");"
         tools_dr.manage_json_response(self.json_result, sql, None)
 
         # If user cancel task
@@ -79,9 +77,7 @@ class DrProjectLayersConfig(DrTask):
             msg_params = (self.exception,)
             tools_log.log_warning(msg, msg_params=msg_params)
 
-
     # region private functions
-
 
     def _get_layers_to_config(self):
         """ Get available layers to be configured """
@@ -95,7 +91,6 @@ class DrProjectLayersConfig(DrTask):
                 self.available_layers.append(table_name)
 
         self._set_form_suppress(self.available_layers)
-
 
     def _set_form_suppress(self, layers_list):
         """ Set form suppress on "Hide form on add feature (global settings) """
@@ -112,7 +107,6 @@ class DrProjectLayersConfig(DrTask):
             else:
                 config.setSuppress(0)
             layer.setEditFormConfig(config)
-
 
     def _set_layer_config(self, layers):
         """ Set layer fields configured according to client configuration.

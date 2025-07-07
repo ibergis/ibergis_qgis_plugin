@@ -14,7 +14,10 @@ from qgis.core import (
     QgsFeature,
     QgsProcessingParameterDefinition,
     QgsProject,
-    QgsVectorLayer
+    QgsVectorLayer,
+    QgsProcessingParameterBoolean,
+    QgsProcessingFeatureSourceDefinition,
+    QgsFeatureRequest
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis, tools_gpkgdao
@@ -38,6 +41,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
     FIELD_LANDUSE = 'FIELD_LANDUSE'
     FIELD_CUSTOM_ROUGHNESS = 'FIELD_CUSTOM_ROUGHNESS'
     FIELD_SCS_CN = 'FIELD_SCS_CN'
+    BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
+
+    bool_selected_features: bool = False
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -57,61 +63,66 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 types=[QgsProcessing.SourceType.VectorPolygon]
             )
         )
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
         custom_code = QgsProcessingParameterField(
-                self.FIELD_CUSTOM_CODE,
-                self.tr('Select *custom code* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_CUSTOM_CODE,
+            self.tr('Select *custom code* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         custom_code.setFlags(custom_code.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         descript = QgsProcessingParameterField(
-                self.FIELD_DESCRIPT,
-                self.tr('Select *descript* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_DESCRIPT,
+            self.tr('Select *descript* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         descript.setFlags(descript.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         cellsize = QgsProcessingParameterField(
-                self.FIELD_CELLSIZE,
-                self.tr('Select *cell size* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.Numeric,
-                optional=True
-            )
+            self.FIELD_CELLSIZE,
+            self.tr('Select *cell size* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
         cellsize.setFlags(cellsize.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         annotation = QgsProcessingParameterField(
-                self.FIELD_ANNOTATION,
-                self.tr('Select *annotation* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_ANNOTATION,
+            self.tr('Select *annotation* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         annotation.setFlags(annotation.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         landuse = QgsProcessingParameterField(
-                self.FIELD_LANDUSE,
-                self.tr('Select *landuse* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_LANDUSE,
+            self.tr('Select *landuse* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         landuse.setFlags(landuse.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         custom_roughness = QgsProcessingParameterField(
-                self.FIELD_CUSTOM_ROUGHNESS,
-                self.tr('Select *custom roughness* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.Numeric,
-                optional=True
-            )
+            self.FIELD_CUSTOM_ROUGHNESS,
+            self.tr('Select *custom roughness* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
         custom_roughness.setFlags(custom_roughness.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         scs_cn = QgsProcessingParameterField(
-                self.FIELD_SCS_CN,
-                self.tr('Select *scs_cn* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.Numeric,
-                optional=True
-            )
+            self.FIELD_SCS_CN,
+            self.tr('Select *scs_cn* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.Numeric,
+            optional=True
+        )
         scs_cn.setFlags(scs_cn.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         self.addParameter(custom_code)
         self.addParameter(descript)
@@ -148,18 +159,12 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
         # get ground layer
         self.file_target = tools_qgis.get_layer_by_tablename('ground')
-        if self.file_target is not None and global_vars.gpkg_dao_data is not None:
-            expected_schema_path: str = self.file_target.source().split('|')[0]
-            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
-                feedback.pushWarning(self.tr(f'Wrong Ground layer found: {self.file_target.source()}'))
-                return {}
-        else:
-            feedback.pushWarning(self.tr(f'Error getting expected ground layer'))
-            return {}
         if self.file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
             return
         feedback.setProgressText(self.tr('Target layer found.'))
+
+        self.bool_selected_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_FEATURES, context)
 
         # check layer types
         feedback.setProgressText(self.tr('Checking layer types.'))
@@ -170,15 +175,22 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
         # set unique fields
         feedback.setProgress(15)
-        self.unique_fields = {'custom_code':[]}
+        self.unique_fields = {'custom_code': []}
 
         # delete innecesary values from geometry
-        result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True,'OUTPUT':'memory:'})
+        if self.bool_selected_features:
+            result = processing.run("native:dropmzvalues", {
+                'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(),
+                                                              selectedFeaturesOnly=True, featureLimit=-1,
+                                                              geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                'DROP_M_VALUES': True, 'DROP_Z_VALUES': True,
+                'OUTPUT': 'memory:'
+            })
+        else:
+            result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'})
         self.converted_geometries_layer = result['OUTPUT']
 
         return {}
-
-
 
     def _insert_data(self, source_layer: QgsVectorLayer, target_layer: QgsVectorLayer, field_map: dict, unique_fields: dict, feedback: Feedback, batch_size: int = 1000):
         """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
@@ -203,8 +215,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         field_map_name: str = 'landuse'
         if field_map['landuse'] is not None:
             field_map_name = field_map['landuse']
+
         for feature in source_layer.getFeatures():
-            if feature[field_map_name] not in landuse_types and feature[field_map_name] not in unexistent_landuses and feature[field_map_name] not in ['NULL', None, 'null']:
+            if field_map_name in feature.attributes() and feature[field_map_name] not in landuse_types and feature[field_map_name] not in unexistent_landuses and feature[field_map_name] not in ['NULL', None, 'null']:
                 unexistent_landuses.append(feature[field_map_name])
 
         # check if there are unexistent landuses
@@ -252,12 +265,12 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                                     skiped_features.append(feature.id())
                                     break
                             src_value = feature[src_field]
-                        except KeyError as e:
+                        except KeyError:
                             src_value = None
                     attributes[target_field_names.index(tgt_field)] = src_value
             feedback.setProgress(tools_dr.lerp_progress(int(feature_index*100/num_features), 16, 90))
             feature_index += 1
-            if(repeated_params):
+            if (repeated_params):
                 continue
             new_feature.setAttributes(attributes)
             if not feature.geometry().isGeosValid():
@@ -285,9 +298,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                     # enable ground triggers
                     if not self.enable_triggers(feedback, True):
                         return False
-                    feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}."))
+                    feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}"))
                     if len(skiped_features) > 0:
-                        feedback.setProgressText(self.tr(f"Skipped {len(skiped_features)} features with id: {skiped_features}."))
+                        feedback.setProgressText(self.tr(f"Skipped features: ({len(skiped_features)})"))
                     features_to_add.clear()
                 except Exception as e:
                     feedback.reportError(self.tr(f"Error adding features: {e}"))
@@ -311,9 +324,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
                 # enable ground triggers
                 if not self.enable_triggers(feedback, True):
                     return False
-                feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}."))
+                feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}"))
                 if len(skiped_features) > 0:
-                    feedback.setProgressText(self.tr(f"Skipped {len(skiped_features)} features with id: {skiped_features}."))
+                    feedback.setProgressText(self.tr(f"Skipped features: ({len(skiped_features)})"))
             except Exception as e:
                 feedback.reportError(self.tr(f"Error adding features: {e}"))
                 target_layer.rollBack()
@@ -330,12 +343,12 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         db_filepath: str = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
         self.dao.init_db(db_filepath)
 
-        if not self._insert_data(self.converted_geometries_layer, self.file_target, self.field_map, self.unique_fields, feedback, batch_size=50000):
+        if not self._insert_data(self.converted_geometries_layer, self.file_target, self.field_map, self.unique_fields, feedback, batch_size=5000):
             feedback.reportError(self.tr('Error during import.'))
             self.dao.close_db()
             return {}
         self.dao.close_db()
-        feedback.setProgressText(self.tr(f"Importing process finished."))
+        feedback.setProgressText(self.tr("Importing process finished."))
         feedback.setProgress(100)
         return {}
 
@@ -370,10 +383,9 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         return True
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to import features from a source polygon layer into the Drain-Ground layer of your project.\n
-        You must first select the source layer and the target Ground layer. Optionally, you can map fields from the source layer to specific fields in the target layer, such as custom code, land use, annotation, or roughness.\n
-        Only features with geometry will be copied. If a source field value already exists in the target layer, it will be skipped to avoid duplicates.\n
-        The tool performs the import in batches to optimize performance.""")
+        return self.tr("""Imports features from a source polygon layer into the project's Drain-Ground layer, with options to map fields and avoid duplicates. 
+                       Only valid geometries are imported, and the process is optimized for large datasets. 
+                       Use this tool to quickly transfer and match ground features from other layers.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -382,13 +394,7 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         return 'ImportGroundGeometries'
 
     def displayName(self):
-        return self.tr('Import Ground geometries')
-
-    def group(self):
-        return self.tr(self.groupId())
-
-    def groupId(self):
-        return ''
+        return self.tr('Import Ground Geometries')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

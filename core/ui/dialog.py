@@ -14,15 +14,16 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.gui import QgsMessageBar
 
 from ... import global_vars
+from qgis.utils import iface
 
 
 class DrDialog(QDialog):
 
     key_escape = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, parent=None):
 
-        super().__init__()
+        super().__init__(parent or iface.mainWindow())
         self.setupUi(self)
         # Create message bar
         try:
@@ -46,7 +47,6 @@ class DrDialog(QDialog):
         icon_path = f"{icon_folder}{os.sep}dialogs{os.sep}20x20{os.sep}drain.png"
         giswater_icon = QIcon(icon_path)
         self.setWindowIcon(giswater_icon)
-
 
     def keyPressEvent(self, event):
 

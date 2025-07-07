@@ -18,17 +18,18 @@ except ImportError:
     scipy_imported = False
 
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTableWidget, QTableWidgetItem, QSizePolicy, QLineEdit, \
-    QGridLayout, QComboBox, QApplication, QShortcut
+    QGridLayout, QComboBox, QApplication, QShortcut, QTextEdit
 from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
 from qgis.PyQt.QtCore import QTime, QDate
 from ..ui.ui_manager import DrNonVisualManagerUi, DrNonVisualControlsUi, DrNonVisualCurveUi, DrNonVisualPatternUDUi, \
-    DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualPrint, DrNonVisualRasterUi
+    DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualRasterUi, DrNonVisualRasterImportUi
 from ..utils.matplotlib_widget import MplCanvas
 from ..utils import tools_dr
-from ...lib import tools_qgis, tools_qt, tools_db, tools_log
+from ...lib import tools_qgis, tools_qt, tools_db, tools_os
 from ... import global_vars
+from typing import Optional
 
 
 class DrNonVisual:
@@ -51,10 +52,9 @@ class DrNonVisual:
                          'cat_pattern': 'idval', 'cat_pattern_value': 'pattern',
                          'cat_controls': 'id',
                          'cat_timeseries': 'idval', 'cat_timeseries_value': 'timeseries',
-                         'cat_raster': 'id', 'cat_raster_value': 'raster',
+                         'cat_raster': 'idval', 'cat_raster_value': 'raster',
                          }
         self.valid = (True, "")
-
 
     def get_nonvisual(self, object_name):
         """ Opens Non-Visual object dialog. Called from 'New Non-Visual object' button. """
@@ -65,7 +65,6 @@ class DrNonVisual:
         # Execute method get_{object_name}
         getattr(self, f'get_{object_name.lower()}')()
 
-
     # region manager
     def manage_nonvisual(self):
         """ Opens Non-Visual objects manager. Called from 'Non-Visual object manager' button. """
@@ -73,6 +72,13 @@ class DrNonVisual:
         # Get dialog
         self.manager_dlg = DrNonVisualManagerUi()
         tools_dr.load_settings(self.manager_dlg)
+
+        # Show import button if current tab is rasters
+        tab_name = self.manager_dlg.main_tab.tabText(self.manager_dlg.main_tab.currentIndex())
+        if tab_name == 'Rasters':
+            self.manager_dlg.btn_import.setVisible(True)
+        else:
+            self.manager_dlg.btn_import.setVisible(False)
 
         # Make and populate tabs
         self._manage_tabs_manager()
@@ -84,11 +90,11 @@ class DrNonVisual:
         self.manager_dlg.btn_create.clicked.connect(partial(self._create_object, self.manager_dlg))
         self.manager_dlg.btn_delete.clicked.connect(partial(self._delete_object, self.manager_dlg))
         self.manager_dlg.btn_cancel.clicked.connect(self.manager_dlg.reject)
+        self.manager_dlg.btn_import.clicked.connect(partial(self._import_rasters, self.manager_dlg))
         self.manager_dlg.finished.connect(partial(tools_dr.close_dialog, self.manager_dlg))
 
         # Open dialog
-        tools_dr.open_dialog(self.manager_dlg, dlg_name=f'dlg_nonvisual_manager')
-
+        tools_dr.open_dialog(self.manager_dlg, dlg_name='nonvisual_manager')
 
     def _manage_tabs_manager(self):
         """ Creates and populates manager tabs """
@@ -107,14 +113,12 @@ class DrNonVisual:
 
             qtableview.doubleClicked.connect(partial(self._get_nonvisual_object, qtableview, function_name))
 
-
     def _get_nonvisual_object(self, tbl_view, function_name):
         """ Opens Non-Visual object dialog. Called from manager tables. """
 
         object_id = tbl_view.selectionModel().selectedRows()[0].data()
         if hasattr(self, function_name):
             getattr(self, function_name)(object_id)
-
 
     def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.NoEditTriggers, expr=None):
         """ Fills manager table """
@@ -145,13 +149,19 @@ class DrNonVisual:
         # Sort the table by feature id
         model.sort(1, 0)
 
-
     def _filter_table(self, dialog, text):
         """ Filters manager table by id """
 
         widget_table = dialog.main_tab.currentWidget()
         tablename = widget_table.objectName()
         id_field = self.dict_ids.get(tablename, 'idval')
+        tab_name = dialog.main_tab.tabText(dialog.main_tab.currentIndex())
+
+        # Show import button if current tab is rasters
+        if tab_name == 'Rasters':
+            dialog.btn_import.setVisible(True)
+        else:
+            dialog.btn_import.setVisible(False)
 
         if text is None:
             text = tools_qt.get_text(dialog, dialog.txt_filter, return_string_null=False)
@@ -161,14 +171,12 @@ class DrNonVisual:
         widget_table.model().setFilter(expr)
         widget_table.model().select()
 
-
     def _create_object(self, dialog):
         """ Creates a new non-visual object from the manager """
 
         table = dialog.main_tab.currentWidget()
         function_name = table.property('function')
         getattr(self, function_name)()
-
 
     def _duplicate_object(self, dialog):
         """ Duplicates the selected object """
@@ -195,7 +203,6 @@ class DrNonVisual:
 
         # Open dialog with values but no id
         getattr(self, function_name)(value, duplicate=True)
-
 
     def _delete_object(self, dialog):
         """ Deletes selected object and its values """
@@ -311,8 +318,7 @@ class DrNonVisual:
         tools_qt.set_tableview_config(tbl_curve_value, sectionResizeMode=1, edit_triggers=QTableView.DoubleClicked)
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_curve')
-
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_curve')
 
     def _paste_curve_values(self, tbl_curve_value):
         selected = tbl_curve_value.selectedRanges()
@@ -330,21 +336,19 @@ class DrNonVisual:
                 col_pos = selected[0].leftColumn() + c
                 tbl_curve_value.setItem(row_pos, col_pos, item)
 
-
     def _create_curve_type_lists(self):
         """ Creates a list & dict to manage curve_values table headers """
 
         curve_type_list = []
         curve_type_headers = {}
-        sql = f"SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        sql = "SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_curve_type'"
+        rows = tools_db.get_rows(sql)
 
         if rows:
             curve_type_list = [[row[0], row[1]] for row in rows]
             curve_type_headers = {row[0]: json.loads(row[2]).get('header') for row in rows}
 
         return curve_type_headers, curve_type_list
-
 
     def _populate_curve_widgets(self, curve, duplicate=False):
         """ Fills in all the values for curve dialog """
@@ -381,7 +385,6 @@ class DrNonVisual:
             tbl_curve_value.setItem(n, 1, QTableWidgetItem(f"{row[1]}"))
             tbl_curve_value.insertRow(tbl_curve_value.rowCount())
 
-
     def _load_curve_widgets(self, dialog):
         """ Load values from session.config """
 
@@ -393,7 +396,6 @@ class DrNonVisual:
 
         # Populate widgets
         tools_qt.set_widget_text(dialog, cmb_curve_type, curve_type)
-
 
     def _save_curve_widgets(self, dialog):
         """ Save values from session.config """
@@ -407,7 +409,6 @@ class DrNonVisual:
         # Populate widgets
         tools_dr.set_config_parser('nonvisual_curves', 'cmb_curve_type', curve_type)
 
-
     def _manage_curve_type(self, dialog, curve_type_headers, table, index):
         """ Manage curve values table headers """
 
@@ -415,7 +416,6 @@ class DrNonVisual:
         if curve_type and curve_type_headers:
             headers = curve_type_headers.get(curve_type)
             table.setHorizontalHeaderLabels(headers)
-
 
     def _manage_curve_value(self, dialog, table, row, column):
         """ Validate data in curve values table """
@@ -491,7 +491,6 @@ class DrNonVisual:
                 y_len = len([y for y in y_values if y is not None])  # Length of the y_values list without Nones
                 valid = x_len == y_len
                 self.valid = (valid, "Invalid curve. Values must go in pairs.")
-
 
     def _manage_curve_plot(self, dialog, table, plot_widget, file_name=None, geom1=None, geom2=None):
         """ Note: row & column parameters are passed by the signal """
@@ -601,7 +600,6 @@ class DrNonVisual:
         # Draw plot
         plot_widget.draw()
 
-
     def _accept_curves(self, dialog, is_new):
         """ Manage accept button (insert & update) """
 
@@ -692,7 +690,6 @@ class DrNonVisual:
         self._save_curve_widgets(dialog)
         tools_dr.close_dialog(dialog)
 
-
     def _insert_curve_values(self, dialog, tbl_curve_value, curve_name):
         """ Insert table values into cat_curve_values """
 
@@ -744,8 +741,7 @@ class DrNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_pattern_{global_vars.project_type}')
-
+        tools_dr.open_dialog(self.dialog, dlg_name=f'nonvisual_pattern_{global_vars.project_type}')
 
     def _manage_ud_patterns_dlg(self, pattern, duplicate=False):
         # Variables
@@ -762,7 +758,7 @@ class DrNonVisual:
             paste_shortcut.activated.connect(partial(self._paste_patterns_values, table))
 
         sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_pattern_type, rows)
 
@@ -782,7 +778,6 @@ class DrNonVisual:
         is_new = (pattern is None) or duplicate
         self.dialog.btn_accept.clicked.connect(partial(self._accept_pattern_ud, self.dialog, is_new))
 
-
     def _paste_patterns_values(self, tbl_pattern_value):
         selected = tbl_pattern_value.selectedRanges()
         if not selected:
@@ -797,13 +792,11 @@ class DrNonVisual:
             col_pos = selected[0].leftColumn() + c
             tbl_pattern_value.setItem(row_pos, col_pos, item)
 
-
     def _scale_to_fit_pattern_tableviews(self, dialog):
         tables = [dialog.tbl_monthly, dialog.tbl_daily, dialog.tbl_hourly, dialog.tbl_weekend]
         for table in tables:
             table.horizontalHeader().setSectionResizeMode(1)
             table.horizontalHeader().setMinimumSectionSize(50)
-
 
     def _populate_ud_patterns_widgets(self, pattern, duplicate=False):
         """ Fills in all the values for ud pattern dialog """
@@ -845,7 +838,6 @@ class DrNonVisual:
                 value = ''
             table.setItem(0, i, QTableWidgetItem(value))
 
-
     def _load_ud_pattern_widgets(self, dialog):
         """ Load values from session.config """
 
@@ -858,7 +850,6 @@ class DrNonVisual:
         # Populate widgets
         tools_qt.set_combo_value(cmb_pattern_type, str(pattern_type), 0)
 
-
     def _save_ud_pattern_widgets(self, dialog):
         """ Save values from session.config """
 
@@ -870,7 +861,6 @@ class DrNonVisual:
 
         # Populate widgets
         tools_dr.set_config_parser('nonvisual_patterns', 'cmb_pattern_type', pattern_type)
-
 
     def _manage_patterns_tableviews(self, dialog, cmb_pattern_type, plot_widget):
 
@@ -896,7 +886,6 @@ class DrNonVisual:
             pass
         cur_table.cellChanged.connect(partial(self._manage_ud_patterns_plot, cur_table, plot_widget))
         self._manage_ud_patterns_plot(cur_table, plot_widget, None, None)
-
 
     def _accept_pattern_ud(self, dialog, is_new):
         """ Manage accept button (insert & update) """
@@ -971,7 +960,6 @@ class DrNonVisual:
         self._save_ud_pattern_widgets(dialog)
         tools_dr.close_dialog(dialog)
 
-
     def _insert_ud_pattern_values(self, dialog, pattern_type, pattern_name):
         """ Insert table values into v_edit_inp_pattern_values """
 
@@ -996,7 +984,7 @@ class DrNonVisual:
                 continue
 
             for n, x in enumerate(row):
-                sql = f"INSERT INTO cat_pattern_value (pattern, timestep, value) "
+                sql = "INSERT INTO cat_pattern_value (pattern, timestep, value) "
                 sql += f"VALUES ({pattern_name}, {n+1}, {x});"
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
@@ -1006,7 +994,6 @@ class DrNonVisual:
                     return False
 
         return True
-
 
     def _manage_ud_patterns_plot(self, table, plot_widget, row, column):
         """ Note: row & column parameters are passed by the signal """
@@ -1078,8 +1065,7 @@ class DrNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_controls')
-
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_controls')
 
     def _populate_controls_widgets(self, control_id):
         """ Fills in all the values for control dialog """
@@ -1095,7 +1081,6 @@ class DrNonVisual:
         # Populate text & combobox widgets
         tools_qt.set_widget_text(self.dialog, txt_text, row[1])
 
-
     def _load_controls_widgets(self, dialog):
         """ Load values from session.config """
 
@@ -1109,7 +1094,6 @@ class DrNonVisual:
         # # Populate widgets
         # tools_qt.set_checked(dialog, chk_active, active)
 
-
     def _save_controls_widgets(self, dialog):
         """ Save values from session.config """
 
@@ -1122,7 +1106,6 @@ class DrNonVisual:
         #
         # # Populate widgets
         # tools_dr.set_config_parser('nonvisual_controls', 'chk_active', active)
-
 
     def _accept_controls(self, dialog, is_new, control_id):
         """ Manage accept button (insert & update) """
@@ -1215,8 +1198,7 @@ class DrNonVisual:
         self._manage_times_type(tbl_timeseries_value, tools_qt.get_combo_value(self.dialog, cmb_times_type))
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_timeseries')
-
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_timeseries')
 
     def _paste_timeseries_values(self, tbl_timeseries_value):
         selected = tbl_timeseries_value.selectedRanges()
@@ -1237,25 +1219,23 @@ class DrNonVisual:
                     col_pos += 1
                 tbl_timeseries_value.setItem(row_pos, col_pos, item)
 
-
     def _populate_timeser_combos(self, cmb_times_type, cmb_timeser_type):
         """ Populates timeseries dialog combos """
 
         timeser_type_headers = {}
         sql = "SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_timeseries_type'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        rows = tools_db.get_rows(sql)
         if rows:
             timeser_type_list = [[row[0], row[1]] for row in rows]
             timeser_type_headers = {row[0]: json.loads(row[2]).get('header') for row in rows if row[2]}
             tools_qt.fill_combo_values(cmb_timeser_type, timeser_type_list, index_to_show=1)
 
         sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_timeseries_timestype'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        rows = tools_db.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(cmb_times_type, rows, index_to_show=1)
 
         return timeser_type_headers
-
 
     def _populate_timeser_widgets(self, timser_id, duplicate=False):
         """ Fills in all the values for timeseries dialog """
@@ -1321,7 +1301,6 @@ class DrNonVisual:
             tbl_timeseries_value.setItem(n, 2, QTableWidgetItem(f"{value}"))
             tbl_timeseries_value.insertRow(tbl_timeseries_value.rowCount())
 
-
     def _manage_timeser_type(self, dialog, tbl_timeseries_value, cmb_times_type, timeser_type_headers, text):
         """ Manage timeseries times_type depending on timeseries_type """
 
@@ -1339,7 +1318,6 @@ class DrNonVisual:
             return
         tools_qt.set_widget_enabled(dialog, cmb_times_type, True)
 
-
     def _manage_times_type(self, tbl_timeseries_value, text):
         """ Manage timeseries table columns depending on times_type """
 
@@ -1347,7 +1325,6 @@ class DrNonVisual:
             tbl_timeseries_value.setColumnHidden(0, True)
             return
         tbl_timeseries_value.setColumnHidden(0, False)
-
 
     def _load_timeseries_widgets(self, dialog):
         """ Load values from session.config """
@@ -1364,7 +1341,6 @@ class DrNonVisual:
         tools_qt.set_combo_value(cmb_timeser_type, str(timeser_type), 0)
         tools_qt.set_combo_value(cmb_times_type, str(times_type), 0)
 
-
     def _save_timeseries_widgets(self, dialog):
         """ Save values from session.config """
 
@@ -1379,7 +1355,6 @@ class DrNonVisual:
         # Populate widgets
         tools_dr.set_config_parser('nonvisual_timeseries', 'cmb_timeser_type', timeser_type)
         tools_dr.set_config_parser('nonvisual_timeseries', 'cmb_times_type', times_type)
-
 
     def _accept_timeseries(self, dialog, is_new):
         """ Manage accept button (insert & update) """
@@ -1462,7 +1437,6 @@ class DrNonVisual:
         self._save_timeseries_widgets(dialog)
         tools_dr.close_dialog(dialog)
 
-
     def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, timeseries):
         """ Insert table values into cat_timeseries_value """
 
@@ -1485,19 +1459,40 @@ class DrNonVisual:
                     value = item.data(0)
                     if x == 1 and type(value) == str:
                         # Convert to HH:mm time format
-                        for i in range(0, len(time_formats_list)):
-                            value = QTime.fromString(item.data(0), time_formats_list[i]) # Try to convert
-                            if not value.isNull():
-                                value = value.toString(output_time_format if time_formats_list[i] != 'HH:mm:ss' else output_time_format+':ss') # Convert QTime to string
-                                break
-                        if type(value) != str and value.isNull():
+                        #for i in range(0, len(time_formats_list)):
+                            #value = QTime.fromString(item.data(0), time_formats_list[i])  # Try to convert
+                            #if not value.isNull():
+                            #    value = value.toString(output_time_format if time_formats_list[i] != 'HH:mm:ss' else output_time_format+':ss')  # Convert QTime to string
+                            #    break
+                        #if type(value) != str and value.isNull():
+                        #    invalid_times.append(item.data(0))
+
+                        time_values = item.data(0).split(':')
+                        if len(time_values) == 2:
+                            # Check if both values are integers
+                            try:
+                                hours = int(time_values[0])
+                                minutes = int(time_values[1])
+                                # Validate minutes range (00-59)
+                                if 0 <= minutes <= 59:
+                                    # Add 0 if minutes or hours are a single digit
+                                    if hours < 10:
+                                        hours = f"0{hours}"
+                                    if minutes < 10:
+                                        minutes = f"0{minutes}"
+                                    value = f"{hours}:{minutes}"
+                                else:
+                                    invalid_times.append(item.data(0))
+                            except ValueError:
+                                invalid_times.append(item.data(0))
+                        else:
                             invalid_times.append(item.data(0))
                     elif x == 0 and type(value) == str:
                         # Convert to MM/dd/yyyy date format
                         for i in range(0, len(date_formats_list)):
-                            value = QDate.fromString(item.data(0), date_formats_list[i]) # Try to convert
+                            value = QDate.fromString(item.data(0), date_formats_list[i])  # Try to convert
                             if not value.isNull():
-                                value = value.toString(output_date_format) # Convert QDate to string
+                                value = value.toString(output_date_format)  # Convert QDate to string
                                 break
                         if type(value) != str and value.isNull():
                             invalid_dates.append(item.data(0))
@@ -1546,7 +1541,7 @@ class DrNonVisual:
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (timeseries, date, time, value) "
+                sql = "INSERT INTO cat_timeseries_value (timeseries, date, time, value) "
                 sql += f"VALUES ('{timeseries}', '{row[0]}', '{row[1]}', {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
@@ -1567,7 +1562,7 @@ class DrNonVisual:
                     global_vars.gpkg_dao_data.rollback()
                     return False
 
-                sql = f"INSERT INTO cat_timeseries_value (timeseries, time, value) "
+                sql = "INSERT INTO cat_timeseries_value (timeseries, time, value) "
                 sql += f"VALUES ('{timeseries}', '{row[1]}', {row[2]})"
 
                 result = tools_db.execute_sql(sql, commit=False)
@@ -1602,14 +1597,14 @@ class DrNonVisual:
                 tools_qt.double_validator(widget, 0, 9999999, 3)
 
         # Populate LID Type combo
-        sql = f"SELECT id, idval FROM inp_typevalue WHERE typevalue = 'inp_value_lidtype' ORDER BY idval"
+        sql = "SELECT id, idval FROM inp_typevalue WHERE typevalue = 'inp_value_lidtype' ORDER BY idval"
         rows = global_vars.gpkg_dao_data.get_rows(sql)
 
         if rows:
             tools_qt.fill_combo_values(self.dialog.cmb_lidtype, rows, 1)
 
         # Populate Control Curve combo
-        sql = f"SELECT id FROM cat_curve; "
+        sql = "SELECT id FROM cat_curve; "
         rows = global_vars.gpkg_dao_data.get_rows(sql)
         if rows:
             tools_qt.fill_combo_values(self.dialog.txt_7_cmb_control_curve, rows)
@@ -1629,8 +1624,7 @@ class DrNonVisual:
             self._load_lids_widgets(self.dialog)
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_lids')
-
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_lids')
 
     def _open_help(self):
         webbrowser.open('https://giswater.gitbook.io/giswater-manual/7.-export-import-of-the-hydraulic-model')
@@ -1681,7 +1675,6 @@ class DrNonVisual:
                         tools_qt.set_widget_text(self.dialog, widget, f"{value}")
                     idx += 1
 
-
     def _load_lids_widgets(self, dialog):
         """ Load values from session.config """
 
@@ -1716,7 +1709,6 @@ class DrNonVisual:
                     else:
                         tools_qt.set_combo_value(widget, str(value), 0)
 
-
     def _save_lids_widgets(self, dialog):
         """ Save values from session.config """
 
@@ -1746,8 +1738,6 @@ class DrNonVisual:
         # Populate widgets
         tools_dr.set_config_parser('nonvisual_lids', 'cmb_lidtype', lidtype)
         tools_dr.set_config_parser('nonvisual_lids', 'txt_name', name)
-
-
 
     def _manage_lids_tabs(self, dialog):
 
@@ -1795,7 +1785,6 @@ class DrNonVisual:
         # Set image
         self._manage_lids_images(lidco_id)
 
-
     def _manage_lids_hide_widgets(self, dialog, lid_id):
         """ Hides widgets that are not necessary in specific tabs """
 
@@ -1807,9 +1796,9 @@ class DrNonVisual:
                         'PP': {'lbl_surface_side_slope', 'txt_5_surface_side_slope', 'lbl_drain_delay', 'txt_4_drain_delay'},
                         'RB': {'lbl_seepage_rate', 'txt_3_seepage_rate', 'lbl_clogging_factor_storage', 'txt_4_clogging_factor_storage'},
                         'RD': {'lbl_vegetation_volume', 'txt_2_vegetation_volume', 'lbl_surface_side_slope', 'txt_5_surface_side_slope',
-                               'lbl_flow_exponent','lbl_offset', 'lbl_drain_delay', 'lbl_open_level',
+                               'lbl_flow_exponent', 'lbl_offset', 'lbl_drain_delay', 'lbl_open_level',
                                'lbl_closed_level', 'lbl_control_curve', 'lbl_flow_description', 'txt_2_flow_exponent',
-                               'txt_3_offset', 'txt_4_drain_delay', 'txt_5_open_level', 'txt_6_closed_level', 'txt_7_cmb_control_curve',},
+                               'txt_3_offset', 'txt_4_drain_delay', 'txt_5_open_level', 'txt_6_closed_level', 'txt_7_cmb_control_curve', },
                         'VS': {''}}
 
         # Hide widgets in list
@@ -1830,8 +1819,6 @@ class DrNonVisual:
                         if j == y.objectName():
                             y.hide()
 
-
-
     def _manage_lids_images(self, lidco_id):
         """ Manage images depending on lidco_id selected"""
 
@@ -1844,12 +1831,11 @@ class DrNonVisual:
         tools_qt.add_image(self.dialog, 'lbl_section_image',
                            f"{self.plugin_dir}{os.sep}resources{os.sep}png{os.sep}{img}")
 
-
     def _accept_lids(self, dialog, is_new, lidco_id):
         """ Manage accept button (insert & update) """
 
         # Variables
-        cmb_lidtype=dialog.cmb_lidtype
+        cmb_lidtype = dialog.cmb_lidtype
         txt_lidco_id = dialog.txt_name
 
         # Get widget values
@@ -1918,29 +1904,30 @@ class DrNonVisual:
         self._save_lids_widgets(dialog)
         tools_dr.close_dialog(dialog)
 
-
     def _insert_lids_values(self, dialog, lidco_id, lidco_type):
 
-        control_values = {'BC': {'txt_1_thickness', 'txt_1_thickness_storage'},
-                    'RG': {'txt_1_thickness', 'txt_1_thickness_storage'},
-                    'GR': {'txt_1_thickness', 'drainmat_2'},
-                    'IT': {'txt_1_thickness_storage'},
-                    'PP': {'txt_1_thickness_pavement', 'txt_1_thickness_storage'},
-                    'RB': {''},
-                    'RD': {''},
-                    'VS': {'txt_1_berm_height'}}
+        control_values = {
+            'BC': {'txt_1_thickness', 'txt_1_thickness_storage'},
+            'RG': {'txt_1_thickness', 'txt_1_thickness_storage'},
+            'GR': {'txt_1_thickness', 'drainmat_2'},
+            'IT': {'txt_1_thickness_storage'},
+            'PP': {'txt_1_thickness_pavement', 'txt_1_thickness_storage'},
+            'RB': {''},
+            'RD': {''},
+            'VS': {'txt_1_berm_height'}
+        }
 
         for i in range(dialog.tab_lidlayers.count()):
             if dialog.tab_lidlayers.isTabVisible(i):
                 tab_name = dialog.tab_lidlayers.widget(i).objectName().upper()
                 # List with all QLineEdit children
                 child_list = dialog.tab_lidlayers.widget(i).children()
-                widgets_list = [widget for widget in child_list if type(widget) == QLineEdit or type(widget) == QComboBox]
+                widgets_list = [widget for widget in child_list if type(widget) in (QLineEdit, QComboBox)]
                 # Get QLineEdits and QComboBox that are visible
                 visible_widgets = [widget for widget in widgets_list if not widget.isHidden()]
                 visible_widgets = self._order_list(visible_widgets)
 
-                sql = f"INSERT INTO inp_lid_value (lidco_id, lidlayer,"
+                sql = "INSERT INTO inp_lid_value (lidco_id, lidlayer,"
                 for y, widget in enumerate(visible_widgets):
                     sql += f"value_{y + 2}, "
                 sql = sql.rstrip(', ') + ")"
@@ -1985,6 +1972,10 @@ class DrNonVisual:
         tbl_raster_value = self.dialog.tbl_raster_value
         cmb_raster_type = self.dialog.cmb_raster_type
 
+        # Activate paste shortcut
+        paste_shortcut = QShortcut(QKeySequence.Paste, tbl_raster_value)
+        paste_shortcut.activated.connect(partial(self._paste_raster_values, tbl_raster_value))
+
         # Populate combobox
         raster_type_headers = self._populate_raster_combo(cmb_raster_type)
 
@@ -2007,14 +1998,33 @@ class DrNonVisual:
         self._connect_dialog_signals()
 
         # Open dialog
-        tools_dr.open_dialog(self.dialog, dlg_name=f'dlg_nonvisual_raster')
+        tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_raster')
+
+    def _paste_raster_values(self, tbl_raster_value):
+        """ Paste values from clipboard to table """
+
+        selected = tbl_raster_value.selectedRanges()
+        if not selected:
+            return
+
+        text = QApplication.clipboard().text()
+        rows = text.split("\n")
+
+        for r, row in enumerate(rows):
+            columns = row.split("\t")
+            for c, value in enumerate(columns):
+                item = QTableWidgetItem(value)
+                row_pos = selected[0].topRow() + r
+                col_pos = selected[0].leftColumn() + c
+                tbl_raster_value.setItem(row_pos, col_pos, item)
+
 
     def _populate_raster_combo(self, cmb_raster_type):
         """ Populates raster dialog combos """
 
         raster_type_headers = {}
         sql = "SELECT id, idval, addparam FROM edit_typevalue WHERE typevalue = 'inp_rain_format'"
-        rows = tools_db.get_rows(sql, dao=global_vars.gpkg_dao_config)
+        rows = tools_db.get_rows(sql)
         if rows:
             raster_type_list = [[row[0], row[1]] for row in rows]
             raster_type_headers = {row[0]: json.loads(row[2]).get('header') for row in rows if row[2]}
@@ -2051,7 +2061,7 @@ class DrNonVisual:
             return
         print(f"ROWS -> {rows}")
         for n, row in enumerate(rows):
-            tbl_raster_value.setItem(n, 0, QTableWidgetItem(f"{row[0]}"))
+            tbl_raster_value.setItem(n, 0, QTableWidgetItem(f"{QTime(0, 0, 0).addSecs(row[0]).toString('HH:mm:ss')}"))
             tbl_raster_value.setItem(n, 1, QTableWidgetItem(f"{row[1]}"))
             tbl_raster_value.insertRow(tbl_raster_value.rowCount())
 
@@ -2175,9 +2185,9 @@ class DrNonVisual:
         for row in values:
             if row == (['null'] * tbl_raster_value.columnCount()):
                 continue
-
-            sql = f"INSERT INTO cat_raster_value (raster, time, fname) "
-            sql += f"VALUES ('{raster_id}', '{row[0]}', '{row[1]}')"
+            time_value: int = self._str2seconds(row[0])
+            sql = "INSERT INTO cat_raster_value (raster, time, fname) "
+            sql += f"VALUES ('{raster_id}', {time_value}, '{row[1]}')"
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
                 msg = "There was an error inserting raster value."
@@ -2185,6 +2195,11 @@ class DrNonVisual:
                 global_vars.gpkg_dao_data.rollback()
                 return False
         return True
+
+    def _str2seconds(self, time: str) -> int:
+        hours, minutes, seconds = map(int, time.split(":"))
+        seconds = hours * 3600 + minutes * 60 + seconds
+        return seconds
 
     # endregion
 
@@ -2204,7 +2219,6 @@ class DrNonVisual:
 
         return True
 
-
     def _reload_manager_table(self):
 
         try:
@@ -2212,12 +2226,10 @@ class DrNonVisual:
         except:
             pass
 
-
     def _connect_dialog_signals(self):
 
         self.dialog.btn_cancel.clicked.connect(self.dialog.reject)
         self.dialog.rejected.connect(partial(tools_dr.close_dialog, self.dialog))
-
 
     def _onCellChanged(self, table, row, column):
         """ Note: row & column parameters are passed by the signal """
@@ -2236,7 +2248,6 @@ class DrNonVisual:
                         return
             table.setRowCount(table.rowCount()-1)
 
-
     def _read_tbl_values(self, table, clear_nulls=False):
 
         values = list()
@@ -2252,7 +2263,6 @@ class DrNonVisual:
                 values[y].append(value)
         return values
 
-
     def _create_plot_widget(self, dialog):
 
         plot_widget = MplCanvas(dialog, width=5, height=4, dpi=100)
@@ -2262,7 +2272,6 @@ class DrNonVisual:
 
         return plot_widget
 
-
     def _order_list(self, lst):
         """Order widget list by objectName"""
 
@@ -2271,5 +2280,206 @@ class DrNonVisual:
                 if lst[j].objectName() > lst[(j + 1)].objectName():
                     lst[j], lst[(j + 1)] = lst[(j + 1)], lst[j]
         return lst
+
+    def _import_rasters(self, dialog):
+        # Configure and open import dialog
+        self.raster_import_dlg = DrNonVisualRasterImportUi()
+
+        # Build combos
+        time_systems = [['hours', 'hours'], ['minutes', 'minutes'], ['seconds', 'seconds']]
+        tools_qt.fill_combo_values(self.raster_import_dlg.cmb_time_system, time_systems)
+        self._previous_time_system = tools_qt.get_combo_value(self.raster_import_dlg, self.raster_import_dlg.cmb_time_system)
+
+        self._populate_raster_combo(self.raster_import_dlg.cmb_raster_type)
+
+        # Set listeners
+        self.raster_import_dlg.btn_cancel.clicked.connect(self.raster_import_dlg.reject)
+        self.raster_import_dlg.rejected.connect(partial(tools_dr.close_dialog, self.raster_import_dlg))
+        self.raster_import_dlg.btn_ok.clicked.connect(partial(self._import_rasters_accept, self.raster_import_dlg))
+        self.raster_import_dlg.btn_push_raster_input_folder.clicked.connect(self._open_raster_input_folder)
+        self.raster_import_dlg.cmb_time_system.currentIndexChanged.connect(self._on_time_system_changed)
+
+
+        # Open dialog
+        tools_dr.open_dialog(self.raster_import_dlg, dlg_name='nonvisual_raster_import')
+
+    def _import_rasters_accept(self, dialog: DrNonVisualRasterImportUi):
+        """ Check raster files and save them to database """
+
+        plugin_dir: str = os.path.dirname(global_vars.gpkg_dao_data.db_filepath)
+        folder_path: Optional[str] = tools_qt.get_text(self.raster_import_dlg, 'txt_folder_path', return_string_null=False)
+        timestep_value: float = self.raster_import_dlg.sb_time_value.value()
+        time_system = tools_qt.get_combo_value(self.raster_import_dlg, self.raster_import_dlg.cmb_time_system)
+        raster_type = tools_qt.get_combo_value(self.raster_import_dlg, self.raster_import_dlg.cmb_raster_type)
+        raster_name: Optional[str] = tools_qt.get_text(self.raster_import_dlg, 'txt_raster_name', return_string_null=False)
+
+        if raster_name is None or raster_name == '':
+            msg = "Please enter a raster name"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+
+        # Check folder
+        folder_path = tools_qt.get_text(dialog, 'txt_folder_path')
+        if not folder_path:
+            msg = "Please select a folder"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+        if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+            msg = "Invalid folder path"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+
+        # Check if folder is inside plugin directory
+        try:
+            plugin_path = os.path.abspath(plugin_dir)
+            folder_path = os.path.abspath(folder_path)
+            if not folder_path.startswith(plugin_path):
+                msg = "Selected folder must be inside the same directory as the geopackage file"
+                tools_qgis.show_warning(msg, dialog=dialog)
+                return
+        except Exception:
+            msg = "Error validating folder path"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+
+        result = tools_qt.show_question("The raster files will be ordered by filename on alphabetical order.\n\n Do you want to continue?", "Import rasters", force_action=True)
+        if not result:
+            return
+
+        # Get raster files
+        files = os.listdir(folder_path)
+        files.sort()
+        filtered_files = []
+        for file in files:
+            if file.endswith('.asc') or file.endswith('.txt'):
+                filtered_files.append(file)
+        if len(filtered_files) == 0:
+            msg = "No raster files found in the selected folder"
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return
+
+        # Show tab log
+        tools_dr.set_tabs_enabled(self.raster_import_dlg)
+        self.raster_import_dlg.mainTab.setCurrentIndex(1)
+
+        self.raster_import_dlg.btn_ok.setEnabled(False)
+
+        self._set_progress_text("Importing rasters...", 0, True)
+
+        # Insert inp_raster
+        sql = f"INSERT INTO cat_raster (idval, raster_type)" \
+                f"VALUES('{raster_name}', '{raster_type}')"
+        result = tools_db.execute_sql(sql, commit=False)
+        if not result:
+            msg = "There was an error inserting raster."
+            tools_qgis.show_warning(msg, dialog=dialog)
+            self._set_progress_text("Error inserting raster: " + msg, 100, True)
+            global_vars.gpkg_dao_data.rollback()
+            return
+
+        # Initialize time as QTime starting from 00:00
+        current_seconds = 0
+
+        # Convert timestep_value to minutes based on time_system
+        seconds_to_add = 0
+        if time_system == 'hours':
+            seconds_to_add = int(timestep_value * 3600)
+        elif time_system == 'minutes':
+            seconds_to_add = int(timestep_value * 60)
+        elif time_system == 'seconds':
+            seconds_to_add = int(timestep_value)
+
+        for index, raster in enumerate(filtered_files):
+            # Calculate relative path from plugin directory
+            raster_full_path = os.path.join(folder_path, raster)
+            relative_path = os.path.relpath(raster_full_path, plugin_dir)
+
+            # Insert inp_raster_value with relative path and formatted time
+            sql = "INSERT INTO cat_raster_value (raster, time, fname) "
+            sql += f"VALUES ('{raster_name}', '{current_seconds}', '{relative_path}')"
+            result = tools_db.execute_sql(sql, commit=False)
+            if not result:
+                msg = "There was an error inserting raster value."
+                tools_qgis.show_warning(msg, dialog=dialog)
+                self._set_progress_text("Error inserting raster value: " + msg, 100, True)
+                global_vars.gpkg_dao_data.rollback()
+                return False
+
+            # Increment time by timestep
+            current_seconds += seconds_to_add
+
+            time_str = QTime(0, 0, 0).addSecs(current_seconds).toString('HH:mm:ss')
+
+            self._set_progress_text(f"Imported raster {raster} with time {time_str}", tools_dr.lerp_progress(int(index/len(filtered_files)*100), 0, 90), True)
+
+        global_vars.gpkg_dao_data.commit()
+        self._set_progress_text("Rasters imported successfully", 100, True)
+        self.raster_import_dlg.btn_cancel.setText("Close")
+        # Reload manager table
+        self._reload_manager_table()
+
+    def _set_progress_text(self, text: str, progress: int, new_line: bool = False):
+        """ Set text to textbox """
+
+        # Progress bar
+        if progress is not None:
+            self.raster_import_dlg.progress_bar.setValue(progress)
+
+        # TextEdit log
+        txt_infolog = self.raster_import_dlg.findChild(QTextEdit, 'txt_infolog')
+        cur_text = tools_qt.get_text(self.raster_import_dlg, txt_infolog, return_string_null=False)
+
+        end_line = '\n' if new_line else ''
+        if text:
+            txt_infolog.setText(f"{cur_text}{text}{end_line}")
+        else:
+            txt_infolog.setText(f"{cur_text}{end_line}")
+        txt_infolog.show()
+        # Scroll to the bottom
+        scrollbar = txt_infolog.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
+    def _open_raster_input_folder(self):
+        """ Open folder dialog and set path to textbox """
+        path = tools_os.open_folder_path()
+        if path:
+            tools_qt.set_widget_text(self.raster_import_dlg, 'txt_folder_path', str(path))
+
+    def _on_time_system_changed(self):
+        """ Update Spinbox value based on selected time system """
+
+        # Get current time system
+        time_system = tools_qt.get_combo_value(self.raster_import_dlg, self.raster_import_dlg.cmb_time_system)
+
+        # Get current value from appropriate spinbox based on previous time system
+        current_value: float = 0
+        if hasattr(self, '_previous_time_system'):
+            current_value = self.raster_import_dlg.sb_time_value.value()
+
+        # Convert value based on time system change
+        converted_value: float = current_value
+        if hasattr(self, '_previous_time_system'):
+            # Convert from previous to new time system
+            if self._previous_time_system == 'hours':
+                if time_system == 'minutes':
+                    converted_value = current_value * 60
+                elif time_system == 'seconds':
+                    converted_value = current_value * 3600
+            elif self._previous_time_system == 'minutes':
+                if time_system == 'hours':
+                    converted_value = current_value / 60
+                elif time_system == 'seconds':
+                    converted_value = current_value * 60
+            elif self._previous_time_system == 'seconds':
+                if time_system == 'hours':
+                    converted_value = current_value / 3600
+                elif time_system == 'minutes':
+                    converted_value = current_value / 60
+
+        # Update appropriate spinbox with converted value
+        self.raster_import_dlg.sb_time_value.setValue(converted_value)
+
+        # Store current time system for next change
+        self._previous_time_system = time_system
 
     # endregion

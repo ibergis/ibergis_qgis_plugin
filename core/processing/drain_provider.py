@@ -12,13 +12,12 @@ from qgis.core import QgsProcessingProvider
 from qgis.PyQt.QtGui import QIcon
 from .import_ground_geometries import ImportGroundGeometries
 from .import_roof_geometries import ImportRoofGeometries
-from .fix_vertex_edge import DrFixEdgeVertexAlgorithm
-from .import_execute_results import ImportExecuteResults
-from .check_project import DrCheckProjectAlgorithm
+from .import_raster_results import ImportRasterResults
 from .set_outlet_for_inlets import SetOutletForInlets
-from .mesh_validations import DrMeshValidationsAlgorithm
-from .remove_duplicate_vertices import DrRemoveDuplicateVertices
 from .set_outlet_for_roofs import SetOutletForRoofs
+from .import_inlet_geometries import ImportInletGeometries
+from .check_project import DrCheckProjectAlgorithm
+
 
 class DrainProvider(QgsProcessingProvider):
 
@@ -42,13 +41,11 @@ class DrainProvider(QgsProcessingProvider):
         """
         self.addAlgorithm(ImportGroundGeometries())
         self.addAlgorithm(ImportRoofGeometries())
-        self.addAlgorithm(DrFixEdgeVertexAlgorithm())
-        self.addAlgorithm(ImportExecuteResults())
-        self.addAlgorithm(DrCheckProjectAlgorithm())
+        self.addAlgorithm(ImportInletGeometries())
+        self.addAlgorithm(ImportRasterResults())
         self.addAlgorithm(SetOutletForInlets())
         self.addAlgorithm(SetOutletForRoofs())
-        self.addAlgorithm(DrMeshValidationsAlgorithm())
-        self.addAlgorithm(DrRemoveDuplicateVertices())
+        self.addAlgorithm(DrCheckProjectAlgorithm())
 
     def id(self):
         """

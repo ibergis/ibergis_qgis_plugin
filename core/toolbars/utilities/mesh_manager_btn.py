@@ -2,7 +2,6 @@ from functools import partial
 from pathlib import Path
 
 from qgis.core import QgsApplication
-from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.utils import iface
@@ -12,7 +11,7 @@ from ...ui.ui_manager import DrMeshManagerUi, DrLineeditUi
 from .createmesh_btn import DrCreateMeshButton
 from ...threads.create_temp_layer import DrCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
-from ...utils import Feedback, tools_dr, mesh_parser
+from ...utils import tools_dr, mesh_parser
 from .... import global_vars
 from ....lib.tools_gpkgdao import DrGpkgDao
 from typing import Optional
@@ -47,7 +46,7 @@ class DrMeshManagerButton(DrAction):
         btn_cancel = self.dlg_manager.btn_cancel
 
         # Populate
-        self._fill_manager_table(tbl_mesh_mng, 'v_ui_file') #, expr="file_name = 'Iber2D.dat'")
+        self._fill_manager_table(tbl_mesh_mng, 'v_ui_file')  # , expr="file_name = 'Iber2D.dat'")
 
         self._set_active_mesh_label()
 
@@ -62,7 +61,7 @@ class DrMeshManagerButton(DrAction):
         tbl_mesh_mng.doubleClicked.connect(partial(self._view_mesh))
         btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_manager))
 
-        tools_dr.open_dialog(self.dlg_manager, dlg_name="dlg_mesh_manager")
+        tools_dr.open_dialog(self.dlg_manager, dlg_name="mesh_manager")
 
     def _set_active_mesh_label(self):
 
@@ -211,7 +210,6 @@ class DrMeshManagerButton(DrAction):
         self.dlg_lineedit.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, self.dlg_lineedit))
         tools_dr.open_dialog(self.dlg_lineedit)
 
-
     def _insert_mesh(self, mesh_path, roof_path, losses_path):
         mesh_name = tools_qt.get_text(self.dlg_lineedit, 'txt_input')
 
@@ -244,7 +242,6 @@ class DrMeshManagerButton(DrAction):
 
         self._reload_manager_table()
         tools_dr.close_dialog(self.dlg_lineedit)
-
 
     def _delete_mesh(self):
         # Variables
@@ -291,6 +288,6 @@ class DrMeshManagerButton(DrAction):
             self.dao = global_vars.gpkg_dao_data
             if self.dao:
                 self.dao.commit()
-                sql = f"vacuum;"
+                sql = "vacuum;"
                 self.dao.execute_sql(sql)
             self._reload_manager_table()

@@ -16,6 +16,69 @@ CREATE TABLE config_param_user (
     isconflictive boolean check (isconflictive in (0, 1) or isconflictive is null)
 );
 
+CREATE TABLE sys_message (
+	id integer primary key,
+	text text CHECK (typeof(text)='text' OR text = NULL)
+);
+
+CREATE TABLE config_form_fields (
+	formname TEXT NULL CHECK (typeof(formname) = 'text' OR formname IS NULL),
+	formtype TEXT NULL CHECK (typeof(formtype) = 'text' OR formtype IS NULL),
+	tabname TEXT NULL CHECK (typeof(tabname) = 'text' OR tabname IS NULL),
+	columnname TEXT NULL CHECK (typeof(columnname) = 'text' OR columnname IS NULL),
+	layoutname TEXT NULL CHECK (typeof(layoutname) = 'text' OR layoutname IS NULL),
+	layoutorder INTEGER NULL CHECK (typeof(layoutorder) = 'integer' OR layoutorder IS NULL),
+	datatype TEXT NULL CHECK (typeof(datatype) = 'text' OR datatype IS NULL),
+	widgettype TEXT NULL CHECK (typeof(widgettype) = 'text' OR widgettype IS NULL),
+	label TEXT NULL CHECK (typeof(label) = 'text' OR label IS NULL),
+	placeholder TEXT NULL CHECK (typeof(placeholder) = 'text' OR placeholder IS NULL),
+	ismandatory INTEGER NULL CHECK (typeof(ismandatory) = 'integer' OR ismandatory IS NULL),
+	iseditable INTEGER NULL CHECK (typeof(iseditable) = 'integer' OR iseditable IS NULL),
+	dv_querytext TEXT NULL CHECK (typeof(dv_querytext) = 'text' OR dv_querytext IS NULL),
+	dv_orderby_id INTEGER NULL CHECK (typeof(dv_orderby_id) = 'integer' OR dv_orderby_id IS NULL),
+	dv_isnullvalue INTEGER NULL CHECK (typeof(dv_isnullvalue) = 'integer' OR dv_isnullvalue IS NULL),
+	hidden INTEGER NOT NULL DEFAULT false CHECK (typeof(hidden) = 'integer'),
+	tooltip TEXT NULL CHECK (typeof(tooltip) = 'text' OR tooltip IS NULL),
+	addparam JSON NULL CHECK (typeof(addparam) = 'text' OR addparam IS NULL),
+	vdefault TEXT NULL CHECK (typeof(vdefault) = 'text' OR vdefault IS NULL),
+	descript TEXT NULL CHECK (typeof(descript) = 'text' OR descript IS NULL),
+	widgetcontrols TEXT NULL CHECK (typeof(widgetcontrols) = 'text' OR widgetcontrols IS NULL)
+);
+
+
+CREATE TABLE config_csv (
+	id INTEGER PRIMARY KEY,
+	alias TEXT CHECK (typeof(alias) = 'text' OR alias IS NULL),
+	descript TEXT CHECK (typeof(descript) = 'text' OR descript IS NULL),
+	functionname TEXT CHECK (typeof(functionname) = 'text' OR functionname IS NULL),
+	orderby INTEGER CHECK (typeof(orderby) = 'integer' OR orderby IS NULL),
+	addparam TEXT CHECK (typeof(addparam) = 'text' OR addparam IS NULL)
+);
+
+CREATE TABLE edit_typevalue (
+	rowid integer not null primary key,
+	typevalue text check (typeof(typevalue)='text' or typevalue is not null),
+	id text check (typeof(id)='text' or id is null),
+	idval text check (typeof(idval)='text' or idval is null),
+	descript text check (typeof(descript)='text' or descript is null),
+	addparam text check (typeof(addparam)='text' or addparam is null)
+);
+
+create table checkproject_query (
+	id integer primary key,
+	query_type text check (typeof(query_type) in ('text', null) and query_type in ('GEOMETRIC DUPLICATE', 'GEOMETRIC ORPHAN', 'MANDATORY NULL', 'OUTLAYER')),
+	table_name text CHECK (typeof(table_name)='text' OR table_name = NULL),
+	columns text CHECK (typeof(columns)='text' OR columns = NULL),
+	extra_condition text CHECK (typeof(extra_condition)='text' OR extra_condition = NULL),
+	create_layer boolean CHECK (typeof(create_layer) IN (0,1,NULL)) DEFAULT  0,
+	geometry_type text check (typeof(geometry_type) in ('text', null) and geometry_type in ('Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon')),
+	error_message_id integer CHECK (typeof(error_message_id)='integer' OR error_message_id = NULL),
+	info_message_id integer CHECK (typeof(info_message_id)='integer' OR info_message_id = NULL),
+	except_lvl integer CHECK (typeof(except_lvl) in ('integer', NULL) AND except_lvl IN (1, 2, 3)),
+	error_code integer CHECK (typeof(error_code)='integer' OR error_code = NULL),
+	FOREIGN KEY (error_message_id) references sys_message (id) on update cascade on delete restrict,
+	FOREIGN KEY (info_message_id) references sys_message (id) on update cascade on delete restrict
+);
 
 -- --------
 -- CATALOGS
@@ -123,7 +186,7 @@ CREATE TABLE cat_raster (
 CREATE TABLE cat_raster_value (
     id integer primary key,
     raster text NOT NULL,
-    time datetime CHECK (typeof(time)='datetime' OR time=NULL),
+    time integer CHECK (typeof(time)='integer' OR time=NULL),
 	fname text check (typeof(fname)='text' or fname = null),
     FOREIGN KEY (raster) references cat_raster(idval) on update cascade on delete restrict
 );
@@ -157,7 +220,6 @@ CREATE TABLE roof (
     width real CHECK (typeof(width)='real' OR width=NULL),
     roughness real CHECK (typeof(roughness)='real' OR roughness=NULL),
     isconnected integer CHECK (typeof(isconnected) in ('integer', NULL) AND isconnected IN (1, 2, 3)),
-    outlet_type text CHECK (typeof(outlet_type)='text' OR outlet_type=NULL),
     outlet_code text CHECK (typeof(outlet_code)='text' OR outlet_code=NULL),
     outlet_vol real CHECK (typeof(outlet_vol) = 'real' OR outlet_vol=NULL),
     street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
@@ -241,6 +303,7 @@ create table culvert (
     z_end real CHECK (typeof(z_end)='real' OR z_end = NULL),
     manning real CHECK (typeof(manning)='real' OR manning = NULL),
     iscalculate boolean CHECK (typeof(iscalculate) IN (0,1,NULL)) DEFAULT  1,
+    collapse_moment real CHECK (typeof(collapse_moment)='real' OR collapse_moment = NULL),
     geom geometry
 );
 
@@ -269,10 +332,10 @@ CREATE TABLE pinlet (
 create table bridge (
     fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-    deck_cd real CHECK (typeof(deck_cd)='real' OR deck_cd = NULL),
-    freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL),
-    sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL),
-    gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL),
+    deck_cd real CHECK (typeof(deck_cd)='real' OR deck_cd = NULL) DEFAULT 1.7 NOT NULL,
+    freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL) DEFAULT 0.6 NOT NULL,
+    sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL) DEFAULT 0.8 NOT NULL,
+    gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL) DEFAULT 1 NOT NULL,
 	length real CHECK (typeof(gaugenumber)='real' OR gaugenumber = NULL),
     descript text unique check (typeof(descript) = 'text' or descript = null),
     geom geometry
@@ -280,12 +343,12 @@ create table bridge (
 
 create table bridge_value (
     id integer primary key,
-    bridge_code text CHECK (typeof(bridge_code)='text' OR bridge_code = NULL),
-    distance float unique check (typeof(distance) = 'float' or distance = null),
-    topelev real CHECK (typeof(topelev)='real' OR topelev = NULL),
-    lowelev real CHECK (typeof(lowelev)='real' OR lowelev = NULL),
-    openingval real CHECK (typeof(openingval)='real' OR openingval = NULL),
-    FOREIGN KEY (bridge_code) references bridge(code) on update cascade on delete restrict
+    bridge_code text CHECK (typeof(bridge_code)='text' OR bridge_code = NULL) NOT NULL,
+    distance real check (typeof(distance) = 'real' or distance = null) NOT NULL,
+    topelev real CHECK (typeof(topelev)='real' OR topelev = NULL) DEFAULT 0 NOT NULL,
+    lowelev real CHECK (typeof(lowelev)='real' OR lowelev = NULL) DEFAULT 0 NOT NULL,
+    openingval real CHECK (typeof(openingval)='real' OR openingval = NULL) DEFAULT 100 NOT NULL,
+    FOREIGN KEY (bridge_code) references bridge(code) on update cascade on delete cascade
 );
 
 

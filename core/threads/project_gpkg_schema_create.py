@@ -5,7 +5,7 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
-from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtCore import pyqtSignal
 
 import os
 
@@ -45,7 +45,6 @@ class DrGpkgCreateSchemaTask(DrTask):
         # # Disable dlg_readsql buttons
         # self.admin.dlg_readsql.btn_close.setEnabled(False)
 
-
     def run(self):
 
         super().run()
@@ -54,7 +53,7 @@ class DrGpkgCreateSchemaTask(DrTask):
         self.admin.total_sql_files = 0
         self.admin.current_sql_file = 0
         self.config_dao = global_vars.gpkg_dao_config.clone()
-        msg = "Create schema: Executing function '{1}'"
+        msg = "Create schema: Executing function '{0}'"
         msg_params = ("main_execution",)
         tools_log.log_info(msg, msg_params=msg_params)
         status = self.main_execution()
@@ -64,7 +63,6 @@ class DrGpkgCreateSchemaTask(DrTask):
             tools_log.log_info(msg, msg_params=msg_params)
             return False
         return True
-
 
     def finished(self, result):
 
@@ -104,7 +102,6 @@ class DrGpkgCreateSchemaTask(DrTask):
         self.admin.manage_process_result()
         self.setProgress(100)
 
-
     def main_execution(self) -> bool:
         """ Main common execution """
 
@@ -112,14 +109,14 @@ class DrGpkgCreateSchemaTask(DrTask):
         msg_params = (self.admin.gpkg_name,)
         tools_log.log_info(msg, msg_params=msg_params)
 
-        msg = "Create schema: Executing function '{1}'"
+        msg = "Create schema: Executing function '{0}'"
         msg_params = ("create_gpkg",)
         tools_log.log_info(msg, msg_params=msg_params)
         create_gpkg_status = self.admin.create_gpkg()
         if not create_gpkg_status:
             return False
 
-        msg = "Create schema: Executing function '{1}'"
+        msg = "Create schema: Executing function '{0}'"
         msg_params = ("_check_database_connection",)
         tools_log.log_info(msg, msg_params=msg_params)
         connection_status = self.admin._check_database_connection(self.admin.gpkg_full_path, self.admin.gpkg_name)
@@ -130,7 +127,7 @@ class DrGpkgCreateSchemaTask(DrTask):
             tools_log.log_info(msg, msg_params=msg_params)
             return False
 
-        msg = "Create schema: Executing function '{1}'"
+        msg = "Create schema: Executing function '{0}'"
         msg_params = ("main_execution",)
         tools_log.log_info(msg, msg_params=msg_params)
         status = self.admin.create_schema_main_execution()
@@ -138,9 +135,9 @@ class DrGpkgCreateSchemaTask(DrTask):
             msg = "Function '{0}' returned {1}"
             msg_params = ("main_execution", "False",)
             tools_log.log_info(msg, msg_params=msg_params)
-            return False
+            return False 
 
-        msg = "Create schema: Executing function '{1}'"
+        msg = "Create schema: Executing function '{0}'"
         msg_params = ("custom_execution",)
         tools_log.log_info(msg, msg_params=msg_params)
         status_custom = self.admin.create_schema_custom_execution(self.config_dao)
@@ -165,7 +162,6 @@ class DrGpkgCreateSchemaTask(DrTask):
         elif self.admin.rdb_data.isChecked():
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
 
-
     def calculate_number_of_files(self):
         """ Calculate total number of SQL to execute """
 
@@ -174,7 +170,7 @@ class DrGpkgCreateSchemaTask(DrTask):
         list_process = ['load_base']
 
         for process_name in list_process:
-            msg = "Create schema: Executing function '{1}'"
+            msg = "Create schema: Executing function '{0}'"
             msg_params = (f"get_number_of_files_process('{process_name}')",)
             tools_log.log_info(msg, msg_params=msg_params)
             dict_folders, total = self.get_number_of_files_process(process_name)
@@ -187,11 +183,10 @@ class DrGpkgCreateSchemaTask(DrTask):
 
         return total_sql_files
 
-
     def get_number_of_files_process(self, process_name: str):
         """ Calculate number of files of all folders of selected @process_name """
 
-        msg = "Create schema: Executing function '{1}'"
+        msg = "Create schema: Executing function '{0}'"
         msg_params = (f"get_folders_process('{process_name}')",)
         tools_log.log_info(msg, msg_params=msg_params)
         dict_folders = self.get_folders_process(process_name)
@@ -205,7 +200,6 @@ class DrGpkgCreateSchemaTask(DrTask):
             dict_folders[folder] = file_count
 
         return dict_folders, number_of_files
-
 
     def get_folders_process(self, process_name):
         """ Get list of folders related with this @process_name """

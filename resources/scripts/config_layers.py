@@ -15,6 +15,7 @@ value_relations_dict = {
     # },
 }
 
+
 def get_tablename_from_layer(layer):
     """ Gets tablename of a layer """
     layer_tablename = layer.name()

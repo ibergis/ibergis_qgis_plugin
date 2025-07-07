@@ -901,7 +901,6 @@ def_line_geom = QgsGeometry.fromWkt(
 def_ploygon_geom = def_point_geom.buffer(5, 5)
 
 
-
 # all possible fields in qgis files for the creation of layers
 def_annotation_field = {'Annotation': 'String'}
 annotation_field_name = list(def_annotation_field.keys())[0]
@@ -1085,6 +1084,7 @@ def_ogr_driver_dict = {
     'KML': 'kml'
 }
 def_ogr_driver_names = list(def_ogr_driver_dict.keys())
+
 
 class ImportDataStatus:
     RAW = 0

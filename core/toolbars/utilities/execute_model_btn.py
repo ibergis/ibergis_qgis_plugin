@@ -12,7 +12,7 @@ from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QTextEdit, QLabel
 from qgis.core import QgsApplication
 
@@ -21,7 +21,7 @@ from ...shared.options import DrOptions
 from ...utils import tools_dr, Feedback
 from ...ui.ui_manager import DrExecuteModelUi
 from .... import global_vars
-from ....lib import tools_qgis, tools_qt, tools_db, tools_os
+from ....lib import tools_qt, tools_db, tools_os
 from ..dialog import DrAction
 
 
@@ -38,11 +38,9 @@ class DrExecuteModelButton(DrAction):
         self.cur_text = None
         self.execute_model_task = None
 
-
     def clicked_event(self):
 
         self._open_execute_dlg()
-
 
     def _open_execute_dlg(self):
         self.execute_dlg = DrExecuteModelUi()
@@ -63,8 +61,7 @@ class DrExecuteModelButton(DrAction):
 
         self.execute_dlg.btn_cancel.setVisible(False)
 
-        tools_dr.open_dialog(self.execute_dlg, 'dlg_execute_model')
-
+        tools_dr.open_dialog(self.execute_dlg, 'execute_model')
 
     def _populate_mesh_cmb(self):
         sql = "SELECT id, name as idval FROM cat_file"
@@ -72,17 +69,14 @@ class DrExecuteModelButton(DrAction):
         if rows:
             tools_qt.fill_combo_values(self.execute_dlg.cmb_mesh, rows, add_empty=True)
 
-
     def _go2epa_options(self):
-        self.go2epa_options = DrOptions()
+        self.go2epa_options = DrOptions(parent=self.execute_dlg)
         self.go2epa_options.open_options_dlg()
-
 
     def _manage_btn_folder_path(self):
         path = tools_os.open_folder_path()
         if path:
             tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', str(path))
-
 
     def _manage_btn_accept(self):
         # Check if results exist on folder
@@ -103,12 +97,12 @@ class DrExecuteModelButton(DrAction):
                 return False
 
         # TODO: ask for import
-        do_import = True    
+        do_import = True
 
-        do_generate_inp = True   
+        do_generate_inp = True
         sql = "SELECT value FROM config_param_user WHERE parameter = 'plg_swmm_options'"
         row = global_vars.gpkg_dao_data.get_row(sql)
-        if row and row[0] == '0':                 
+        if row and row[0] == '0':
             do_generate_inp = False
 
         self._save_user_values()
@@ -127,7 +121,7 @@ class DrExecuteModelButton(DrAction):
         self.timer.start(1000)
 
         # Set background task 'Execute model'
-        description = f"Execute model"
+        description = "Execute model"
 
         params = {"dialog": self.execute_dlg, "folder_path": self.export_path,
                   "do_generate_inp": do_generate_inp, "do_export": True, "do_run": True, "do_import": do_import}
@@ -138,11 +132,9 @@ class DrExecuteModelButton(DrAction):
         QgsApplication.taskManager().addTask(self.execute_model_task)
         QgsApplication.taskManager().triggerTask(self.execute_model_task)
 
-
     def _cancel_task(self):
         if self.execute_model_task:
             self.execute_model_task.cancel()
-
 
     def _progress_changed(self, process, progress, text, new_line):
         # Progress bar
@@ -173,7 +165,6 @@ class DrExecuteModelButton(DrAction):
         scrollbar = txt_infolog.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
-
     def _load_user_values(self):
         """ Load QGIS settings related with file_manager """
 
@@ -187,7 +178,6 @@ class DrExecuteModelButton(DrAction):
         if value:
             tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', value)
 
-
     def _save_user_values(self):
         """ Save QGIS settings related with file_manager """
 
@@ -198,7 +188,6 @@ class DrExecuteModelButton(DrAction):
         # Export file path
         value = f"{tools_qt.get_text(self.execute_dlg, 'txt_folder_path', return_string_null=False)}"
         tools_dr.set_config_parser('btn_execute_model', 'txt_folder_path', f"{value}")
-
 
     def _calculate_elapsed_time(self, dialog):
 

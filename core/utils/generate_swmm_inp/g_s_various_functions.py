@@ -36,6 +36,7 @@ from .g_s_defaults import (
     annotation_field_name
 )
 
+
 # Export
 # geometry functions
 def check_nan(replace_lst):
@@ -73,6 +74,7 @@ def use_z_if_available(
             df['Elevation'] = coords['Z_Coord']
         coords.drop("Z_Coord", axis=1, inplace=True)
     return df, coords
+
 
 def get_coords_from_geometry(df):
     """
@@ -152,6 +154,7 @@ def get_coords_from_geometry(df):
             'Geometry type of one or more features could not be handled'
         )
 
+
 def extract_xyz_from_simple_point(p_name, point_simple):
     """
     extracts x and y coordinates from a LineString
@@ -176,7 +179,7 @@ def extract_xy_from_line(line_geom):
             extract_xyz_from_simple_point(
                 'nan',
                 point_simple
-            ) for point_simple in 
+            ) for point_simple in
                 vertices_list
         ]
     extr_coords_df = pd.DataFrame(
@@ -188,6 +191,7 @@ def extract_xy_from_line(line_geom):
     extr_coords_df.drop('Name', axis=1, inplace=True)
     return extr_coords_df
 
+
 def extract_xy_from_area(geom_row):
     """
     extraxts xy from polygon geometries
@@ -196,6 +200,7 @@ def extract_xy_from_area(geom_row):
     xy_list = [[str(v.x()), str(v.y())] for v in geom_row.vertices()]
     xy_df = pd.DataFrame(xy_list, columns=['X_Coord', 'Y_Coord'])
     return xy_df
+
 
 # functions for data in tables
 def get_curves_from_table(curves_raw, name_col):
@@ -337,7 +342,7 @@ def get_timeseries_from_table(ts_raw, name_col, feedback):
                         feedback.pushWarning(
                                 'Warning: At least one date in the timeseries file is missing. Date will be set to start date')
                     ts_df['Date'] = ''
-                else: 
+                else:
                     ts_df['Date'] = adjust_datetime(
                         ts_df['Date'],
                         'Date',
@@ -345,13 +350,13 @@ def get_timeseries_from_table(ts_raw, name_col, feedback):
                         ts_name,
                         feedback = None
                     )
-                ts_df['Time'] = adjust_datetime(
-                    ts_df['Time'],
-                    'Time',
-                    'HH:mm',
-                    ts_name,
-                    feedback
-                )
+                # ts_df['Time'] = adjust_datetime(
+                #     ts_df['Time'],
+                #     'Time',
+                #     'HH:mm',
+                #     ts_name,
+                #     feedback
+                # )
             if annotation_field_name in ts_df.columns:
                 ts_annotation = ts_df[annotation_field_name].fillna('').unique()[0]
             else:
@@ -389,9 +394,8 @@ def check_deprecated(
             )
             df = df.rename(columns={dep_col: cols_deprecated[dep_col]})
     return df
-        
-        
-        
+
+
 def check_columns(
     swmm_data_file,
     cols_expected,
@@ -411,4 +415,3 @@ def check_columns(
         err_message = err_message+'. Please add columns or check if the correct file/layer was selected. '
         err_message = err_message+'For further advice regarding columns, read the documentation file in the plugin folder.'
         raise QgsProcessingException(err_message)
-

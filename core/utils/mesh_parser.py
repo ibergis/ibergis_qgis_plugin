@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 from dataclasses import dataclass
-import os
+
 
 @dataclass
 class Mesh:
@@ -14,15 +14,23 @@ class Mesh:
     boundary_conditions: dict
     bridges: pd.DataFrame
 
+
 def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losses_fp: io.TextIOWrapper, bridges_fp: io.TextIOWrapper):
     mesh_fp.write("MATRIU\n")
     mesh_fp.write(f"  {len(mesh.polygons)}\n")
     for tri in mesh.polygons.itertuples():
         try:
-            manning_number = tri.roughness
-        except KeyError:
-            print(f"{tri=}")
-        mesh_fp.write(f"    {tri.v1:8d} {tri.v2:8d} {tri.v3:8d} {tri.v4:8d} {manning_number:>8} {tri.Index:8d}\n")
+            manning_number = float(tri.roughness)
+
+            if manning_number != 0:
+                manning_number = f'{round(manning_number, 4):>9.4f}'
+            else:
+                manning_number = f'{-9999:>9d}'  # Default value
+        except (KeyError, TypeError, ValueError) as e:
+            print(f"Error processing roughness for triangle {tri}: {e}")
+            manning_number = f'{-9999:>9d}'  # Default value
+
+        mesh_fp.write(f"    {tri.v1:8d} {tri.v2:8d} {tri.v3:8d} {tri.v4:8d} {manning_number} {tri.Index:8d}\n")
     mesh_fp.write("VERTEXS\n")
     mesh_fp.write(f"  {len(mesh.vertices)}\n")
     for v in mesh.vertices.itertuples():
@@ -68,7 +76,7 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
         for roof in mesh.roofs.itertuples():
             roof_fp.write(
                 f"{roof.name} {roof.fid} {-9999 if roof.slope is None else roof.slope} {-9999 if roof.width is None else roof.width} "
-                f"{-9999 if roof.roughness is None else roof.roughness} {-9999 if roof.isconnected is None else roof.isconnected} {-9999 if roof.outlet_code is None else roof.outlet_code} "
+                f"{-9999 if roof.roughness is None else round(roof.roughness, 4)} {-9999 if roof.isconnected is None else roof.isconnected} {-9999 if roof.outlet_code is None else roof.outlet_code} "
                 f"{-9999 if roof.outlet_vol is None else roof.outlet_vol} {-9999 if roof.street_vol is None else roof.street_vol} {-9999 if roof.infiltr_vol is None else roof.infiltr_vol}\n"
             )
         roof_fp.write("\nRoof elements\n")
@@ -99,6 +107,7 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
 
             for index, scs_cn in mesh.polygons["scs_cn"].dropna().items():
                 losses_fp.write(f"{index} {scs_cn}\n")
+
 
 def dumps(mesh):
     with (
@@ -261,7 +270,7 @@ def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None, bridges_fp=None):
     roofs_df['isconnected'] = roofs_df['isconnected'].astype(np.int32)
     # roofs_df['outlet_code'] = roofs_df['outlet_code'].astype(???)
     roofs_df['fid'] = roofs_df['fid'].astype(np.uint32)
-    roofs_df.index = roofs_df['fid'] # type: ignore
+    roofs_df.index = roofs_df['fid']  # type: ignore
 
     bridge_rows = []
     if bridges_fp:
@@ -390,5 +399,3 @@ def loads(mesh_string, roof_string="", losses_string="", bridges_string=""):
         io.StringIO(bridges_string) as bridges_file,
     ):
         return load(mesh_file, roof_file, losses_file, bridges_file)
-
-

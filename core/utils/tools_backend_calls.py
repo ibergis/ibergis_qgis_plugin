@@ -10,8 +10,7 @@ import sys
 import subprocess
 import webbrowser
 
-from functools import partial
-from qgis.PyQt.QtCore import QDate, QRegExp, Qt
+from qgis.PyQt.QtCore import QDate, QRegExp
 from qgis.PyQt.QtWidgets import QDateEdit, QLineEdit, QTableView, QWidget
 from qgis.core import QgsEditorWidgetSetup, QgsFieldConstraints, QgsLayerTreeLayer, QgsVectorLayer
 from qgis.gui import QgsDateTimeEdit
@@ -116,7 +115,6 @@ def delete_object(**kwargs):
     qtable_name = func_params['targetwidget']
     qtable = tools_qt.get_widget(dialog, f"{qtable_name}")
 
-
     # Get selected rows
     selected_list = qtable.selectionModel().selectedRows()
     if len(selected_list) == 0:
@@ -151,7 +149,6 @@ def delete_object(**kwargs):
                " WHERE id::integer IN (" + list_id + ")")
         tools_db.execute_sql(sql, log_sql=False)
         _reload_table(**kwargs)
-
 
 
 def open_selected_path(**kwargs):
@@ -258,8 +255,6 @@ def set_layer_index(**kwargs):
     if type(layers_name_list) == list:
         for layer_name in layers_name_list:
             tools_qgis.set_layer_index(layer_name)
-
-
 
 
 def set_style_mapzones(**kwargs):
@@ -539,7 +534,7 @@ def fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields):
     return complet_list, widget_list
 
 
-def get_filter_qtableview(dialog, widget_list, complet_result, filter_fields = ''):
+def get_filter_qtableview(dialog, widget_list, complet_result, filter_fields=''):
 
     for widget in widget_list:
         if widget.property('isfilter'):
@@ -608,7 +603,6 @@ def _reload_table(**kwargs):
         tab_name = 'main'
         list_tables = dialog.findChildren(QTableView)
 
-
     complet_result = kwargs['complet_result']
     feature_id = complet_result['body']['feature']['id']
     field_id = str(complet_result['body']['feature']['idName'])
@@ -645,7 +639,7 @@ def _reload_table(**kwargs):
             filter_fields = f'"{field_id}":{{"value":"{feature_id}","filterSign":"="}}'
 
         if no_tabs:
-            filter_fields = f''
+            filter_fields = ''
             widgetname = columnname
         linkedobject = table.property('linkedobject')
         complet_list, widget_list = fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields)
@@ -695,6 +689,7 @@ def manage_duplicate_dscenario_copyfrom(dialog):
         tools_qt.set_combo_value(dialog.findChild(QComboBox, 'expl'), f"{row[4]}", 0)
 
 # region unused functions atm
+
 
 def get_all_layers(group, all_layers):
 

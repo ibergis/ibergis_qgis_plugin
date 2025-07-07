@@ -19,7 +19,6 @@ class DrGisFileCreate:
         self.plugin_dir = plugin_dir
         self.layer_source = None
 
-
     def gis_project_database(self, folder_path, filename, gpkg_file, srid, roletype='admin'):
 
         # Get locale of QGIS application
@@ -98,7 +97,6 @@ class DrGisFileCreate:
             msg_params = (qgs_path,)
             tools_qgis.show_warning(msg, msg_params=msg_params)
 
-
     # region private functions
 
     def _replace_spatial_parameters(self, srid, content):
@@ -118,7 +116,6 @@ class DrGisFileCreate:
             tools_log.log_info(msg, msg_params=msg_params)
 
         return aux
-
 
     def _replace_extent_parameters(self, content):
 
@@ -155,7 +152,6 @@ class DrGisFileCreate:
             tools_log.log_info(msg, msg_params=msg_params)
 
         return aux
-
 
     def _replace_connection_parameters(self, content, filename):
 

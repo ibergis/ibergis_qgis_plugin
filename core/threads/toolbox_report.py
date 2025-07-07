@@ -31,7 +31,6 @@ class DrReportTask(DrTask):
         self.queryAdd = queryAdd
         self.timer = timer
 
-
     def run(self):
 
         super().run()
@@ -55,7 +54,6 @@ class DrReportTask(DrTask):
 
         return True
 
-
     def finished(self, result):
 
         super().finished(result)
@@ -63,7 +61,7 @@ class DrReportTask(DrTask):
         sql = f"SELECT {self.function_name}("
         if self.body:
             sql += f"{self.body}"
-        sql += f");"
+        sql += ");"
         msg = "Task '{0}' manage json response with parameters: '{1}', '{2}', '{3}'"
         msg_params = ("Toolbox report", self.json_result, sql, "None",)
         tools_log.log_info(msg, msg_params=msg_params)
@@ -92,7 +90,6 @@ class DrReportTask(DrTask):
             msg = "Database returned null. Check postgres function '{0}'"
             msg_params = ("gw_fct_getinfofromid",)
             tools_log.log_warning(msg, msg_params=msg_params)
-
 
     def cancel(self):
 

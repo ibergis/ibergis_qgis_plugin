@@ -50,6 +50,14 @@ UPDATE node set code = 'O'||table_fid WHERE table_name = 'inp_outfall';
 UPDATE node set code = 'D'||table_fid WHERE table_name = 'inp_divider';
 UPDATE node set code = 'IN'||table_fid WHERE table_name = 'inlet';
 
+UPDATE arc set custom_code = code;
+
+UPDATE arc set code = 'T'||table_fid WHERE table_name = 'inp_outlet';
+UPDATE arc set code = 'W'||table_fid WHERE table_name = 'inp_weir';
+UPDATE arc set code = 'R'||table_fid WHERE table_name = 'inp_orifice';
+UPDATE arc set code = 'P'||table_fid WHERE table_name = 'inp_pump';
+UPDATE arc set code = 'C'||table_fid WHERE table_name = 'inp_conduit';
+
 
 -- ----------------------------------------------------
 -- UPDATE INP_CONDUIT FOREIGN KEYS

@@ -44,7 +44,6 @@ class DrAction:
 
         toolbar.addAction(self.action)
 
-
     def clicked_event(self):
 
         msg = "Action has no function!!"

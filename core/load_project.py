@@ -32,7 +32,6 @@ class DrLoadProject(QObject):
         self.buttons_to_hide = []
         self.buttons = {}
 
-
     def project_read(self, show_warning=True):
         """ Function executed when a user opens a QGIS project (*.qgs) """
 
@@ -58,7 +57,7 @@ class DrLoadProject(QObject):
         global_vars.project_type = "ud"
 
         # Removes all deprecated variables defined at drain.config
-        #tools_dr.remove_deprecated_config_vars()
+        # tools_dr.remove_deprecated_config_vars()
 
         project_role = global_vars.project_vars.get('project_role')
         global_vars.project_vars['project_role'] = None
@@ -74,7 +73,8 @@ class DrLoadProject(QObject):
 
         # Manage locale and corresponding 'i18n' file
         global_vars.plugin_name = tools_qgis.get_plugin_metadata('name', 'drain', global_vars.plugin_dir)
-        tools_qt.manage_translation(global_vars.plugin_name)
+        tools_qt._add_translator()
+        self._translate_config()
 
         # Manage actions of the different plugin_toolbars
         self._manage_toolbars()
@@ -125,7 +125,6 @@ class DrLoadProject(QObject):
         # Call gw_fct_setcheckproject and create GwProjectLayersConfig thread
         self._config_layers()
 
-
     # region private functions
 
     def _get_project_variables(self):
@@ -139,7 +138,6 @@ class DrLoadProject(QObject):
         global_vars.project_vars['project_type'] = tools_qgis.get_project_variable('gwProjectType')
         global_vars.project_vars['project_gpkg'] = tools_qgis.get_project_variable('project_gpkg_path')
 
-
     def _get_user_variables(self):
         """ Get config related with user variables """
 
@@ -150,11 +148,9 @@ class DrLoadProject(QObject):
         global_vars.user_level['showadminadvanced'] = tools_dr.get_config_parser('user_level', 'showadminadvanced', "user", "init", False)
         global_vars.date_format = tools_dr.get_config_parser('system', 'date_format', "user", "init", False)
 
-
     def _check_project(self, show_warning):
         """ TODO: Check if loaded project is valid for Drain """
         return True
-
 
     def _check_database_connection(self):
         """ Set database connection to Geopackage file """
@@ -195,7 +191,6 @@ class DrLoadProject(QObject):
         gpkg_dao_data = tools_gpkgdao.DrGpkgDao()
         global_vars.gpkg_dao_data = gpkg_dao_data
 
-
         # Define filepath of data GPKG
         db_filepath = f"{global_vars.project_vars['project_gpkg']}"
         db_filepath = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
@@ -230,12 +225,9 @@ class DrLoadProject(QObject):
             tools_log.log_info(msg, msg_params=msg_params)
             return False
 
-
-
         msg = "Database connection successful"
         tools_log.log_info(msg)
         return True
-
 
     def _get_buttons_to_hide(self):
         """ Get all buttons to hide """
@@ -254,7 +246,6 @@ class DrLoadProject(QObject):
             tools_log.log_warning(msg, msg_params=msg_params)
         finally:
             return buttons_to_hide
-
 
     def _manage_toolbars(self):
         """ Manage actions of the custom plugin toolbars """
@@ -336,7 +327,6 @@ class DrLoadProject(QObject):
         self._enable_toolbar("toc")
         self._hide_button("308")
 
-
     def _config_layers(self):
         """ Call gw_fct_setcheckproject and create GwProjectLayersConfig thread """
 
@@ -351,14 +341,13 @@ class DrLoadProject(QObject):
             except RuntimeError:
                 pass
         # Set background task 'ConfigLayerFields'
-        description = f"ConfigLayerFields"
+        description = "ConfigLayerFields"
         params = {}
         self.task_get_layers = DrProjectLayersConfig(description, params)
         QgsApplication.taskManager().addTask(self.task_get_layers)
         QgsApplication.taskManager().triggerTask(self.task_get_layers)
 
         return True
-
 
     def _create_toolbar(self, toolbar_id):
 
@@ -388,7 +377,6 @@ class DrLoadProject(QObject):
         plugin_toolbar.list_actions = list_actions
         self.plugin_toolbars[toolbar_id] = plugin_toolbar
 
-
     def _enable_toolbars(self, visible=True):
         """ Enable/disable all plugin toolbars from QGIS GUI """
 
@@ -403,13 +391,11 @@ class DrLoadProject(QObject):
             msg_params = (str(e),)
             tools_log.log_warning(msg, msg_params=msg_params)
 
-
     def _enable_all_buttons(self, enable=True):
         """ Utility to enable/disable all buttons """
 
         for index in self.buttons.keys():
             self._enable_button(index, enable)
-
 
     def _enable_button(self, button_id, enable=True):
         """ Enable/disable selected button """
@@ -418,14 +404,12 @@ class DrLoadProject(QObject):
         if key in self.buttons:
             self.buttons[key].action.setEnabled(enable)
 
-
     def _hide_button(self, button_id, hide=True):
         """ Enable/disable selected action """
 
         key = str(button_id).zfill(2)
         if key in self.buttons:
             self.buttons[key].action.setVisible(not hide)
-
 
     def _enable_toolbar(self, toolbar_id, enable=True):
         """ Enable/Disable toolbar. Normally because user has no permission """
@@ -436,12 +420,10 @@ class DrLoadProject(QObject):
             for index_action in plugin_toolbar.list_actions:
                 self._enable_button(index_action, enable)
 
-
     def _force_tab_exploitation(self):
         """ Select tab 'tab_exploitation' in dialog 'dlg_selector_basic' """
 
-        tools_dr.set_config_parser("dialogs_tab", f"dlg_selector_basic", f"tab_exploitation", "user", "session")
-
+        tools_dr.set_config_parser("dialogs_tab", "dlg_selector_basic", "tab_exploitation", "user", "session")
 
     def _manage_attribute_table(self):
         """ If configured, disable button "Update all" from attribute table """
@@ -450,7 +432,6 @@ class DrLoadProject(QObject):
         if tools_os.set_boolean(disable, False):
             tools_dr.connect_signal(QApplication.instance().focusChanged, self._manage_focus_changed,
                                     'load_project', 'manage_attribute_table_focusChanged')
-
 
     def _manage_focus_changed(self, old, new):
         """ Disable button "Update all" of QGIS attribute table dialog. Parameters are passed by the signal itself. """
@@ -482,5 +463,41 @@ class DrLoadProject(QObject):
                         break
             except IndexError:
                 pass
+
+
+    def _translate_config(self):
+        """ Update config.gpkg language from selected locale """
+
+        locale = tools_qgis.get_locale()
+        print(locale)
+
+        sql_dir = os.path.normpath(os.path.join(global_vars.plugin_dir, 'dbmodel'))
+        i18n_dml_path = os.path.join(sql_dir, "i18n", locale, "dml.sql")
+        if not os.path.exists(i18n_dml_path):
+            i18n_dml_path = os.path.join(sql_dir, "i18n", "en_US", "dml.sql") # Default to en_US
+
+        config_gpkg_path = os.path.join(global_vars.plugin_dir, 'config', 'config.gpkg')
+
+        if not os.path.exists(config_gpkg_path):
+            msg = "Config GPKG not found: {0}"
+            msg_params = (config_gpkg_path,)
+            tools_log.log_warning(msg, msg_params=msg_params)
+            return
+
+        try:
+            with open(i18n_dml_path, 'r', encoding='utf8') as f:
+                sql_content = f.read()
+                # Splitting by semicolon and filtering out empty statements
+                for sql_statement in filter(None, sql_content.split(';')):
+                    status_exec = global_vars.gpkg_dao_data.execute_script_sql(sql_statement.strip())
+                    if not status_exec:
+                        msg = "Error executing i18n DML in config.gpkg: {0}"
+                        msg_params = (global_vars.gpkg_dao_config.last_error,)
+                        tools_log.log_warning(msg, msg_params=msg_params)
+                        # Optionally, decide if you want to stop on first error or continue
+        except Exception as e:
+            msg = "Error reading/executing i18n DML file for config.gpkg: {0}\\n{1}"
+            msg_params = (i18n_dml_path, str(e))
+            tools_log.log_warning(msg, msg_params=msg_params)
 
     # endregion

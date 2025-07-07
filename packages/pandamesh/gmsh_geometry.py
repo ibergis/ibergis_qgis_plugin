@@ -116,11 +116,9 @@ def add_points(points: gpd.GeoDataFrame) -> Tuple[IntArray, IntArray]:
     # We have to add points one by one due to the Gmsh addPoint API
     for i, row in enumerate(points.to_dict("records")):
         point = row["geometry"]
-        # Use z_value if available, otherwise use Z_DEFAULT
-        z_value = row.get("z_value", Z_DEFAULT)
         # Rely on the automatic number of gmsh now to generate the indices
         point_index = gmsh.model.geo.addPoint(
-            point.x, point.y, z_value, row["cellsize"]
+            point.x, point.y, Z_DEFAULT, row["cellsize"]
         )
         indices[i] = point_index
     return indices, embedded_in
@@ -176,14 +174,7 @@ def add_geometry(
 
     # Figure out in which polygon the points and linestrings will be embedded.
     linestrings = embed_where(linestrings, polygons)
-
-    # Create a spatial index of point anchors for quick lookup
-    point_anchors = {}
-    if len(points) > 0:
-        embedded_points = embed_where(points, polygons)
-        for _, row in embedded_points.iterrows():
-            point = row["geometry"]
-            point_anchors[(point.x, point.y)] = row.get("z_value", Z_DEFAULT)
+    embedded_points = embed_where(points, polygons)
 
     # Collect all coordinates, and store the length and type of every element
     index, poly_vertices, poly_cellsizes, polygon_features = collect_polygons(
@@ -206,11 +197,7 @@ def add_geometry(
     cellsizes = pd.Series(cellsizes).groupby(tags).min().values
 
     # Add all unique vertices. This includes vertices for linestrings and polygons.
-    # For each vertex, check if there's a point anchor with z-value
-    for i, ((x, y), cellsize, tag) in enumerate(zip(vertices, cellsizes, vertex_tags)):
-        z_value = point_anchors.get((x, y), Z_DEFAULT)
-        gmsh.model.geo.addPoint(x, y, z_value, cellsize, tag)
-
+    add_vertices(vertices, cellsizes, vertex_tags)
     # Add all geometries to gmsh
     add_polygons(polygon_features, tags)
     linestring_indices, linestring_embedded = add_linestrings(linestring_features, tags)
@@ -222,26 +209,13 @@ def add_geometry(
     ):
         gmsh.model.mesh.embed(LINE_DIM, embed_indices, PLANE_DIM, polygon_id)
 
-    # Only add point anchors that aren't already part of a line
-    if len(points) > 0:
-        # Create a set of line vertex coordinates
-        line_vertex_coords = set()
-        for vertices in line_vertices:
-            for x, y in vertices:
-                line_vertex_coords.add((x, y))
-
-        # Filter out points that are already line vertices
-        standalone_points = embedded_points[~embedded_points.geometry.apply(
-            lambda p: (p.x, p.y) in line_vertex_coords
-        )]
-
-        if len(standalone_points) > 0:
-            point_indices, point_embedded = add_points(standalone_points)
-            gmsh.model.geo.synchronize()
-            for polygon_id, embed_indices in pd.Series(point_indices).groupby(
-                point_embedded
-            ):
-                gmsh.model.mesh.embed(POINT_DIM, embed_indices, PLANE_DIM, polygon_id)
+    if len(embedded_points) > 0:
+        point_indices, point_embedded = add_points(embedded_points)
+        gmsh.model.geo.synchronize()
+        for polygon_id, embed_indices in pd.Series(point_indices).groupby(
+            point_embedded
+        ):
+            gmsh.model.mesh.embed(POINT_DIM, embed_indices, PLANE_DIM, polygon_id)
 
     gmsh.model.geo.synchronize()
 

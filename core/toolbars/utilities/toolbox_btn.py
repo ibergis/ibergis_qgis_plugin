@@ -14,9 +14,9 @@ from time import time
 from datetime import timedelta
 
 from qgis.PyQt.QtCore import Qt, QTimer
-from qgis.PyQt.QtGui import QColor, QIcon, QStandardItemModel, QStandardItem
+from qgis.PyQt.QtGui import QIcon, QStandardItemModel, QStandardItem
 from qgis.PyQt.QtWidgets import QSpinBox, QWidget, QLineEdit, QComboBox, QCheckBox, QRadioButton, QAbstractItemView, \
-    QTreeWidget, QCompleter, QGridLayout, QHBoxLayout, QLabel, QTableWidgetItem, QFileDialog
+    QCompleter, QGridLayout, QLabel, QTableWidgetItem, QFileDialog
 from qgis.core import QgsApplication, QgsProject
 from qgis.gui import QgsDateTimeEdit
 
@@ -43,11 +43,9 @@ class DrToolBoxButton(DrAction):
         self.add_columns = {}
         self.queryAdd = None
 
-
     def clicked_event(self):
 
         self._open_toolbox()
-
 
     def open_function_by_id(self, func_id, connect_signal=None):
 
@@ -119,7 +117,6 @@ class DrToolBoxButton(DrAction):
 
         global_vars.iface.mapCanvas().refresh()
 
-
     def set_selected_layer(self, dialog, combo):
 
         layer_name = tools_qt.get_combo_value(dialog, combo, 1)
@@ -130,7 +127,6 @@ class DrToolBoxButton(DrAction):
             return None
         global_vars.iface.setActiveLayer(layer)
         return layer
-
 
     def save_parametric_values(self, dialog, function_name):
         """ Save QGIS settings related with toolbox options """
@@ -148,7 +144,6 @@ class DrToolBoxButton(DrAction):
                 value = tools_qt.get_text(dialog, widget, False, False)
                 tools_dr.set_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", f"{value}")
 
-
     def save_settings_values(self, dialog, function_name):
         """ Save QGIS settings related with toolbox options """
 
@@ -157,7 +152,6 @@ class DrToolBoxButton(DrAction):
         layer = tools_qt.get_combo_value(dialog, dialog.cmb_layers, 0)
         tools_dr.set_config_parser('btn_toolbox', f"{function_name}_cmb_layers", f"{layer}")
         tools_dr.set_config_parser('btn_toolbox', f"{function_name}_rbt_previous", f"{dialog.rbt_previous.isChecked()}")
-
 
     # region private functions
 
@@ -193,7 +187,6 @@ class DrToolBoxButton(DrAction):
         else:
             tools_dr.open_dialog(self.dlg_toolbox)
 
-
     def _filter_functions(self, text):
 
         extras = f'"filterText":"{text}"'
@@ -203,7 +196,6 @@ class DrToolBoxButton(DrAction):
             return False
 
         self._populate_trv(self.dlg_toolbox.trv, json_result['body']['data'], expand=True)
-
 
     def _open_function(self, index):
 
@@ -297,7 +289,8 @@ class DrToolBoxButton(DrAction):
             # Connect signals
             self.dlg_functions.mainTab.currentChanged.connect(partial(self._manage_btn_run))
             self.dlg_functions.btn_run.clicked.connect(partial(self._execute_function, self.function_selected,
-                self.dlg_functions, self.dlg_functions.cmb_layers, json_result['body']['data']))
+                                                               self.dlg_functions, self.dlg_functions.cmb_layers,
+                                                               json_result['body']['data']))
             self.dlg_functions.btn_close.clicked.connect(partial(tools_dr.close_dialog, self.dlg_functions))
             self.dlg_functions.rejected.connect(partial(tools_dr.close_dialog, self.dlg_functions))
             self.dlg_functions.btn_cancel.clicked.connect(partial(self.remove_layers))
@@ -305,7 +298,6 @@ class DrToolBoxButton(DrAction):
             # Open form and set title
             self.dlg_functions.setWindowTitle(f"{self.function_selected}")
             tools_dr.open_dialog(self.dlg_functions, dlg_name='toolbox')
-
 
     def _report_finished(self, status, json_result):
         if not status:
@@ -405,7 +397,6 @@ class DrToolBoxButton(DrAction):
         # Update tbl in case filters have default value
         self._update_tbl_reports()
 
-
     def _update_tbl_reports(self):
 
         list_widgets = self.dlg_reports.findChildren(QWidget)
@@ -497,7 +488,6 @@ class DrToolBoxButton(DrAction):
             elif field['widgettype'] == 'list' and field.get('value') is None:
                 self.dlg_reports.tbl_reports.setRowCount(0)
 
-
     def _rbt_state(self, rbt, state):
 
         if rbt.objectName() == 'rbt_previous' and state is True:
@@ -506,7 +496,6 @@ class DrToolBoxButton(DrAction):
             self.rbt_checked['widget'] = 'wholeSelection'
 
         self.rbt_checked['value'] = state
-
 
     def _load_parametric_values(self, dialog, function):
         """ Load QGIS settings related with toolbox options """
@@ -522,7 +511,7 @@ class DrToolBoxButton(DrAction):
                 value = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
                                                    "session")
                 tools_qt.set_checked(dialog, widget, value)
-            elif type(widget) is QComboBox and widget.property('selectedId') in (None,'','NULL'):
+            elif type(widget) is QComboBox and widget.property('selectedId') in (None, '', 'NULL'):
                 value = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
                                                    "session")
                 if value in (None, '', 'NULL') and widget.property('selectedId') not in (None, '', 'NULL'):
@@ -532,7 +521,6 @@ class DrToolBoxButton(DrAction):
                 value = tools_dr.get_config_parser('btn_toolbox', f"{function_name}_{widget.objectName()}", "user",
                                                    "session")
                 tools_qt.set_widget_text(dialog, widget, value)
-
 
     def _load_settings_values(self, dialog, function):
         """ Load QGIS settings related with toolbox options """
@@ -554,7 +542,6 @@ class DrToolBoxButton(DrAction):
             tools_qt.set_checked(dialog, 'rbt_previous', True)
         else:
             tools_qt.set_checked(dialog, 'rbt_layer', True)
-
 
     def _execute_function(self, description, dialog, combo, result):
 
@@ -587,7 +574,6 @@ class DrToolBoxButton(DrAction):
         QgsApplication.taskManager().addTask(self.toolbox_task)
         QgsApplication.taskManager().triggerTask(self.toolbox_task)
 
-
     def _calculate_elapsed_time(self, dialog):
 
         tf = time()  # Final time
@@ -602,7 +588,6 @@ class DrToolBoxButton(DrAction):
 
         lbl_time = dialog.findChild(QLabel, 'lbl_time')
         lbl_time.setText(text)
-
 
     def _manage_btn_run(self, index):
         """
@@ -622,7 +607,6 @@ class DrToolBoxButton(DrAction):
                 except RuntimeError:
                     pass
             self.dlg_functions.btn_run.setEnabled(True)
-
 
     def _populate_functions_dlg(self, dialog, result, module=tools_backend_calls):
 
@@ -668,7 +652,6 @@ class DrToolBoxButton(DrAction):
 
         return status
 
-
     def _populate_cmb_type(self, feature_types):
 
         feat_types = []
@@ -679,18 +662,17 @@ class DrToolBoxButton(DrAction):
             self.dlg_functions.cmb_feature_type.setVisible(False)
         tools_qt.fill_combo_values(self.dlg_functions.cmb_feature_type, feat_types, 1)
 
-
     def _get_all_group_layers(self, feature_type):
 
         list_items = []
         sql = (f"SELECT tablename, type FROM "
                f"(SELECT DISTINCT(parent_layer) AS tablename, feature_type as type, 0 as c FROM cat_feature "
                f"UNION SELECT child_layer, feature_type, 2 as c FROM cat_feature "
-               F" UNION "
+               f" UNION "
                f"SELECT concat('v_edit_',epa_table), feature_type as type, 4 as c FROM sys_feature_epa_type "
                f"WHERE epa_table IS NOT NULL AND epa_table NOT IN ('inp_virtualvalve', 'inp_inlet')"
-			   f" UNION SELECT 'v_edit_inp_subcatchment', 'SUBCATCHMENT', 6"
-			   f" UNION SELECT 'v_edit_raingage', 'RAINGAGE', 8 ) t "
+               f" UNION SELECT 'v_edit_inp_subcatchment', 'SUBCATCHMENT', 6"
+               f" UNION SELECT 'v_edit_raingage', 'RAINGAGE', 8 ) t "
                f" WHERE type = '{feature_type.upper()}' ORDER BY c, tablename")
         rows = tools_db.get_rows(sql)
         if rows:
@@ -701,7 +683,6 @@ class DrToolBoxButton(DrAction):
                     list_items.append(elem)
 
         return list_items
-
 
     def _populate_layer_combo(self):
 
@@ -724,7 +705,6 @@ class DrToolBoxButton(DrAction):
             layers.append(elem)
 
         tools_qt.fill_combo_values(self.dlg_functions.cmb_layers, layers, sort_combo=False)
-
 
     def _populate_trv(self, trv_widget, result, expand=False):
 
@@ -793,7 +773,6 @@ class DrToolBoxButton(DrAction):
         if expand:
             trv_widget.expandAll()
 
-
     def _sort_list(self, json_):
 
         try:
@@ -801,12 +780,10 @@ class DrToolBoxButton(DrAction):
         except KeyError:
             return 0
 
-
     def _cancel_task(self):
 
         if hasattr(self, 'toolbox_task'):
             self.toolbox_task.cancel()
-
 
     def _select_file_report(self):
         """ Select CSV file """
@@ -823,7 +800,6 @@ class DrToolBoxButton(DrAction):
         message = tools_qt.tr("Save report file")
         file_report, filter_ = QFileDialog.getSaveFileName(None, message, "", '*.csv')
         tools_qt.set_widget_text(self.dlg_reports, self.dlg_reports.txt_export_path, file_report)
-
 
     def _export_reports(self, dialog, table, path):
 
@@ -865,7 +841,6 @@ class DrToolBoxButton(DrAction):
         except Exception:
             msg = "File path doesn't exist or you dont have permission or file is opened"
             tools_qgis.show_warning(msg)
-
 
     def _write_to_csv(self, folder_path=None, all_rows=None):
 

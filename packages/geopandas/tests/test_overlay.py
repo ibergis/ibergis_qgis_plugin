@@ -3,14 +3,15 @@ import os
 import numpy as np
 import pandas as pd
 
-from shapely.geometry import Point, Polygon, LineString, GeometryCollection, box
+from shapely import make_valid
+from shapely.geometry import GeometryCollection, LineString, Point, Polygon, box
 
 import geopandas
 from geopandas import GeoDataFrame, GeoSeries, overlay, read_file
-from geopandas._compat import PANDAS_GE_20
+from geopandas._compat import HAS_PYPROJ, PANDAS_GE_30
 
-from geopandas.testing import assert_geodataframe_equal, assert_geoseries_equal
 import pytest
+from geopandas.testing import assert_geodataframe_equal, assert_geoseries_equal
 
 try:
     from fiona.errors import DriverError
@@ -21,9 +22,6 @@ except ImportError:
 
 
 DATA = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data", "overlay")
-
-
-pytestmark = pytest.mark.skip_no_sindex
 
 
 @pytest.fixture
@@ -80,10 +78,8 @@ def test_overlay(dfs_index, how):
     # construction of result
 
     def _read(name):
-        expected = read_file(
-            os.path.join(DATA, "polys", "df1_df2-{0}.geojson".format(name))
-        )
-        expected.crs = None
+        expected = read_file(os.path.join(DATA, "polys", f"df1_df2-{name}.geojson"))
+        expected.geometry.array.crs = None
         for col in expected.columns[expected.dtypes == "int32"]:
             expected[col] = expected[col].astype("int64")
         return expected
@@ -94,7 +90,6 @@ def test_overlay(dfs_index, how):
         expected = pd.concat(
             [expected_intersection, expected_difference], ignore_index=True, sort=False
         )
-        expected["col1"] = expected["col1"].astype(float)
     else:
         expected = _read(how)
 
@@ -114,9 +109,25 @@ def test_overlay(dfs_index, how):
         assert_geodataframe_equal(result, expected, check_column_type=False)
 
 
+@pytest.mark.parametrize("keep_geom_type", [True, False])
+def test_overlay_invalid_input(keep_geom_type):
+    invalid_polygon = Polygon([(0, 0), (1, 1), (1, 2), (1, 1), (0, 0)])
+    square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)))
+    df1 = geopandas.GeoDataFrame({"A": [1, 2]}, geometry=[invalid_polygon, square])
+    df2 = geopandas.GeoDataFrame({"B": [5, 6]}, geometry=[square, square])
+
+    df1_df2 = df1.overlay(df2, keep_geom_type=keep_geom_type)
+    # As overlay only supports inputs with uniform geometry types, `make_valid` of
+    # `invalid_polygon` should always result in POLYGON EMPTY, so the number of results
+    # will should always be 2.
+    assert len(df1_df2) == 2
+    if keep_geom_type:
+        assert df1_df2.geom_type.isin(["Polygon"]).all()
+
+
 @pytest.mark.filterwarnings("ignore:GeoSeries crs mismatch:UserWarning")
-def test_overlay_nybb(how):
-    polydf = read_file(geopandas.datasets.get_path("nybb"))
+def test_overlay_nybb(how, nybb_filename):
+    polydf = read_file(nybb_filename)
 
     # The circles have been constructed and saved at the time the expected
     # results were created (exact output of buffer algorithm can slightly
@@ -148,9 +159,7 @@ def test_overlay_nybb(how):
         # read union one, further down below we take the appropriate subset
         expected = read_file(os.path.join(DATA, "nybb_qgis", "qgis-union.shp"))
     else:
-        expected = read_file(
-            os.path.join(DATA, "nybb_qgis", "qgis-{0}.shp".format(how))
-        )
+        expected = read_file(os.path.join(DATA, "nybb_qgis", f"qgis-{how}.shp"))
 
     # The result of QGIS for 'union' contains incorrect geometries:
     # 24 is a full original circle overlapping with unioned geometries, and
@@ -164,6 +173,10 @@ def test_overlay_nybb(how):
 
     if how == "identity":
         expected = expected[expected.BoroCode.notnull()].copy()
+        boro_code_dtype = result["BoroCode"].dtype
+        if boro_code_dtype in ("int32", "int64"):
+            # Depending on the pandas version, the dtype might be int32 or int64
+            expected["BoroCode"] = expected["BoroCode"].astype(boro_code_dtype)
 
     # Order GeoDataFrames
     expected = expected.sort_values(cols).reset_index(drop=True)
@@ -212,6 +225,10 @@ def test_overlay_nybb(how):
         expected.loc[24, "geometry"] = None
         result.loc[24, "geometry"] = None
 
+    # missing values get read as None in read_file for a string column, but
+    # are introduced as NaN by overlay
+    expected["BoroName"] = expected["BoroName"].fillna(np.nan)
+
     assert_geodataframe_equal(
         result,
         expected,
@@ -258,7 +275,7 @@ def test_overlay_overlap(how):
         raise pytest.skip()
 
     expected = read_file(
-        os.path.join(DATA, "overlap", "df1_df2_overlap-{0}.geojson".format(how))
+        os.path.join(DATA, "overlap", f"df1_df2_overlap-{how}.geojson")
     )
 
     if how == "union":
@@ -347,6 +364,7 @@ def test_geoseries_warning(dfs):
         overlay(df1, df2.geometry, how="union")
 
 
+@pytest.mark.skipif(not HAS_PYPROJ, reason="pyproj not available")
 def test_preserve_crs(dfs, how):
     df1, df2 = dfs
     result = overlay(df1, df2, how=how)
@@ -358,6 +376,7 @@ def test_preserve_crs(dfs, how):
     assert result.crs == crs
 
 
+@pytest.mark.skipif(not HAS_PYPROJ, reason="pyproj not available")
 def test_crs_mismatch(dfs, how):
     df1, df2 = dfs
     df1.crs = 4326
@@ -502,7 +521,7 @@ def test_overlay_strict(how, keep_geom_type, geom_types):
             os.path.join(
                 DATA,
                 "strict",
-                "{t}_{h}_{s}.geojson".format(t=geom_types, h=how, s=keep_geom_type),
+                f"{geom_types}_{how}_{keep_geom_type}.geojson",
             )
         )
 
@@ -513,6 +532,12 @@ def test_overlay_strict(how, keep_geom_type, geom_types):
         cols = list(set(result.columns) - {"geometry"})
         expected = expected.sort_values(cols, axis=0).reset_index(drop=True)
         result = result.sort_values(cols, axis=0).reset_index(drop=True)
+
+        # some columns are all-NaN in the result, but get read as object dtype
+        # column of None values in read_file
+        for col in ["col1", "col3", "col4"]:
+            if col in expected.columns and expected[col].isna().all():
+                expected[col] = expected[col].astype("float64")
 
         assert_geodataframe_equal(
             result,
@@ -693,11 +718,11 @@ def test_keep_geom_type_geometry_collection_difference():
     assert_geodataframe_equal(result1, expected1)
 
 
-@pytest.mark.parametrize("make_valid", [True, False])
-def test_overlap_make_valid(make_valid):
+@pytest.mark.parametrize("should_make_valid", [True, False])
+def test_overlap_make_valid(should_make_valid):
     bowtie = Polygon([(1, 1), (9, 9), (9, 1), (1, 9), (1, 1)])
     assert not bowtie.is_valid
-    fixed_bowtie = bowtie.buffer(0)
+    fixed_bowtie = make_valid(bowtie)
     assert fixed_bowtie.is_valid
 
     df1 = GeoDataFrame({"col1": ["region"], "geometry": GeoSeries([box(0, 0, 10, 10)])})
@@ -705,17 +730,17 @@ def test_overlap_make_valid(make_valid):
         {"col1": ["invalid", "valid"], "geometry": GeoSeries([bowtie, fixed_bowtie])}
     )
 
-    if make_valid:
-        df_overlay_bowtie = overlay(df1, df_bowtie, make_valid=make_valid)
+    if should_make_valid:
+        df_overlay_bowtie = overlay(df1, df_bowtie, make_valid=should_make_valid)
         assert df_overlay_bowtie.at[0, "geometry"].equals(fixed_bowtie)
         assert df_overlay_bowtie.at[1, "geometry"].equals(fixed_bowtie)
     else:
         with pytest.raises(ValueError, match="1 invalid input geometries"):
-            overlay(df1, df_bowtie, make_valid=make_valid)
+            overlay(df1, df_bowtie, make_valid=should_make_valid)
 
 
-def test_empty_overlay_return_non_duplicated_columns():
-    nybb = geopandas.read_file(geopandas.datasets.get_path("nybb"))
+def test_empty_overlay_return_non_duplicated_columns(nybb_filename):
+    nybb = geopandas.read_file(nybb_filename)
     nybb2 = nybb.copy()
     nybb2.geometry = nybb2.translate(20000000)
 
@@ -746,18 +771,12 @@ def test_non_overlapping(how):
     result = overlay(df1, df2, how=how)
 
     if how == "intersection":
-        if PANDAS_GE_20:
-            index = None
-        else:
-            index = pd.Index([], dtype="object")
-
         expected = GeoDataFrame(
             {
                 "col1": np.array([], dtype="int64"),
                 "col2": np.array([], dtype="int64"),
                 "geometry": [],
-            },
-            index=index,
+            }
         )
     elif how == "union":
         expected = GeoDataFrame(
@@ -770,7 +789,7 @@ def test_non_overlapping(how):
     elif how == "identity":
         expected = GeoDataFrame(
             {
-                "col1": [1.0],
+                "col1": [1],
                 "col2": [np.nan],
                 "geometry": [p1],
             }
@@ -801,8 +820,30 @@ def test_no_intersection():
     gdf2 = GeoDataFrame({"bar": ["1", "3", "5"]}, geometry=gs.translate(1))
 
     expected = GeoDataFrame(columns=["foo", "bar", "geometry"])
+    if PANDAS_GE_30 and pd.options.future.infer_string:
+        expected = expected.astype({"foo": "str", "bar": "str"})
     result = overlay(gdf1, gdf2, how="intersection")
     assert_geodataframe_equal(result, expected, check_index_type=False)
+
+
+def test_zero_len():
+    # https://github.com/geopandas/geopandas/issues/3422
+    gdf1 = GeoDataFrame(
+        {
+            "geometry": [
+                Polygon([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0], [0.0, 0.0]])
+            ]
+        },
+        crs=4326,
+    )
+    # overlay with empty geodataframe shouldn't throw
+    gdf2 = GeoDataFrame({"geometry": []}, crs=4326)
+    res = gdf1.overlay(gdf2, how="union")
+    assert_geodataframe_equal(res, gdf1)
+
+    gdf2 = GeoDataFrame(geometry=[], crs=4326)
+    res = gdf1.overlay(gdf2, how="union")
+    assert_geodataframe_equal(res, gdf1)
 
 
 class TestOverlayWikiExample:
@@ -854,7 +895,7 @@ class TestOverlayWikiExample:
 
     def test_intersection(self):
         df_result = overlay(self.layer_a, self.layer_b, how="intersection")
-        assert df_result.geom_equals(self.intersection).bool()
+        assert df_result.geom_equals(self.intersection).all()
 
     def test_union(self):
         df_result = overlay(self.layer_a, self.layer_b, how="union")

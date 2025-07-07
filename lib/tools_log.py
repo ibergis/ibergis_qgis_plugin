@@ -58,7 +58,6 @@ class DrLogger(object):
         # Add file handler
         self.add_file_handler()
 
-
     def set_logger_parameters(self, min_log_level, log_limit_characters, log_db_limit_characters):
         """ Set logger parameters min_log_level, log_limit_characters, log_db_limit_characters """
 
@@ -81,7 +80,6 @@ class DrLogger(object):
         if isinstance(log_db_limit_characters, int):
             self.log_db_limit_characters = log_db_limit_characters
 
-
     def add_file_handler(self):
         """ Add file handler """
 
@@ -91,7 +89,6 @@ class DrLogger(object):
         self.fh = logging.FileHandler(self.filepath)
         self.fh.setFormatter(formatter)
         self.logger_file.addHandler(self.fh)
-
 
     def close_logger(self):
         """ Remove file handler """
@@ -104,16 +101,13 @@ class DrLogger(object):
         except Exception:
             pass
 
-
     def debug(self, msg=None, stack_level=2, stack_level_increase=0):
         """ Logger message into logger file with level DEBUG (10) """
         self._log(msg, logging.DEBUG, stack_level + stack_level_increase + 1)
 
-
     def info(self, msg=None, stack_level=2, stack_level_increase=0):
         """ Logger message into logger file with level INFO (20) """
         self._log(msg, logging.INFO, stack_level + stack_level_increase + 1)
-
 
     def warning(self, msg=None, stack_level=2, stack_level_increase=0, sum_error=True):
         """ Logger message into logger file with level WARNING (30) """
@@ -121,20 +115,17 @@ class DrLogger(object):
         if sum_error:
             self.num_errors += 1
 
-
     def error(self, msg=None, stack_level=2, stack_level_increase=0, sum_error=True):
         """ Logger message into logger file with level ERROR (40) """
         self._log(msg, logging.ERROR, stack_level + stack_level_increase + 1)
         if sum_error:
             self.num_errors += 1
 
-
     def critical(self, msg=None, stack_level=2, stack_level_increase=0, sum_error=True):
         """ Logger message into logger file with level CRITICAL (50) """
         self._log(msg, logging.CRITICAL, stack_level + stack_level_increase + 1)
         if sum_error:
             self.num_errors += 1
-
 
     def _log(self, msg=None, log_level=logging.INFO, stack_level=2):
         """ Logger message into logger file with selected level """
@@ -210,26 +201,26 @@ def log_error(text=None, context_name=None, parameter=None, logger_file=True, st
 
 
 def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message_level=0, logger_file=True,
-        stack_level_increase=0, header_params=None, msg_params=None):
+           stack_level_increase=0, header_params=None, msg_params=None):
     """ Write information message into QGIS Log Messages Panel (tab Drain DB) """
 
     if type(text) is dict:
         text = json.dumps(text)
         text = tools_qt.tr(text, list_params=msg_params)
-    
+
     if header:
         header = tools_qt.tr(header, list_params=header_params)
 
-    msg = (f'<font color="blue"><{bold}>{header}: </font>'
-           f'<font color="{color}"><{bold}>{text}</font>')
+    msg_ = (f'<font color="blue"><{bold}>{header}: </font>'
+            f'<font color="{color}"><{bold}>{text}</font>')
     limit = 200
     if global_vars.logger and global_vars.logger.log_db_limit_characters:
         limit = global_vars.logger.log_db_limit_characters
-    msg = (msg[:limit] + '...') if len(msg) > limit and bold == '' else msg
+    msg_ = (msg_[:limit] + '...') if len(msg_) > limit and bold == '' else msg_
 
     # Check session parameter 'min_message_level' to know if we need to log message in QGIS Log Messages Panel
     if global_vars.logger and message_level >= global_vars.logger.min_message_level:
-        QgsMessageLog.logMessage(msg, global_vars.logger.tab_db, message_level)
+        QgsMessageLog.logMessage(msg_, global_vars.logger.tab_db, message_level)
 
     # Log same message into logger file
     if global_vars.logger and logger_file:

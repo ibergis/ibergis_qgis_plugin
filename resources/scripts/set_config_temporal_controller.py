@@ -1,21 +1,21 @@
 import datetime
 
-#INPUT START AND END DATE/TIME
-#FOR DATE/TIME USED SINGLE DIGIT FOR SINGLE NUMBER (i.e 4 NOT 04)
-start_date='1948:1:1' #'yyyy:m:d'
-end_date='2021:2:28'
-start_time='0:0:0' #'h:m:s'
-end_time='0:0:0'
+# INPUT START AND END DATE/TIME
+# FOR DATE/TIME USED SINGLE DIGIT FOR SINGLE NUMBER (i.e 4 NOT 04)
+start_date = '1948:1:1'  # 'yyyy:m:d'
+end_date = '2021:2:28'
+start_time = '0:0:0'  # 'h:m:s'
+end_time = '0:0:0'
 
-#PARSING INPUT DATE/TIME
-date_time=[start_date,start_time,end_date,end_time]
-dt_dict={}
-key=0
+# PARSING INPUT DATE/TIME
+date_time = [start_date, start_time, end_date, end_time]
+dt_dict = {}
+key = 0
 for i in date_time:
-    a=i.split(':')
+    a = i.split(':')
     for j in range(len(a)):
-        key +=1
-        dt_dict[key]=int(a[j])
+        key += 1
+        dt_dict[key] = int(a[j])
 
 
 # These functions are part of https://github.com/GispoCoding/qgis_plugin_tools/blob/master/tools/raster_layers.py
@@ -55,6 +55,7 @@ def set_raster_renderer_to_singleband(layer: QgsRasterLayer, band: int = 1) -> N
     layer.setRenderer(renderer)
     layer.triggerRepaint()
 
+
 def set_band_based_on_range(layer: QgsRasterLayer, t_range: QgsDateTimeRange) -> int:
     """
 
@@ -74,6 +75,7 @@ def set_band_based_on_range(layer: QgsRasterLayer, t_range: QgsDateTimeRange) ->
             set_raster_renderer_to_singleband(layer, band_num)
     return band_num
 
+
 def set_fixed_temporal_range(layer: QgsRasterLayer, t_range: QgsDateTimeRange) -> None:
     """
     Set fixed temporal range for raster layer
@@ -92,15 +94,18 @@ def set_fixed_temporal_range(layer: QgsRasterLayer, t_range: QgsDateTimeRange) -
     tprops.setFixedTemporalRange(t_range)
     tprops.setIsActive(True)
 
+
 def temporal_range_changed(t_range: QgsDateTimeRange):
     layer = iface.activeLayer()
     if isinstance(layer, QgsRasterLayer):
         set_band_based_on_range(layer, t_range)
 
+
 def set_range():
     mode = QgsRasterLayerTemporalProperties.ModeFixedTemporalRange
+
 
 temporal_controller: QgsTemporalController = iface.mapCanvas().temporalController()
 temporal_controller.updateTemporalRange.connect(temporal_range_changed)
 # Add one second to make the last frame visible
-set_fixed_temporal_range(iface.activeLayer(), QgsDateTimeRange(datetime.datetime(dt_dict[1], dt_dict[2], dt_dict[3], dt_dict[4], dt_dict[5],dt_dict[6]), datetime.datetime(dt_dict[7], dt_dict[8], dt_dict[9], dt_dict[10], dt_dict[11], dt_dict[12])))
+set_fixed_temporal_range(iface.activeLayer(), QgsDateTimeRange(datetime.datetime(dt_dict[1], dt_dict[2], dt_dict[3], dt_dict[4], dt_dict[5], dt_dict[6]), datetime.datetime(dt_dict[7], dt_dict[8], dt_dict[9], dt_dict[10], dt_dict[11], dt_dict[12])))

@@ -1,9 +1,15 @@
 from warnings import warn
 
 import numpy
+
 from shapely.geometry import MultiPoint
 
-from geopandas.array import from_shapely, points_from_xy
+from geopandas.array import (
+    LINE_GEOM_TYPES,
+    POLYGON_GEOM_TYPES,
+    from_shapely,
+    points_from_xy,
+)
 from geopandas.geoseries import GeoSeries
 
 
@@ -44,10 +50,10 @@ def uniform(geom, size, rng=None):
     if geom is None or geom.is_empty:
         return MultiPoint()
 
-    if geom.geom_type in ("Polygon", "MultiPolygon"):
+    if geom.geom_type in POLYGON_GEOM_TYPES:
         return _uniform_polygon(geom, size=size, generator=generator)
 
-    if geom.geom_type in ("LineString", "MultiLineString"):
+    if geom.geom_type in LINE_GEOM_TYPES:
         return _uniform_line(geom, size=size, generator=generator)
 
     warn(
@@ -64,7 +70,7 @@ def _uniform_line(geom, size, generator):
     """
 
     fracs = generator.uniform(size=size)
-    return from_shapely(geom.interpolate(fracs, normalized=True)).unary_union()
+    return from_shapely(geom.interpolate(fracs, normalized=True)).union_all()
 
 
 def _uniform_polygon(geom, size, generator):
@@ -80,4 +86,5 @@ def _uniform_polygon(geom, size, generator):
         )
         valid_samples = batch[batch.sindex.query(geom, predicate="contains")]
         candidates.extend(valid_samples)
-    return GeoSeries(candidates[:size]).unary_union
+    generator.shuffle(candidates)  # avoid the artifacts of STRTree ordering
+    return GeoSeries(candidates[:size]).union_all()

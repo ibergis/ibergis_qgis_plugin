@@ -14,6 +14,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.gui import QgsMessageBar
 
 from ... import global_vars
+from qgis.utils import iface
 
 
 class DrMainWindow(QMainWindow):
@@ -22,9 +23,9 @@ class DrMainWindow(QMainWindow):
     key_escape = QtCore.pyqtSignal()
     key_enter = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, parent=None):
 
-        super().__init__()
+        super().__init__(parent or iface.mainWindow())
         self.setupUi(self)
         # Create message bar
         try:
@@ -49,7 +50,6 @@ class DrMainWindow(QMainWindow):
         giswater_icon = QIcon(icon_path)
         self.setWindowIcon(giswater_icon)
 
-
     def closeEvent(self, event):
 
         try:
@@ -59,7 +59,6 @@ class DrMainWindow(QMainWindow):
             # This exception jumps, for example, when closing the mincut dialog when it is in docker
             # RuntimeError: wrapped C/C++ object of type Mincut has been deleted
             pass
-
 
     def keyPressEvent(self, event):
 
@@ -73,7 +72,6 @@ class DrMainWindow(QMainWindow):
         except RuntimeError:
             # Multiples signals are emited when we use key_scape in order to close dialog
             pass
-
 
     def messageBar(self):
         return self._messageBar

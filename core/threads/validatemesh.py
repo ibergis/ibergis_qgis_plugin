@@ -11,6 +11,7 @@ from qgis.PyQt.QtCore import QVariant
 from ..utils.feedback import Feedback
 from ..utils.meshing_process import layer_to_gdf
 from qgis import processing
+from ..utils import tools_dr
 
 from typing import Tuple, Optional
 import geopandas as gpd
@@ -18,11 +19,15 @@ import pandas as pd
 import shapely
 import itertools
 import time
+import numpy as np
 
 
 def validate_cellsize(
     layer: QgsVectorLayer, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
+    feedback.setProgressText(f"Validating cellsize for {layer.name()}")
+    feedback.setProgress(1)
+
     # Create layer
     layer_name = f"{layer.name()}: Invalid cellsize"
     output_layer = QgsVectorLayer("Polygon", layer_name, "memory")
@@ -33,11 +38,21 @@ def validate_cellsize(
     provider.addAttributes([fid_field, cellsize_field])
     output_layer.updateFields()
 
+    # Calculate step size for progress updates
+    total_features = layer.featureCount()
+    step_size = max(1, total_features // 100)  # Update progress every ~1% or at least every feature
+
     # Fill layer with cellsize errors
     output_layer.startEditing()
-    for feature in layer.getFeatures():
+    for i, feature in enumerate(layer.getFeatures()):
         if feedback.isCanceled():
             return
+
+        # Update progress in steps
+        if i % step_size == 0:
+            progress = min(99, int((i / total_features) * 100))
+            feedback.setProgress(progress)
+
         cellsize = feature["cellsize"]
         if type(cellsize) in [int, float] and cellsize > 0:
             continue
@@ -47,14 +62,24 @@ def validate_cellsize(
         output_layer.addFeature(invalid_feature)
     output_layer.commitChanges()
 
+    feedback.setProgressText(f"Validated cellsize for {layer.name()}")
+    feedback.setProgress(100)
+
     return output_layer
 
 
 def validate_intersect(
     layers_dict: dict, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
+    feedback.setProgressText(f"Validating intersections for {layers_dict['ground'].name()}")
+    feedback.setProgress(1)
+
     layers = [layers_dict["ground"]]
     data = pd.concat(map(layer_to_gdf, layers))
+
+    # Calculate total features across all layers
+    total_features = sum(layer.featureCount() for layer in layers)
+    step_size = max(1, total_features // 100)  # Update progress every ~1% or at least every feature
 
     # Get overlap
     data["name"] = data.index
@@ -64,7 +89,7 @@ def validate_intersect(
     overlap = overlap.loc[overlap["name_1"] != overlap["name_2"]]
     overlap = overlap.explode()
     overlap = overlap.loc[
-        overlap.geometry.geom_type == "Polygon"
+        (overlap.geometry.geom_type == "Polygon") & (overlap.geometry.area > 0.0000001)
     ]  # Ignore Line overlap
     if feedback.isCanceled():
         return
@@ -73,12 +98,77 @@ def validate_intersect(
     output_layer = QgsVectorLayer("Polygon", "Intersection Errors", "memory")
     output_layer.setCrs(layers_dict["ground"].crs())
     provider = output_layer.dataProvider()
-    for geom in overlap.geometry:
+    for i, geom in enumerate(overlap.geometry):
+        if feedback.isCanceled():
+            return
+
+        if i % step_size == 0:
+            progress = min(99, int((i / total_features) * 100))
+            feedback.setProgress(progress)
         feature = QgsFeature()
         feature.setGeometry(QgsGeometry.fromWkt(geom.wkt))
         provider.addFeature(feature)
 
     output_layer.updateExtents()
+
+    feedback.setProgressText(f"Validated intersections for {layers_dict['ground'].name()}")
+    feedback.setProgress(100)
+    return output_layer
+
+def validate_intersect_v2(
+    layers_dict: dict, feedback: Feedback, include_roof: bool = False
+) -> Optional[QgsVectorLayer]:
+    feedback.setProgressText(f"Validating intersections for {layers_dict['ground'].name()}")
+    feedback.setProgress(1)
+
+    layers: list[QgsVectorLayer] = [layers_dict["ground"]]
+    if include_roof:
+        layers.append(layers_dict["roof"])
+
+    gdfs = []
+    for layer in layers:
+        gdf = layer_to_gdf(layer, ["code"])
+        gdf["layer"] = layer.name()
+        gdfs.append(gdf)
+
+    data: gpd.GeoDataFrame = pd.concat(gdfs, ignore_index=True)
+
+    # Calculate total features across all layers
+    total_features = sum(layer.featureCount() for layer in layers)
+    step_size = max(1, total_features // 100)  # Update progress every ~1% or at least every feature
+
+    # Get overlap
+    data["name"] = data.index
+    overlap = data.overlay(data, how="intersection", keep_geom_type=False)
+    if feedback.isCanceled():
+        return
+    overlap = overlap.loc[overlap["name_1"] != overlap["name_2"]]
+    overlap = overlap.explode()
+    overlap = overlap.loc[
+        (overlap.geometry.geom_type == "Polygon") & (overlap.geometry.area > 0.0000001)
+    ]  # Ignore Line overlap
+    if feedback.isCanceled():
+        return
+
+    # Fill error layer
+    output_layer = QgsVectorLayer("Polygon", "Intersection Errors", "memory")
+    output_layer.setCrs(layers_dict["ground"].crs())
+    provider = output_layer.dataProvider()
+    for i, geom in enumerate(overlap.geometry):
+        if feedback.isCanceled():
+            return
+
+        if i % step_size == 0:
+            progress = min(99, int((i / total_features) * 100))
+            feedback.setProgress(progress)
+        feature = QgsFeature()
+        feature.setGeometry(QgsGeometry.fromWkt(geom.wkt))
+        provider.addFeature(feature)
+
+    output_layer.updateExtents()
+
+    feedback.setProgressText(f"Validated intersections for {layers_dict['ground'].name()}")
+    feedback.setProgress(100)
     return output_layer
 
 
@@ -96,12 +186,134 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
         verts += get_polygon_vertices(poly)
     return verts
 
+def validate_vert_edge_v2(
+    layers_dict: dict, feedback: Feedback, include_roof: bool = False
+) -> Optional[QgsVectorLayer]:
+    feedback.setProgressText(f"Validating vertex-edge for {layers_dict['ground'].name()}")
+    feedback.setProgress(1)
+
+    # Calculate total features across all layers
+    total_features = sum(layer.featureCount() for layer in layers_dict.values())
+    step_size = max(1, total_features // 100)  # Update progress every ~1% or at least every feature
+
+    # Step 1: Prepare data with spatial indexing
+    layers = [layers_dict["ground"]]
+    if include_roof:
+        layers.append(layers_dict["roof"])
+
+    gdfs = []
+    for layer in layers:
+        gdf = layer_to_gdf(layer, ["code"])
+        gdf["layer"] = layer.name()
+        gdfs.append(gdf)
+
+    data = pd.concat(gdfs, ignore_index=True)
+
+    # Extract vertices and create spatial index
+    data["vertices"] = data.geometry.apply(
+        lambda geom: [shapely.Point(c) for c in shapely.get_coordinates(geom, include_z=False)]
+    )
+    all_vertices = np.concatenate(data["vertices"].values)
+    vertex_tree = shapely.STRtree(all_vertices)
+
+    # Create polygon STRtree for neighbor detection
+    polygon_tree = shapely.STRtree(data.geometry.values)
+
+    # Prepare output layer
+    output_layer = QgsVectorLayer("Point", "Vertex-Edge Errors", "memory")
+    output_layer.setCrs(layers_dict["ground"].crs())
+    provider = output_layer.dataProvider()
+    provider.addAttributes([
+        QgsField("polygon_code", QVariant.String),
+        QgsField("layer", QVariant.String)
+    ])
+    output_layer.updateFields()
+
+    # Step 2: Vectorized neighbor checks
+    features = []
+    i: int = 0
+    for idx, row in data.iterrows():
+        if feedback.isCanceled():
+            return None
+
+        vertices = row["vertices"]
+        if not vertices:
+            continue
+
+        # Find nearby polygons (within 0.1 buffer)
+        nearby_idxs = polygon_tree.query(
+            row.geometry.buffer(0.1),
+            predicate="intersects"
+        )
+        nearby = data.iloc[nearby_idxs]
+        nearby = nearby[nearby.index != idx]  # Exclude self
+
+        if nearby.empty:
+            continue
+
+        # Check each vertex against nearby polygons
+        for vertex in vertices:
+            # Step 3: Check polygon proximity
+            close_polygons = nearby[
+                shapely.distance(vertex, nearby.geometry) < 0.1
+            ]
+            if close_polygons.empty:
+                continue
+
+            # Step 4: Check vertex proximity using spatial index
+            candidate_idxs = vertex_tree.query(vertex.buffer(0.1), predicate="contains")
+            nearby_vertices = all_vertices[candidate_idxs]
+
+            for _, poly in close_polygons.iterrows():
+                # Find vertices belonging to this polygon
+                poly_verts = set(poly["vertices"])
+                has_close_vertex = any(
+                    v in poly_verts and shapely.distance(vertex, v) < 0.000001
+                    for v in nearby_vertices
+                )
+
+                if not has_close_vertex:
+                    feat = QgsFeature()
+                    feat.setAttributes([poly["code"], poly["layer"]])
+                    feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(vertex.x, vertex.y)))
+                    features.append(feat)
+                    break  # Only flag once per vertex
+
+        if i % step_size == 0:
+            progress = min(99, int((i / total_features) * 100))
+            feedback.setProgress(progress)
+
+        i += 1
+
+    if features:
+        provider.addFeatures(features)
+    output_layer.updateExtents()
+
+    feedback.setProgressText(f"Validated vertex-edge for {layers_dict['ground'].name()}")
+    feedback.setProgress(100)
+    return output_layer
 
 def validate_vert_edge(
-    layers_dict: dict, feedback: Feedback
+    layers_dict: dict, feedback: Feedback, include_roof: bool = False
 ) -> Optional[QgsVectorLayer]:
-    layers = [layers_dict["ground"]]
-    data = pd.concat(map(lambda l: layer_to_gdf(l, ["fid"]), layers))
+    feedback.setProgressText(f"Validating vertex-edge for {layers_dict['ground'].name()}")
+    feedback.setProgress(1)
+
+    # Calculate total features across all layers
+    total_features = sum(layer.featureCount() for layer in layers_dict.values())
+    step_size = max(1, total_features // 100)  # Update progress every ~1% or at least every feature
+
+    layers: list[QgsVectorLayer] = [layers_dict["ground"]]
+    if include_roof:
+        layers.append(layers_dict["roof"])
+
+    gdfs = []
+    for layer in layers:
+        gdf = layer_to_gdf(layer, ["fid"])
+        gdf["layer"] = layer.name()
+        gdfs.append(gdf)
+
+    data: gpd.GeoDataFrame = pd.concat(gdfs, ignore_index=True)
 
     output_layer = QgsVectorLayer("Point", "Vertex-Edge Errors", "memory")
     output_layer.setCrs(layers_dict["ground"].crs())
@@ -110,10 +322,12 @@ def validate_vert_edge(
 
     provider.addAttributes([
         QgsField("polygon_fid", QVariant.Int),
+        QgsField("layer", QVariant.String)
     ])
     output_layer.updateFields()
 
     # For each polygon
+    i: int = 0
     for row in data.itertuples():
         if feedback.isCanceled():
             return
@@ -143,20 +357,36 @@ def validate_vert_edge(
                     if dist_to_verts > 0.1:
                         feature = QgsFeature()
                         feature.setAttributes([
-                            neighbour.fid
+                            neighbour.fid,
+                            neighbour.layer
                         ])
                         feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(*p)))
                         provider.addFeature(feature)
                         break
 
+        if i % step_size == 0:
+            progress = min(99, int((i / total_features) * 100))
+            feedback.setProgress(progress)
+
+        i += 1
+
     output_layer.updateExtents()
 
+    feedback.setProgressText(f"Validated vertex-edge for {layers_dict['ground'].name()}")
+    feedback.setProgress(100)
     return output_layer
 
 
 def validate_ground_layer(
     layer: QgsVectorLayer, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
+    feedback.setProgressText(f"Validating ground layer for {layer.name()}")
+    feedback.setProgress(1)
+
+    # Calculate total features across all layers
+    total_features = layer.featureCount()
+    step_size = max(1, total_features // 100)  # Update progress every ~1% or at least every feature
+
     # Create layer
     output_layer = QgsVectorLayer("Polygon", "Invalid Roughness Params", "memory")
     output_layer.setCrs(layer.crs())
@@ -170,7 +400,7 @@ def validate_ground_layer(
 
     # Fill layer the with errors
     output_layer.startEditing()
-    for feature in layer.getFeatures():
+    for i, feature in enumerate(layer.getFeatures()):
         if feedback.isCanceled():
             return
         landuse = feature["landuse"]
@@ -186,7 +416,15 @@ def validate_ground_layer(
         invalid_feature.setAttributes(attributes)
         invalid_feature.setGeometry(feature.geometry())
         output_layer.addFeature(invalid_feature)
+
+        if i % step_size == 0:
+            progress = min(99, int((i / total_features) * 100))
+            feedback.setProgress(progress)
+
     output_layer.commitChanges()
+
+    feedback.setProgressText(f"Validated ground layer for {layer.name()}")
+    feedback.setProgress(100)
 
     return output_layer
 
@@ -194,49 +432,49 @@ def validate_ground_layer(
 def validate_roof_layer(
     layer: QgsVectorLayer, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
+    feedback.setProgressText(f"Validating roof layer for {layer.name()}")
+    feedback.setProgress(1)
+
+    # Calculate total features across all layers
+    total_features = layer.featureCount()
+    step_size = max(1, total_features // 100)  # Update progress every ~1% or at least every feature
+
     # Create layer
     output_layer = QgsVectorLayer("Polygon", "Invalid Roof Params", "memory")
     output_layer.setCrs(layer.crs())
     provider = output_layer.dataProvider()
 
     fid_field = QgsField("fid", QVariant.Int)
-    roughness_field = QgsField("roughness", QVariant.Double)
+    roughness_field = QgsField("roughness", QVariant.String)
     provider.addAttributes([fid_field, roughness_field])
     output_layer.updateFields()
 
     # Fill layer the with errors
     output_layer.startEditing()
-    for feature in layer.getFeatures():
+    for i, feature in enumerate(layer.getFeatures()):
         if feedback.isCanceled():
             return
         roughness = feature["roughness"]
-        slope = feature["slope"]
-        width = feature["width"]
-        isconnected = feature["isconnected"]
-        outlet_code = feature["outlet_code"]
-        outlet_vol = feature["outlet_vol"]
-        street_vol = feature["street_vol"]
-        infiltr_vol = feature["infiltr_vol"]
         if (
             type(roughness) in [int, float]
-            and roughness >= 0
-            and type(slope) in [int, float]
-            and type(width) in [int, float]
-            and type(isconnected) == int
-            and type(outlet_vol) in [int, float]
-            and type(street_vol) in [int, float]
-            and type(infiltr_vol) in [int, float]
-            and outlet_vol + street_vol + infiltr_vol == 100
         ):
             continue
 
         invalid_feature = QgsFeature(output_layer.fields())
         invalid_feature.setAttributes(
-            [feature["fid"], feature["roughness"]]
+            [feature["fid"], f'Invalid roughness: {feature["roughness"]}']
         )
         invalid_feature.setGeometry(feature.geometry())
         output_layer.addFeature(invalid_feature)
+
+        if i % step_size == 0:
+            progress = min(99, int((i / total_features) * 100))
+            feedback.setProgress(progress)
+
     output_layer.commitChanges()
+
+    feedback.setProgressText(f"Validated roof layer for {layer.name()}")
+    feedback.setProgress(100)
 
     return output_layer
 
@@ -244,6 +482,13 @@ def validate_roof_layer(
 def validate_distance(
     layer: QgsVectorLayer, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
+    feedback.setProgressText(f"Validating distance for {layer.name()}")
+    feedback.setProgress(1)
+
+    # Calculate total features across all layers
+    total_features = layer.featureCount()
+    step_size = max(1, total_features // 100)  # Update progress every ~1% or at least every feature
+
     data: gpd.GeoDataFrame = layer_to_gdf(layer, ["cellsize"])
     vertices = []
     cellsize = []
@@ -273,12 +518,22 @@ def validate_distance(
     output_layer = QgsVectorLayer("Point", "Close Vertices Warning", "memory")
     output_layer.setCrs(layer.crs())
     provider = output_layer.dataProvider()
-    for geom in join["geometry"]:
+    for i, geom in enumerate(join["geometry"]):
+        if feedback.isCanceled():
+            return
+
+        if i % step_size == 0:
+            progress = min(99, int((i / total_features) * 100))
+            feedback.setProgress(progress)
+
         feature = QgsFeature()
         feature.setGeometry(QgsGeometry.fromWkt(geom.wkt))
         provider.addFeature(feature)
 
     output_layer.updateExtents()
+
+    feedback.setProgressText(f"Validated distance for {layer.name()}")
+    feedback.setProgress(100)
 
     return output_layer
 
@@ -310,6 +565,13 @@ def validate_validity(
 def validate_null_geometry(
     layer: QgsVectorLayer, feedback: Feedback
 ) -> Optional[QgsVectorLayer]:
+    feedback.setProgressText(f"Validating null geometry for {layer.name()}")
+    feedback.setProgress(1)
+
+    # Calculate total features across all layers
+    total_features = layer.featureCount()
+    step_size = max(1, total_features // 100)  # Update progress every ~1% or at least every feature
+
     # Fill error layer
     output_layer = QgsVectorLayer(
         "Polygon", f"'{layer.name()}' Null Geometry", "memory"
@@ -318,11 +580,19 @@ def validate_null_geometry(
     attributes = layer.dataProvider().fields().toList()
     provider = output_layer.dataProvider()
     provider.addAttributes(attributes)
-    for feature in layer.getFeatures():
+    for i, feature in enumerate(layer.getFeatures()):
         if not feature.hasGeometry():
             provider.addFeature(feature)
 
+        if i % step_size == 0:
+            progress = min(99, int((i / total_features) * 100))
+            feedback.setProgress(progress)
+
     output_layer.updateExtents()
+
+    feedback.setProgressText(f"Validated null geometry for {layer.name()}")
+    feedback.setProgress(100)
+
     return output_layer
 
 
@@ -364,7 +634,7 @@ def validate_dem_coverage(layers_dict: dict, feedback: Feedback) -> QgsVectorLay
         {"INPUT": ground, "OVERLAY": polygon, "OUTPUT": "TEMPORARY_OUTPUT"},
     )["OUTPUT"]
     diff.setCrs(ground.crs())
-    diff.setName(f"Raster Ground Coverage Error")
+    diff.setName("Raster Ground Coverage Error")
 
     return diff
 
@@ -431,11 +701,17 @@ _validation_steps = [
             "function": validate_dem_coverage,
             "layer": None,
         },
+        # "check_missing_vertices": {
+        #     "name": "Missing Vertices",
+        #     "type": "error",
+        #     "function": validate_vert_edge,
+        #     "layer": None,
+        # },
         "check_missing_vertices": {
             "name": "Missing Vertices",
             "type": "error",
-            "function": validate_vert_edge,
-            "layer": None,
+            "function": validate_vert_edge_v2,
+            "layer": ["ground", "roof"],
         },
         "check_intersections": {
             "name": "Intersections",
@@ -462,14 +738,21 @@ def validate_input_layers(
     error_layers = []
     warning_layers = []
 
+    i = 0
+    feedback.setProgressText(f"Validations ({len(validation_list)})")
     for validations in _validation_steps:
         for val_id, validation in validations.items():
             if val_id not in validation_list:
                 continue
 
+            feedback.setProgressText(f"Validating ({i + 1}/{len(validation_list)})")
+            i += 1
+
             parameter = (
                 layers_dict
                 if validation["layer"] is None
+                else {layer: layers_dict[layer] for layer in validation["layer"]}
+                if isinstance(validation["layer"], list)
                 else layers_dict[validation["layer"]]
             )
 
@@ -490,9 +773,9 @@ def validate_input_layers(
                         error_layers.append(layer)
                     else:
                         warning_layers.append(layer)
-            feedback.setProgress(feedback.progress() + 1)
 
         if error_layers:
+            feedback.setProgressText(f"Errors ({len(error_layers)})")
             return error_layers, warning_layers
     return error_layers, warning_layers
 

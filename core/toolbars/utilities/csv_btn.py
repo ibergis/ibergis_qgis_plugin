@@ -27,11 +27,9 @@ class DrCSVButton(DrAction):
 
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
-
     def clicked_event(self):
 
         self._open_csv()
-
 
     def save_settings_values(self):
         """ Save QGIS settings related with csv options """
@@ -47,7 +45,6 @@ class DrCSVButton(DrAction):
         tools_dr.set_config_parser('btn_csv2pg', 'rb_dec_comma', f"{self.dlg_csv.rb_dec_comma.isChecked()}")
         tools_dr.set_config_parser('btn_csv2pg', 'rb_dec_period', f"{self.dlg_csv.rb_dec_period.isChecked()}")
 
-
     # region private functions
 
     def _open_csv(self):
@@ -59,7 +56,7 @@ class DrCSVButton(DrAction):
         temp_tablename = 'temp_csv'
         tools_qt.fill_combo_unicodes(self.dlg_csv.cmb_unicode_list)
         self._populate_combos(self.dlg_csv.cmb_import_type, 'fid',
-                             'alias, config_csv.descript, functionname, orderby', 'config_csv')
+                              'alias, config_csv.descript, functionname, orderby', 'config_csv')
 
         self.dlg_csv.lbl_info.setWordWrap(True)
         tools_qt.set_widget_text(self.dlg_csv, self.dlg_csv.cmb_unicode_list, 'utf8')
@@ -95,21 +92,19 @@ class DrCSVButton(DrAction):
         # Finally set label info
         self._update_info(self.dlg_csv)
 
-
     def _populate_combos(self, combo, field_id, fields, table_name):
 
         # TODO: Define query
-        #sql = (f"SELECT DISTINCT({field_id}), {fields}"
+        # sql = (f"SELECT DISTINCT({field_id}), {fields}"
         #       f" FROM {table_name}"
         #       f" WHERE active is True ORDER BY orderby")
-        #rows = global_vars.gpkg_dao_config.get_rows(sql)
+        # rows = global_vars.gpkg_dao_config.get_rows(sql)
         rows = [[382, "Import inp timeseries", "Function to automatize the import of inp curves files.", "", 0],
                 [384, "Import inp curves", "Function to automatize the import of inp curves files. The csv file must containts next columns on same position: curve_id, x_value, y_value, curve_type (for WS project OR UD project curve_type has diferent values. Check user manual)", "gw_fct_import_inp_curve", 1],
                 [386, "Import inp patterns", "Function to automatize the import of inp patterns files. The csv file must containts next columns on same position: pattern_id, pattern_type, factor1,.......,factorn. For WS use up factor18, repeating rows if you like. For UD use up factor24. More than one row for pattern is not allowed", "gw_fct_import_inp_pattern", 2]]
         if rows:
             tools_qt.fill_combo_values(combo, rows, 1, True, True, 1)
             self._update_info(self.dlg_csv)
-
 
     def _write_csv(self, dialog, temp_tablename):
         """ Write csv in postgres and execute PG function """
@@ -155,7 +150,6 @@ class DrCSVButton(DrAction):
                 msg = message.get('text')
                 tools_qt.show_info_box(msg)
 
-
     def _update_info(self, dialog):
         """ Update the tag according to item selected from cmb_import_type """
 
@@ -165,7 +159,6 @@ class DrCSVButton(DrAction):
             msg = "Error updating info: {0}"
             msg_params = (str(e),)
             tools_log.log_warning(msg, msg_params=msg_params)
-
 
     def _get_function_name(self):
 
@@ -178,7 +171,6 @@ class DrCSVButton(DrAction):
             msg = "Error getting function name: {0}"
             msg_params = (str(e),)
             tools_log.log_warning(msg, msg_params=msg_params)
-
 
     def _select_file_csv(self):
         """ Select CSV file """
@@ -198,7 +190,6 @@ class DrCSVButton(DrAction):
 
         self.save_settings_values()
         self._preview_csv(self.dlg_csv)
-
 
     def _preview_csv(self, dialog):
         """ Show current file in QTableView acorrding to selected delimiter and unicode """
@@ -221,7 +212,6 @@ class DrCSVButton(DrAction):
             msg = "EXCEPTION: {0}"
             msg_params = (str(e),)
             tools_qgis.show_warning(msg, msg_params=msg_params, dialog=dialog)
-
 
     def _load_settings_values(self):
         """ Load QGIS settings related with csv options """
@@ -255,7 +245,6 @@ class DrCSVButton(DrAction):
         elif tools_dr.get_config_parser('btn_csv2pg', 'rb_dec_period', "user", "session") == 'True':
             self.dlg_csv.rb_dec_period.setChecked(True)
 
-
     def _validate_params(self, dialog):
         """ Validate if params are valids """
 
@@ -265,14 +254,12 @@ class DrCSVButton(DrAction):
             return False
         return True
 
-
     def _delete_table_csv(self, temp_tablename, fid_aux):
         """ Delete records from temp_csv for current user and selected cat """
 
         sql = (f"DELETE FROM {temp_tablename} "
                f"WHERE fid = '{fid_aux}'")
         global_vars.gpkg_dao_config.execute_sql(sql)
-
 
     def _get_delimiter(self, dialog):
 
@@ -284,7 +271,6 @@ class DrCSVButton(DrAction):
         elif dialog.rb_space.isChecked():
             delimiter = ' '
         return delimiter
-
 
     def _insert_into_db(self, dialog, csvfile, delimiter, _unicode):
 
@@ -335,7 +321,6 @@ class DrCSVButton(DrAction):
 
         return False
 
-
     def _get_path(self, dialog):
         """ Take the file path if exists. AND if not exit ask it """
 
@@ -350,7 +335,6 @@ class DrCSVButton(DrAction):
             return None
 
         return path
-
 
     def _read_csv_file(self, model, file_input, delimiter, _unicode, _ignoreheader):
 

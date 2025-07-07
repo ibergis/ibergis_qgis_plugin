@@ -32,7 +32,6 @@ except ImportError:
             tools_qt.show_info_box(msg)
 
 
-
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):

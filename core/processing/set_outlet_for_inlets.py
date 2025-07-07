@@ -17,16 +17,19 @@ from qgis.core import (
     QgsSymbol,
     QgsRendererCategory,
     QgsCategorizedSymbolRenderer,
-    QgsFeature
+    QgsFeature,
+    QgsFeatureRequest,
+    QgsProcessingFeatureSourceDefinition
 )
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt.QtWidgets import QApplication
 from ...lib import tools_qgis, tools_gpkgdao
+from ..utils import tools_dr
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ..utils import Feedback
 from typing import Optional, List
-from ... import global_vars
-import processing, os
+import processing
 
 
 class SetOutletForInlets(QgsProcessingAlgorithm):
@@ -37,9 +40,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
     FILE_PINLETS = 'FILE_PINLETS'
     FILE_OUTLETS = 'FILE_OUTLETS'
     BOOL_FORCE_BELOWS = 'BOOL_FORCE_BELOWS'
+    BOOL_SELECTED_INLET_FEATURES = 'BOOL_SELECTED_INLET_FEATURES'
+    BOOL_SELECTED_PINLET_FEATURES = 'BOOL_SELECTED_PINLET_FEATURES'
 
-    nearest_valid_inlet_outlets: Optional[dict[str,Optional[str]]] = None
-    nearest_valid_pinlet_outlets: Optional[dict[str,Optional[str]]] = None
+    nearest_valid_inlet_outlets: Optional[dict[str, Optional[str]]] = None
+    nearest_valid_pinlet_outlets: Optional[dict[str, Optional[str]]] = None
 
     file_inlets: QgsVectorLayer = None
     file_pinlets: QgsVectorLayer = None
@@ -50,6 +55,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
     below_pinlets: list[str] = []
     skipped_from_near_inlet: int = 0
     skipped_from_near_pinlet: int = 0
+    bool_selected_inlet_features: bool = False
+    bool_selected_pinlet_features: bool = False
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -59,33 +66,45 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         """
         inlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
         inlet_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_INLETS,
-                description=self.tr('Inlets layer'),
-                types=[QgsProcessing.SourceType.VectorPoint],
-                optional=True
-            )
+            name=self.FILE_INLETS,
+            description=self.tr('Inlets layer'),
+            types=[QgsProcessing.SourceType.VectorPoint],
+            optional=True
+        )
         if inlet_layer:
             inlet_layer_param.setDefaultValue(inlet_layer)
         self.addParameter(inlet_layer_param)
 
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_INLET_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
+
         pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('pinlet')
         pinlet_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_PINLETS,
-                description=self.tr('Pinlets layer'),
-                types=[QgsProcessing.SourceType.VectorPolygon],
-                optional=True
-            )
+            name=self.FILE_PINLETS,
+            description=self.tr('Pinlets layer'),
+            types=[QgsProcessing.SourceType.VectorPolygon],
+            optional=True
+        )
         if pinlet_layer:
             pinlet_layer_param.setDefaultValue(pinlet_layer)
         self.addParameter(pinlet_layer_param)
 
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_PINLET_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
+
         outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
         outlet_layer_param = QgsProcessingParameterVectorLayer(
-                name=self.FILE_OUTLETS,
-                description=self.tr('Outlets layer'),
-                types=[QgsProcessing.SourceType.VectorPoint],
-                optional=False
-            )
+            name=self.FILE_OUTLETS,
+            description=self.tr('Outlets layer'),
+            types=[QgsProcessing.SourceType.VectorPoint],
+            optional=False
+        )
         if outlet_layer:
             outlet_layer_param.setDefaultValue(outlet_layer)
         self.addParameter(outlet_layer_param)
@@ -114,6 +133,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         self.file_pinlets: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_PINLETS, context)
         file_outlets: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_OUTLETS, context)
         self.bool_force_belows: bool = self.parameterAsBoolean(parameters, self.BOOL_FORCE_BELOWS, context)
+        self.bool_selected_inlet_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_INLET_FEATURES, context)
+        self.bool_selected_pinlet_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_PINLET_FEATURES, context)
         feedback.setProgress(10)
 
         neighbor_limit: int = 10
@@ -125,21 +146,39 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         if self.file_inlets:
             try:
-                nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
-                    'INPUT': self.file_inlets,
-                    'INPUT_2': file_outlets,
-                    'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                    'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                if not self.bool_selected_inlet_features:
+                    nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
+                        'INPUT': self.file_inlets,
+                        'INPUT_2': file_outlets,
+                        'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                    })['OUTPUT']
+                else:
+                    nearest_inlet_outlets: QgsVectorLayer = processing.run("native:joinbynearest", {
+                        'INPUT': QgsProcessingFeatureSourceDefinition(self.file_inlets.source(), selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                        'INPUT_2': file_outlets,
+                        'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                    })['OUTPUT']
                 self.nearest_valid_inlet_outlets = self.getNearestValidOutlets(nearest_inlet_outlets, feedback, True)
             except:
                 self.nearest_valid_inlet_outlets = None
         if self.file_pinlets:
             try:
-                nearest_pinlet_outlets = processing.run("native:joinbynearest", {
-                    'INPUT': self.file_pinlets,
-                    'INPUT_2': file_outlets,
-                    'FIELDS_TO_COPY':[],'DISCARD_NONMATCHING':False,'PREFIX':'',
-                    'NEIGHBORS':neighbor_limit,'MAX_DISTANCE':None,'OUTPUT':'memory:'})['OUTPUT']
+                if not self.bool_selected_pinlet_features:
+                    nearest_pinlet_outlets = processing.run("native:joinbynearest", {
+                        'INPUT': self.file_pinlets,
+                        'INPUT_2': file_outlets,
+                        'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                    })['OUTPUT']
+                else:
+                    nearest_pinlet_outlets = processing.run("native:joinbynearest", {
+                        'INPUT': QgsProcessingFeatureSourceDefinition(self.file_pinlets.source(), selectedFeaturesOnly=True, featureLimit=-1, geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                        'INPUT_2': file_outlets,
+                        'FIELDS_TO_COPY': [], 'DISCARD_NONMATCHING': False, 'PREFIX': '',
+                        'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
+                    })['OUTPUT']
                 self.nearest_valid_pinlet_outlets = self.getNearestValidOutlets(nearest_pinlet_outlets, feedback, False)
             except:
                 self.nearest_valid_pinlet_outlets = None
@@ -150,7 +189,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         if self.file_inlets and not self.nearest_valid_inlet_outlets:
             feedback.pushWarning(self.tr("Error getting nearest valid outlet for inlets."))
         elif self.file_inlets and self.nearest_valid_inlet_outlets and 'result' in self.nearest_valid_inlet_outlets.keys() and self.nearest_valid_inlet_outlets['result'] == 'blank':
-            feedback.setProgressText(self.tr(f"No inlets without outlet assigned."))
+            feedback.setProgressText(self.tr("No inlets without outlet assigned."))
             self.nearest_valid_inlet_outlets = {}
         elif self.file_inlets and self.nearest_valid_inlet_outlets and 'result' not in self.nearest_valid_inlet_outlets.keys():
             feedback.setProgressText(self.tr(f"Inlets without outlet assigned: {len(self.nearest_valid_inlet_outlets)}"))
@@ -158,16 +197,32 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         if self.file_pinlets and not self.nearest_valid_pinlet_outlets:
             feedback.pushWarning(self.tr("Error getting nearest valid outlet for pinlets."))
         elif self.file_pinlets and self.nearest_valid_pinlet_outlets and 'result' in self.nearest_valid_pinlet_outlets.keys() and self.nearest_valid_pinlet_outlets['result'] == 'blank':
-            feedback.setProgressText(self.tr(f"No pinlets without outlet assigned."))
+            feedback.setProgressText(self.tr("No pinlets without outlet assigned."))
             self.nearest_valid_pinlet_outlets = {}
         elif self.file_pinlets and self.nearest_valid_pinlet_outlets:
             feedback.setProgressText(self.tr(f"Pinlets without outlet assigned: {len(self.nearest_valid_pinlet_outlets)}"))
-        feedback.setProgress(60)
+        feedback.setProgress(80)
 
         return {}
 
-    def postProcessAlgorithm(self, context, feedback: Feedback):
+    def postProcessAlgorithm(self, context, feedback: Feedback, batch_size: int = 5000):
         """ Update features and create temporal layers """
+
+        current_updated_inlets: int = 0
+        current_updated_pinlets: int = 0
+        updated_inlets: int = 0
+        updated_pinlets: int = 0
+        inlet_progress_index: int = 0
+        pinlet_progress_index: int = 0
+
+        inlet_features: dict[str, QgsFeature] = {}
+        for feature in self.file_inlets.getFeatures():
+            inlet_features[feature['code']] = feature
+
+        pinlet_features: dict[str, QgsFeature] = {}
+        for feature in self.file_pinlets.getFeatures():
+            pinlet_features[feature['code']] = feature
+
         # Set outlet code for inlet and pinlet
         if self.nearest_valid_inlet_outlets is not None:
             self.file_inlets.startEditing()
@@ -178,25 +233,35 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                 if outlet_code is None:
                     self.skipped_inlets.append(str(inlet_code))
                     continue
+
+                if not self.file_inlets.isEditable():
+                    self.file_inlets.startEditing()
                 # Update outlet code in inlet layer
-                for feature in self.file_inlets.getFeatures():
-                    try:
-                        if feature['code'] == inlet_code:
-                            feature['outlet_node'] = outlet_code
-                            self.file_inlets.updateFeature(feature)
-                            break
-                    except Exception as e:
-                        self.file_inlets.rollBack()
-                        feedback.pushWarning(self.tr(f"Error updating inlet {inlet_code}: {str(e)}"))
-                        self.skipped_inlets.append(str(inlet_code))
+                try:
+                    if inlet_code in inlet_features.keys():
+                        inlet_features[inlet_code]['outlet_node'] = outlet_code
+                        self.file_inlets.updateFeature(inlet_features[inlet_code])
+                        current_updated_inlets += 1
+                        updated_inlets += 1
+                        if current_updated_inlets >= batch_size:
+                            self.file_inlets.commitChanges()
+                            current_updated_inlets = 0
+                            feedback.setProgressText(self.tr(f"Inlets updated with batch of {batch_size}[{updated_inlets}/{len(self.nearest_valid_inlet_outlets)}]"))
+                            feedback.setProgress(tools_dr.lerp_progress(int(((inlet_progress_index+1)/(len(self.nearest_valid_inlet_outlets.keys())/batch_size))*100), 80, 89))
+                            inlet_progress_index += 1
+                            QApplication.processEvents()
+                except Exception as e:
+                    self.file_inlets.rollBack()
+                    feedback.pushWarning(self.tr(f"Error updating inlet {inlet_code}: {str(e)}"))
+                    self.skipped_inlets.append(str(inlet_code))
             if self.file_inlets.isEditable():
                 self.file_inlets.commitChanges()
             self.skipped_inlets = list(dict.fromkeys(self.skipped_inlets))
             self.below_inlets = list(dict.fromkeys(self.below_inlets))
-            feedback.setProgressText(self.tr(f"Inlets skipped[{len(self.skipped_inlets)}]: {self.skipped_inlets}"))
-            feedback.setProgressText(self.tr(f"Inlets setted below[{len(self.below_inlets)}]: {self.below_inlets}"))
+            feedback.setProgressText(self.tr(f"Inlets skipped: ({len(self.skipped_inlets)})"))
+            feedback.setProgressText(self.tr(f"Inlets setted below: ({len(self.below_inlets)})"))
             feedback.setProgressText(self.tr(f"Inlets updated[{len(self.nearest_valid_inlet_outlets)-len(self.skipped_inlets)}/{len(self.nearest_valid_inlet_outlets)}]"))
-            feedback.setProgressText(self.tr(f"Outlets assigned for inlets."))
+            feedback.setProgressText(self.tr("Outlets assigned for inlets."))
 
         if self.nearest_valid_pinlet_outlets is not None:
             self.file_pinlets.startEditing()
@@ -207,30 +272,38 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                 if outlet_code is None:
                     self.skipped_pinlets.append(str(pinlet_code))
                     continue
-                # Update outlet code in inlet layer
-                for feature in self.file_pinlets.getFeatures():
-                    try:
-                        if feature['code'] == pinlet_code:
-                            feature['outlet_node'] = outlet_code
-                            self.file_pinlets.updateFeature(feature)
-                            break
-                    except Exception as e:
-                        self.file_pinlets.rollBack()
-                        feedback.pushWarning(self.tr(f"Error updating pinlet {pinlet_code}: {str(e)}"))
-                        self.skipped_pinlets.append(str(pinlet_code))
+                if not self.file_pinlets.isEditable():
+                    self.file_pinlets.startEditing()
+                # Update outlet code in pinlet layer
+                try:
+                    if pinlet_code in pinlet_features.keys():
+                        pinlet_features[pinlet_code]['outlet_node'] = outlet_code
+                        self.file_pinlets.updateFeature(pinlet_features[pinlet_code])
+                        current_updated_pinlets += 1
+                        updated_pinlets += 1
+                        if current_updated_pinlets >= batch_size:
+                            self.file_pinlets.commitChanges()
+                            current_updated_pinlets = 0
+                            feedback.setProgressText(self.tr(f"Pinlets updated with batch of {batch_size}[{updated_pinlets}/{len(self.nearest_valid_pinlet_outlets)}]"))
+                            feedback.setProgress(tools_dr.lerp_progress(int((((pinlet_progress_index+1)/(len(self.nearest_valid_pinlet_outlets.keys())/batch_size))*100)), 89, 98))
+                            pinlet_progress_index += 1
+                            QApplication.processEvents()
+                except Exception as e:
+                    self.file_pinlets.rollBack()
+                    feedback.pushWarning(self.tr(f"Error updating pinlet {pinlet_code}: {str(e)}"))
+                    self.skipped_pinlets.append(str(pinlet_code))
             if self.file_pinlets.isEditable():
                 self.file_pinlets.commitChanges()
             self.skipped_pinlets = list(dict.fromkeys(self.skipped_pinlets))
             self.below_pinlets = list(dict.fromkeys(self.below_pinlets))
-            feedback.setProgressText(self.tr(f"Pinlets skipped[{len(self.skipped_pinlets)}]: {self.skipped_pinlets}"))
-            feedback.setProgressText(self.tr(f"Pinlets setted below[{len(self.below_pinlets)}]: {self.below_pinlets}"))
+            feedback.setProgressText(self.tr(f"Pinlets skipped: ({len(self.skipped_pinlets)})"))
+            feedback.setProgressText(self.tr(f"Pinlets setted below: ({len(self.below_pinlets)})"))
             feedback.setProgressText(self.tr(f"Pinlets updated[{len(self.nearest_valid_pinlet_outlets)-len(self.skipped_pinlets)}/{len(self.nearest_valid_pinlet_outlets)}]"))
-            feedback.setProgressText(self.tr(f"Outlets assigned for pinlets."))
-
-        feedback.setProgress(90)
+            feedback.setProgressText(self.tr("Outlets assigned for pinlets."))
 
         if len(self.skipped_inlets) > 0 or len(self.below_inlets) > 0:
             # Create a temporal layer with skipped features and load it on QGIS
+            # TODO: get srid from project
             temporal_features_layer: QgsVectorLayer = QgsVectorLayer("Point?crs=EPSG:25831", "inlet_features", "memory")
             temporal_features_layer.dataProvider().addAttributes(self.file_inlets.fields())
             temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
@@ -324,17 +397,27 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         feedback.setProgress(100)
         return {}
 
-    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback, isInlet: bool = True) -> Optional[dict[str,Optional[str]]]:
+    def getNearestValidOutlets(self, nearest_layer: QgsVectorLayer, feedback: Feedback, isInlet: bool = True) -> Optional[dict[str, Optional[str]]]:
         """
         Get nearest valid outlet for each inlet/pinlet from nearest layer.
         """
-        nearest_outlets: dict[str,Optional[str]] = {}
+        nearest_outlets: dict[str, Optional[str]] = {}
         nearest_outlets_list = {}
+        min_progress = 10
+        max_progress = 80
+
+        if isInlet:
+            min_progress = 10
+            max_progress = 45
+        else:
+            min_progress = 45
+            max_progress = 80
 
         # Group nearest outlets by inlet/pinlet code
         necessary_fields: List[str] = ['code', 'code_2', 'elev', 'top_elev', 'distance']
         skipped_near_features: list[str] = []
-        for feature in nearest_layer.getFeatures():
+        for index, feature in enumerate(nearest_layer.getFeatures()):
+            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/nearest_layer.featureCount())*100), min_progress, int(max_progress/2)))
             valid_attributes = True
             if feedback.isCanceled():
                 return None
@@ -370,7 +453,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             if inlet_code in nearest_outlets_list.keys():
                 nearest_outlets_list[inlet_code]['outlets'].append(outlet_values)
             else:
-                nearest_outlets_list[inlet_code] = {'elev' : feature['top_elev'], 'outlets': [outlet_values]}
+                nearest_outlets_list[inlet_code] = {'elev': feature['top_elev'], 'outlets': [outlet_values]}
             if inlet_code in skipped_near_features and inlet_code in nearest_outlets_list:
                 if nearest_outlets_list[inlet_code] is not None:
                     if isInlet:
@@ -381,7 +464,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                         self.skipped_from_near_pinlet -= 1
 
         # Get nearest valid outlet for each inlet/pinlet
-        for inlet_code, values in nearest_outlets_list.items():
+        for index, (inlet_code, values) in enumerate(nearest_outlets_list.items()):
+            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/len(nearest_outlets_list.keys()))*100), int(max_progress/2), max_progress))
             if feedback.isCanceled():
                 return None
             if len(values['outlets']) == 1:
@@ -423,13 +507,13 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         outlet_layer = parameters[self.FILE_OUTLETS]
 
         if inlet_layer is None:
-            error_message += self.tr(f'Inlet layer not found in this schema.\n\n')
+            error_message += self.tr('Inlet layer not found in this schema.\n\n')
 
         if pinlet_layer is None:
-            error_message += self.tr(f'Pinlet layer not found in this schema.\n\n')
+            error_message += self.tr('Pinlet layer not found in this schema.\n\n')
 
         if outlet_layer is None:
-            error_message += self.tr(f'Outlet layer not found in this schema.\n\n')
+            error_message += self.tr('Outlet layer not found in this schema.\n\n')
 
         if inlet_layer is None and pinlet_layer is None:
             return False, 'Is required at least one layer selected to Inlet or Pinlet.'
@@ -441,10 +525,9 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         return True, ''
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to set the nearest and valid outlet to the inlet and pinlet features which do not have an outlet assigned.\n
-        This algorithm will only work if the inlet, pinlet and outlet layers are valid.\n
-        The last parameter is a checkbox which let you decide if the inlet/pinlet features with no valid outlet have to be setted as none or with the minor outlet ignoring if its valid or not.\n
-        There are some attributes that cannot be None from Inlet(code, top_elev), Pinlet(code, top_elev) and Outlet(code, elev).""")
+        return self.tr("""Assigns the nearest valid outlet to inlet and pinlet features that do not have an outlet set. 
+                       Works with inlet, pinlet, and outlet layers, and offers an option to force assignment even if only a lower outlet is available. 
+                       Use this tool to quickly connect inlets and pinlets to their appropriate outlets.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -453,13 +536,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         return 'SetOutletForInlets'
 
     def displayName(self):
-        return self.tr('Set Outlet for Inlets')
-
-    def group(self):
-        return self.tr(self.groupId())
-
-    def groupId(self):
-        return ''
+        return self.tr('Set Outlet For Inlets')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

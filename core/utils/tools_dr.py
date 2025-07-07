@@ -22,7 +22,7 @@ from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QSt
     QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, QToolButton, \
-    QWidget, QApplication, QDockWidget
+    QWidget, QDockWidget, QApplication
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
@@ -243,7 +243,7 @@ def save_current_tab(dialog, tab_widget, selector_name):
         pass
 
 
-def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_widgets=False):
+def open_dialog(dlg, dlg_name=None, stay_on_top=False, title=None, hide_config_widgets=False):
     """ Open dialog """
 
     # Manage translate
@@ -255,7 +255,7 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_wi
         dlg.setWindowTitle(title)
 
     # Manage stay on top, maximize/minimize button and information button
-    flags = Qt.WindowCloseButtonHint | Qt.WindowMinMaxButtonsHint
+    flags = Qt.WindowCloseButtonHint | Qt.WindowMinMaxButtonsHint | Qt.Window
 
     if stay_on_top:
         flags |= Qt.WindowStaysOnTopHint
@@ -268,6 +268,11 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=True, title=None, hide_config_wi
     # Create btn_help
     add_btn_help(dlg)
 
+    # Center dialog
+    screen_geometry = QApplication.primaryScreen().geometry()
+    dlg.move(screen_geometry.center() - dlg.rect().center())
+
+    dlg.show()
     # Open dialog
     if issubclass(type(dlg), DrDialog):
         dlg.open()
@@ -310,7 +315,7 @@ def connect_signal(obj, pfunc, section, signal_name):
         signal = obj.connect(pfunc)
         global_vars.active_signals[section][signal_name] = (obj, signal, pfunc)
         return signal
-    except Exception as e:
+    except Exception:
         pass
     return None
 
@@ -340,7 +345,7 @@ def disconnect_signal(section, signal_name=None, pop=True):
     obj, signal, pfunc = global_vars.active_signals[section][signal_name]
     try:
         obj.disconnect(signal)
-    except Exception as e:
+    except Exception:
         pass
     finally:
         if pop:
@@ -361,16 +366,16 @@ def create_body(form='', feature='', filter_fields='', extras=None):
         client += f', "infoType":{info_type}'
     if global_vars.project_epsg is not None:
         client += f', "epsg":{global_vars.project_epsg}'
-    client += f'}}, '
+    client += '}, '
 
     form = f'"form":{{{form}}}, '
     feature = f'"feature":{{{feature}}}, '
     filter_fields = f'"filterFields":{{{filter_fields}}}'
-    page_info = f'"pageInfo":{{}}'
+    page_info = '"pageInfo":{}'
     data = f'"data":{{{filter_fields}, {page_info}'
     if extras is not None:
         data += ', ' + extras
-    data += f'}}}}'
+    data += '}}'
     body = "" + client + form + feature + data
 
     return body
@@ -558,6 +563,7 @@ def load_gpkg(gpkg_file) -> dict:
             layers[l.GetName()] = layer
 
     return layers
+
 
 def config_layer_attributes(json_result, layer, layer_name, thread=None):
 
@@ -873,7 +879,7 @@ def set_tabs_enabled(dialog):
 def set_style_mapzones():
     """ Puts the received styles, in the received layers in the json sent by the gw_fct_getstylemapzones function """
 
-    extras = f'"mapzones":""'
+    extras = '"mapzones":""'
     body = create_body(extras=extras)
     json_return = execute_procedure('gw_fct_getstylemapzones', body)
     if not json_return or json_return['status'] == 'Failed':
@@ -980,6 +986,8 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
                     if widgetcontrols and widgetcontrols.get('regexpControl') is not None:
                         pass
                     widget.editingFinished.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+                    if field['columnname'] in ['inp_options_start_time', 'inp_options_end_time']:
+                        widget.editingFinished.connect(partial(update_tmax, dialog))
                     widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
                     datatype = field.get('datatype')
                     if datatype == 'int':
@@ -1014,6 +1022,8 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
                         date = QDate.fromString(field['value'].replace('/', '-'), 'yyyy-MM-dd')
                         widget.setDate(date)
                     widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+                    if field['columnname'] in ['inp_options_start_date', 'inp_options_end_date']:
+                        widget.editingFinished.connect(partial(update_tmax, dialog))
                     widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
                 elif field['widgettype'] == 'spinbox':
                     widget = QDoubleSpinBox()
@@ -1138,6 +1148,80 @@ def get_dialog_changed_values(dialog, chk, widget, field, list, value=None):
         list.pop(idx_del)
 
     list.append(elem)
+
+
+def update_tmax(dialog):
+    """ Update the tmax field based on SWMM options """
+
+    # Get widgets
+    start_time = dialog.findChild(QLineEdit, 'inp_options_start_time')
+    end_time = dialog.findChild(QLineEdit, 'inp_options_end_time')
+    start_date = dialog.findChild(QgsDateTimeEdit, 'inp_options_start_date')
+    end_date = dialog.findChild(QgsDateTimeEdit, 'inp_options_end_date')
+    tmax = dialog.findChild(QLineEdit, 'options_tmax')
+
+    # Get widget values
+    start_time_text = tools_qt.get_text(dialog, start_time, return_string_null=False)
+    end_time_text = tools_qt.get_text(dialog, end_time, return_string_null=False)
+    start_date_str = tools_qt.get_calendar_date(dialog, start_date)
+    end_date_str = tools_qt.get_calendar_date(dialog, end_date)
+
+    try:
+        from datetime import datetime, timedelta
+
+        # Parse time strings (assuming format like "HH:MM:SS" or "HH:MM")
+        def parse_time(time_str: str) -> tuple[int, int, int]:
+            """Parse time string and return (hours, minutes, seconds)"""
+            if not time_str or time_str.strip() == "":
+                return 0, 0, 0
+
+            time_parts = time_str.strip().split(':')
+            if len(time_parts) == 2:
+                # Format: HH:MM
+                hours = int(time_parts[0])
+                minutes = int(time_parts[1])
+                seconds = 0
+            elif len(time_parts) == 3:
+                # Format: HH:MM:SS
+                hours = int(time_parts[0])
+                minutes = int(time_parts[1])
+                seconds = int(time_parts[2])
+            else:
+                return 0, 0, 0
+
+            return hours, minutes, seconds
+
+        # Parse dates and times
+        if start_date_str and end_date_str:
+            # Parse date strings (yyyy/MM/dd format) into QDate objects
+            start_date_obj = QDate.fromString(start_date_str, 'yyyy/MM/dd')
+            end_date_obj = QDate.fromString(end_date_str, 'yyyy/MM/dd')
+
+            if start_date_obj.isValid() and end_date_obj.isValid():
+                start_h, start_m, start_s = parse_time(start_time_text)
+                end_h, end_m, end_s = parse_time(end_time_text)
+
+                # Create datetime objects
+                start_datetime = datetime.combine(start_date_obj.toPyDate(), datetime.min.time().replace(
+                    hour=start_h, minute=start_m, second=start_s
+                ))
+                end_datetime = datetime.combine(end_date_obj.toPyDate(), datetime.min.time().replace(
+                    hour=end_h, minute=end_m, second=end_s
+                ))
+
+                # Calculate time difference
+                time_diff = end_datetime - start_datetime
+                seconds = int(time_diff.total_seconds())
+
+                # Update the tmax field
+                if tmax:
+                    tools_qt.set_widget_text(dialog, 'options_tmax', str(seconds))
+                    # Manually emit editingFinished signal to trigger any connected functions
+                    tmax.editingFinished.emit()
+
+    except Exception as e:
+        msg = f"Error calculating time difference: {e}"
+        tools_log.log_warning(msg)
 
 
 def add_button(**kwargs):
@@ -1821,7 +1905,7 @@ def get_actions_from_json(json_result, sql):
 
 
 def execute_procedure(function_name, parameters=None, schema_name=None, commit=True, log_sql=True, rubber_band=None,
-        aux_conn=None, is_thread=False, check_function=True):
+                      aux_conn=None, is_thread=False, check_function=True):
     """ Manage execution database function
     :param function_name: Name of function to call (text)
     :param parameters: Parameters for function (json) or (query parameters)
@@ -2287,7 +2371,7 @@ def set_tablemodel_config(dialog, widget, table_name, sort_order=0, isQStandardI
     if schema_name is not None:
         config_table = f"{schema_name}.config_form_tableview"
     else:
-        config_table = f"config_form_tableview"
+        config_table = "config_form_tableview"
 
     # Set width and alias of visible columns
     columns_to_delete = []
@@ -2366,7 +2450,7 @@ def add_tableview_header(widget, field):
             headers.append(x)
         # Set headers
         model.setHorizontalHeaderLabels(headers)
-    except Exception as e:
+    except Exception:
         # if field['value'][0] is None
         pass
 
@@ -2430,7 +2514,7 @@ def set_multi_completer_widget(tablenames: list, widget, fields_id: list, add_id
         sql += (f"SELECT DISTINCT({field_id}) as a"
                 f" FROM {tablename}")
         idx += 1
-    sql += f" ORDER BY a"
+    sql += " ORDER BY a"
 
     rows = tools_db.get_rows(sql)
     tools_qt.set_completer_rows(widget, rows)
@@ -2700,6 +2784,7 @@ def reset_position_dialog(show_message=False, plugin='core', file_name='session'
         tools_log.log_warning(msg, msg_params=msg_params)
         return
 
+
 def add_btn_help(dlg):
     """ Create and add btn_help in all dialogs """
     if tools_qt.get_widget(dlg, 'btn_help') is not None:
@@ -2709,9 +2794,9 @@ def add_btn_help(dlg):
     if not hasattr(dlg.lyt_buttons, 'columnCount'):
         return
 
-    btn_help_text_translated = tools_qt.tr("Help", "common", default="Help")
+    btn_help_text_translated = tools_qt.tr("btn_help", "common", default="Help")
     btn_help = QPushButton(btn_help_text_translated)
-    btn_help.setObjectName("btn_help") 
+    btn_help.setObjectName("btn_help")
     btn_help.setToolTip(btn_help_text_translated)
     dlg.lyt_buttons.addWidget(btn_help, 0, dlg.lyt_buttons.columnCount())
 
@@ -2726,6 +2811,7 @@ def add_btn_help(dlg):
         tabname = tab_widget.widget(index_tab).objectName()
 
     btn_help.clicked.connect(partial(open_help_link, context, uiname, tabname))
+
 
 def open_help_link(context, uiname, tabname=None):
     """ Opens the help link for the given dialog, or a default link if not found. """
@@ -2859,7 +2945,6 @@ def set_filter_listeners(complet_result, dialog, widget_list, columnname, widget
             widgetfunction = widget.property('widgetfunction')
         else:
             widgetfunction = [widget.property('widgetfunction')]
-
 
         for i in range(len(functions)):
             kwargs = {"complet_result": complet_result, "model": model, "dialog": dialog, "linkedobject": linkedobject,
@@ -3086,7 +3171,7 @@ def _manage_check(**kwargs):
     field = kwargs['field']
     class_info = kwargs['class']
     widget = add_checkbox(**kwargs)
-    #widget.stateChanged.connect(partial(get_values, dialog, widget, class_info.my_json))
+    # widget.stateChanged.connect(partial(get_values, dialog, widget, class_info.my_json))
     return widget
 
 

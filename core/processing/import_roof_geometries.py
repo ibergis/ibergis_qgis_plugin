@@ -14,7 +14,10 @@ from qgis.core import (
     QgsFeature,
     QgsProcessingParameterDefinition,
     QgsProject,
-    QgsVectorLayer
+    QgsVectorLayer,
+    QgsProcessingParameterBoolean,
+    QgsProcessingFeatureSourceDefinition,
+    QgsFeatureRequest
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis, tools_gpkgdao
@@ -43,6 +46,9 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
     FIELD_STREET_VOL = 'FIELD_STREET_VOL'
     FIELD_INFILTR_VOL = 'FIELD_INFILTR_VOL'
     FIELD_ANNOTATION = 'FIELD_ANNOTATION'
+    BOOL_SELECTED_FEATURES = 'BOOL_SELECTED_FEATURES'
+
+    bool_selected_features: bool = False
 
     dao: DrGpkgDao = tools_gpkgdao.DrGpkgDao()
 
@@ -62,25 +68,30 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
                 types=[QgsProcessing.SourceType.VectorPolygon]
             )
         )
+        self.addParameter(QgsProcessingParameterBoolean(
+            name=self.BOOL_SELECTED_FEATURES,
+            description=self.tr('Selected features only'),
+            defaultValue=False
+        ))
         custom_code = QgsProcessingParameterField(
-                self.FIELD_CUSTOM_CODE,
-                self.tr('Select *custom code* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_CUSTOM_CODE,
+            self.tr('Select *custom code* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         custom_code.setFlags(custom_code.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
         descript = QgsProcessingParameterField(
-                self.FIELD_DESCRIPT,
-                self.tr('Select *descript* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_DESCRIPT,
+            self.tr('Select *descript* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         descript.setFlags(descript.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        slope= QgsProcessingParameterField(
+        slope = QgsProcessingParameterField(
             self.FIELD_SLOPE,
             self.tr('Select *slope* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
@@ -89,7 +100,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         )
         slope.setFlags(slope.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        width= QgsProcessingParameterField(
+        width = QgsProcessingParameterField(
             self.FIELD_WIDTH,
             self.tr('Select *width* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
@@ -98,78 +109,77 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         )
         width.setFlags(width.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        roughness=QgsProcessingParameterField(
+        roughness = QgsProcessingParameterField(
             self.FIELD_ROUGHNESS,
             self.tr('Select *roughness* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         roughness.setFlags(roughness.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        isconnected=QgsProcessingParameterField(
+        isconnected = QgsProcessingParameterField(
             self.FIELD_ISCONNECTED,
             self.tr('Select *isconnected* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         isconnected.setFlags(isconnected.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        outlet_type=QgsProcessingParameterField(
+        outlet_type = QgsProcessingParameterField(
             self.FIELD_OUTLET_TYPE,
             self.tr('Select *outlet_type* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.String,
-            optional= True
+            optional=True
         )
         outlet_type.setFlags(outlet_type.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        outlet_code=QgsProcessingParameterField(
+        outlet_code = QgsProcessingParameterField(
             self.FIELD_OUTLET_CODE,
             self.tr('Select *outlet_code* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.String,
-            optional= True
+            optional=True
         )
         outlet_code.setFlags(outlet_code.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        outlet_vol=QgsProcessingParameterField(
+        outlet_vol = QgsProcessingParameterField(
             self.FIELD_OUTLET_VOL,
             self.tr('Select *outlet_vol* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         outlet_vol.setFlags(outlet_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        street_vol=QgsProcessingParameterField(
+        street_vol = QgsProcessingParameterField(
             self.FIELD_STREET_VOL,
             self.tr('Select *street_vol* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         street_vol.setFlags(street_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        infiltr_vol=QgsProcessingParameterField(
+        infiltr_vol = QgsProcessingParameterField(
             self.FIELD_INFILTR_VOL,
             self.tr('Select *Infiltr_vol* reference'),
             parentLayerParameterName=self.FILE_SOURCE,
             type=QgsProcessingParameterField.Numeric,
-            optional= True
+            optional=True
         )
         infiltr_vol.setFlags(infiltr_vol.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
         annotation = QgsProcessingParameterField(
-                self.FIELD_ANNOTATION,
-                self.tr('Select *annotation* reference'),
-                parentLayerParameterName=self.FILE_SOURCE,
-                type=QgsProcessingParameterField.String,
-                optional=True
-            )
+            self.FIELD_ANNOTATION,
+            self.tr('Select *annotation* reference'),
+            parentLayerParameterName=self.FILE_SOURCE,
+            type=QgsProcessingParameterField.String,
+            optional=True
+        )
         annotation.setFlags(annotation.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
-
 
         self.addParameter(custom_code)
         self.addParameter(descript)
@@ -216,18 +226,12 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
 
         # get roof layer
         self.file_target = tools_qgis.get_layer_by_tablename('roof')
-        if self.file_target is not None and global_vars.gpkg_dao_data is not None:
-            expected_schema_path: str = self.file_target.source().split('|')[0]
-            if(os.path.normpath(expected_schema_path) != os.path.normpath(global_vars.gpkg_dao_data.db_filepath)):
-                feedback.pushWarning(self.tr(f'Wrong Roof layer found: {self.file_target.source()}'))
-                return {}
-        else:
-            feedback.pushWarning(self.tr(f'Error getting expected roof layer'))
-            return {}
         if self.file_target is None:
             feedback.reportError(self.tr('Target layer not found.'))
             return {}
         feedback.setProgressText(self.tr('Target layer found.'))
+
+        self.bool_selected_features: bool = self.parameterAsBoolean(parameters, self.BOOL_SELECTED_FEATURES, context)
 
         # check layer types
         feedback.setProgressText(self.tr('Checking layer types.'))
@@ -238,10 +242,20 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
 
         # set unique fields
         feedback.setProgress(15)
-        self.unique_fields = {'custom_code':[]}
+        self.unique_fields = {'custom_code': []}
 
         # delete innecesary values from geometry
-        result = processing.run("native:dropmzvalues", {'INPUT': file_source, 'DROP_M_VALUES':True, 'DROP_Z_VALUES':True,'OUTPUT':'memory:'})
+        if self.bool_selected_features:
+            result = processing.run("native:dropmzvalues", {
+                'INPUT': QgsProcessingFeatureSourceDefinition(file_source.source(),
+                                                              selectedFeaturesOnly=True, featureLimit=-1,
+                                                              geometryCheck=QgsFeatureRequest.GeometryAbortOnInvalid),
+                'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'
+            })
+        else:
+            result = processing.run("native:dropmzvalues", {
+                'INPUT': file_source, 'DROP_M_VALUES': True, 'DROP_Z_VALUES': True, 'OUTPUT': 'memory:'
+            })
         self.converted_geometries_layer = result['OUTPUT']
 
         return {}
@@ -256,12 +270,12 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         db_filepath: str = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
         self.dao.init_db(db_filepath)
 
-        if not self._insert_data(self.converted_geometries_layer, self.file_target, self.field_map, self.unique_fields, feedback, batch_size=50000):
+        if not self._insert_data(self.converted_geometries_layer, self.file_target, self.field_map, self.unique_fields, feedback, batch_size=5000):
             feedback.reportError(self.tr('Error during import.'))
             self.dao.close_db()
             return {}
         self.dao.close_db()
-        feedback.setProgressText(self.tr(f"Importing process finished."))
+        feedback.setProgressText(self.tr("Importing process finished."))
         feedback.setProgress(100)
         return {}
 
@@ -313,12 +327,12 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
                                     skiped_features.append(feature.id())
                                     break
                             src_value = feature[src_field]
-                        except KeyError as e:
+                        except KeyError:
                             src_value = None
                     attributes[target_field_names.index(tgt_field)] = src_value
             feedback.setProgress(tools_dr.lerp_progress(int(feature_index*100/num_features), 16, 90))
             feature_index += 1
-            if(repeated_params):
+            if (repeated_params):
                 continue
             new_feature.setAttributes(attributes)
             if not feature.geometry().isGeosValid():
@@ -347,9 +361,9 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
                     # enable roof triggers
                     if not self.enable_triggers(feedback, True):
                         return False
-                    feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}."))
+                    feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}"))
                     if len(skiped_features) > 0:
-                        feedback.setProgressText(self.tr(f"Skipped {len(skiped_features)} features with id: {skiped_features}."))
+                        feedback.setProgressText(self.tr(f"Skipped features: ({len(skiped_features)})"))
                     features_to_add.clear()
                 except Exception as e:
                     feedback.reportError(self.tr(f"Error adding features: {e}"))
@@ -373,9 +387,9 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
                 # enable roof triggers
                 if not self.enable_triggers(feedback, True):
                     return False
-                feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}."))
+                feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}"))
                 if len(skiped_features) > 0:
-                    feedback.setProgressText(self.tr(f"Skipped {len(skiped_features)} features with id: {skiped_features}."))
+                    feedback.setProgressText(self.tr(f"Skipped features: ({len(skiped_features)})"))
             except Exception as e:
                 feedback.reportError(self.tr(f"Error adding features: {e}"))
                 target_layer.rollBack()
@@ -413,10 +427,9 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         return True
 
     def shortHelpString(self):
-        return self.tr("""This tool allows you to import features from a source polygon layer into the Drain-Roof layer of your project.\n
-        You must first select the source layer and the target Roof layer. Optionally, you can map fields from the source layer to specific fields in the target layer, such as custom code, annotation, or roughness.\n
-        Only features with geometry will be copied. If a source field value already exists in the target layer, it will be skipped to avoid duplicates.\n
-        The tool performs the import in batches to optimize performance.""")
+        return self.tr("""Imports features from a source polygon layer into the project's Drain-Roof layer, with options to map fields and avoid duplicates. 
+                       Only valid geometries are imported, and the process is optimized for large datasets. 
+                       Use this tool to quickly transfer and match roof features from other layers.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
@@ -425,13 +438,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         return 'ImportRoofGeometries'
 
     def displayName(self):
-        return self.tr('Import Roof geometries')
-
-    def group(self):
-        return self.tr(self.groupId())
-
-    def groupId(self):
-        return ''
+        return self.tr('Import Roof Geometries')
 
     def tr(self, string: str):
         return QCoreApplication.translate('Processing', string)

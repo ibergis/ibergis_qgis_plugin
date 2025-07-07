@@ -152,7 +152,7 @@ class DrCreateBCFromPolygon(DrAction):
         # Configure and open form
         self.dlg = DrBCFormUi()
 
-        sql = f"""SELECT id, idval FROM cat_bscenario WHERE active = 1"""
+        sql = """SELECT id, idval FROM cat_bscenario WHERE active = 1"""
         row = tools_db.get_row(sql)
         if not row:
             msg = "No current bcscenario found"
@@ -242,7 +242,6 @@ class DrCreateBCFromPolygon(DrAction):
         if canvas.mapTool() != self.feature_identifier:
             self.action.setChecked(False)
             canvas.mapToolSet.disconnect(self._uncheck)
-
 
     def _validate_and_save(self, layer, feature):
         layer.changeAttributeValue

@@ -1,1104 +1,1533 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="es_CR">
+<TS version="2.0" language="es_Cr">
 	<context>
 		<name>drain</name>
+		<!-- TOOLBARS AND ACTIONS -->
 		<!-- PYTHON MESSAGES -->
 		<message>
 			<source></source>
-			<translation>None</translation>
+			<translation></translation>
 		</message>
 		<message>
-			<source>z attribute access only provided for Point geometries</source>
-			<translation>El acceso al atributo z sólo está disponible para geometrías de puntos.</translation>
+			<source>Python file</source>
+			<translation>Archivo Python</translation>
 		</message>
 		<message>
-			<source>A mesh with the same name already exists. Do you want to overwrite it?</source>
-			<translation>Ya existe una malla con el mismo nombre. ¿Desea sobrescribirla?</translation>
+			<source>There was an error inserting timeseries.</source>
+			<translation>Se ha producido un error al insertar las series temporales.</translation>
 		</message>
 		<message>
-			<source>You have to fill in '{0}', '{1}' and '{2}' fields!</source>
-			<translation>Debe rellenar los campos "{0}", "{1}" y "{2}".</translation>
+			<source>File not found</source>
+			<translation>Archivo no encontrado</translation>
 		</message>
 		<message>
-			<source>Dr Selectors: </source>
-			<translation>Dr. Selectores:</translation>
+			<source>Database error: {0}</source>
+			<translation>Database error: {0}</translation>
 		</message>
 		<message>
-			<source>openpyxl does not support the old .xls file format, please use xlrd to read this file, or convert it to the more recent .xlsx file format.</source>
-			<translation>openpyxl no es compatible con el antiguo formato de archivo .xls, utilice xlrd para leer este archivo o conviértalo al formato de archivo .xlsx más reciente.</translation>
+			<source>All dialogs updated correctly</source>
+			<translation>Todos los cuadros de diálogo se actualizan correctamente</translation>
 		</message>
 		<message>
-			<source>Please, select a losses layer!</source>
-			<translation>Por favor, seleccione una capa de pérdidas.</translation>
+			<source>widget {0} in tab {1} has not columnname and cant be configured</source>
+			<translation>widget {0} en pestaña {1} no tiene nombre de columna y no se puede configurar</translation>
 		</message>
 		<message>
-			<source>Geopackage already exists.</source>
-			<translation>El geopackage ya existe.</translation>
+			<source>Connected to {0}</source>
+			<translation>Conectado a {0}</translation>
 		</message>
 		<message>
-			<source>Exception in unload when disconnecting {0} signal</source>
-			<translation>Excepción en la descarga al desconectar la señal {0}.</translation>
+			<source>There was an error deleting object.</source>
+			<translation>Se ha producido un error al borrar el objeto.</translation>
+		</message>
+		<message>
+			<source>Python translation canceled</source>
+			<translation>Cancelada la traducción a Python</translation>
+		</message>
+		<message>
+			<source>Python translation successful</source>
+			<translation>Traducción a Python realizada con éxito</translation>
+		</message>
+		<message>
+			<source>Layout '{0}' has an invalid name. It has to end with {1} indicating where in the dialog it should go.</source>
+			<translation>Layout '{0}' tiene un nombre inválido. Tiene que terminar con {1} indicando en qué parte del diálogo debe ir.</translation>
+		</message>
+		<message>
+			<source>Widget not found</source>
+			<translation>Widget no encontrado</translation>
+		</message>
+		<message>
+			<source>Process finished successfully</source>
+			<translation>Proceso finalizado con éxito</translation>
+		</message>
+		<message>
+			<source>Invalid time format: {0}</source>
+			<translation>Formato de hora no válido: {0}</translation>
+		</message>
+		<message>
+			<source>Project read started</source>
+			<translation>Inicio de la lectura del proyecto</translation>
+		</message>
+		<message>
+			<source>The table ({0}) does not exists</source>
+			<translation>La tabla ({0}) no existe</translation>
+		</message>
+		<message>
+			<source>Key container</source>
+			<translation>Contenedor de llaves</translation>
+		</message>
+		<message>
+			<source>Execute failed.</source>
+			<translation>Error de ejecución.</translation>
+		</message>
+		<message>
+			<source>There was an error deleting old curve values.</source>
+			<translation>Se ha producido un error al borrar valores de curva antiguos.</translation>
+		</message>
+		<message>
+			<source>Task aborted: {0}</source>
+			<translation>Tarea abortada: {0}</translation>
+		</message>
+		<message>
+			<source>File name</source>
+			<translation>Nombre del fichero</translation>
+		</message>
+		<message>
+			<source>Error translating: {0}</source>
+			<translation>Error al traducir: {0}</translation>
+		</message>
+		<message>
+			<source>Creating user config folder: {0}</source>
+			<translation>Creando carpeta de configuración de usuario: {0}</translation>
+		</message>
+		<message>
+			<source>Template GIS file not found: {0}</source>
+			<translation>Archivo GIS de plantilla no encontrado: {0}</translation>
+		</message>
+		<message>
+			<source>There was an error inserting raster value.</source>
+			<translation>Se ha producido un error al insertar un valor de trama.</translation>
+		</message>
+		<message>
+			<source>There was an error getting the scenario information</source>
+			<translation>Se ha producido un error al obtener la información del escenario</translation>
+		</message>
+		<message>
+			<source>You should select an input INP file!</source>
+			<translation>Debe seleccionar un archivo INP de entrada.</translation>
+		</message>
+		<message>
+			<source>Error updating info: {0}</source>
+			<translation>Error al actualizar la información: {0}</translation>
+		</message>
+		<message>
+			<source>Error executing file: {0}\nDatabase error: {1}</source>
+			<translation>Error al ejecutar archivo: {0}Error en la base de datos: {1}</translation>
+		</message>
+		<message>
+			<source>File not found: {0}</source>
+			<translation>Archivo no encontrado: {0}</translation>
+		</message>
+		<message>
+			<source>SQL file not found: {0}</source>
+			<translation>Archivo SQL no encontrado: {0}</translation>
+		</message>
+		<message>
+			<source>widgettype is wrongly configured. Needs to be in {0}</source>
+			<translation>widgettype está mal configurado. Necesita estar en {0}</translation>
 		</message>
 		<message>
 			<source>{0}</source>
 			<translation>{0}</translation>
 		</message>
 		<message>
-			<source>The image {0} will be removed because it cannot be read</source>
-			<translation>The image {0} will be removed because it cannot be read</translation>
+			<source>This SRID value does not exist on Database. Please select a diferent one.</source>
+			<translation>Este valor SRID no existe en la base de datos. Por favor, seleccione otro.</translation>
 		</message>
 		<message>
-			<source>Length of 'value' does not match.</source>
-			<translation>Length of 'value' does not match.</translation>
-		</message>
-		<message>
-			<source>Error executing SQL: {0}\nDatabase error: {1}</source>
-			<translation>Error executing SQL: {0}\nDatabase error: {1}</translation>
-		</message>
-		<message>
-			<source>All dialogs updated correctly</source>
-			<translation>All dialogs updated correctly</translation>
-		</message>
-		<message>
-			<source>The specified file already exists. Do you want to overwrite it?</source>
-			<translation>The specified file already exists. Do you want to overwrite it?</translation>
-		</message>
-		<message>
-			<source>widget {0} in tab {1} has not columnname and cant be configured</source>
-			<translation>widget {0} in tab {1} has not columnname and cant be configured</translation>
-		</message>
-		<message>
-			<source>Record deleted</source>
-			<translation>Record deleted</translation>
-		</message>
-		<message>
-			<source>Function not found in database</source>
-			<translation>Function not found in database</translation>
-		</message>
-		<message>
-			<source>widget {0} has not columnname and cant be configured</source>
-			<translation>widget {0} has not columnname and cant be configured</translation>
-		</message>
-		<message>
-			<source>Are you sure you want to overwrite this file?</source>
-			<translation>Are you sure you want to overwrite this file?</translation>
-		</message>
-		<message>
-			<source>GIS folder not set</source>
-			<translation>GIS folder not set</translation>
-		</message>
-		<message>
-			<source>=</source>
-			<translation>=</translation>
-		</message>
-		<message>
-			<source>Layer nor found</source>
-			<translation>Layer nor found</translation>
-		</message>
-		<message>
-			<source>Locale not found</source>
-			<translation>Locale not found</translation>
-		</message>
-		<message>
-			<source>Import files folder already exists. Do you want to overwrite it?</source>
-			<translation>Import files folder already exists. Do you want to overwrite it?</translation>
-		</message>
-		<message>
-			<source>Database connection successful</source>
-			<translation>Database connection successful</translation>
-		</message>
-		<message>
-			<source>Config file not found at</source>
-			<translation>Config file not found at</translation>
-		</message>
-		<message>
-			<source>The csv file has been successfully exported</source>
-			<translation>The csv file has been successfully exported</translation>
-		</message>
-		<message>
-			<source>Exception in unload when unset signals</source>
-			<translation>Exception in unload when unset signals</translation>
-		</message>
-		<message>
-			<source>Error deleting data</source>
-			<translation>Error deleting data</translation>
-		</message>
-		<message>
-			<source>Key container</source>
-			<translation>Key container</translation>
-		</message>
-		<message>
-			<source>Lengths of inputs do not match. Left: {0}, Right: {1}</source>
-			<translation>Lengths of inputs do not match. Left: {0}, Right: {1}</translation>
-		</message>
-		<message>
-			<source>Invalid date format: {0}</source>
-			<translation>Invalid date format: {0}</translation>
-		</message>
-		<message>
-			<source>No meshes found in GPKG file. Create a mesh with Create Mesh button before saving the boundary conditions to it.</source>
-			<translation>No meshes found in GPKG file. Create a mesh with Create Mesh button before saving the boundary conditions to it.</translation>
-		</message>
-		<message>
-			<source>GKPG file path name not set</source>
-			<translation>GKPG file path name not set</translation>
-		</message>
-		<message>
-			<source>You need to insert data</source>
-			<translation>You need to insert data</translation>
-		</message>
-		<message>
-			<source>You are calling a geospatial method on the GeoDataFrame, but the active geometry column ('{self._geometry_column_name}') is not present. </source>
-			<translation>You are calling a geospatial method on the GeoDataFrame, but the active geometry column ('{self._geometry_column_name}') is not present. </translation>
-		</message>
-		<message>
-			<source>Function {0} returned False</source>
-			<translation>Function {0} returned False</translation>
-		</message>
-		<message>
-			<source>Error executing file: {0}\nDatabase error: {1}</source>
-			<translation>Error executing file: {0}\nDatabase error: {1}</translation>
-		</message>
-		<message>
-			<source>Couldn't find layer to zoom to</source>
-			<translation>Couldn't find layer to zoom to</translation>
-		</message>
-		<message>
-			<source>There was an error updating the scenario</source>
-			<translation>There was an error updating the scenario</translation>
-		</message>
-		<message>
-			<source>EXCEPTION</source>
-			<translation>EXCEPTION</translation>
-		</message>
-		<message>
-			<source>Template GIS file not found</source>
-			<translation>Template GIS file not found</translation>
-		</message>
-		<message>
-			<source>Locale gis folder not found</source>
-			<translation>Locale gis folder not found</translation>
-		</message>
-		<message>
-			<source>Please, select a roughness layer!</source>
-			<translation>Please, select a roughness layer!</translation>
-		</message>
-		<message>
-			<source>There was an error inserting curve value.</source>
-			<translation>There was an error inserting curve value.</translation>
-		</message>
-		<message>
-			<source>Key</source>
-			<translation>Key</translation>
-		</message>
-		<message>
-			<source>File not found</source>
-			<translation>File not found</translation>
-		</message>
-		<message>
-			<source>There was an error inserting pattern value.</source>
-			<translation>There was an error inserting pattern value.</translation>
-		</message>
-		<message>
-			<source>You are adding a column named 'geometry' to a GeoDataFrame constructed without an active geometry column. Currently, this automatically sets the active geometry column to 'geometry' but in the future that will no longer happen. Instead, either provide geometry to the GeoDataFrame constructor (GeoDataFrame(... geometry=GeoSeries()) or use `set_geometry('geometry')` to explicitly set the active geometry column.</source>
-			<translation>You are adding a column named 'geometry' to a GeoDataFrame constructed without an active geometry column. Currently, this automatically sets the active geometry column to 'geometry' but in the future that will no longer happen. Instead, either provide geometry to the GeoDataFrame constructor (GeoDataFrame(... geometry=GeoSeries()) or use `set_geometry('geometry')` to explicitly set the active geometry column.</translation>
-		</message>
-		<message>
-			<source>openpyxl does not support binary format .xlsb, please convert this file to .xlsx format if you want to open it with openpyxl</source>
-			<translation>openpyxl does not support binary format .xlsb, please convert this file to .xlsx format if you want to open it with openpyxl</translation>
-		</message>
-		<message>
-			<source>Exception in {0}</source>
-			<translation>Exception in {0}</translation>
-		</message>
-		<message>
-			<source>{0} exception [{1}]: {2}</source>
-			<translation>{0} exception [{1}]: {2}</translation>
-		</message>
-		<message>
-			<source>Execute failed.</source>
-			<translation>Execute failed.</translation>
-		</message>
-		<message>
-			<source>More then one document selected. Select just one document.</source>
-			<translation>More then one document selected. Select just one document.</translation>
-		</message>
-		<message>
-			<source>{0} --> {1}</source>
-			<translation>{0} --> {1}</translation>
-		</message>
-		<message>
-			<source>There is no project selected or it is not valid. Please check the first tab...</source>
-			<translation>There is no project selected or it is not valid. Please check the first tab...</translation>
-		</message>
-		<message>
-			<source>Initialize plugin</source>
-			<translation>Initialize plugin</translation>
-		</message>
-		<message>
-			<source>Error connecting to database (sqlite3): {0}\n{1}</source>
-			<translation>Error connecting to database (sqlite3): {0}\n{1}</translation>
-		</message>
-		<message>
-			<source>Function '{0}' returned False</source>
-			<translation>Function '{0}' returned False</translation>
-		</message>
-		<message>
-			<source>Key on returned json from ddbb is missed.</source>
-			<translation>Key on returned json from ddbb is missed.</translation>
-		</message>
-		<message>
-			<source>Error connecting to i18n database</source>
-			<translation>Error connecting to i18n database</translation>
-		</message>
-		<message>
-			<source>\n</source>
-			<translation>\n</translation>
+			<source>{0}: Reference {1} = '{2}' it is not managed</source>
+			<translation>{0}: Referencia {1} = '{2}' no se gestiona</translation>
 		</message>
 		<message>
 			<source>No parameters found in section {0}</source>
-			<translation>No parameters found in section {0}</translation>
+			<translation>No se han encontrado parámetros en la sección {0}</translation>
 		</message>
 		<message>
-			<source>{0} exception [{1}]; {2}</source>
-			<translation>{0} exception [{1}]; {2}</translation>
+			<source>Folder not found: {0}</source>
+			<translation>Carpeta no encontrada: {0}</translation>
 		</message>
 		<message>
-			<source>Geopackage already exists. Do you want to overwrite it?</source>
-			<translation>Geopackage already exists. Do you want to overwrite it?</translation>
+			<source>Widget {0} has associated function {1}, but {1} not exist</source>
+			<translation>Widget {0} tiene función asociada {1}, pero {1} no existe</translation>
 		</message>
 		<message>
-			<source>Unhandled Error</source>
-			<translation>Unhandled Error</translation>
-		</message>
-		<message>
-			<source>Task '{0}' was cancelled</source>
-			<translation>Task '{0}' was cancelled</translation>
-		</message>
-		<message>
-			<source>Widget {0} has associated function {1}, but {0} not exist</source>
-			<translation>Widget {0} has associated function {1}, but {0} not exist</translation>
-		</message>
-		<message>
-			<source>Set database connection</source>
-			<translation>Set database connection</translation>
-		</message>
-		<message>
-			<source>Function not found</source>
-			<translation>Function not found</translation>
-		</message>
-		<message>
-			<source>Database returned null. Check postgres function '{0}'</source>
-			<translation>Database returned null. Check postgres function '{0}'</translation>
-		</message>
-		<message>
-			<source>Do you want to open GIS project?</source>
-			<translation>Do you want to open GIS project?</translation>
-		</message>
-		<message>
-			<source>Overwrite</source>
-			<translation>Overwrite</translation>
-		</message>
-		<message>
-			<source>There was an error deleting old pattern values.</source>
-			<translation>There was an error deleting old pattern values.</translation>
-		</message>
-		<message>
-			<source>Process finished successfully</source>
-			<translation>Process finished successfully</translation>
-		</message>
-		<message>
-			<source>Section '{0}' not found in the file {1}</source>
-			<translation>Section '{0}' not found in the file {1}</translation>
-		</message>
-		<message>
-			<source>{0} image format is not supported so the image is being dropped</source>
-			<translation>{0} image format is not supported so the image is being dropped</translation>
-		</message>
-		<message>
-			<source>Exception in unload when {0}</source>
-			<translation>Exception in unload when {0}</translation>
-		</message>
-		<message>
-			<source>SWMM Model</source>
-			<translation>SWMM Model</translation>
+			<source>Error getting function name: {0}</source>
+			<translation>Error al obtener el nombre de la función: {0}</translation>
 		</message>
 		<message>
 			<source>Please, select a DEM layer!</source>
-			<translation>Please, select a DEM layer!</translation>
+			<translation>Por favor, seleccione una capa DEM.</translation>
+		</message>
+		<message>
+			<source>Select just one document</source>
+			<translation>Seleccionar un solo documento</translation>
+		</message>
+		<message>
+			<source>Please choose a csv file</source>
+			<translation>Elija un archivo csv</translation>
+		</message>
+		<message>
+			<source>Detected files: {0}</source>
+			<translation>Archivos detectados: {0}</translation>
+		</message>
+		<message>
+			<source>Error filling table: {0}</source>
+			<translation>Error al rellenar la tabla: {0}</translation>
+		</message>
+		<message>
+			<source>Database translation failed.</source>
+			<translation>Error en la traducción de la base de datos.</translation>
+		</message>
+		<message>
+			<source>Function '{0}' returned False</source>
+			<translation>La función '{0}' devuelve False</translation>
+		</message>
+		<message>
+			<source>File defined in environment variable '{0}' not found: {1}</source>
+			<translation>Archivo definido en la variable de entorno '{0}' no encontrado: {1}</translation>
+		</message>
+		<message>
+			<source>Error setting column visibility: {0} --> {1}</source>
+			<translation>Error al configurar la visibilidad de la columna: {0} --> {1}</translation>
+		</message>
+		<message>
+			<source>Task '{0}' completed</source>
+			<translation>Tarea '{0}' completada</translation>
+		</message>
+		<message>
+			<source>Exception in {0}: {1}</source>
+			<translation>Excepción en {0}: {1}</translation>
+		</message>
+		<message>
+			<source>There was an error deleting old pattern values.</source>
+			<translation>Se ha producido un error al borrar valores de patrones antiguos.</translation>
+		</message>
+		<message>
+			<source>You need to insert data</source>
+			<translation>Necesita insertar datos</translation>
+		</message>
+		<message>
+			<source>Action has no function!!</source>
+			<translation>¡¡La acción no tiene función!!</translation>
+		</message>
+		<message>
+			<source>Config file not found at: {0}</source>
+			<translation>Archivo de configuración no encontrado en: {0}</translation>
+		</message>
+		<message>
+			<source>Report GPKG directory not found: {0}</source>
+			<translation>Informe directorio GPKG no encontrado: {0}</translation>
+		</message>
+		<message>
+			<source>Widgetname not found.</source>
+			<translation>Widgetname no encontrado.</translation>
+		</message>
+		<message>
+			<source>Widget {0} have associated function {1}, but {1} not exist</source>
+			<translation>Widget {0} tiene función asociada {1}, pero {1} no existe</translation>
+		</message>
+		<message>
+			<source>EXCEPTION: {0}</source>
+			<translation>EXCEPCIÓN: {0}</translation>
+		</message>
+		<message>
+			<source>Error connecting to i18n database</source>
+			<translation>Error al conectar con la base de datos i18n</translation>
+		</message>
+		<message>
+			<source>There was an error inserting the scenario geometries</source>
+			<translation>Se ha producido un error al insertar las geometrías del escenario</translation>
+		</message>
+		<message>
+			<source>Task failed: {0}. This is probably a DB error, check postgres function '{1}'</source>
+			<translation>Tarea fallida: {0}. Probablemente se trata de un error de la base de datos, compruebe la función postgres '{1}'.</translation>
+		</message>
+		<message>
+			<source>Matplotlib Python package not found. Do you want to install Matplotlib?</source>
+			<translation>No se ha encontrado el paquete Matplotlib Python. ¿Desea instalar Matplotlib?</translation>
+		</message>
+		<message>
+			<source>Task '{0}' Exception: {1}</source>
+			<translation>Tarea '{0}' Excepción: {1}</translation>
+		</message>
+		<message>
+			<source>From {0}, updating {1}...</source>
+			<translation>Desde {0}, actualizando {1}...</translation>
+		</message>
+		<message>
+			<source>The specified file already exists. Do you want to overwrite it?</source>
+			<translation>El archivo especificado ya existe. ¿Desea sobrescribirlo?</translation>
+		</message>
+		<message>
+			<source>Project read finished. Plugin version: {0}</source>
+			<translation>Proyecto de lectura finalizado. Versión del plugin: {0}</translation>
+		</message>
+		<message>
+			<source>Any record found</source>
+			<translation>Cualquier registro encontrado</translation>
+		</message>
+		<message>
+			<source>Error connecting to database ({0}): {1}\n{2}</source>
+			<translation>Error al conectar con la base de datos ({0}): {1}\n{2}</translation>
+		</message>
+		<message>
+			<source>Task '{0}' execute procedure '{1}' with parameters: '{2}', '{3}', '{4}'</source>
+			<translation>La tarea "{0}" ejecuta el procedimiento "{1}" con los parámetros: "{2}", "{3}", "{4}".</translation>
+		</message>
+		<message>
+			<source>Import results</source>
+			<translation>Importar resultados</translation>
 		</message>
 		<message>
 			<source>Database error</source>
 			<translation>Database error</translation>
 		</message>
 		<message>
-			<source>There was an error inserting pattern.</source>
-			<translation>There was an error inserting pattern.</translation>
-		</message>
-		<message>
-			<source>Results files already exist in this path. Do you want to overwrite them?</source>
-			<translation>Results files already exist in this path. Do you want to overwrite them?</translation>
-		</message>
-		<message>
-			<source>Export INP file</source>
-			<translation>Export INP file</translation>
-		</message>
-		<message>
-			<source>Creating parser for file</source>
-			<translation>Creating parser for file</translation>
-		</message>
-		<message>
-			<source>Message error</source>
-			<translation>Message error</translation>
-		</message>
-		<message>
-			<source>File path doesn't exist or you dont have permission or file is opened</source>
-			<translation>File path doesn't exist or you dont have permission or file is opened</translation>
-		</message>
-		<message>
-			<source>widget {0} has associated function {1}, but {2} not exist</source>
-			<translation>widget {0} has associated function {1}, but {2} not exist</translation>
-		</message>
-		<message>
-			<source>Parameter {0} not found for widget type hyperlink</source>
-			<translation>Parameter {0} not found for widget type hyperlink</translation>
-		</message>
-		<message>
-			<source>There was an error deleting old timeseries values.</source>
-			<translation>There was an error deleting old timeseries values.</translation>
-		</message>
-		<message>
-			<source> </source>
-			<translation> </translation>
-		</message>
-		<message>
-			<source>The schema ({0}) does not exists</source>
-			<translation>The schema ({0}) does not exists</translation>
-		</message>
-		<message>
-			<source>Go2Epa task is already active!</source>
-			<translation>Go2Epa task is already active!</translation>
-		</message>
-		<message>
-			<source>The table ({0}) does not exists</source>
-			<translation>The table ({0}) does not exists</translation>
-		</message>
-		<message>
-			<source>File cannot be created. Check if it is already opened</source>
-			<translation>File cannot be created. Check if it is already opened</translation>
-		</message>
-		<message>
-			<source>File</source>
-			<translation>File</translation>
-		</message>
-		<message>
-			<source>Widget {0} have associated function {1}, but {2} not exist</source>
-			<translation>Widget {0} have associated function {1}, but {2} not exist</translation>
-		</message>
-		<message>
-			<source>You need at least one row of values.</source>
-			<translation>You need at least one row of values.</translation>
-		</message>
-		<message>
-			<source>Add translator</source>
-			<translation>Add translator</translation>
-		</message>
-		<message>
-			<source>Matplotlib cannot be installed automatically. Please install Matplotlib manually.</source>
-			<translation>Matplotlib cannot be installed automatically. Please install Matplotlib manually.</translation>
-		</message>
-		<message>
-			<source>Select just one document</source>
-			<translation>Select just one document</translation>
-		</message>
-		<message>
-			<source>Values has been updated</source>
-			<translation>Values has been updated</translation>
-		</message>
-		<message>
-			<source>It appears that certain dependencies required for the DRAIN plugin were not detected. Please check if they are in the packages folder and restart QGIS.If the problem persists, please contact the plugin developers.The following packages were correctly imported: {0}</source>
-			<translation>It appears that certain dependencies required for the DRAIN plugin were not detected. Please check if they are in the packages folder and restart QGIS.If the problem persists, please contact the plugin developers.The following packages were correctly imported: {0}</translation>
-		</message>
-		<message>
-			<source>Task '{0}' completed</source>
-			<translation>Task '{0}' completed</translation>
-		</message>
-		<message>
-			<source>Invalid character {0} found in sheet title</source>
-			<translation>Invalid character {0} found in sheet title</translation>
-		</message>
-		<message>
-			<source>{0} task is already active!</source>
-			<translation>{0} task is already active!</translation>
-		</message>
-		<message>
-			<source>Report GPKG directory not found</source>
-			<translation>Report GPKG directory not found</translation>
-		</message>
-		<message>
-			<source>Detail</source>
-			<translation>Detail</translation>
-		</message>
-		<message>
-			<source>The connection to the database is broken</source>
-			<translation>The connection to the database is broken</translation>
-		</message>
-		<message>
-			<source>You can only set the value of existing options</source>
-			<translation>You can only set the value of existing options</translation>
-		</message>
-		<message>
-			<source>Select folder</source>
-			<translation>Select folder</translation>
-		</message>
-		<message>
-			<source>Reset position form done successfully.</source>
-			<translation>Reset position form done successfully.</translation>
-		</message>
-		<message>
-			<source>Creating GIS file... {0}</source>
-			<translation>Creating GIS file... {0}</translation>
-		</message>
-		<message>
-			<source>There was an error inserting control.</source>
-			<translation>There was an error inserting control.</translation>
-		</message>
-		<message>
-			<source>Create schema: Executing function calculate_number_of_files</source>
-			<translation>Create schema: Executing function calculate_number_of_files</translation>
-		</message>
-		<message>
-			<source>There was an error inserting raster value.</source>
-			<translation>There was an error inserting raster value.</translation>
-		</message>
-		<message>
-			<source>Task canceled - {0}</source>
-			<translation>Task canceled - {0}</translation>
-		</message>
-		<message>
-			<source>Line number</source>
-			<translation>Line number</translation>
-		</message>
-		<message>
-			<source>Invalid time format: {0}</source>
-			<translation>Invalid time format: {0}</translation>
-		</message>
-		<message>
-			<source>Please fill the field: '{0}'</source>
-			<translation>Please fill the field: '{0}'</translation>
-		</message>
-		<message>
-			<source>{0}: Config file is not set</source>
-			<translation>{0}: Config file is not set</translation>
-		</message>
-		<message>
-			<source>Delete records</source>
-			<translation>Delete records</translation>
-		</message>
-		<message>
-			<source>.*loadtxt: input contained no data*</source>
-			<translation>.*loadtxt: input contained no data*</translation>
-		</message>
-		<message>
-			<source>The specified path is a directory. Please, set a valid file name</source>
-			<translation>The specified path is a directory. Please, set a valid file name</translation>
-		</message>
-		<message>
-			<source>Create schema: Executing function {0}('{1}')</source>
-			<translation>Create schema: Executing function {0}('{1}')</translation>
-		</message>
-		<message>
-			<source>Layer {0} does not found, therefore, not configured</source>
-			<translation>Layer {0} does not found, therefore, not configured</translation>
-		</message>
-		<message>
-			<source>Creating user config folder</source>
-			<translation>Creating user config folder</translation>
-		</message>
-		<message>
-			<source>Number of SQL files '{0}': {1}</source>
-			<translation>Number of SQL files '{0}': {1}</translation>
-		</message>
-		<message>
-			<source>openpyxl does not support %s file format, please check you can open it with Excel first. Supported formats are: %s,</source>
-			<translation>openpyxl does not support %s file format, please check you can open it with Excel first. Supported formats are: %s,</translation>
-		</message>
-		<message>
-			<source>Execute '{0}'</source>
-			<translation>Execute '{0}'</translation>
-		</message>
-		<message>
-			<source>You have to fill in 'time' and 'value' fields!</source>
-			<translation>You have to fill in 'time' and 'value' fields!</translation>
-		</message>
-		<message>
-			<source>The specified folder doesn't exist and it couldn't be created. Make sure the specified folder exists.</source>
-			<translation>The specified folder doesn't exist and it couldn't be created. Make sure the specified folder exists.</translation>
-		</message>
-		<message>
-			<source>Action has no function!!</source>
-			<translation>Action has no function!!</translation>
-		</message>
-		<message>
-			<source>Select file</source>
-			<translation>Select file</translation>
-		</message>
-		<message>
-			<source>There was an error inserting lid.</source>
-			<translation>There was an error inserting lid.</translation>
-		</message>
-		<message>
-			<source>There was an error deleting old curve values.</source>
-			<translation>There was an error deleting old curve values.</translation>
-		</message>
-		<message>
-			<source>SQL folder not found</source>
-			<translation>SQL folder not found</translation>
-		</message>
-		<message>
-			<source>Task aborted: {0}</source>
-			<translation>Task aborted: {0}</translation>
-		</message>
-		<message>
-			<source>Parameter {0} is null for widget hyperlink</source>
-			<translation>Parameter {0} is null for widget hyperlink</translation>
-		</message>
-		<message>
-			<source>Not '{0}'</source>
-			<translation>Not '{0}'</translation>
-		</message>
-		<message>
-			<source>x attribute access only provided for Point geometries</source>
-			<translation>x attribute access only provided for Point geometries</translation>
-		</message>
-		<message>
-			<source>Function not found in {0}: {1}</source>
-			<translation>Function not found in {0}: {1}</translation>
-		</message>
-		<message>
-			<source>Function not found in {0}</source>
-			<translation>Function not found in {0}</translation>
-		</message>
-		<message>
-			<source>Error updating: {0}.\n</source>
-			<translation>Error updating: {0}.\n</translation>
-		</message>
-		<message>
-			<source>widgettype is wrongly configured. Needs to be in {0}</source>
-			<translation>widgettype is wrongly configured. Needs to be in {0}</translation>
-		</message>
-		<message>
-			<source>Matplotlib Python package not found. Do you want to install Matplotlib?</source>
-			<translation>Matplotlib Python package not found. Do you want to install Matplotlib?</translation>
-		</message>
-		<message>
-			<source>NO FEATURE TYPE DEFINED</source>
-			<translation>NO FEATURE TYPE DEFINED</translation>
-		</message>
-		<message>
-			<source>Python file</source>
-			<translation>Python file</translation>
-		</message>
-		<message>
-			<source>There was an error inserting timeseries.</source>
-			<translation>There was an error inserting timeseries.</translation>
-		</message>
-		<message>
-			<source>You should select an input INP file!</source>
-			<translation>You should select an input INP file!</translation>
-		</message>
-		<message>
-			<source>Object id not found</source>
-			<translation>Object id not found</translation>
+			<source>Parameter {0} is null for button</source>
+			<translation>El parámetro {0} es nulo para el botón</translation>
 		</message>
 		<message>
 			<source>Do you want to overwrite file?</source>
-			<translation>Do you want to overwrite file?</translation>
+			<translation>¿Desea sobrescribir el archivo?</translation>
 		</message>
 		<message>
-			<source> ... (more hidden) ...</source>
-			<translation> ... (more hidden) ...</translation>
+			<source>Database not found: {0}</source>
+			<translation>Base de datos no encontrada: {0}</translation>
 		</message>
 		<message>
-			<source>The field widgettype is not configured for</source>
-			<translation>The field widgettype is not configured for</translation>
+			<source>layoutorder not found. </source>
+			<translation>layoutorder no encontrado.</translation>
 		</message>
 		<message>
-			<source>Task '{0}' Exception: {1}</source>
-			<translation>Task '{0}' Exception: {1}</translation>
+			<source>Number of SQL files '{0}': {1}</source>
+			<translation>Número de archivos SQL '{0}': {1}</translation>
 		</message>
 		<message>
-			<source>y attribute access only provided for Point geometries</source>
-			<translation>y attribute access only provided for Point geometries</translation>
+			<source>Locale gis folder not found</source>
+			<translation>Carpeta gis local no encontrada</translation>
 		</message>
 		<message>
-			<source>Mesh successfully imported</source>
-			<translation>Mesh successfully imported</translation>
-		</message>
-		<message>
-			<source>Folder not found</source>
-			<translation>Folder not found</translation>
-		</message>
-		<message>
-			<source>{0} extension is not supported and will be removed</source>
-			<translation>{0} extension is not supported and will be removed</translation>
-		</message>
-		<message>
-			<source>widgetname not found. </source>
-			<translation>widgetname not found. </translation>
-		</message>
-		<message>
-			<source>Parameter functionName is null for button</source>
-			<translation>Parameter functionName is null for button</translation>
-		</message>
-		<message>
-			<source>You are calling a geospatial method on the GeoDataFrame, but the active geometry column to use has not been set. </source>
-			<translation>You are calling a geospatial method on the GeoDataFrame, but the active geometry column to use has not been set. </translation>
-		</message>
-		<message>
-			<source>There was an error deleting object values.</source>
-			<translation>There was an error deleting object values.</translation>
-		</message>
-		<message>
-			<source>Error connecting to database (QSqlDatabase): {0}\n{1}</source>
-			<translation>Error connecting to database (QSqlDatabase): {0}\n{1}</translation>
-		</message>
-		<message>
-			<source>Any record found</source>
-			<translation>Any record found</translation>
-		</message>
-		<message>
-			<source>Please choose a csv file</source>
-			<translation>Please choose a csv file</translation>
-		</message>
-		<message>
-			<source>Please, fill the name of the mesh.</source>
-			<translation>Please, fill the name of the mesh.</translation>
-		</message>
-		<message>
-			<source>Expression Error</source>
-			<translation>Expression Error</translation>
-		</message>
-		<message>
-			<source>Task failed. See the Log Messages Panel for more information.</source>
-			<translation>Task failed. See the Log Messages Panel for more information.</translation>
-		</message>
-		<message>
-			<source>Table_object is not a table name or QTableView</source>
-			<translation>Table_object is not a table name or QTableView</translation>
-		</message>
-		<message>
-			<source>Couldn't unload the processing provider</source>
-			<translation>Couldn't unload the processing provider</translation>
-		</message>
-		<message>
-			<source>Function name</source>
-			<translation>Function name</translation>
-		</message>
-		<message>
-			<source>Report geopackage already exists.</source>
-			<translation>Report geopackage already exists.</translation>
-		</message>
-		<message>
-			<source>{0} is not a valid coordinate or range</source>
-			<translation>{0} is not a valid coordinate or range</translation>
-		</message>
-		<message>
-			<source>Only alphanumeric characters and hyphens are valid for the mesh name.</source>
-			<translation>Only alphanumeric characters and hyphens are valid for the mesh name.</translation>
-		</message>
-		<message>
-			<source>Task canceled.</source>
-			<translation>Task canceled.</translation>
-		</message>
-		<message>
-			<source>This SRID value does not exist on Database. Please select a diferent one.</source>
-			<translation>This SRID value does not exist on Database. Please select a diferent one.</translation>
-		</message>
-		<message>
-			<source>All messages updated correctly</source>
-			<translation>All messages updated correctly</translation>
-		</message>
-		<message>
-			<source>No current scenario found.</source>
-			<translation>No current scenario found.</translation>
-		</message>
-		<message>
-			<source>Rpt fail</source>
-			<translation>Rpt fail</translation>
-		</message>
-		<message>
-			<source>Execute '{0}' (example data)</source>
-			<translation>Execute '{0}' (example data)</translation>
-		</message>
-		<message>
-			<source>{0}: {1}</source>
-			<translation>{0}: {1}</translation>
-		</message>
-		<message>
-			<source>The dataset '{data}' is not available. </source>
-			<translation>The dataset '{data}' is not available. </translation>
-		</message>
-		<message>
-			<source>Exception message not shown to user</source>
-			<translation>Exception message not shown to user</translation>
-		</message>
-		<message>
-			<source>Select only one scenario to save to mesh</source>
-			<translation>Select only one scenario to save to mesh</translation>
-		</message>
-		<message>
-			<source>Parameter '{0}' is None</source>
-			<translation>Parameter '{0}' is None</translation>
-		</message>
-		<message>
-			<source>This parameter is mandatory. Please, set a value</source>
-			<translation>This parameter is mandatory. Please, set a value</translation>
-		</message>
-		<message>
-			<source>Are you sure you want to delete these records?</source>
-			<translation>Are you sure you want to delete these records?</translation>
-		</message>
-		<message>
-			<source>There was an error getting the scenario information</source>
-			<translation>There was an error getting the scenario information</translation>
+			<source>Error parsing file: {0}</source>
+			<translation>Error parseando archivo: {0}</translation>
 		</message>
 		<message>
 			<source>Database execution failed</source>
-			<translation>Database execution failed</translation>
+			<translation>Fallo en la ejecución de la base de datos</translation>
 		</message>
 		<message>
-			<source>There was an error deleting object.</source>
-			<translation>There was an error deleting object.</translation>
+			<source>{0}_copy</source>
+			<translation>{0}_copia</translation>
 		</message>
 		<message>
-			<source>Process finished with some errors</source>
-			<translation>Process finished with some errors</translation>
-		</message>
-		<message>
-			<source>SQL file not found</source>
-			<translation>SQL file not found</translation>
-		</message>
-		<message>
-			<source>Started task {0}</source>
-			<translation>Started task {0}</translation>
-		</message>
-		<message>
-			<source> Database not found</source>
-			<translation> Database not found</translation>
-		</message>
-		<message>
-			<source>Parameter {0} is null for button</source>
-			<translation>Parameter {0} is null for button</translation>
-		</message>
-		<message>
-			<source>A rollback on schema will be done.</source>
-			<translation>A rollback on schema will be done.</translation>
-		</message>
-		<message>
-			<source>Info</source>
-			<translation>Info</translation>
-		</message>
-		<message>
-			<source>INFO</source>
-			<translation>INFO</translation>
-		</message>
-		<message>
-			<source>Task 'Toolbox execute' manage json response with parameters: '{0}', '{1}', '{3}'</source>
-			<translation>Task 'Toolbox execute' manage json response with parameters: '{0}', '{1}', '{3}'</translation>
-		</message>
-		<message>
-			<source>There was an error deleting old lid values.</source>
-			<translation>There was an error deleting old lid values.</translation>
-		</message>
-		<message>
-			<source>{0}: {1} Python function: {2}. {3} {4}</source>
-			<translation>{0}: {1} Python function: {2}. {3} {4}</translation>
-		</message>
-		<message>
-			<source>There was an error inserting the scenario</source>
-			<translation>There was an error inserting the scenario</translation>
-		</message>
-		<message>
-			<source>Task '{0}' not successful but without exception</source>
-			<translation>Task '{0}' not successful but without exception</translation>
-		</message>
-		<message>
-			<source>Overwrite file</source>
-			<translation>Overwrite file</translation>
-		</message>
-		<message>
-			<source>Execute '{0}' (empty data)</source>
-			<translation>Execute '{0}' (empty data)</translation>
-		</message>
-		<message>
-			<source>Function {0} returned False. Reason</source>
-			<translation>Function {0} returned False. Reason</translation>
-		</message>
-		<message>
-			<source>{0}: Reference config_type = '{1}' it is not managed</source>
-			<translation>{0}: Reference config_type = '{1}' it is not managed</translation>
-		</message>
-		<message>
-			<source>You are calling a geospatial method on the GeoDataFrame, but the active</source>
-			<translation>You are calling a geospatial method on the GeoDataFrame, but the active</translation>
-		</message>
-		<message>
-			<source>Tried to set filter to '{0}' but layer was not found.</source>
-			<translation>Tried to set filter to '{0}' but layer was not found.</translation>
-		</message>
-		<message>
-			<source>You are calling a geospatial method on the GeoDataFrame, but the active geometry column \('{result._geometry_column_name}'\) is not present</source>
-			<translation>You are calling a geospatial method on the GeoDataFrame, but the active geometry column \('{result._geometry_column_name}'\) is not present</translation>
-		</message>
-		<message>
-			<source>File defined in environment variable '{0}' not found: {1}</source>
-			<translation>File defined in environment variable '{0}' not found: {1}</translation>
-		</message>
-		<message>
-			<source>File {0} not found in this folder.</source>
-			<translation>File {0} not found in this folder.</translation>
-		</message>
-		<message>
-			<source>Task 'Execute model' execute function '{0}'</source>
-			<translation>Task 'Execute model' execute function '{0}'</translation>
-		</message>
-		<message>
-			<source>Exception in unload when reset values for {0}</source>
-			<translation>Exception in unload when reset values for {0}</translation>
-		</message>
-		<message>
-			<source>Incorrect languages, make sure to have the giswater project in english</source>
-			<translation>Incorrect languages, make sure to have the giswater project in english</translation>
-		</message>
-		<message>
-			<source>File name</source>
-			<translation>File name</translation>
-		</message>
-		<message>
-			<source>No current bcscenario found</source>
-			<translation>No current bcscenario found</translation>
-		</message>
-		<message>
-			<source>The CRS of the target table (EPSG:{epsg_t}) differs from the CRS of current GeoDataFrame (EPSG:{epsg_src}).</source>
-			<translation>The CRS of the target table (EPSG:{epsg_t}) differs from the CRS of current GeoDataFrame (EPSG:{epsg_src}).</translation>
-		</message>
-		<message>
-			<source>Processing folder</source>
-			<translation>Processing folder</translation>
-		</message>
-		<message>
-			<source>{fill_table}: {1}</source>
-			<translation>{fill_table}: {1}</translation>
-		</message>
-		<message>
-			<source>Please fill all empty fields.</source>
-			<translation>Please fill all empty fields.</translation>
-		</message>
-		<message>
-			<source>Task 'Toolbox report' manage json response with parameters: '{0}', '{1}', '{2}'</source>
-			<translation>Task 'Toolbox report' manage json response with parameters: '{0}', '{1}', '{2}'</translation>
-		</message>
-		<message>
-			<source>Exception: {0}</source>
-			<translation>Exception: {0}</translation>
-		</message>
-		<message>
-			<source>Please choose a valid path</source>
-			<translation>Please choose a valid path</translation>
-		</message>
-		<message>
-			<source>No results found. Please check values set on selector of state and exploitation</source>
-			<translation>No results found. Please check values set on selector of state and exploitation</translation>
-		</message>
-		<message>
-			<source>This process will override the boundary conditions of this mesh. Are you sure?</source>
-			<translation>This process will override the boundary conditions of this mesh. Are you sure?</translation>
-		</message>
-		<message>
-			<source>Number of SQL files 'TOTAL'</source>
-			<translation>Number of SQL files 'TOTAL'</translation>
+			<source>Creating GIS file... {0}</source>
+			<translation>Creando archivo GIS... {0}</translation>
 		</message>
 		<message>
 			<source>{0}.{1}({2})</source>
 			<translation>{0}.{1}({2})</translation>
 		</message>
 		<message>
-			<source>Widget not found</source>
-			<translation>Widget not found</translation>
+			<source>There was an error inserting curve value.</source>
+			<translation>Se ha producido un error al insertar el valor de la curva.</translation>
+		</message>
+		<message>
+			<source>There was an error deleting old timeseries values.</source>
+			<translation>Se ha producido un error al borrar valores antiguos de series temporales.</translation>
+		</message>
+		<message>
+			<source>Execute '{0}' (empty data)</source>
+			<translation>Ejecutar '{0}' (datos vacíos)</translation>
+		</message>
+		<message>
+			<source>Key</source>
+			<translation>Clave</translation>
+		</message>
+		<message>
+			<source>Layer not found</source>
+			<translation>Capa no encontrada</translation>
+		</message>
+		<message>
+			<source>=</source>
+			<translation>=</translation>
+		</message>
+		<message>
+			<source>Initialize plugin</source>
+			<translation>Inicializar plugin</translation>
+		</message>
+		<message>
+			<source>Processing folder: {0}</source>
+			<translation>Procesando carpeta: {0}</translation>
+		</message>
+		<message>
+			<source>Select folder</source>
+			<translation>Seleccionar carpeta</translation>
+		</message>
+		<message>
+			<source>Creating parser for file: {0}</source>
+			<translation>Creando analizador para archivo: {0}</translation>
+		</message>
+		<message>
+			<source>Invalid date format: {0}</source>
+			<translation>Formato de fecha no válido: {0}</translation>
+		</message>
+		<message>
+			<source>Database translation canceled.</source>
+			<translation>Traducción de base de datos cancelada.</translation>
+		</message>
+		<message>
+			<source>File path doesn't exist or you dont have permission or file is opened</source>
+			<translation>La ruta del archivo no existe o no tiene permiso o el archivo está abierto</translation>
+		</message>
+		<message>
+			<source>Parameter {0} is null for widget hyperlink</source>
+			<translation>El parámetro {0} es nulo para el widget hipervínculo</translation>
 		</message>
 		<message>
 			<source>Context</source>
-			<translation>Context</translation>
+			<translation>Contexto</translation>
 		</message>
 		<message>
-			<source>{0}-->{1}</source>
-			<translation>{0}-->{1}</translation>
-		</message>
-		<message>
-			<source>Marked values must be greater than 0</source>
-			<translation>Marked values must be greater than 0</translation>
-		</message>
-		<message>
-			<source>There was an error inserting curve.</source>
-			<translation>There was an error inserting curve.</translation>
-		</message>
-		<message>
-			<source>Toolbox task is already active!</source>
-			<translation>Toolbox task is already active!</translation>
-		</message>
-		<message>
-			<source>Task 'Generate INP file' execute function '{0}'</source>
-			<translation>Task 'Generate INP file' execute function '{0}'</translation>
-		</message>
-		<message>
-			<source>There was an error inserting the scenario geometries</source>
-			<translation>There was an error inserting the scenario geometries</translation>
-		</message>
-		<message>
-			<source>layoutorder not found. </source>
-			<translation>layoutorder not found. </translation>
-		</message>
-		<message>
-			<source>{0}-->{1} --> {2}</source>
-			<translation>{0}-->{1} --> {2}</translation>
-		</message>
-		<message>
-			<source>Task failed: {0}. This is probably a DB error, check postgres function '{1}'.</source>
-			<translation>Task failed: {0}. This is probably a DB error, check postgres function '{1}'.</translation>
-		</message>
-		<message>
-			<source>Error connecting to origin geopackage</source>
-			<translation>Error connecting to origin geopackage</translation>
-		</message>
-		<message>
-			<source>The default value of numeric_only in aggfunc='{aggfunc}' within pandas.DataFrameGroupBy.agg used in dissolve is deprecated. In pandas 2.0, numeric_only will default to False. Either specify numeric_only as additional argument in dissolve() or select only columns which should be valid for the function.</source>
-			<translation>The default value of numeric_only in aggfunc='{aggfunc}' within pandas.DataFrameGroupBy.agg used in dissolve is deprecated. In pandas 2.0, numeric_only will default to False. Either specify numeric_only as additional argument in dissolve() or select only columns which should be valid for the function.</translation>
+			<source>{type(e).__name__}: {e} {tools_qt.tr('Python function')}: tools_dr.set_widgets. WHERE: columname='{field['columnname']}' AND widgetname='{field['widgetname']}' AND widgettype='{field['widgettype']}'</source>
+			<translation>{type(e).__name__}: {e} {tools_qt.tr('Función Python')}: tools_dr.set_widgets. WHERE: columname='{campo['nombrecolumna']}' AND widgetname='{campo['nombre widget']}' AND widgettype='{campo['tipo widget']}'</translation>
 		</message>
 		<message>
 			<source>Error executing file: {0}\n{1}</source>
-			<translation>Error executing file: {0}\n{1}</translation>
+			<translation>Error al ejecutar el archivo: {0}\n{1}</translation>
 		</message>
 		<message>
-			<source>Exception error</source>
-			<translation>Exception error</translation>
+			<source>Key on returned json from ddbb is missed.</source>
+			<translation>Falta la clave en el json devuelto por ddbb.</translation>
 		</message>
 		<message>
-			<source>Column named Shape_Area already exists</source>
-			<translation>Column named Shape_Area already exists</translation>
+			<source>Exception in unload when disconnecting {0} signal: {1}</source>
+			<translation>Excepción en descarga al desconectar señal {0}: {1}</translation>
 		</message>
 		<message>
-			<source>Layout '{0}' has an invalid name. It has to end with {1} indicating where in the dialog it should go.</source>
-			<translation>Layout '{0}' has an invalid name. It has to end with {1} indicating where in the dialog it should go.</translation>
+			<source>Matplotlib cannot be installed automatically. Please install Matplotlib manually.</source>
+			<translation>Matplotlib no se puede instalar automáticamente. Por favor, instale Matplotlib manualmente.</translation>
+		</message>
+		<message>
+			<source>Info</source>
+			<translation>Información</translation>
+		</message>
+		<message>
+			<source>widget {0} has associated function {1}, but {1} not exist</source>
+			<translation>el widget {0} tiene asociada la función {1}, pero {1} no existe</translation>
+		</message>
+		<message>
+			<source>NO FEATURE TYPE DEFINED</source>
+			<translation>NO SE HA DEFINIDO NINGÚN TIPO DE CARACTERÍSTICA</translation>
+		</message>
+		<message>
+			<source>File</source>
+			<translation>Archivo</translation>
+		</message>
+		<message>
+			<source>Error updating: {0}.\n</source>
+			<translation>Error de actualización: {0}.\n</translation>
+		</message>
+		<message>
+			<source>Please choose a valid path</source>
+			<translation>Elija una ruta válida</translation>
 		</message>
 		<message>
 			<source>Plugin version not found</source>
-			<translation>Plugin version not found</translation>
+			<translation>No se ha encontrado la versión del plugin</translation>
+		</message>
+		<message>
+			<source>Set database connection</source>
+			<translation>Establecer la conexión a la base de datos</translation>
+		</message>
+		<message>
+			<source>{0}: {1}</source>
+			<translation>{0}: {1}</translation>
+		</message>
+		<message>
+			<source>INFO</source>
+			<translation>INFO</translation>
+		</message>
+		<message>
+			<source>Database translation successful to</source>
+			<translation>Traducción correcta de la base de datos a</translation>
+		</message>
+		<message>
+			<source>Export INP file</source>
+			<translation>Exportar fichero INP</translation>
+		</message>
+		<message>
+			<source>Select only one mesh to display</source>
+			<translation>Seleccione sólo una malla para mostrar</translation>
+		</message>
+		<message>
+			<source>This parameter is mandatory. Please, set a value</source>
+			<translation>Este parámetro es obligatorio. Por favor, establezca un valor</translation>
+		</message>
+		<message>
+			<source>Report geopackage already exists.</source>
+			<translation>El informe geopackage ya existe.</translation>
+		</message>
+		<message>
+			<source>The field {0} is not configured for: {1}</source>
+			<translation>El campo {0} no está configurado para: {1}</translation>
+		</message>
+		<message>
+			<source>translation canceled</source>
+			<translation>traducción cancelada</translation>
+		</message>
+		<message>
+			<source>Close</source>
+			<translation>Cerrar</translation>
+		</message>
+		<message>
+			<source>Task '{0}' not successful but without exception</source>
+			<translation>Tarea '{0}' sin éxito pero sin excepción</translation>
+		</message>
+		<message>
+			<source>SQL folder not found: {0}</source>
+			<translation>Carpeta SQL no encontrada: {0}</translation>
+		</message>
+		<message>
+			<source>No current {0} found</source>
+			<translation>No se ha encontrado ninguna corriente {0}</translation>
+		</message>
+		<message>
+			<source>File {0} not found in this folder.</source>
+			<translation>Archivo {0} no encontrado en esta carpeta.</translation>
+		</message>
+		<message>
+			<source>GKPG file path name not set</source>
+			<translation>No se ha definido el nombre de la ruta del archivo GKPG</translation>
+		</message>
+		<message>
+			<source>Dr Selectors: </source>
+			<translation>Dr. Selectores:</translation>
+		</message>
+		<message>
+			<source>Parameter functionName is null for button</source>
+			<translation>El parámetro functionName es null para el botón</translation>
+		</message>
+		<message>
+			<source>Record deleted</source>
+			<translation>Registro eliminado</translation>
+		</message>
+		<message>
+			<source>Exception in unload when deleting {0}: {1}</source>
+			<translation>Excepción en la descarga al borrar {0}: {1}</translation>
+		</message>
+		<message>
+			<source>Table_object is not a table name or QTableView</source>
+			<translation>Table_object no es un nombre de tabla o QTableView</translation>
+		</message>
+		<message>
+			<source>This param is mandatory. Please, set a value</source>
+			<translation>Este parámetro es obligatorio. Por favor, establezca un valor</translation>
+		</message>
+		<message>
+			<source>Couldn't find layer to zoom to</source>
+			<translation>No se encuentra la capa a la que hacer zoom</translation>
+		</message>
+		<message>
+			<source>Object already associated with this feature</source>
+			<translation>Objeto ya asociado a esta función</translation>
+		</message>
+		<message>
+			<source>widget {0} has not columnname and cant be configured</source>
+			<translation>widget {0} no tiene nombre de columna y no se puede configurar</translation>
+		</message>
+		<message>
+			<source>No results found. Please check values set on selector of state and exploitation</source>
+			<translation>No se han encontrado resultados. Por favor, compruebe los valores establecidos en el selector de estado y explotación</translation>
+		</message>
+		<message>
+			<source>Execute '{0}'</source>
+			<translation>Ejecutar '{0}'</translation>
+		</message>
+		<message>
+			<source>Tried to set filter to '{0}' but layer was not found.</source>
+			<translation>Intenté establecer el filtro en '{0}' pero no se encontró la capa.</translation>
+		</message>
+		<message>
+			<source>Object id not found</source>
+			<translation>Id de objeto no encontrado</translation>
+		</message>
+		<message>
+			<source>Section '{0}' not found in the file {1}</source>
+			<translation>Sección '{0}' no encontrada en el fichero {1}</translation>
+		</message>
+		<message>
+			<source>More then one document selected. Select just one document.</source>
+			<translation>Más de un documento seleccionado. Seleccionar un solo documento.</translation>
+		</message>
+		<message>
+			<source>Results files already exist in this path. Do you want to overwrite them?</source>
+			<translation>Ya existen archivos de resultados en esta ruta. ¿Desea sobrescribirlos?</translation>
+		</message>
+		<message>
+			<source>Widgettype not found.</source>
+			<translation>Widgettype no encontrado.</translation>
+		</message>
+		<message>
+			<source>Widgettype is wrongly configured. Needs to be in </source>
+			<translation>Widgettype está mal configurado. Debe estar en</translation>
+		</message>
+		<message>
+			<source>Task '{0}' was cancelled</source>
+			<translation>Tarea '{0}' cancelada</translation>
+		</message>
+		<message>
+			<source>Exception message not shown to user</source>
+			<translation>Mensaje de excepción no mostrado al usuario</translation>
+		</message>
+		<message>
+			<source>There was an error deleting object values.</source>
+			<translation>Se ha producido un error al borrar valores de objetos.</translation>
+		</message>
+		<message>
+			<source>No meshes found in GPKG file. Create a mesh with Create Mesh button before saving the boundary conditions to it.</source>
+			<translation>No se han encontrado mallas en el archivo GPKG. Cree una malla con el botón Crear malla antes de guardar en ella las condiciones de contorno.</translation>
+		</message>
+		<message>
+			<source>The csv file has been successfully exported</source>
+			<translation>El archivo csv se ha exportado correctamente</translation>
+		</message>
+		<message>
+			<source>A rollback on schema will be done.</source>
+			<translation>Se realizará un rollback en el esquema.</translation>
+		</message>
+		<message>
+			<source>Function not found</source>
+			<translation>Función no encontrada</translation>
+		</message>
+		<message>
+			<source>instead.</source>
+			<translation>en su lugar.</translation>
+		</message>
+		<message>
+			<source>Error {0} not executed</source>
+			<translation>Error {0} no ejecutado</translation>
+		</message>
+		<message>
+			<source>{0} --> {1} --> {2}</source>
+			<translation>{0} --> {1} --> {2}</translation>
+		</message>
+		<message>
+			<source>Overwrite file</source>
+			<translation>Sobrescribir archivo</translation>
+		</message>
+		<message>
+			<source>File extension not valid</source>
+			<translation>Extensión de archivo no válida</translation>
+		</message>
+		<message>
+			<source>There was an error inserting control.</source>
+			<translation>Se ha producido un error al insertar el control.</translation>
+		</message>
+		<message>
+			<source>Database returned null. Check postgres function '{0}'</source>
+			<translation>La base de datos devuelve null. Compruebe la función postgres '{0}'</translation>
+		</message>
+		<message>
+			<source>It appears that certain dependencies required for the DRAIN plugin were not detected. Please check if they are in the packages folder and restart QGIS. If the problem persists, please contact the plugin developers. The following packages could not be imported: {0}</source>
+			<translation>Parece que no se han detectado ciertas dependencias necesarias para el plugin DRAIN. Compruebe si se encuentran en la carpeta de paquetes y reinicie QGIS. Si el problema persiste, póngase en contacto con los desarrolladores del plugin. No se han podido importar los siguientes paquetes: {0}</translation>
+		</message>
+		<message>
+			<source>Detail</source>
+			<translation>Detalle</translation>
+		</message>
+		<message>
+			<source>Task '{0}' execute function '{1}'</source>
+			<translation>Tarea '{0}' ejecutar función '{1}'</translation>
+		</message>
+		<message>
+			<source>Delete records</source>
+			<translation>Borrar registros</translation>
+		</message>
+		<message>
+			<source>Updating {0}...</source>
+			<translation>Actualizando {0}...</translation>
+		</message>
+		<message>
+			<source>Error connecting to origin geopackage</source>
+			<translation>Error al conectar con el geopackage de origen</translation>
+		</message>
+		<message>
+			<source>Tens or hundreds of millions of records possible massive data generation, may impact performance.The estimated number of triangles is extremely high (> 10M).\nThis may take a long time to process.\nCheck your memory, disk and cpu capabilties\nDo you want to continue?</source>
+			<translation>El número estimado de triángulos es extremadamente alto (> 10M).\NEsto puede tardar mucho tiempo en procesarse.\NCompruebe sus capacidades de memoria, disco y cpu\N¿Desea continuar?</translation>
+		</message>
+		<message>
+			<source>Function '{0}' returned {1}</source>
+			<translation>La función '{0}' devuelve {1}</translation>
+		</message>
+		<message>
+			<source>This process will override the boundary conditions of this mesh. Are you sure?</source>
+			<translation>Este proceso anulará las condiciones de contorno de esta malla. ¿Está seguro?</translation>
+		</message>
+		<message>
+			<source>Function {0} not found in {1}</source>
+			<translation>Función {0} no encontrada en {1}</translation>
+		</message>
+		<message>
+			<source>Exception: {0}</source>
+			<translation>Excepción: {0}</translation>
+		</message>
+		<message>
+			<source>Reset position form done successfully.</source>
+			<translation>Reajuste del formulario de posición realizado con éxito.</translation>
+		</message>
+		<message>
+			<source>Marked values must be greater than 0</source>
+			<translation>Los valores marcados deben ser superiores a 0</translation>
+		</message>
+		<message>
+			<source>Task canceled - {0}</source>
+			<translation>Tarea cancelada - {0}</translation>
+		</message>
+		<message>
+			<source>Please fill the field: '{0}'</source>
+			<translation>Por favor, rellene el campo: '{0}'</translation>
+		</message>
+		<message>
+			<source>Toolbox task is already active!</source>
+			<translation>La tarea Toolbox ya está activa.</translation>
+		</message>
+		<message>
+			<source>Overwrite</source>
+			<translation>Sobrescribir</translation>
 		</message>
 		<message>
 			<source>To make 'Create Boundary Condition from Polygon' function properly, you must have the ground, roof, and boundary conditions layers included in your project.</source>
-			<translation>To make 'Create Boundary Condition from Polygon' function properly, you must have the ground, roof, and boundary conditions layers included in your project.</translation>
+			<translation>Para que 'Crear condición límite a partir de polígono' funcione correctamente, debe tener las capas de suelo, techo y condiciones límite incluidas en su proyecto.</translation>
 		</message>
 		<message>
-			<source>Creating GPKG '{0}'</source>
-			<translation>Creating GPKG '{0}'</translation>
+			<source>No current scenario found.</source>
+			<translation>No se ha encontrado ningún escenario actual.</translation>
 		</message>
 		<message>
-			<source>Task 'Check project' execute function '{0}'</source>
-			<translation>Task 'Check project' execute function '{0}'</translation>
+			<source>There was an error inserting the scenario</source>
+			<translation>Se ha producido un error al insertar el escenario</translation>
 		</message>
 		<message>
-			<source>Parameter  is null for check</source>
-			<translation>Parameter  is null for check</translation>
+			<source>Geopackage already exists.</source>
+			<translation>El geopackage ya existe.</translation>
 		</message>
 		<message>
-			<source>Exception in unload when deleting {0}</source>
-			<translation>Exception in unload when deleting {0}</translation>
+			<source>Parameter {0} not found for widget type hyperlink</source>
+			<translation>Parámetro {0} no encontrado para widget tipo hipervínculo</translation>
 		</message>
 		<message>
-			<source>There was an error setting the scenario as active</source>
-			<translation>There was an error setting the scenario as active</translation>
+			<source>Matplotlib installed successfully. Please restart QGIS.</source>
+			<translation>Matplotlib se ha instalado correctamente. Por favor, reinicie QGIS.</translation>
 		</message>
 		<message>
-			<source>Widget {0} has associated function {1}, but {2} not exist</source>
-			<translation>Widget {0} has associated function {1}, but {2} not exist</translation>
+			<source>There was an error inserting {0}.</source>
+			<translation>Hubo un error al insertar {0}.</translation>
+		</message>
+		<message>
+			<source>You need at least one row of values.</source>
+			<translation>Necesita al menos una fila de valores.</translation>
+		</message>
+		<message>
+			<source>The estimated number of triangles is high (> 1M).\nThis may take a long time to process.\nMake sure you have enough memory, disk and cpu capabilties\nDo you want to continue?</source>
+			<translation>El número estimado de triángulos es alto (> 1M).\NEsto puede tardar mucho tiempo en procesarse.\NAsegúrese de que tiene suficiente memoria, disco y capacidad de cpu.\N¿Desea continuar?</translation>
+		</message>
+		<message>
+			<source>Parameter {0} is null for check</source>
+			<translation>El parámetro {0} es nulo para la comprobación</translation>
+		</message>
+		<message>
+			<source>Python function</source>
+			<translation>Función Python</translation>
+		</message>
+		<message>
+			<source>There was an error deleting old lid values.</source>
+			<translation>Se ha producido un error al borrar los valores antiguos de las tapas.</translation>
 		</message>
 		<message>
 			<source>LIDS</source>
 			<translation>LIDS</translation>
 		</message>
 		<message>
+			<source>Install Matplotlib</source>
+			<translation>Instalar Matplotlib</translation>
+		</message>
+		<message>
+			<source>Parameter '{0}' is None</source>
+			<translation>El parámetro '{0}' es Ninguno</translation>
+		</message>
+		<message>
+			<source>Values has been updated</source>
+			<translation>Se han actualizado los valores</translation>
+		</message>
+		<message>
+			<source>Error executing SQL: {0}\nDatabase error: {1}</source>
+			<translation>Error al ejecutar SQL: {0}\nError de base de datos: {1}</translation>
+		</message>
+		<message>
+			<source>Layoutorder not found.</source>
+			<translation>Layoutorder no encontrado.</translation>
+		</message>
+		<message>
+			<source>Override boundary conditions</source>
+			<translation>Anular condiciones límite</translation>
+		</message>
+		<message>
+			<source>Select file</source>
+			<translation>Seleccionar archivo</translation>
+		</message>
+		<message>
+			<source>Do you want to open GIS project?</source>
+			<translation>¿Desea abrir el proyecto SIG?</translation>
+		</message>
+		<message>
+			<source>Incorrect user or password</source>
+			<translation>Usuario o contraseña incorrectos</translation>
+		</message>
+		<message>
+			<source>GIS file generated successfully: {0}</source>
+			<translation>Archivo SIG generado con éxito: {0}</translation>
+		</message>
+		<message>
+			<source>translation successful</source>
+			<translation>éxito de la traducción</translation>
+		</message>
+		<message>
+			<source>Task '{0}' manage json response with parameters: '{1}', '{2}', '{3}'</source>
+			<translation>Tarea '{0}' gestionar respuesta json con parámetros: '{1}', '{2}', '{3}'</translation>
+		</message>
+		<message>
+			<source>Import files folder already exists. Do you want to overwrite it?</source>
+			<translation>La carpeta Import files ya existe. ¿Desea sobrescribirla?</translation>
+		</message>
+		<message>
+			<source>Add translator: {0}</source>
+			<translation>Añadir traductor: {0}</translation>
+		</message>
+		<message>
+			<source>Error connecting to database (sqlite3): {0}\n{1}</source>
+			<translation>Error al conectar con la base de datos (sqlite3): {0}\n{1}</translation>
+		</message>
+		<message>
+			<source>Function name: {0}</source>
+			<translation>Nombre de la función: {0}</translation>
+		</message>
+		<message>
+			<source>ConfigLayerFields task is already active!</source>
+			<translation>La tarea ConfigLayerFields ya está activa.</translation>
+		</message>
+		<message>
+			<source>Error setting column multiline: {0} --> {1}</source>
+			<translation>Error al establecer la columna multilínea: {0} --> {1}</translation>
+		</message>
+		<message>
+			<source>Choose a name for the mesh</source>
+			<translation>Elija un nombre para la malla</translation>
+		</message>
+		<message>
+			<source>Process finished with some errors</source>
+			<translation>Proceso finalizado con algunos errores</translation>
+		</message>
+		<message>
+			<source>Exception error: {0}</source>
+			<translation>Error de excepción: {0}</translation>
+		</message>
+		<message>
+			<source>A mesh with the same name already exists. Do you want to overwrite it?</source>
+			<translation>Ya existe una malla con el mismo nombre. ¿Desea sobrescribirla?</translation>
+		</message>
+		<message>
+			<source>Please, select a losses layer!</source>
+			<translation>Por favor, seleccione una capa de pérdidas.</translation>
+		</message>
+		<message>
+			<source>Exception in unload when {0}: {1}</source>
+			<translation>Excepción en descarga cuando {0}: {1}</translation>
+		</message>
+		<message>
+			<source>Task 'Toolbox execute' manage json response with parameters: '{0}', '{1}', '{2}'</source>
+			<translation>Tarea 'Toolbox execute' gestionar respuesta json con parámetros: '{0}', '{1}', '{2}'</translation>
+		</message>
+		<message>
+			<source>There was an error inserting curve.</source>
+			<translation>Se ha producido un error al insertar la curva.</translation>
+		</message>
+		<message>
+			<source>Do you want to import the results into the project?</source>
+			<translation>¿Desea importar los resultados al proyecto?</translation>
+		</message>
+		<message>
+			<source>Python translation failed</source>
+			<translation>Error en la traducción a Python</translation>
+		</message>
+		<message>
+			<source>Execute '{0}' (example data)</source>
+			<translation>Ejecutar '{0}' (datos de ejemplo)</translation>
+		</message>
+		<message>
+			<source>No current bcscenario found</source>
+			<translation>No se ha encontrado ningún bcscenario actual</translation>
+		</message>
+		<message>
+			<source>Expression filter: {0}</source>
+			<translation>Filtro de expresión: {0}</translation>
+		</message>
+		<message>
 			<source>GIS file name not set</source>
-			<translation>GIS file name not set</translation>
+			<translation>No se ha definido el nombre del archivo SIG</translation>
 		</message>
 		<message>
-			<source>Create schema: Executing function '{0}'</source>
-			<translation>Create schema: Executing function '{0}'</translation>
-		</message>
-		<message>
-			<source>Python function</source>
-			<translation>Python function</translation>
-		</message>
-		<message>
-			<source>Layer not found</source>
-			<translation>Layer not found</translation>
-		</message>
-		<message>
-			<source>Matplotlib installed successfully. Please restart QGIS.</source>
-			<translation>Matplotlib installed successfully. Please restart QGIS.</translation>
-		</message>
-		<message>
-			<source>Any record selected</source>
-			<translation>Any record selected</translation>
-		</message>
-		<message>
-			<source>Task 'Toolbox execute' execute procedure '{0}' with parameters: '{1}', '{2}', '{3}'</source>
-			<translation>Task 'Toolbox execute' execute procedure '{0}' with parameters: '{1}', '{2}', '{3}'</translation>
-		</message>
-		<message>
-			<source>widget {0} have associated function {1}, but {2} not exist</source>
-			<translation>widget {0} have associated function {1}, but {2} not exist</translation>
-		</message>
-		<message>
-			<source>Error parsing file: {0}: {1}</source>
-			<translation>Error parsing file: {0}: {1}</translation>
-		</message>
-		<message>
-			<source>GIS file generated successfully</source>
-			<translation>GIS file generated successfully</translation>
-		</message>
-		<message>
-			<source>This param is mandatory. Please, set a value</source>
-			<translation>This param is mandatory. Please, set a value</translation>
-		</message>
-		<message>
-			<source>Select only one mesh to display</source>
-			<translation>Select only one mesh to display</translation>
+			<source>Select only one scenario to save to mesh</source>
+			<translation>Seleccione sólo un escenario para guardar en la malla</translation>
 		</message>
 		<message>
 			<source>SQL</source>
 			<translation>SQL</translation>
 		</message>
 		<message>
-			<source>Object already associated with this feature</source>
-			<translation>Object already associated with this feature</translation>
+			<source>Geopackage already exists. Do you want to overwrite it?</source>
+			<translation>Geopackage ya existe. ¿Desea sobrescribirlo?</translation>
 		</message>
 		<message>
-			<source>{0} contains invalid dependency definitions</source>
-			<translation>{0} contains invalid dependency definitions</translation>
+			<source>Please fill all empty fields.</source>
+			<translation>Rellene todos los campos vacíos.</translation>
 		</message>
 		<message>
-			<source>File extension not valid</source>
-			<translation>File extension not valid</translation>
+			<source>There was an error updating the scenario</source>
+			<translation>Se ha producido un error al actualizar el escenario</translation>
 		</message>
 		<message>
-			<source>dtype should be a GeometryDtype, got {0}</source>
-			<translation>dtype should be a GeometryDtype, got {0}</translation>
+			<source>There have been errors translating:</source>
+			<translation>Ha habido errores de traducción:</translation>
 		</message>
 		<message>
-			<source>Project read started</source>
-			<translation>Project read started</translation>
+			<source>Creating GPKG '{0}'</source>
+			<translation>Creando GPKG '{0}'</translation>
+		</message>
+		<message>
+			<source>Create schema: Executing function {0}</source>
+			<translation>Crear esquema: Ejecutando función {0}</translation>
+		</message>
+		<message>
+			<source>Started task {0}</source>
+			<translation>Tarea iniciada {0}</translation>
+		</message>
+		<message>
+			<source>translation failed in table</source>
+			<translation>error de traducción en la tabla</translation>
+		</message>
+		<message>
+			<source>There was an error inserting pattern.</source>
+			<translation>Se ha producido un error al insertar el patrón.</translation>
+		</message>
+		<message>
+			<source>You have to fill in '{0}', '{1}' and '{2}' fields!</source>
+			<translation>Debe rellenar los campos "{0}", "{1}" y "{2}".</translation>
+		</message>
+		<message>
+			<source>{0} --> {1}</source>
+			<translation>{0} --> {1}</translation>
+		</message>
+		<message>
+			<source>Expression Error: {0}</source>
+			<translation>Error de expresión: {0}</translation>
+		</message>
+		<message>
+			<source>Only alphanumeric characters and hyphens are valid for the mesh name.</source>
+			<translation>Para el nombre de la malla sólo son válidos caracteres alfanuméricos y guiones.</translation>
+		</message>
+		<message>
+			<source>Error setting field {0}: {0} --> {1}</source>
+			<translation>Error al configurar el campo {0}: {0} --> {1}</translation>
+		</message>
+		<message>
+			<source>Exception in unload when reset values for global_vars.project_vars: {0}</source>
+			<translation>Excepción en la descarga al restablecer los valores de global_vars.project_vars: {0}</translation>
+		</message>
+		<message>
+			<source>Incorrect languages, make sure to have the giswater project in english</source>
+			<translation>Idiomas incorrectos, asegúrese de tener el proyecto giswater en inglés</translation>
+		</message>
+		<message>
+			<source>There was an error setting the scenario as active</source>
+			<translation>Se ha producido un error al establecer el escenario como activo</translation>
+		</message>
+		<message>
+			<source>Message error</source>
+			<translation>Error de mensaje</translation>
+		</message>
+		<message>
+			<source>Are you sure you want to delete these records?</source>
+			<translation>¿Estás seguro de que quieres borrar estos registros?</translation>
+		</message>
+		<message>
+			<source>The specified folder doesn't exist and it couldn't be created. Make sure the specified folder exists.</source>
+			<translation>La carpeta especificada no existe y no se ha podido crear. Asegúrese de que la carpeta especificada existe.</translation>
+		</message>
+		<message>
+			<source>There is no project selected or it is not valid. Please check the first tab...</source>
+			<translation>No hay ningún proyecto seleccionado o no es válido. Por favor, compruebe la primera pestaña...</translation>
+		</message>
+		<message>
+			<source>File cannot be created. Check if it is already opened: {0}</source>
+			<translation>No se puede crear el archivo. Compruebe si ya está abierto: {0}</translation>
+		</message>
+		<message>
+			<source>Mesh successfully imported</source>
+			<translation>Malla importada correctamente</translation>
+		</message>
+		<message>
+			<source>Locale not found: {0}</source>
+			<translation>Configuración regional no encontrada: {0}</translation>
+		</message>
+		<message>
+			<source>Successful connection to the translations geopackage</source>
+			<translation>Conexión correcta con el geopackage de traducciones</translation>
+		</message>
+		<message>
+			<source>Function name</source>
+			<translation>Nombre de la función</translation>
+		</message>
+		<message>
+			<source>You have to fill in '{0}' and '{1}' fields!</source>
+			<translation>Debe rellenar los campos "{0}" y "{1}".</translation>
+		</message>
+		<message>
+			<source>widgetname not found. </source>
+			<translation>widgetname no encontrado.</translation>
+		</message>
+		<message>
+			<source>Function not found in {0}</source>
+			<translation>Función no encontrada en {0}</translation>
+		</message>
+		<message>
+			<source>Go2Epa task is already active!</source>
+			<translation>¡La tarea Go2Epa ya está activa!</translation>
+		</message>
+		<message>
+			<source>Error deleting data</source>
+			<translation>Error al borrar datos</translation>
+		</message>
+		<message>
+			<source>All messages updated correctly</source>
+			<translation>Todos los mensajes actualizados correctamente</translation>
+		</message>
+		<message>
+			<source>{0} exception [{1}]: {2}</source>
+			<translation>{0} excepción [{1}]: {2}</translation>
+		</message>
+		<message>
+			<source>Are you sure you want to overwrite this file?</source>
+			<translation>¿Está seguro de que desea sobrescribir este archivo?</translation>
+		</message>
+		<message>
+			<source>Any record selected</source>
+			<translation>Cualquier registro seleccionado</translation>
+		</message>
+		<message>
+			<source>{0}: Config file is not set</source>
+			<translation>{0}: El archivo de configuración no está configurado</translation>
+		</message>
+		<message>
+			<source>The specified path is a directory. Please, set a valid file name</source>
+			<translation>La ruta especificada es un directorio. Por favor, introduzca un nombre de archivo válido</translation>
+		</message>
+		<message>
+			<source>There was an error inserting lid.</source>
+			<translation>Hubo un error al insertar la tapa.</translation>
+		</message>
+		<message>
+			<source>Line number</source>
+			<translation>Número de línea</translation>
+		</message>
+		<message>
+			<source>Task failed. See the Log Messages Panel for more information.</source>
+			<translation>Tarea fallida. Consulte el Panel de mensajes de registro para obtener más información.</translation>
+		</message>
+		<message>
+			<source>Please, fill the name of the mesh.</source>
+			<translation>Por favor, rellene el nombre de la malla.</translation>
+		</message>
+		<message>
+			<source>Not '{0}'</source>
+			<translation>No '{0}'</translation>
+		</message>
+		<message>
+			<source>GIS folder not set</source>
+			<translation>Carpeta SIG no configurada</translation>
+		</message>
+		<message>
+			<source>Succesfully connected to {0}</source>
+			<translation>Conectado con éxito a {0}</translation>
+		</message>
+		<message>
+			<source>Please, select a roughness layer!</source>
+			<translation>Por favor, seleccione una capa de rugosidad.</translation>
+		</message>
+		<message>
+			<source>Database connection successful</source>
+			<translation>Conexión a la base de datos correcta</translation>
+		</message>
+		<message>
+			<source>There was an error inserting pattern value.</source>
+			<translation>Se ha producido un error al insertar el valor del patrón.</translation>
+		</message>
+		<message>
+			<source>Task canceled.</source>
+			<translation>Tarea cancelada.</translation>
+		</message>
+		<message>
+			<source>Disable triggers</source>
+			<translation>Desactivar activadores</translation>
+		</message>
+		<message>
+			<source>Config GPKG not found: {0}</source>
+			<translation>Config GPKG no encontrada: {0}</translation>
+		</message>
+		<message>
+			<source>Warnings</source>
+			<translation>Advertencias</translation>
+		</message>
+		<message>
+			<source>Error executing i18n DML in config.gpkg: {0}</source>
+			<translation>Error al ejecutar i18n DML en config.gpkg: {0}</translation>
+		</message>
+		<message>
+			<source>Imported results</source>
+			<translation>Resultados importados</translation>
+		</message>
+		<message>
+			<source>Execute after import fct</source>
+			<translation>Ejecutar después de importar fct</translation>
+		</message>
+		<message>
+			<source>Inserted control({0}) into cat_controls</source>
+			<translation>Control({0}) insertado en cat_controls</translation>
+		</message>
+		<message>
+			<source>Creating culvert files...</source>
+			<translation>Creación de archivos de alcantarilla...</translation>
+		</message>
+		<message>
+			<source>Inserted curve {0}, type {1} into cat_curve</source>
+			<translation>Curva {0}, tipo {1} insertada en cat_curve</translation>
+		</message>
+		<message>
+			<source>Save controls</source>
+			<translation>Guardar controles</translation>
+		</message>
+		<message>
+			<source>Selected folder must be inside the same directory as the geopackage file</source>
+			<translation>La carpeta seleccionada debe estar dentro del mismo directorio que el archivo geopackage</translation>
+		</message>
+		<message>
+			<source>Errors</source>
+			<translation>Errores</translation>
+		</message>
+		<message>
+			<source>The timeseries {0} was not imported.</source>
+			<translation>La serie temporal {0} no se ha importado.</translation>
+		</message>
+		<message>
+			<source>Check Project Algorithm.....Finished</source>
+			<translation>Comprobar el algoritmo del proyecto.....Terminado</translation>
+		</message>
+		<message>
+			<source>Exported results</source>
+			<translation>Resultados exportados</translation>
+		</message>
+		<message>
+			<source>NetCDF file created</source>
+			<translation>Archivo NetCDF creado</translation>
+		</message>
+		<message>
+			<source>Skipping {0}, not found in project.</source>
+			<translation>Omitiendo {0}, no se encuentra en el proyecto.</translation>
+		</message>
+		<message>
+			<source>Running Iber software...</source>
+			<translation>Ejecutando el software de Iber...</translation>
+		</message>
+		<message>
+			<source>Exception in ExecuteModel thread: {0}\n {1}</source>
+			<translation>Excepción en el hilo ExecuteModel: {0}\n {1}</translation>
+		</message>
+		<message>
+			<source>Inserted timeseries({0}) into cat_timeseries</source>
+			<translation>Insertar timeseries({0}) en cat_timeseries</translation>
+		</message>
+		<message>
+			<source>IBER PLUGINS</source>
+			<translation>PLUGINS DE IBER</translation>
+		</message>
+		<message>
+			<source>Triggers disabled</source>
+			<translation>Disparadores desactivados</translation>
+		</message>
+		<message>
+			<source>Error inserting nodes or arcs: {0}</source>
+			<translation>Error al insertar nodos o arcos: {0}</translation>
+		</message>
+		<message>
+			<source>Error {0} not executed: {1}</source>
+			<translation>Error {0} no ejecutado: {1}</translation>
+		</message>
+		<message>
+			<source>Processing file...{0}</source>
+			<translation>Procesando archivo...{0}</translation>
+		</message>
+		<message>
+			<source>Generate INP</source>
+			<translation>Generar INP</translation>
+		</message>
+		<message>
+			<source>IBER OPTIONS</source>
+			<translation>OPCIONES DE IBER</translation>
+		</message>
+		<message>
+			<source>Skipping {0}, does not exist.</source>
+			<translation>Saltar {0}, no existe.</translation>
+		</message>
+		<message>
+			<source>SWMM RESULTS</source>
+			<translation>RESULTADOS SWMM</translation>
+		</message>
+		<message>
+			<source>Create schema: Executing function '{0}'</source>
+			<translation>Crear esquema: Ejecutando función '{0}'</translation>
+		</message>
+		<message>
+			<source>Skipping {0}, not found in layermap.</source>
+			<translation>Saltarse {0}, no se encuentra en el mapa de capas.</translation>
+		</message>
+		<message>
+			<source>Save patterns</source>
+			<translation>Guardar patrones</translation>
+		</message>
+		<message>
+			<source>The pattern {0} already exists in database. Skipping...</source>
+			<translation>El patrón {0} ya existe en la base de datos. Omitiendo...</translation>
+		</message>
+		<message>
+			<source>The control {0} is already on database. Skipping...</source>
+			<translation>El control {0} ya está en la base de datos. Omitiendo...</translation>
+		</message>
+		<message>
+			<source>Inserted pattern {0}, type {1} into cat_pattern</source>
+			<translation>Patrón insertado {0}, tipo {1} en cat_pattern</translation>
+		</message>
+		<message>
+			<source>Please select a folder</source>
+			<translation>Seleccione una carpeta</translation>
+		</message>
+		<message>
+			<source>SWMM OPTIONS</source>
+			<translation>OPCIONES DE SWMM</translation>
+		</message>
+		<message>
+			<source>There was an error inserting raster.</source>
+			<translation>Se ha producido un error al insertar la trama.</translation>
+		</message>
+		<message>
+			<source>The timeseries {0} already exists in database. Skipping...</source>
+			<translation>La serie temporal {0} ya existe en la base de datos. Omitiendo...</translation>
+		</message>
+		<message>
+			<source>Couldn't unload the processing providers: {0}</source>
+			<translation>No se han podido descargar los proveedores de procesamiento: {0}</translation>
+		</message>
+		<message>
+			<source>Export files</source>
+			<translation>Exportar archivos</translation>
+		</message>
+		<message>
+			<source>Generating INP...</source>
+			<translation>Generar INP...</translation>
+		</message>
+		<message>
+			<source>Copying static files...</source>
+			<translation>Copiar archivos estáticos...</translation>
+		</message>
+		<message>
+			<source>Error importing results</source>
+			<translation>Error al importar los resultados</translation>
+		</message>
+		<message>
+			<source>Importing results</source>
+			<translation>Importar resultados</translation>
+		</message>
+		<message>
+			<source>The {0} curve does not have a specified curve type and was not imported.</source>
+			<translation>La curva {0} no tiene un tipo de curva especificado y no se ha importado.</translation>
+		</message>
+		<message>
+			<source>Triggers created</source>
+			<translation>Activadores creados</translation>
+		</message>
+		<message>
+			<source>The curve {0} already exists in database. Skipping...</source>
+			<translation>La curva {0} ya existe en la base de datos. Omitiendo...</translation>
+		</message>
+		<message>
+			<source>Creating rain files...</source>
+			<translation>Crear archivos rain...</translation>
+		</message>
+		<message>
+			<source>Exporting results</source>
+			<translation>Exportar resultados</translation>
+		</message>
+		<message>
+			<source>Enable triggers</source>
+			<translation>Activar activadores</translation>
+		</message>
+		<message>
+			<source>Save timeseries</source>
+			<translation>Guardar series temporales</translation>
+		</message>
+		<message>
+			<source>{0} has been deprecated. Use {1} instead.</source>
+			<translation>{0} ha quedado obsoleto. Utilice {1} en su lugar.</translation>
+		</message>
+		<message>
+			<source>Exporting config files...</source>
+			<translation>Exportar archivos de configuración...</translation>
+		</message>
+		<message>
+			<source>IBER RESULTS</source>
+			<translation>RESULTADOS DE IBER</translation>
+		</message>
+		<message>
+			<source>Creating inlet files...</source>
+			<translation>Creación de archivos de entrada...</translation>
+		</message>
+		<message>
+			<source>Importing {0} into project...</source>
+			<translation>Importando {0} al proyecto...</translation>
+		</message>
+		<message>
+			<source>done!</source>
+			<translation>¡Hecho!</translation>
+		</message>
+		<message>
+			<source>ERROR</source>
+			<translation>ERROR</translation>
+		</message>
+		<message>
+			<source>Error</source>
+			<translation>Error</translation>
+		</message>
+		<message>
+			<source>Save curves</source>
+			<translation>Guardar curvas</translation>
+		</message>
+		<message>
+			<source>Invalid folder path</source>
+			<translation>Ruta de carpeta no válida</translation>
+		</message>
+		<message>
+			<source>Creating hyetograph files...</source>
+			<translation>Creación de archivos hyetograph...</translation>
+		</message>
+		<message>
+			<source>Exporting mesh files...</source>
+			<translation>Exportar archivos de malla...</translation>
+		</message>
+		<message>
+			<source>Export results</source>
+			<translation>Exportar resultados</translation>
+		</message>
+		<message>
+			<source>Please enter a raster name</source>
+			<translation>Introduzca un nombre de trama</translation>
+		</message>
+		<message>
+			<source>Error creating NetCDF file</source>
+			<translation>Error al crear un archivo NetCDF</translation>
+		</message>
+		<message>
+			<source>No raster files found in the selected folder</source>
+			<translation>No se han encontrado archivos raster en la carpeta seleccionada</translation>
+		</message>
+		<message>
+			<source>GPKG file created</source>
+			<translation>Archivo GPKG creado</translation>
+		</message>
+		<message>
+			<source>Error reading/executing i18n DML file for config.gpkg: {0}\\n{1}</source>
+			<translation>Error leyendo/ejecutando archivo i18n DML para config.gpkg: {0}\n{1}</translation>
+		</message>
+		<message>
+			<source>Imported {0} into project.</source>
+			<translation>Importado {0} al proyecto.</translation>
+		</message>
+		<message>
+			<source>Error validating folder path</source>
+			<translation>Error al validar la ruta de la carpeta</translation>
+		</message>
+		<message>
+			<source>Run Iber</source>
+			<translation>Ejecutar Iber</translation>
+		</message>
+		<message>
+			<source>Import gpkgs to project</source>
+			<translation>Importar gpkgs al proyecto</translation>
+		</message>
+		<message>
+			<source>WARNING-{0}/{1} ({2}) ({3}): {4}</source>
+			<translation>AVISO-{0}/{1} ({2}) ({3}): {4}</translation>
+		</message>
+		<message>
+			<source>ERROR-{0}/{1} ({2}) ({3}): {4}</source>
+			<translation>ERROR-{0}/{1} ({2}) ({3}): {4}</translation>
+		</message>
+		<message>
+			<source>Validation method {0} not found in validatemesh module</source>
+			<translation>Método de validación {0} no encontrado en el módulo validatemesh</translation>
+		</message>
+		<message>
+			<source>ERROR ({0}): No error code found for table "{1}"</source>
+			<translation>ERROR ({0}): No se ha encontrado ningún código de error para la tabla "{1}"</translation>
+		</message>
+		<message>
+			<source>ERROR-1000 (check_roof_volumes): No roof layer found</source>
+			<translation>ERROR-1000 (check_roof_volumes): No se ha encontrado ninguna capa de techo</translation>
+		</message>
+		<message>
+			<source>\nINFO\n------</source>
+			<translation>\nINFO\n------</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No layer found for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): No se ha encontrado ninguna capa para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error building check query on table "{2}"</source>
+			<translation>ERROR-{0} ({1}): Error al crear consulta de comprobación en la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR: Could not find ground or roof layers</source>
+			<translation>ERROR: No se han encontrado las capas de suelo o techo</translation>
+		</message>
+		<message>
+			<source>The sum of all volumes is not 100 (current volume: {0})</source>
+			<translation>La suma de todos los volúmenes no es 100 (volumen actual: {0})</translation>
+		</message>
+		<message>
+			<source>Warning: Could not check table {0}: {1}</source>
+			<translation>Advertencia: No se pudo comprobar la tabla {0}: {1}</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No layers found for node or arc tables</source>
+			<translation>ERROR-{0} ({1}): No se han encontrado capas para las tablas de nodos o arcos</translation>
+		</message>
+		<message>
+			<source>\nERRORS\n----------</source>
+			<translation>\nERRORS\n----------</translation>
+		</message>
+		<message>
+			<source>Unknown input_layers configuration: {0}</source>
+			<translation>Configuración input_layers desconocida: {0}</translation>
+		</message>
+		<message>
+			<source>INFO (roof): No volume errors detected</source>
+			<translation>INFO (techo): No se han detectado errores de volumen</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error getting messages for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): Error al obtener mensajes para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No columns found for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): No se han encontrado columnas para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}) ({2}): Error getting additional conditions for table[{3}]</source>
+			<translation>ERROR-{0} ({1}) ({2}): Error al obtener condiciones adicionales para la tabla[{3}]</translation>
+		</message>
+		<message>
+			<source>WARNING-{0} ({1}) ({2}): {3}</source>
+			<translation>AVISO-{0} ({1}) ({2}): {3}</translation>
+		</message>
+		<message>
+			<source>ERROR (validatemesh - {0}): Errors detected ({1})</source>
+			<translation>ERROR (validatemesh - {0}): Errores detectados ({1})</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}) ({2}): {3}</source>
+			<translation>ERROR-{0} ({1}) ({2}): {3}</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No messages found for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): No se han encontrado mensajes para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error getting features for table "{2}". {3}</source>
+			<translation>ERROR-{0} ({1}): Error al obtener características para la tabla "{2}". {3}</translation>
+		</message>
+		<message>
+			<source>\nWARNINGS\n--------------</source>
+			<translation>\nWARNINGS\n--------------</translation>
+		</message>
+		<message>
+			<source>INFO (validatemesh - {0}): No errors detected</source>
+			<translation>INFO (validatemesh - {0}): No se han detectado errores</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error getting geometry for feature "{2}" on table "{3}"</source>
+			<translation>ERROR-{0} ({1}): Error al obtener la geometría de la característica "{2}" en la tabla "{3}".</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error getting mandatory columns on table "{2}"</source>
+			<translation>ERROR-{0} ({1}): Error al obtener columnas obligatorias en la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR (roof): Volume errors detected ({0})</source>
+			<translation>ERROR (techo): Errores de volumen detectados ({0})</translation>
+		</message>
+		<message>
+			<source>ERROR (roof_volumes): Error creating temporal layer for roof volumes check</source>
+			<translation>ERROR (volúmenes_techo): Error al crear la capa temporal para la comprobación de los volúmenes del tejado</translation>
+		</message>
+		<message>
+			<source>ERROR: No sys messages found</source>
+			<translation>ERROR: No se han encontrado mensajes sys</translation>
+		</message>
+		<message>
+			<source>ERROR-{0}: Error getting additional conditions for table[{1}]</source>
+			<translation>ERROR-{0}: Error al obtener condiciones adicionales para la tabla[{1}]</translation>
+		</message>
+		<message>
+			<source>ERROR: No check project queries found</source>
+			<translation>ERROR: No se han encontrado consultas del proyecto de comprobación</translation>
+		</message>
+		<message>
+			<source>Executing: {0} - {1}</source>
+			<translation>Ejecutando: {0} - {1}</translation>
+		</message>
+		<message>
+			<source>INFO ({0}): {1}</source>
+			<translation>INFO ({0}): {1}</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): Error creating temporal layer for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): Error al crear la capa temporal para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}): No query found for table "{2}"</source>
+			<translation>ERROR-{0} ({1}): No se ha encontrado ninguna consulta para la tabla "{2}"</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}) ({2}): Error getting additional conditions for table "{3}"</source>
+			<translation>ERROR-{0} ({1}) ({2}): Error al obtener condiciones adicionales para la tabla "{3}"</translation>
 		</message>
 	</context>
 
@@ -1108,14 +1537,6 @@
 		<message>
 			<source>title</source>
 			<translation>Diálogo</translation>
-		</message>
-		<message>
-			<source>dlg_admin_i18n_manager</source>
-			<translation>Diálogo</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_admin_i18n_manager</source>
-			<translation>None</translation>
 		</message>
 		<message>
 			<source>grp_search_options</source>
@@ -1131,14 +1552,6 @@
 		</message>
 		<message>
 			<source>tooltip_chk_db_dialogs</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>chk_for_su_tables</source>
-			<translation>Comprobación de las tablas básicas de la base de datos (cat_feature...)</translation>
-		</message>
-		<message>
-			<source>tooltip_chk_for_su_tables</source>
 			<translation>None</translation>
 		</message>
 		<message>
@@ -1173,6 +1586,14 @@
 			<source>tooltip_btn_search</source>
 			<translation>None</translation>
 		</message>
+		<message>
+			<source>dlg_admin_i18n_manager</source>
+			<translation>Diálogo</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_admin_i18n_manager</source>
+			<translation>None</translation>
+		</message>
 	</context>
 	<context>
 		<name>admin_translation</name>
@@ -1198,7 +1619,7 @@
 		</message>
 		<message>
 			<source>lbl_host</source>
-			<translation>File:</translation>
+			<translation>Archivo:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_host</source>
@@ -1206,7 +1627,7 @@
 		</message>
 		<message>
 			<source>lbl_language</source>
-			<translation>Language:</translation>
+			<translation>Idioma:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_language</source>
@@ -1222,7 +1643,7 @@
 		</message>
 		<message>
 			<source>groupBox_2</source>
-			<translation>Translate files</translation>
+			<translation>Traducir archivos</translation>
 		</message>
 		<message>
 			<source>tooltip_groupBox_2</source>
@@ -1230,7 +1651,7 @@
 		</message>
 		<message>
 			<source>chk_i18n_files</source>
-			<translation>Translate i18n translations</translation>
+			<translation>Traducir traducciones i18n</translation>
 		</message>
 		<message>
 			<source>tooltip_chk_i18n_files</source>
@@ -1238,7 +1659,7 @@
 		</message>
 		<message>
 			<source>chk_py_msg</source>
-			<translation>Translate ui and py messages</translation>
+			<translation>Traducir mensajes ui y py</translation>
 		</message>
 		<message>
 			<source>tooltip_chk_py_msg</source>
@@ -1246,7 +1667,7 @@
 		</message>
 		<message>
 			<source>btn_translate</source>
-			<translation>Translate</translation>
+			<translation>Traducir</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_translate</source>
@@ -1254,7 +1675,7 @@
 		</message>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
@@ -1265,7 +1686,7 @@
 		<name>admin_ui</name>
 		<message>
 			<source>MainWindow</source>
-			<translation>MainWindow</translation>
+			<translation>Ventana principal</translation>
 		</message>
 		<message>
 			<source>tooltip_MainWindow</source>
@@ -1281,7 +1702,7 @@
 		</message>
 		<message>
 			<source>tab_gpkg</source>
-			<translation>Create Geopackage</translation>
+			<translation>Crear Geopackage</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_gpkg</source>
@@ -1289,7 +1710,7 @@
 		</message>
 		<message>
 			<source>grb_projectschema</source>
-			<translation>Project geopackage settings</translation>
+			<translation>Configuración del geopackage del proyecto</translation>
 		</message>
 		<message>
 			<source>tooltip_grb_projectschema</source>
@@ -1297,7 +1718,7 @@
 		</message>
 		<message>
 			<source>rdb_data</source>
-			<translation>Empty data</translation>
+			<translation>Datos vacíos</translation>
 		</message>
 		<message>
 			<source>tooltip_rdb_data</source>
@@ -1305,7 +1726,7 @@
 		</message>
 		<message>
 			<source>rdb_sample</source>
-			<translation>Example data</translation>
+			<translation>Ejemplo de datos</translation>
 		</message>
 		<message>
 			<source>tooltip_rdb_sample</source>
@@ -1313,7 +1734,7 @@
 		</message>
 		<message>
 			<source>lbl_gpkg</source>
-			<translation>GPKG Name:</translation>
+			<translation>Nombre GPKG:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_gpkg</source>
@@ -1329,7 +1750,7 @@
 		</message>
 		<message>
 			<source>lbl_path</source>
-			<translation>Path:</translation>
+			<translation>Senda:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_path</source>
@@ -1337,7 +1758,7 @@
 		</message>
 		<message>
 			<source>lbl_locale</source>
-			<translation>Locale:</translation>
+			<translation>Local:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_locale</source>
@@ -1345,7 +1766,7 @@
 		</message>
 		<message>
 			<source>lbl_filter</source>
-			<translation>Filter SRID:</translation>
+			<translation>Filtrar SRID:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_filter</source>
@@ -1353,7 +1774,7 @@
 		</message>
 		<message>
 			<source>lbl_descript</source>
-			<translation>Description:</translation>
+			<translation>Descripción:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_descript</source>
@@ -1361,7 +1782,7 @@
 		</message>
 		<message>
 			<source>btn_gpkg_accept</source>
-			<translation>Accept</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_gpkg_accept</source>
@@ -1369,7 +1790,7 @@
 		</message>
 		<message>
 			<source>btn_gpkg_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_gpkg_close</source>
@@ -1377,7 +1798,7 @@
 		</message>
 		<message>
 			<source>tab_qgis_project</source>
-			<translation>Create QGIS project</translation>
+			<translation>Crear proyecto QGIS</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_qgis_project</source>
@@ -1385,7 +1806,7 @@
 		</message>
 		<message>
 			<source>btn_qgis_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_qgis_close</source>
@@ -1393,7 +1814,7 @@
 		</message>
 		<message>
 			<source>btn_qgis_accept</source>
-			<translation>Accept</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_qgis_accept</source>
@@ -1401,7 +1822,7 @@
 		</message>
 		<message>
 			<source>groupBox</source>
-			<translation>QGIS project settings</translation>
+			<translation>Configuración del proyecto QGIS</translation>
 		</message>
 		<message>
 			<source>tooltip_groupBox</source>
@@ -1409,7 +1830,7 @@
 		</message>
 		<message>
 			<source>lbl_gis_folder_3</source>
-			<translation>GIS folder:</translation>
+			<translation>Carpeta SIG:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_gis_folder_3</source>
@@ -1425,7 +1846,7 @@
 		</message>
 		<message>
 			<source>lbl_gis_file_3</source>
-			<translation>GIS file name:</translation>
+			<translation>Nombre del archivo SIG:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_gis_file_3</source>
@@ -1441,7 +1862,7 @@
 		</message>
 		<message>
 			<source>lbl_role_3</source>
-			<translation>GPKG file:</translation>
+			<translation>Archivo GPKG:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_role_3</source>
@@ -1449,7 +1870,7 @@
 		</message>
 		<message>
 			<source>tab_i18n</source>
-			<translation>Translations</translation>
+			<translation>Traducciones</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_i18n</source>
@@ -1457,7 +1878,7 @@
 		</message>
 		<message>
 			<source>groupBox_2</source>
-			<translation>i18n Generator:</translation>
+			<translation>Generador i18n:</translation>
 		</message>
 		<message>
 			<source>tooltip_groupBox_2</source>
@@ -1465,7 +1886,7 @@
 		</message>
 		<message>
 			<source>btn_translation</source>
-			<translation>i18n Generator</translation>
+			<translation>Generador i18n</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_translation</source>
@@ -1473,7 +1894,7 @@
 		</message>
 		<message>
 			<source>groupBox_3</source>
-			<translation>i18n Missing Messages:</translation>
+			<translation>i18n Mensajes perdidos:</translation>
 		</message>
 		<message>
 			<source>tooltip_groupBox_3</source>
@@ -1481,7 +1902,7 @@
 		</message>
 		<message>
 			<source>btn_i18n</source>
-			<translation>i18n Missing Messages</translation>
+			<translation>Mensajes que faltan en i18n</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_i18n</source>
@@ -1489,7 +1910,7 @@
 		</message>
 		<message>
 			<source>groupBox_4</source>
-			<translation>i18n Hot Update:</translation>
+			<translation>Actualización de i18n:</translation>
 		</message>
 		<message>
 			<source>tooltip_groupBox_4</source>
@@ -1497,7 +1918,7 @@
 		</message>
 		<message>
 			<source>btn_update_translation</source>
-			<translation>i18n Hot Update</translation>
+			<translation>Actualización de i18n</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_update_translation</source>
@@ -1508,19 +1929,11 @@
 		<name>admin_update_translation</name>
 		<message>
 			<source>title</source>
-			<translation>Dialog</translation>
-		</message>
-		<message>
-			<source>dlg_admin_update_translation</source>
-			<translation>Dialog</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_admin_update_translation</source>
-			<translation>None</translation>
+			<translation>Diálogo</translation>
 		</message>
 		<message>
 			<source>grb_i18n_conn</source>
-			<translation>i18n Conection</translation>
+			<translation>Conexión i18n</translation>
 		</message>
 		<message>
 			<source>tooltip_grb_i18n_conn</source>
@@ -1528,7 +1941,7 @@
 		</message>
 		<message>
 			<source>lbl_host</source>
-			<translation>Host:</translation>
+			<translation>Invitado:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_host</source>
@@ -1536,7 +1949,7 @@
 		</message>
 		<message>
 			<source>lbl_port</source>
-			<translation>Port:</translation>
+			<translation>Puerto:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_port</source>
@@ -1544,7 +1957,7 @@
 		</message>
 		<message>
 			<source>lbl_database</source>
-			<translation>Database:</translation>
+			<translation>Base de datos:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_database</source>
@@ -1552,7 +1965,7 @@
 		</message>
 		<message>
 			<source>lbl_user</source>
-			<translation>User:</translation>
+			<translation>Usuario:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_user</source>
@@ -1560,7 +1973,7 @@
 		</message>
 		<message>
 			<source>lbl_pass</source>
-			<translation>Password:</translation>
+			<translation>Contraseña:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_pass</source>
@@ -1568,7 +1981,7 @@
 		</message>
 		<message>
 			<source>btn_connection</source>
-			<translation>Test connection</translation>
+			<translation>Conexión de prueba</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_connection</source>
@@ -1576,7 +1989,7 @@
 		</message>
 		<message>
 			<source>lbl_language</source>
-			<translation>Language:</translation>
+			<translation>Idioma:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_language</source>
@@ -1584,7 +1997,7 @@
 		</message>
 		<message>
 			<source>grb_dest_conn</source>
-			<translation>Destiny connection</translation>
+			<translation>Conexión con el destino</translation>
 		</message>
 		<message>
 			<source>tooltip_grb_dest_conn</source>
@@ -1592,7 +2005,7 @@
 		</message>
 		<message>
 			<source>lbl_project_type</source>
-			<translation>File:</translation>
+			<translation>Archivo:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_project_type</source>
@@ -1608,7 +2021,7 @@
 		</message>
 		<message>
 			<source>btn_translate</source>
-			<translation>Translate</translation>
+			<translation>Traducir</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_translate</source>
@@ -1616,10 +2029,18 @@
 		</message>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_admin_update_translation</source>
+			<translation>Diálogo</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_admin_update_translation</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -1635,7 +2056,7 @@
 		</message>
 		<message>
 			<source>lbl_code</source>
-			<translation>Code</translation>
+			<translation>Código</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_code</source>
@@ -1643,7 +2064,7 @@
 		</message>
 		<message>
 			<source>lbl_descript</source>
-			<translation>Descript</translation>
+			<translation>Descripción</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_descript</source>
@@ -1651,7 +2072,7 @@
 		</message>
 		<message>
 			<source>lbl_bscenario_id</source>
-			<translation>BC Scenario</translation>
+			<translation>Escenario BC</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_bscenario_id</source>
@@ -1659,7 +2080,7 @@
 		</message>
 		<message>
 			<source>lbl_boundary_type</source>
-			<translation>Boundary Type</translation>
+			<translation>Tipo de límite</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_boundary_type</source>
@@ -1667,7 +2088,7 @@
 		</message>
 		<message>
 			<source>lbl_timeseries</source>
-			<translation>Time Series</translation>
+			<translation>Series temporales</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_timeseries</source>
@@ -1675,7 +2096,7 @@
 		</message>
 		<message>
 			<source>lbl_other1</source>
-			<translation>Other1</translation>
+			<translation>Otros1</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_other1</source>
@@ -1683,10 +2104,26 @@
 		</message>
 		<message>
 			<source>lbl_other2</source>
-			<translation>Other2</translation>
+			<translation>Otros2</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_other2</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_cancel</source>
+			<translation>Cancelar</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_accept</source>
+			<translation>OK</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_accept</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -1694,15 +2131,7 @@
 		<name>bc_scenario</name>
 		<message>
 			<source>title</source>
-			<translation>Boundary condition scenario</translation>
-		</message>
-		<message>
-			<source>dlg_bc_scenario</source>
-			<translation>Boundary condition scenario</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_bc_scenario</source>
-			<translation>None</translation>
+			<translation>Escenario de condiciones límite</translation>
 		</message>
 		<message>
 			<source>lbl_id</source>
@@ -1722,7 +2151,7 @@
 		</message>
 		<message>
 			<source>lbl_name</source>
-			<translation>Name:</translation>
+			<translation>Nombre:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_name</source>
@@ -1730,7 +2159,7 @@
 		</message>
 		<message>
 			<source>lbl_descript</source>
-			<translation>Description:</translation>
+			<translation>Descripción:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_descript</source>
@@ -1746,10 +2175,18 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_bc_scenario</source>
+			<translation>Escenario de condiciones límite</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_bc_scenario</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -1757,19 +2194,11 @@
 		<name>bc_scenario_manager</name>
 		<message>
 			<source>title</source>
-			<translation>Boundary condition scenarios manager</translation>
-		</message>
-		<message>
-			<source>dlg_bc_scenario_manager</source>
-			<translation>Boundary condition scenarios manager</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_bc_scenario_manager</source>
-			<translation>None</translation>
+			<translation>Gestor de escenarios de condiciones límite</translation>
 		</message>
 		<message>
 			<source>btn_duplicate_scenario</source>
-			<translation>Duplicate</translation>
+			<translation>Duplicar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_duplicate_scenario</source>
@@ -1777,7 +2206,7 @@
 		</message>
 		<message>
 			<source>btn_delete_scenario</source>
-			<translation>Delete</translation>
+			<translation>Borrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_delete_scenario</source>
@@ -1785,7 +2214,7 @@
 		</message>
 		<message>
 			<source>btn_edit_scenario</source>
-			<translation>Edit</translation>
+			<translation>Editar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_edit_scenario</source>
@@ -1793,7 +2222,7 @@
 		</message>
 		<message>
 			<source>btn_create_scenario</source>
-			<translation>Create</translation>
+			<translation>Crear</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_create_scenario</source>
@@ -1801,7 +2230,7 @@
 		</message>
 		<message>
 			<source>btn_set_current_scenario</source>
-			<translation>Current scenario</translation>
+			<translation>Situación actual</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_set_current_scenario</source>
@@ -1809,7 +2238,7 @@
 		</message>
 		<message>
 			<source>lbl_filter</source>
-			<translation>Filter by: idval</translation>
+			<translation>Filtrar por: idval</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_filter</source>
@@ -1817,7 +2246,7 @@
 		</message>
 		<message>
 			<source>btn_save_to_mesh</source>
-			<translation>Save to mesh</translation>
+			<translation>Guardar en malla</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_save_to_mesh</source>
@@ -1825,10 +2254,18 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_bc_scenario_manager</source>
+			<translation>Gestor de escenarios de condiciones límite</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_bc_scenario_manager</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -1836,7 +2273,7 @@
 		<name>bound_conditions</name>
 		<message>
 			<source>Dialog</source>
-			<translation>Dialog</translation>
+			<translation>Diálogo</translation>
 		</message>
 		<message>
 			<source>tooltip_Dialog</source>
@@ -1844,7 +2281,7 @@
 		</message>
 		<message>
 			<source>tab</source>
-			<translation>2D Inlet</translation>
+			<translation>Entrada 2D</translation>
 		</message>
 		<message>
 			<source>tooltip_tab</source>
@@ -1852,7 +2289,7 @@
 		</message>
 		<message>
 			<source>btn_add_inlet</source>
-			<translation>Add</translation>
+			<translation>Añadir</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_add_inlet</source>
@@ -1860,7 +2297,7 @@
 		</message>
 		<message>
 			<source>btn_remove_inlet</source>
-			<translation>Remove</translation>
+			<translation>Eliminar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_remove_inlet</source>
@@ -1876,7 +2313,7 @@
 		</message>
 		<message>
 			<source>tab_2</source>
-			<translation>2D Outlet</translation>
+			<translation>Salida 2D</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_2</source>
@@ -1884,7 +2321,7 @@
 		</message>
 		<message>
 			<source>btn_select_outlet</source>
-			<translation>Select *</translation>
+			<translation>Seleccionar *</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_select_outlet</source>
@@ -1892,7 +2329,7 @@
 		</message>
 		<message>
 			<source>btn_add_outlet</source>
-			<translation>Add</translation>
+			<translation>Añadir</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_add_outlet</source>
@@ -1900,7 +2337,7 @@
 		</message>
 		<message>
 			<source>btn_remove_outlet</source>
-			<translation>Remove</translation>
+			<translation>Eliminar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_remove_outlet</source>
@@ -1908,7 +2345,7 @@
 		</message>
 		<message>
 			<source>btn_select_outlet_add</source>
-			<translation>Select * *</translation>
+			<translation>Seleccione * *</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_select_outlet_add</source>
@@ -1916,7 +2353,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Accept</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -1924,7 +2361,7 @@
 		</message>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
@@ -1932,14 +2369,25 @@
 		</message>
 	</context>
 	<context>
+		<name>common</name>
+		<message>
+			<source>btn_help</source>
+			<translation>Ayuda</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_help</source>
+			<translation>None</translation>
+		</message>
+	</context>
+	<context>
 		<name>create_mesh</name>
 		<message>
 			<source>title</source>
-			<translation>Create meshes</translation>
+			<translation>Crear mallas</translation>
 		</message>
 		<message>
 			<source>dlg_create_mesh</source>
-			<translation>Create meshes</translation>
+			<translation>Crear mallas</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_create_mesh</source>
@@ -1947,7 +2395,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -1963,23 +2411,23 @@
 		</message>
 		<message>
 			<source>tab_config</source>
-			<translation>Config</translation>
+			<translation>Configurar</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_config</source>
 			<translation>None</translation>
 		</message>
 		<message>
-			<source>groupBox_4</source>
-			<translation>Errors &amp;&amp; Warnings</translation>
+			<source>grb_input_data</source>
+			<translation>Datos de entrada</translation>
 		</message>
 		<message>
-			<source>tooltip_groupBox_4</source>
+			<source>tooltip_grb_input_data</source>
 			<translation>None</translation>
 		</message>
 		<message>
 			<source>chk_validation</source>
-			<translation>Check input data for errors and warnings</translation>
+			<translation>Comprobar los datos de entrada en busca de errores y advertencias</translation>
 		</message>
 		<message>
 			<source>tooltip_chk_validation</source>
@@ -1987,71 +2435,127 @@
 		</message>
 		<message>
 			<source>btn_config</source>
-			<translation>Configure...</translation>
+			<translation>Configurar...</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_config</source>
 			<translation>None</translation>
 		</message>
 		<message>
-			<source>groupBox_2</source>
-			<translation>Elevation</translation>
+			<source>chk_only_selected</source>
+			<translation>Utilizar SÓLO las funciones seleccionadas</translation>
 		</message>
 		<message>
-			<source>tooltip_groupBox_2</source>
+			<source>tooltip_chk_only_selected</source>
 			<translation>None</translation>
 		</message>
 		<message>
-			<source>lbl_dem_layer</source>
-			<translation>Select a DEM layer to extract elevations:</translation>
+			<source>grb_roughness</source>
+			<translation>Rugosidad</translation>
 		</message>
 		<message>
-			<source>tooltip_lbl_dem_layer</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>groupBox_3</source>
-			<translation>Roughness</translation>
-		</message>
-		<message>
-			<source>tooltip_groupBox_3</source>
+			<source>tooltip_grb_roughness</source>
 			<translation>None</translation>
 		</message>
 		<message>
 			<source>lbl_roughness_layer</source>
-			<translation>Select a layer to extract roughness values:</translation>
+			<translation>Seleccione una capa para extraer los valores de rugosidad:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_roughness_layer</source>
 			<translation>None</translation>
 		</message>
 		<message>
-			<source>groupBox_7</source>
-			<translation>Losses</translation>
+			<source>grb_elevation</source>
+			<translation>Elevación</translation>
 		</message>
 		<message>
-			<source>tooltip_groupBox_7</source>
+			<source>tooltip_grb_elevation</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_dem_layer</source>
+			<translation>Seleccione una capa DEM para extraer elevaciones:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_dem_layer</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_losses</source>
+			<translation>Pérdidas</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_losses</source>
 			<translation>None</translation>
 		</message>
 		<message>
 			<source>lbl_losses_layer</source>
-			<translation>Select a layer to extract loss values:</translation>
+			<translation>Seleccione una capa para extraer los valores de pérdida:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_losses_layer</source>
 			<translation>None</translation>
 		</message>
 		<message>
-			<source>groupBox</source>
-			<translation>Transitions</translation>
+			<source>grb_mesh_options</source>
+			<translation>Opciones de malla</translation>
 		</message>
 		<message>
-			<source>tooltip_groupBox</source>
+			<source>tooltip_grb_mesh_options</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_name</source>
+			<translation>Nombre de la malla:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_name</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_cleanup_data</source>
+			<translation>Limpiar los datos de entrada</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_cleanup_data</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>txt_tolerance</source>
+			<translation>0.5</translation>
+		</message>
+		<message>
+			<source>tooltip_txt_tolerance</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_tolerance</source>
+			<translation>Tolerancia:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_tolerance</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>chk_clean_geometries</source>
+			<translation>Limpiar polígonos</translation>
+		</message>
+		<message>
+			<source>tooltip_chk_clean_geometries</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_transitions</source>
+			<translation>Transiciones</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_transitions</source>
 			<translation>None</translation>
 		</message>
 		<message>
 			<source>lbl_slope</source>
-			<translation>Transition slope:</translation>
+			<translation>Pendiente de transición:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_slope</source>
@@ -2067,7 +2571,7 @@
 		</message>
 		<message>
 			<source>lbl_start</source>
-			<translation>Transition start distance:</translation>
+			<translation>Distancia de inicio de la transición:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_start</source>
@@ -2083,7 +2587,7 @@
 		</message>
 		<message>
 			<source>chk_transition</source>
-			<translation>Enable fine-tuned transitions</translation>
+			<translation>Transiciones más precisas</translation>
 		</message>
 		<message>
 			<source>tooltip_chk_transition</source>
@@ -2091,7 +2595,7 @@
 		</message>
 		<message>
 			<source>lbl_extent</source>
-			<translation>Transition extent:</translation>
+			<translation>Alcance de la transición:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_extent</source>
@@ -2106,56 +2610,8 @@
 			<translation>None</translation>
 		</message>
 		<message>
-			<source>groupBox_5</source>
-			<translation>Save to GPKG</translation>
-		</message>
-		<message>
-			<source>tooltip_groupBox_5</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>lbl_name</source>
-			<translation>Mesh name:</translation>
-		</message>
-		<message>
-			<source>tooltip_lbl_name</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>groupBox_8</source>
-			<translation>Clean up input data</translation>
-		</message>
-		<message>
-			<source>tooltip_groupBox_8</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>txt_tolerance</source>
-			<translation>0.5</translation>
-		</message>
-		<message>
-			<source>tooltip_txt_tolerance</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>lbl_tolerance</source>
-			<translation>Tolerance:</translation>
-		</message>
-		<message>
-			<source>tooltip_lbl_tolerance</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>chk_clean_geometries</source>
-			<translation>Clean up polygons</translation>
-		</message>
-		<message>
-			<source>tooltip_chk_clean_geometries</source>
-			<translation>None</translation>
-		</message>
-		<message>
 			<source>btn_select_all</source>
-			<translation>Select All</translation>
+			<translation>Seleccionar todo</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_select_all</source>
@@ -2163,7 +2619,7 @@
 		</message>
 		<message>
 			<source>btn_clear_selection</source>
-			<translation>Clear Selection</translation>
+			<translation>Borrar selección</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_clear_selection</source>
@@ -2171,7 +2627,7 @@
 		</message>
 		<message>
 			<source>btn_toggle_selection</source>
-			<translation>Toggle Selection</translation>
+			<translation>Alternar selección</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_toggle_selection</source>
@@ -2187,7 +2643,7 @@
 		</message>
 		<message>
 			<source>btn_back</source>
-			<translation>Back</translation>
+			<translation>Volver</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_back</source>
@@ -2195,7 +2651,7 @@
 		</message>
 		<message>
 			<source>label</source>
-			<translation>Select the options to validate the input data:</translation>
+			<translation>Seleccione las opciones para validar los datos introducidos:</translation>
 		</message>
 		<message>
 			<source>tooltip_label</source>
@@ -2203,7 +2659,7 @@
 		</message>
 		<message>
 			<source>tab_infolog</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_infolog</source>
@@ -2214,19 +2670,11 @@
 		<name>csv</name>
 		<message>
 			<source>title</source>
-			<translation>Import CSV</translation>
-		</message>
-		<message>
-			<source>dlg_csv</source>
-			<translation>Import CSV</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_csv</source>
-			<translation>None</translation>
+			<translation>Importar CSV</translation>
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -2234,7 +2682,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Accept</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -2242,7 +2690,7 @@
 		</message>
 		<message>
 			<source>tab_preview</source>
-			<translation>Preview</translation>
+			<translation>Vista previa</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_preview</source>
@@ -2250,7 +2698,7 @@
 		</message>
 		<message>
 			<source>lbl_import_type</source>
-			<translation>Import type:</translation>
+			<translation>Tipo de importación:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_import_type</source>
@@ -2258,7 +2706,7 @@
 		</message>
 		<message>
 			<source>lbl_import_label</source>
-			<translation>Import label:</translation>
+			<translation>Etiqueta de importación:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_import_label</source>
@@ -2274,7 +2722,7 @@
 		</message>
 		<message>
 			<source>lbl_file</source>
-			<translation>File:</translation>
+			<translation>Archivo:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_file</source>
@@ -2282,7 +2730,7 @@
 		</message>
 		<message>
 			<source>lbl_set_of_charac</source>
-			<translation>Set of characters:</translation>
+			<translation>Conjunto de caracteres:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_set_of_charac</source>
@@ -2290,7 +2738,7 @@
 		</message>
 		<message>
 			<source>lbl_ignore_header</source>
-			<translation>Ignore headers:</translation>
+			<translation>Ignorar cabeceras:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_ignore_header</source>
@@ -2298,7 +2746,7 @@
 		</message>
 		<message>
 			<source>lbl_delimiter</source>
-			<translation>Delimiter:</translation>
+			<translation>Delimitador:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_delimiter</source>
@@ -2322,7 +2770,7 @@
 		</message>
 		<message>
 			<source>rb_space</source>
-			<translation>Space</translation>
+			<translation>Espacio</translation>
 		</message>
 		<message>
 			<source>tooltip_rb_space</source>
@@ -2362,10 +2810,18 @@
 		</message>
 		<message>
 			<source>tab_info</source>
-			<translation>Info log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_info</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_csv</source>
+			<translation>Importar CSV</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_csv</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -2373,7 +2829,7 @@
 		<name>dialog_designer</name>
 		<message>
 			<source>FirstPluginDialogBase</source>
-			<translation>FirstPlugin</translation>
+			<translation>PrimerPlugin</translation>
 		</message>
 		<message>
 			<source>tooltip_FirstPluginDialogBase</source>
@@ -2381,7 +2837,7 @@
 		</message>
 		<message>
 			<source>lbl_test</source>
-			<translation>Label:</translation>
+			<translation>Etiqueta:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_test</source>
@@ -2389,7 +2845,7 @@
 		</message>
 		<message>
 			<source>btn_test</source>
-			<translation>Test</translation>
+			<translation>Prueba</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_test</source>
@@ -2400,11 +2856,11 @@
 		<name>dialog_text</name>
 		<message>
 			<source>title</source>
-			<translation>Dialog</translation>
+			<translation>Diálogo</translation>
 		</message>
 		<message>
 			<source>dlg_dialog_text</source>
-			<translation>Dialog</translation>
+			<translation>Diálogo</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_dialog_text</source>
@@ -2412,7 +2868,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Accept</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -2420,7 +2876,7 @@
 		</message>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
@@ -2431,15 +2887,7 @@
 		<name>dlg_lineedit</name>
 		<message>
 			<source>title</source>
-			<translation>Input dialog</translation>
-		</message>
-		<message>
-			<source>dlg_dlg_lineedit</source>
-			<translation>Input dialog</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_dlg_lineedit</source>
-			<translation>None</translation>
+			<translation>Diálogo de entrada</translation>
 		</message>
 		<message>
 			<source>btn_accept</source>
@@ -2451,10 +2899,18 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_dlg_lineedit</source>
+			<translation>Diálogo de entrada</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_dlg_lineedit</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -2462,11 +2918,11 @@
 		<name>execute_model</name>
 		<message>
 			<source>title</source>
-			<translation>Execute model</translation>
+			<translation>Ejecutar modelo</translation>
 		</message>
 		<message>
 			<source>dlg_execute_model</source>
-			<translation>Execute model</translation>
+			<translation>Ejecutar modelo</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_execute_model</source>
@@ -2474,7 +2930,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -2490,7 +2946,7 @@
 		</message>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
@@ -2498,7 +2954,7 @@
 		</message>
 		<message>
 			<source>tab_config</source>
-			<translation>Config</translation>
+			<translation>Configurar</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_config</source>
@@ -2506,7 +2962,7 @@
 		</message>
 		<message>
 			<source>groupBox</source>
-			<translation>Preprocessing options</translation>
+			<translation>Opciones de preprocesamiento</translation>
 		</message>
 		<message>
 			<source>tooltip_groupBox</source>
@@ -2522,7 +2978,7 @@
 		</message>
 		<message>
 			<source>btn_options</source>
-			<translation>Options</translation>
+			<translation>Opciones</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_options</source>
@@ -2530,7 +2986,7 @@
 		</message>
 		<message>
 			<source>lbl_mesh</source>
-			<translation>Select a mesh:</translation>
+			<translation>Selecciona una malla:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_mesh</source>
@@ -2538,7 +2994,7 @@
 		</message>
 		<message>
 			<source>label</source>
-			<translation>Select a folder:</translation>
+			<translation>Selecciona una carpeta:</translation>
 		</message>
 		<message>
 			<source>tooltip_label</source>
@@ -2546,7 +3002,7 @@
 		</message>
 		<message>
 			<source>tab_infolog</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_infolog</source>
@@ -2557,11 +3013,11 @@
 		<name>go2epa</name>
 		<message>
 			<source>title</source>
-			<translation>Generate INP</translation>
+			<translation>Generar INP</translation>
 		</message>
 		<message>
 			<source>dlg_go2epa</source>
-			<translation>Generate INP</translation>
+			<translation>Generar INP</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_go2epa</source>
@@ -2569,7 +3025,7 @@
 		</message>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
@@ -2577,7 +3033,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -2585,7 +3041,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Accept</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -2593,7 +3049,7 @@
 		</message>
 		<message>
 			<source>tab_file_manager</source>
-			<translation>File manager</translation>
+			<translation>Gestor de archivos</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_file_manager</source>
@@ -2601,7 +3057,7 @@
 		</message>
 		<message>
 			<source>groupBox</source>
-			<translation>Preprocessing options</translation>
+			<translation>Opciones de preprocesamiento</translation>
 		</message>
 		<message>
 			<source>tooltip_groupBox</source>
@@ -2609,7 +3065,7 @@
 		</message>
 		<message>
 			<source>btn_options</source>
-			<translation>Options</translation>
+			<translation>Opciones</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_options</source>
@@ -2617,7 +3073,7 @@
 		</message>
 		<message>
 			<source>groupBox_2</source>
-			<translation>File manager</translation>
+			<translation>Gestor de archivos</translation>
 		</message>
 		<message>
 			<source>tooltip_groupBox_2</source>
@@ -2633,7 +3089,7 @@
 		</message>
 		<message>
 			<source>tab_loginfo</source>
-			<translation>Info log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_loginfo</source>
@@ -2644,11 +3100,11 @@
 		<name>go2epa_manager</name>
 		<message>
 			<source>title</source>
-			<translation>Iber result management</translation>
+			<translation>Gestión de resultados de Iber</translation>
 		</message>
 		<message>
 			<source>dlg_go2epa_manager</source>
-			<translation>Iber result management</translation>
+			<translation>Gestión de resultados de Iber</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_go2epa_manager</source>
@@ -2664,7 +3120,7 @@
 		</message>
 		<message>
 			<source>btn_set_corporate</source>
-			<translation>Set corporate</translation>
+			<translation>Establecer empresa</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_set_corporate</source>
@@ -2672,7 +3128,7 @@
 		</message>
 		<message>
 			<source>btn_delete</source>
-			<translation>Delete</translation>
+			<translation>Borrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_delete</source>
@@ -2680,7 +3136,7 @@
 		</message>
 		<message>
 			<source>lbl_result_id</source>
-			<translation>Filter by: Result id</translation>
+			<translation>Filtrar por: Id de resultado</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_result_id</source>
@@ -2688,7 +3144,7 @@
 		</message>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
@@ -2699,11 +3155,11 @@
 		<name>go2epa_options</name>
 		<message>
 			<source>title</source>
-			<translation>Go2Iber - options</translation>
+			<translation>Go2Iber - opciones</translation>
 		</message>
 		<message>
 			<source>dlg_go2epa_options</source>
-			<translation>Go2Iber - options</translation>
+			<translation>Go2Iber - opciones</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_go2epa_options</source>
@@ -2711,7 +3167,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -2719,7 +3175,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Accept</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -2730,11 +3186,11 @@
 		<name>import_inp</name>
 		<message>
 			<source>title</source>
-			<translation>Import INP</translation>
+			<translation>Importar INP</translation>
 		</message>
 		<message>
 			<source>dlg_import_inp</source>
-			<translation>Import INP</translation>
+			<translation>Importar INP</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_import_inp</source>
@@ -2742,7 +3198,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -2758,7 +3214,7 @@
 		</message>
 		<message>
 			<source>tab_config</source>
-			<translation>Config</translation>
+			<translation>Configurar</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_config</source>
@@ -2766,7 +3222,7 @@
 		</message>
 		<message>
 			<source>lbl_input_file</source>
-			<translation>Input INP file:</translation>
+			<translation>Archivo INP de entrada:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_input_file</source>
@@ -2782,7 +3238,7 @@
 		</message>
 		<message>
 			<source>tab_infolog</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_infolog</source>
@@ -2793,11 +3249,11 @@
 		<name>mesh_manager</name>
 		<message>
 			<source>title</source>
-			<translation>Mesh Manager</translation>
+			<translation>Gestor de malla</translation>
 		</message>
 		<message>
 			<source>dlg_mesh_manager</source>
-			<translation>Mesh Manager</translation>
+			<translation>Gestor de malla</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_mesh_manager</source>
@@ -2805,7 +3261,7 @@
 		</message>
 		<message>
 			<source>lbl_filter</source>
-			<translation>Filter by:</translation>
+			<translation>Filtrar por:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_filter</source>
@@ -2813,7 +3269,7 @@
 		</message>
 		<message>
 			<source>btn_import</source>
-			<translation>Import</translation>
+			<translation>Importar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_import</source>
@@ -2821,7 +3277,7 @@
 		</message>
 		<message>
 			<source>btn_delete</source>
-			<translation>Delete</translation>
+			<translation>Borrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_delete</source>
@@ -2829,7 +3285,7 @@
 		</message>
 		<message>
 			<source>btn_create</source>
-			<translation>Create</translation>
+			<translation>Crear</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_create</source>
@@ -2837,7 +3293,7 @@
 		</message>
 		<message>
 			<source>btn_view</source>
-			<translation>View</translation>
+			<translation>Ver</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_view</source>
@@ -2845,7 +3301,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -2856,19 +3312,11 @@
 		<name>mesh_selector</name>
 		<message>
 			<source>title</source>
-			<translation>Select mesh</translation>
-		</message>
-		<message>
-			<source>dlg_mesh_selector</source>
-			<translation>Select mesh</translation>
-		</message>
-		<message>
-			<source>tooltip_dlg_mesh_selector</source>
-			<translation>None</translation>
+			<translation>Seleccionar malla</translation>
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -2884,7 +3332,7 @@
 		</message>
 		<message>
 			<source>tab_config</source>
-			<translation>Config</translation>
+			<translation>Configurar</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_config</source>
@@ -2892,7 +3340,7 @@
 		</message>
 		<message>
 			<source>lbl_mesh</source>
-			<translation>Select a mesh:</translation>
+			<translation>Selecciona una malla:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_mesh</source>
@@ -2900,10 +3348,18 @@
 		</message>
 		<message>
 			<source>tab_infolog</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_infolog</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_mesh_selector</source>
+			<translation>Seleccionar malla</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_mesh_selector</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -2911,11 +3367,11 @@
 		<name>nonvisual_controls</name>
 		<message>
 			<source>title</source>
-			<translation>Simple Controls Editor</translation>
+			<translation>Editor de controles sencillos</translation>
 		</message>
 		<message>
 			<source>dlg_nonvisual_controls</source>
-			<translation>Simple Controls Editor</translation>
+			<translation>Editor de controles sencillos</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_nonvisual_controls</source>
@@ -2923,7 +3379,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -2942,11 +3398,11 @@
 		<name>nonvisual_curve</name>
 		<message>
 			<source>title</source>
-			<translation>Curve Editor</translation>
+			<translation>Editor de curvas</translation>
 		</message>
 		<message>
 			<source>dlg_nonvisual_curve</source>
-			<translation>Curve Editor</translation>
+			<translation>Editor de curvas</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_nonvisual_curve</source>
@@ -2954,7 +3410,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -2970,7 +3426,7 @@
 		</message>
 		<message>
 			<source>lbl_curve</source>
-			<translation>Curve ID</translation>
+			<translation>ID de curva</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_curve</source>
@@ -2978,7 +3434,7 @@
 		</message>
 		<message>
 			<source>lbl_curve_name</source>
-			<translation>Curve Name</translation>
+			<translation>Nombre de la curva</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_curve_name</source>
@@ -2986,7 +3442,7 @@
 		</message>
 		<message>
 			<source>lbl_curve_type</source>
-			<translation>Curve Type</translation>
+			<translation>Tipo de curva</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_curve_type</source>
@@ -2994,7 +3450,7 @@
 		</message>
 		<message>
 			<source>lbl_descript</source>
-			<translation>Description</translation>
+			<translation>Descripción</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_descript</source>
@@ -3010,6 +3466,93 @@
 		</message>
 	</context>
 	<context>
+		<name>nonvisual_import_raster</name>
+		<message>
+			<source>title</source>
+			<translation>Importar trama</translation>
+		</message>
+		<message>
+			<source>btn_cancel</source>
+			<translation>Cancelar</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_ok</source>
+			<translation>OK</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_ok</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>tab_config</source>
+			<translation>Configurar</translation>
+		</message>
+		<message>
+			<source>tooltip_tab_config</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_timestep</source>
+			<translation>Configure el Timestep:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_timestep</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_input_file</source>
+			<translation>Carpeta Input Rasters:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_input_file</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_push_raster_input_folder</source>
+			<translation>...</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_push_raster_input_folder</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_raster_name</source>
+			<translation>Nombre de la cuadrícula:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_raster_name</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_raster_type</source>
+			<translation>Tipo de trama:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_raster_type</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>tab_infolog</source>
+			<translation>Info Log</translation>
+		</message>
+		<message>
+			<source>tooltip_tab_infolog</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dlg_nonvisual_import_raster</source>
+			<translation>Importar trama</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_nonvisual_import_raster</source>
+			<translation>None</translation>
+		</message>
+	</context>
+	<context>
 		<name>nonvisual_lids</name>
 		<message>
 			<source>Dialog</source>
@@ -3021,7 +3564,7 @@
 		</message>
 		<message>
 			<source>label_source_img</source>
-			<translation>Source: SWMM 5.1</translation>
+			<translation>Fuente: SWMM 5.1</translation>
 		</message>
 		<message>
 			<source>tooltip_label_source_img</source>
@@ -3029,7 +3572,7 @@
 		</message>
 		<message>
 			<source>lbl_control_name</source>
-			<translation>Control Name:</translation>
+			<translation>Nombre de control:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_control_name</source>
@@ -3037,7 +3580,7 @@
 		</message>
 		<message>
 			<source>lbl_lid_type</source>
-			<translation>LID Type:</translation>
+			<translation>Tipo LID:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_lid_type</source>
@@ -3045,7 +3588,7 @@
 		</message>
 		<message>
 			<source>surface</source>
-			<translation>Surface</translation>
+			<translation>Superficie</translation>
 		</message>
 		<message>
 			<source>tooltip_surface</source>
@@ -3053,7 +3596,7 @@
 		</message>
 		<message>
 			<source>lbl_berm_height</source>
-			<translation>Berm Height (in. or mm)</translation>
+			<translation>Altura de la berma (pulg. o mm)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_berm_height</source>
@@ -3069,7 +3612,7 @@
 		</message>
 		<message>
 			<source>lbl_vegetation_volume</source>
-			<translation>Vegetation Volume Fraction</translation>
+			<translation>Fracción de volumen de vegetación</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_vegetation_volume</source>
@@ -3077,7 +3620,7 @@
 		</message>
 		<message>
 			<source>lbl_surface_roughness</source>
-			<translation>Surface Roughness (Mannings n)</translation>
+			<translation>Rugosidad superficial (Mannings n)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_surface_roughness</source>
@@ -3085,7 +3628,7 @@
 		</message>
 		<message>
 			<source>lbl_surface_slope</source>
-			<translation>Surface Slope (percent)</translation>
+			<translation>Pendiente de la superficie (porcentaje)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_surface_slope</source>
@@ -3117,7 +3660,7 @@
 		</message>
 		<message>
 			<source>lbl_surface_side_slope</source>
-			<translation>Surface Side Slope (run / rise)</translation>
+			<translation>Superficie Pendiente lateral (recorrido / subida)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_surface_side_slope</source>
@@ -3133,7 +3676,7 @@
 		</message>
 		<message>
 			<source>soil</source>
-			<translation>Soil</translation>
+			<translation>Suelo</translation>
 		</message>
 		<message>
 			<source>tooltip_soil</source>
@@ -3165,7 +3708,7 @@
 		</message>
 		<message>
 			<source>lbl_porosity</source>
-			<translation>Porosity    (volume fraction)</translation>
+			<translation>Porosidad (fracción de volumen)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_porosity</source>
@@ -3173,7 +3716,7 @@
 		</message>
 		<message>
 			<source>lbl_field_capacity</source>
-			<translation>Field Capacity (volume fraction)</translation>
+			<translation>Capacidad de campo (fracción de volumen)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_field_capacity</source>
@@ -3189,7 +3732,7 @@
 		</message>
 		<message>
 			<source>lbl_wilting_point</source>
-			<translation>Wilting Point (volume fraction)</translation>
+			<translation>Punto de marchitamiento (fracción de volumen)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_wilting_point</source>
@@ -3197,7 +3740,7 @@
 		</message>
 		<message>
 			<source>lbl_thickness</source>
-			<translation>Thickness (in. or mm)</translation>
+			<translation>Espesor (pulg. o mm)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_thickness</source>
@@ -3213,7 +3756,7 @@
 		</message>
 		<message>
 			<source>lbl_conductivity</source>
-			<translation>Conductivity    (in/hr or mm/hr)</translation>
+			<translation>Conductividad (pulg./hora o mm./hora)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_conductivity</source>
@@ -3221,7 +3764,7 @@
 		</message>
 		<message>
 			<source>lbl_conducticity_slope</source>
-			<translation>Conductivity Slope</translation>
+			<translation>Pendiente de conductividad</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_conducticity_slope</source>
@@ -3245,7 +3788,7 @@
 		</message>
 		<message>
 			<source>lbl_suction_head</source>
-			<translation>Suction Head (in. or mm)</translation>
+			<translation>Altura de aspiración (pulg. o mm)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_suction_head</source>
@@ -3253,7 +3796,7 @@
 		</message>
 		<message>
 			<source>pavement</source>
-			<translation>Pavement</translation>
+			<translation>Pavimento</translation>
 		</message>
 		<message>
 			<source>tooltip_pavement</source>
@@ -3269,7 +3812,7 @@
 		</message>
 		<message>
 			<source>lbl_thinkness_pavement</source>
-			<translation>Thickness (in. or mm)</translation>
+			<translation>Espesor (pulg. o mm)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_thinkness_pavement</source>
@@ -3285,7 +3828,7 @@
 		</message>
 		<message>
 			<source>lbl_void_ratio_pavement</source>
-			<translation>Void Ratio (Void / Solids)</translation>
+			<translation>Índice de vacíos (vacíos / sólidos)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_void_ratio_pavement</source>
@@ -3293,7 +3836,7 @@
 		</message>
 		<message>
 			<source>lbl_imprevious_surface</source>
-			<translation>Imprevious Surface Fraction</translation>
+			<translation>Fracción de superficie impermeable</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_imprevious_surface</source>
@@ -3309,7 +3852,7 @@
 		</message>
 		<message>
 			<source>lbl__permeability</source>
-			<translation>Permeability    (in/hr or mm/hr)</translation>
+			<translation>Permeabilidad (pulg./hora o mm./hora)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl__permeability</source>
@@ -3317,7 +3860,7 @@
 		</message>
 		<message>
 			<source>lbl_regeneration_interval</source>
-			<translation>Regeneration Interval (days)</translation>
+			<translation>Intervalo de regeneración (días)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_regeneration_interval</source>
@@ -3341,7 +3884,7 @@
 		</message>
 		<message>
 			<source>lbl_regeneration_fraction</source>
-			<translation>Regeneration Fraction</translation>
+			<translation>Fracción de regeneración</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_regeneration_fraction</source>
@@ -3357,7 +3900,7 @@
 		</message>
 		<message>
 			<source>lbl_clogging_factor_pavement</source>
-			<translation>Clogging Factor</translation>
+			<translation>Factor de obstrucción</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_clogging_factor_pavement</source>
@@ -3373,7 +3916,7 @@
 		</message>
 		<message>
 			<source>storage</source>
-			<translation>Storage</translation>
+			<translation>Almacenamiento</translation>
 		</message>
 		<message>
 			<source>tooltip_storage</source>
@@ -3397,7 +3940,7 @@
 		</message>
 		<message>
 			<source>lbl_void_ratio_storage</source>
-			<translation>Void Ratio (Voids / Solids)</translation>
+			<translation>Proporción de vacíos (vacíos / sólidos)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_void_ratio_storage</source>
@@ -3421,7 +3964,7 @@
 		</message>
 		<message>
 			<source>lbl_thickness_storage</source>
-			<translation>Thickness (in. or mm)</translation>
+			<translation>Espesor (pulg. o mm)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_thickness_storage</source>
@@ -3429,7 +3972,7 @@
 		</message>
 		<message>
 			<source>lbl_seepage_rate</source>
-			<translation>Seepage Rate (in/hr or mm/hr)</translation>
+			<translation>Velocidad de infiltración (pulg./hora o mm./hora)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_seepage_rate</source>
@@ -3437,7 +3980,7 @@
 		</message>
 		<message>
 			<source>lbl_clogging_factor_storage</source>
-			<translation>Clogging Factor</translation>
+			<translation>Factor de obstrucción</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_clogging_factor_storage</source>
@@ -3445,7 +3988,7 @@
 		</message>
 		<message>
 			<source>drain</source>
-			<translation>Drain</translation>
+			<translation>Drenaje</translation>
 		</message>
 		<message>
 			<source>tooltip_drain</source>
@@ -3453,7 +3996,7 @@
 		</message>
 		<message>
 			<source>lbl_flow_description</source>
-			<translation>*Flow is in in/hr or mm/hr; use 0 if there is no drain.</translation>
+			<translation>*El caudal es en pulg./hora o mm./hora; utilice 0 si no hay desagüe.</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_flow_description</source>
@@ -3461,7 +4004,7 @@
 		</message>
 		<message>
 			<source>lbl_offset</source>
-			<translation>Offset (in or mm)</translation>
+			<translation>Desplazamiento (pulg. o mm)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_offset</source>
@@ -3469,7 +4012,7 @@
 		</message>
 		<message>
 			<source>lbl__flow_coefficient</source>
-			<translation>Flow Coefficient*</translation>
+			<translation>Coeficiente de caudal*</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl__flow_coefficient</source>
@@ -3485,7 +4028,7 @@
 		</message>
 		<message>
 			<source>lbl_flow_exponent</source>
-			<translation>Flow Exponent</translation>
+			<translation>Exponente de flujo</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_flow_exponent</source>
@@ -3517,7 +4060,7 @@
 		</message>
 		<message>
 			<source>lbl_open_level</source>
-			<translation>Open Level (in or mm)</translation>
+			<translation>Nivel abierto (pulg. o mm)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_open_level</source>
@@ -3525,7 +4068,7 @@
 		</message>
 		<message>
 			<source>lbl_control_curve</source>
-			<translation>Control Curve</translation>
+			<translation>Curva de control</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_control_curve</source>
@@ -3549,7 +4092,7 @@
 		</message>
 		<message>
 			<source>lbl_closed_level</source>
-			<translation>Closed Level (in or mm)</translation>
+			<translation>Nivel cerrado (pulg. o mm)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_closed_level</source>
@@ -3557,7 +4100,7 @@
 		</message>
 		<message>
 			<source>lbl_drain_delay</source>
-			<translation>Drain Delay (hrs)</translation>
+			<translation>Retraso de drenaje (horas)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_drain_delay</source>
@@ -3565,7 +4108,7 @@
 		</message>
 		<message>
 			<source>drainmat</source>
-			<translation>Drainage Mat</translation>
+			<translation>Drenaje de esteras</translation>
 		</message>
 		<message>
 			<source>tooltip_drainmat</source>
@@ -3597,7 +4140,7 @@
 		</message>
 		<message>
 			<source>lbl_void_fraction</source>
-			<translation>Void Fraction</translation>
+			<translation>Fracción de vacío</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_void_fraction</source>
@@ -3605,7 +4148,7 @@
 		</message>
 		<message>
 			<source>lbl_roughness</source>
-			<translation>Roughness (Mannings n)</translation>
+			<translation>Rugosidad (Mannings n)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_roughness</source>
@@ -3613,7 +4156,7 @@
 		</message>
 		<message>
 			<source>lbl_thickness_drainage</source>
-			<translation>Thickness (in. or mm)</translation>
+			<translation>Espesor (pulg. o mm)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_thickness_drainage</source>
@@ -3621,7 +4164,7 @@
 		</message>
 		<message>
 			<source>rooftop</source>
-			<translation>Roof Drain</translation>
+			<translation>Drenaje del tejado</translation>
 		</message>
 		<message>
 			<source>tooltip_rooftop</source>
@@ -3637,7 +4180,7 @@
 		</message>
 		<message>
 			<source>lbl_flow_capacity</source>
-			<translation>Flow Capacity (in/hr or mm/hr)</translation>
+			<translation>Capacidad de caudal (pulg./hora o mm./hora)</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_flow_capacity</source>
@@ -3645,7 +4188,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -3653,7 +4196,7 @@
 		</message>
 		<message>
 			<source>btn_help</source>
-			<translation>Help</translation>
+			<translation>Ayuda</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_help</source>
@@ -3672,11 +4215,11 @@
 		<name>nonvisual_manager</name>
 		<message>
 			<source>title</source>
-			<translation>Non-Visual Objects Manager</translation>
+			<translation>Gestor de objetos no visuales</translation>
 		</message>
 		<message>
 			<source>dlg_nonvisual_manager</source>
-			<translation>Non-Visual Objects Manager</translation>
+			<translation>Gestor de objetos no visuales</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_nonvisual_manager</source>
@@ -3684,7 +4227,7 @@
 		</message>
 		<message>
 			<source>btn_delete</source>
-			<translation>Delete</translation>
+			<translation>Borrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_delete</source>
@@ -3692,7 +4235,7 @@
 		</message>
 		<message>
 			<source>btn_duplicate</source>
-			<translation>Duplicate</translation>
+			<translation>Duplicar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_duplicate</source>
@@ -3700,7 +4243,7 @@
 		</message>
 		<message>
 			<source>btn_create</source>
-			<translation>Create</translation>
+			<translation>Crear</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_create</source>
@@ -3708,7 +4251,7 @@
 		</message>
 		<message>
 			<source>lbl_filter</source>
-			<translation>Filter by:</translation>
+			<translation>Filtrar por:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_filter</source>
@@ -3716,10 +4259,18 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_import</source>
+			<translation>Importar</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_import</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -3727,11 +4278,11 @@
 		<name>nonvisual_pattern_ud</name>
 		<message>
 			<source>title</source>
-			<translation>Pattern Editor</translation>
+			<translation>Editor de patrones</translation>
 		</message>
 		<message>
 			<source>dlg_nonvisual_pattern_ud</source>
-			<translation>Pattern Editor</translation>
+			<translation>Editor de patrones</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_nonvisual_pattern_ud</source>
@@ -3739,7 +4290,7 @@
 		</message>
 		<message>
 			<source>lbl_pattern_type</source>
-			<translation>Pattern Type</translation>
+			<translation>Tipo de patrón</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_pattern_type</source>
@@ -3747,7 +4298,7 @@
 		</message>
 		<message>
 			<source>lbl_pattern</source>
-			<translation>Pattern ID</translation>
+			<translation>Patrón ID</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_pattern</source>
@@ -3755,7 +4306,7 @@
 		</message>
 		<message>
 			<source>lbl_name</source>
-			<translation>Pattern Name</translation>
+			<translation>Nombre del patrón</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_name</source>
@@ -3763,7 +4314,7 @@
 		</message>
 		<message>
 			<source>lbl_descript</source>
-			<translation>Descript</translation>
+			<translation>Descripción</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_descript</source>
@@ -3795,7 +4346,7 @@
 		</message>
 		<message>
 			<source>tbl_daily</source>
-			<translation>SUN</translation>
+			<translation>SOL</translation>
 		</message>
 		<message>
 			<source>tooltip_tbl_daily</source>
@@ -3803,7 +4354,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -3822,11 +4373,11 @@
 		<name>nonvisual_print</name>
 		<message>
 			<source>title</source>
-			<translation>Non-Visual Objects Print</translation>
+			<translation>Objetos no visuales Imprimir</translation>
 		</message>
 		<message>
 			<source>dlg_nonvisual_print</source>
-			<translation>Non-Visual Objects Print</translation>
+			<translation>Objetos no visuales Imprimir</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_nonvisual_print</source>
@@ -3842,7 +4393,7 @@
 		</message>
 		<message>
 			<source>chk_cross_arccat</source>
-			<translation>Cross with arccat</translation>
+			<translation>Cruz con arccat</translation>
 		</message>
 		<message>
 			<source>tooltip_chk_cross_arccat</source>
@@ -3850,7 +4401,7 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Accept</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
@@ -3858,7 +4409,7 @@
 		</message>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
@@ -3869,11 +4420,11 @@
 		<name>nonvisual_raster</name>
 		<message>
 			<source>title</source>
-			<translation>Curve Editor</translation>
+			<translation>Editor de curvas</translation>
 		</message>
 		<message>
 			<source>dlg_nonvisual_raster</source>
-			<translation>Curve Editor</translation>
+			<translation>Editor de curvas</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_nonvisual_raster</source>
@@ -3881,7 +4432,7 @@
 		</message>
 		<message>
 			<source>lbl_raster_type</source>
-			<translation>Raster Type</translation>
+			<translation>Tipo de rejilla</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_raster_type</source>
@@ -3889,7 +4440,7 @@
 		</message>
 		<message>
 			<source>lbl_raster_name</source>
-			<translation>Raster Name</translation>
+			<translation>Nombre de la cuadrícula</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_raster_name</source>
@@ -3897,7 +4448,7 @@
 		</message>
 		<message>
 			<source>lbl_raster_id</source>
-			<translation>Raster ID</translation>
+			<translation>ID de cuadrícula</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_raster_id</source>
@@ -3905,7 +4456,7 @@
 		</message>
 		<message>
 			<source>tbl_raster_value</source>
-			<translation>Name</translation>
+			<translation>Nombre</translation>
 		</message>
 		<message>
 			<source>tooltip_tbl_raster_value</source>
@@ -3913,7 +4464,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -3932,11 +4483,11 @@
 		<name>nonvisual_timeseries</name>
 		<message>
 			<source>title</source>
-			<translation>Time Series Editor</translation>
+			<translation>Editor de series temporales</translation>
 		</message>
 		<message>
 			<source>dlg_nonvisual_timeseries</source>
-			<translation>Time Series Editor</translation>
+			<translation>Editor de series temporales</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_nonvisual_timeseries</source>
@@ -3944,7 +4495,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -3960,7 +4511,7 @@
 		</message>
 		<message>
 			<source>label</source>
-			<translation>Times Type</translation>
+			<translation>Tiempos Tipo</translation>
 		</message>
 		<message>
 			<source>tooltip_label</source>
@@ -3968,7 +4519,7 @@
 		</message>
 		<message>
 			<source>label_2</source>
-			<translation>Description</translation>
+			<translation>Descripción</translation>
 		</message>
 		<message>
 			<source>tooltip_label_2</source>
@@ -3976,7 +4527,7 @@
 		</message>
 		<message>
 			<source>lbl_descript</source>
-			<translation>Time Series Type</translation>
+			<translation>Tipo de serie temporal</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_descript</source>
@@ -3992,7 +4543,7 @@
 		</message>
 		<message>
 			<source>lbl_curve</source>
-			<translation>Time Series ID</translation>
+			<translation>ID de la serie temporal</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_curve</source>
@@ -4000,7 +4551,7 @@
 		</message>
 		<message>
 			<source>lbl_fname</source>
-			<translation>File name</translation>
+			<translation>Nombre del fichero</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_fname</source>
@@ -4008,7 +4559,7 @@
 		</message>
 		<message>
 			<source>tbl_timeseries_value</source>
-			<translation>Value</translation>
+			<translation>Valor</translation>
 		</message>
 		<message>
 			<source>tooltip_tbl_timeseries_value</source>
@@ -4019,11 +4570,11 @@
 		<name>project_check</name>
 		<message>
 			<source>title</source>
-			<translation>Check project</translation>
+			<translation>Comprobar proyecto</translation>
 		</message>
 		<message>
 			<source>dlg_project_check</source>
-			<translation>Check project</translation>
+			<translation>Comprobar proyecto</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_project_check</source>
@@ -4031,7 +4582,7 @@
 		</message>
 		<message>
 			<source>tab_databaselog</source>
-			<translation>Database log</translation>
+			<translation>Registro de la base de datos</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_databaselog</source>
@@ -4039,10 +4590,18 @@
 		</message>
 		<message>
 			<source>btn_accept</source>
-			<translation>Accept</translation>
+			<translation>Aceptar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_accept</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>chb_info</source>
+			<translation>Mostrar sólo advertencias y errores</translation>
+		</message>
+		<message>
+			<source>tooltip_chb_info</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -4050,11 +4609,11 @@
 		<name>replace_in_file</name>
 		<message>
 			<source>title</source>
-			<translation>Replace text in file</translation>
+			<translation>Reemplazar texto en archivo</translation>
 		</message>
 		<message>
 			<source>dlg_replace_in_file</source>
-			<translation>Replace text in file</translation>
+			<translation>Reemplazar texto en archivo</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_replace_in_file</source>
@@ -4062,7 +4621,7 @@
 		</message>
 		<message>
 			<source>lbl_title</source>
-			<translation>Replace these names with new ones:</translation>
+			<translation>Sustituya estos nombres por otros nuevos:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_title</source>
@@ -4070,7 +4629,7 @@
 		</message>
 		<message>
 			<source>lbl_subtitle</source>
-			<translation>There are objects with more than 16 characters in their name</translation>
+			<translation>Hay objetos con más de 16 caracteres en su nombre</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_subtitle</source>
@@ -4081,7 +4640,7 @@
 		<name>toolbox</name>
 		<message>
 			<source>Dialog</source>
-			<translation>Dialog</translation>
+			<translation>Diálogo</translation>
 		</message>
 		<message>
 			<source>tooltip_Dialog</source>
@@ -4092,11 +4651,11 @@
 		<name>toolbox_reports</name>
 		<message>
 			<source>title</source>
-			<translation>Reports</translation>
+			<translation>Informes</translation>
 		</message>
 		<message>
 			<source>dlg_toolbox_reports</source>
-			<translation>Reports</translation>
+			<translation>Informes</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_toolbox_reports</source>
@@ -4104,7 +4663,7 @@
 		</message>
 		<message>
 			<source>grb_info</source>
-			<translation>Info</translation>
+			<translation>Información</translation>
 		</message>
 		<message>
 			<source>tooltip_grb_info</source>
@@ -4112,7 +4671,7 @@
 		</message>
 		<message>
 			<source>label</source>
-			<translation>Query:</translation>
+			<translation>Consulta:</translation>
 		</message>
 		<message>
 			<source>tooltip_label</source>
@@ -4120,7 +4679,7 @@
 		</message>
 		<message>
 			<source>label_2</source>
-			<translation>Description:</translation>
+			<translation>Descripción:</translation>
 		</message>
 		<message>
 			<source>tooltip_label_2</source>
@@ -4128,7 +4687,7 @@
 		</message>
 		<message>
 			<source>grb_filters</source>
-			<translation>Filters</translation>
+			<translation>Filtros</translation>
 		</message>
 		<message>
 			<source>tooltip_grb_filters</source>
@@ -4136,7 +4695,7 @@
 		</message>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
@@ -4144,7 +4703,7 @@
 		</message>
 		<message>
 			<source>lbl_export_path</source>
-			<translation>Path:</translation>
+			<translation>Senda:</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_export_path</source>
@@ -4160,7 +4719,7 @@
 		</message>
 		<message>
 			<source>btn_export</source>
-			<translation>Export</translation>
+			<translation>Exportar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_export</source>
@@ -4171,7 +4730,7 @@
 		<name>toolbox_tool</name>
 		<message>
 			<source>btn_close</source>
-			<translation>Close</translation>
+			<translation>Cerrar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_close</source>
@@ -4179,7 +4738,7 @@
 		</message>
 		<message>
 			<source>btn_cancel</source>
-			<translation>Cancel</translation>
+			<translation>Cancelar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
@@ -4187,7 +4746,7 @@
 		</message>
 		<message>
 			<source>btn_run</source>
-			<translation>Run</translation>
+			<translation>Ejecutar</translation>
 		</message>
 		<message>
 			<source>tooltip_btn_run</source>
@@ -4195,7 +4754,7 @@
 		</message>
 		<message>
 			<source>tab_config</source>
-			<translation>Config</translation>
+			<translation>Configurar</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_config</source>
@@ -4219,7 +4778,7 @@
 		</message>
 		<message>
 			<source>grb_selection_type</source>
-			<translation>Selection type:</translation>
+			<translation>Tipo de selección:</translation>
 		</message>
 		<message>
 			<source>tooltip_grb_selection_type</source>
@@ -4227,7 +4786,7 @@
 		</message>
 		<message>
 			<source>rbt_previous</source>
-			<translation>Selected features only</translation>
+			<translation>Sólo funciones seleccionadas</translation>
 		</message>
 		<message>
 			<source>tooltip_rbt_previous</source>
@@ -4235,7 +4794,7 @@
 		</message>
 		<message>
 			<source>rbt_layer</source>
-			<translation>All features</translation>
+			<translation>Todas las funciones</translation>
 		</message>
 		<message>
 			<source>tooltip_rbt_layer</source>
@@ -4243,7 +4802,7 @@
 		</message>
 		<message>
 			<source>grb_input_layer</source>
-			<translation>Input layer:</translation>
+			<translation>Capa de entrada:</translation>
 		</message>
 		<message>
 			<source>tooltip_grb_input_layer</source>
@@ -4251,7 +4810,7 @@
 		</message>
 		<message>
 			<source>grb_parameters</source>
-			<translation>Option parameters:</translation>
+			<translation>Parámetros de opción:</translation>
 		</message>
 		<message>
 			<source>tooltip_grb_parameters</source>
@@ -4259,7 +4818,7 @@
 		</message>
 		<message>
 			<source>tab_loginfo</source>
-			<translation>Info Log</translation>
+			<translation>Registro</translation>
 		</message>
 		<message>
 			<source>tooltip_tab_loginfo</source>

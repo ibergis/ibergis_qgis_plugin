@@ -1,7 +1,7 @@
 import traceback
-from pathlib import Path
 from itertools import chain, tee
 
+from geopandas import gpd
 from qgis.core import (
     QgsCoordinateTransform,
     QgsFeedback,
@@ -15,11 +15,11 @@ from qgis.core import (
     QgsPoint,
     QgsCoordinateReferenceSystem,
     QgsFields,
-    QgsProcessingContext,
-    QgsProcessing
+    QgsProcessingContext
 )
 from qgis.utils import iface
 from qgis.PyQt.QtCore import QVariant
+import shapely
 
 from . import createmesh_core as core
 from .validatemesh import validate_input_layers, validate_inlets_in_triangles
@@ -29,11 +29,12 @@ from ..utils.meshing_process import triangulate_custom, create_temp_mesh_layer, 
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt
 
-from typing import Union, Optional, Literal
+from typing import Union, Literal, Optional
 import time
 import numpy as np
 import pandas as pd
 import processing
+
 
 class DrCreateMeshTask(DrTask):
     def __init__(
@@ -51,9 +52,15 @@ class DrCreateMeshTask(DrTask):
         roughness_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
         losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
         mesh_name: str,
+        point_anchor_layer: QgsVectorLayer,
+        line_anchor_layer: QgsVectorLayer,
+        bridge_layer: QgsVectorLayer,
         feedback: QgsFeedback,
-        point_anchor_layer: Optional[QgsVectorLayer] = None,
-        line_anchor_layer: Optional[QgsVectorLayer] = None,
+        ground_layer: QgsVectorLayer,
+        roof_layer: QgsVectorLayer,
+        inlet_layer: QgsVectorLayer,
+        temporal_mesh: bool,
+        temp_layer_name: str
     ):
         super().__init__(description)
         self.execute_validations = execute_validations
@@ -71,8 +78,15 @@ class DrCreateMeshTask(DrTask):
         self.feedback = feedback
         self.point_anchor_layer = point_anchor_layer
         self.line_anchor_layer = line_anchor_layer
+        self.bridge_layer = bridge_layer
         self.error_layers = None
         self.warning_layers = None
+        self.ground_layer = ground_layer
+        self.roof_layer = roof_layer
+        self.inlet_layer = inlet_layer
+        self.temporal_mesh = temporal_mesh
+        self.temp_layer: Optional[QgsVectorLayer] = None
+        self.temp_layer_name = temp_layer_name
 
     def cancel(self):
         super().cancel()
@@ -82,53 +96,32 @@ class DrCreateMeshTask(DrTask):
         super().run()
         try:
             self.feedback.setProgressText("Starting process!")
+            self.temp_layer = None
 
-            # Remove previous temp layers
-            project = QgsProject.instance()
-            layer_ids = (x.id() for x in project.mapLayersByName("Mesh Temp Layer"))
-            project.removeMapLayers(layer_ids)
-            group_name = "Mesh inputs errors & warnings"
-            temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
-            if temp_group is not None:
-                project.removeMapLayers(temp_group.findLayerIds())
+            if not self.temporal_mesh:
+                # Remove previous temp layers
+                project = QgsProject.instance()
+                layer_ids = (x.id() for x in project.mapLayersByName("Mesh Temp Layer"))
+                project.removeMapLayers(layer_ids)
+                group_name = "MESH INPUTS ERRORS & WARNINGS"
+                temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
+                if temp_group is not None:
+                    project.removeMapLayers(temp_group.findLayerIds())
 
             # Load input layers
             self.dao = global_vars.gpkg_dao_data.clone()
             db_path = self.dao.db_filepath.replace('\\', '/')
             path = f"{db_path}|layername="
 
-
             layers: dict[str, Union[QgsVectorLayer, QgsRasterLayer]] = {}
 
-            # Load ground and roof layers from the QGIS project
-            for layer in ["ground", "roof"]:
-                layer_path = f"{path}{layer}"
-                lyrs = []
-                for lyr in QgsProject.instance().mapLayers().values():
-                    if lyr.source() == layer_path:
-                        print(f"Layer: {lyr.name()} - {lyr.source()}")
-                        lyrs.append(lyr)
-
-                if len(lyrs) == 0:
-                    self.message = f"Layer '{layer}' not found in the QGIS project."
-                    return False
-                elif len(lyrs) > 1:
-                    self.message = f"Layer '{layer}' found multiple times in the QGIS project."
-                    return False
-                else:
-                    layers[layer] = lyrs[0]
-
-            # Load other layers from the GPKG file
-            layers_to_select = ["mesh_anchor_points", "inlet", "bridge"]
-            for layer in layers_to_select:
-                if self.feedback.isCanceled():
-                    self.message = "Task canceled."
-                    return False
-                l = QgsVectorLayer(f"{path}{layer}", layer, "ogr")
-                if not l.isValid():
-                    self.message = f"Layer '{layer}' is not valid. Check if GPKG file has a '{layer}' layer."
-                    return False
-                layers[layer] = l
+            layers = {
+                "ground": self.ground_layer,
+                "roof": self.roof_layer,
+                "inlet": self.inlet_layer,
+                "bridge": self.bridge_layer,
+                "mesh_anchor_points": self.point_anchor_layer
+            }
 
             layers["dem"] = self.dem_layer
 
@@ -240,6 +233,32 @@ class DrCreateMeshTask(DrTask):
                     self.feedback.setProgress(100)
                     return False
 
+            point_anchors = None
+            line_anchors = None
+            complete_line_anchors = None
+
+            if not self.temporal_mesh:
+                # Create anchor GeoDataFrames
+                print("Creating anchor GeoDataFrames... ", end="")
+                start = time.time()
+
+                point_anchors = layer_to_gdf(
+                    self.point_anchor_layer,
+                    ["cellsize", "z_value"],
+                    self.only_selected_features
+                )
+
+                line_anchors = layer_to_gdf(
+                    self.line_anchor_layer,
+                    ["cellsize"],
+                    self.only_selected_features
+                )
+
+                complete_line_anchors = self._create_line_anchors_gdf(line_anchors)
+                print(complete_line_anchors)
+
+                print(f"Done! {time.time() - start}s")
+
             # Create mesh
             self.feedback.setProgressText("Creating ground mesh...")
             self.feedback.setProgress(15)
@@ -250,8 +269,8 @@ class DrCreateMeshTask(DrTask):
             ground_triangulation_result = triangulate_custom(
                 layers["ground"],
                 ["custom_roughness", "landuse", "scs_cn"],
-                point_anchor_layer=self.point_anchor_layer,
-                line_anchor_layer=self.line_anchor_layer,
+                point_anchors=point_anchors,
+                line_anchors=complete_line_anchors,
                 do_clean_up=self.clean_geometries,
                 only_selected_features=self.only_selected_features,
                 clean_tolerance=self.clean_tolerance,
@@ -275,14 +294,14 @@ class DrCreateMeshTask(DrTask):
             ground_triangles_df["custom_roughness"] = extra_data["custom_roughness"]
             ground_triangles_df["scs_cn"] = extra_data["scs_cn"]
 
-
             # Get ground roughness
             roughness_from_raster = False
-            if self.roughness_layer is None: # Fill with zeros
+            if self.roughness_layer is None:  # Fill with zeros
                 ground_triangles_df["roughness"] = 0
-            elif self.roughness_layer == "ground_layer": # From ground layer
+            elif self.roughness_layer == "ground_layer":  # From ground layer
                 print("Getting roughness from ground layer... ", end="")
                 start = time.time()
+
                 def get_roughness(row):
                     custom_roughness = row["custom_roughness"]
                     if custom_roughness is None or np.isnan(custom_roughness):
@@ -294,7 +313,7 @@ class DrCreateMeshTask(DrTask):
                 # ground_triangles_df["roughness"] = ground_triangles_df["custom_roughness"].fillna()
                 ground_triangles_df["roughness"] = ground_triangles_df.apply(get_roughness, axis=1)
                 print(f"Done! {time.time() - start}s")
-            else: # From raster layer
+            else:  # From raster layer
                 ground_triangles_df["roughness"] = np.nan
                 roughness_from_raster = True
 
@@ -330,9 +349,9 @@ class DrCreateMeshTask(DrTask):
                     "start_time": new_var,
                 }
 
-                if self.losses_layer == "ground_layer": # From ground layer
-                    pass # already calculated
-                else: # From raster layer
+                if self.losses_layer == "ground_layer":  # From ground layer
+                    pass  # already calculated
+                else:  # From raster layer
                     losses_from_raster = True
 
             # Vertices
@@ -343,9 +362,13 @@ class DrCreateMeshTask(DrTask):
             if self.dem_layer is None:
                 ground_vertices_df["z"] = 0
             else:
+                print("Getting z-values from DEM... ", end="")
+                start = time.time()
+
                 ground_crs = layers["ground"].crs()
                 dem_crs = self.dem_layer.crs()
                 qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
+
                 def get_z(x, y):
                     point = qct.transform(QgsPointXY(x, y))
                     val, res = self.dem_layer.dataProvider().sample(point, 1)
@@ -353,15 +376,50 @@ class DrCreateMeshTask(DrTask):
 
                 ground_vertices_df["z"] = ground_vertices_df.apply(lambda row: get_z(row["x"], row["y"]), axis=1)
 
-            # Get z-values from point anchors
-            if self.point_anchor_layer is not None:
-                point_anchor_df = layer_to_gdf(self.point_anchor_layer, ["z_value"])
-                for _, anchor in point_anchor_df.iterrows():
+                print(f"Done! {time.time() - start}s")
+
+            if not self.temporal_mesh:
+                print(f"Setting z-values from anchors... ", end="")
+                start = time.time()
+
+                # Get z-values from point anchors
+                for _, anchor in point_anchors.iterrows():
                     x, y = anchor.geometry.x, anchor.geometry.y
                     mask = (ground_vertices_df["x"] == x) & (ground_vertices_df["y"] == y)
                     ground_vertices_df.loc[mask, "z"] = anchor["z_value"]
 
-            print("Validating landuses... ", end="")
+                # Get z-values from line anchors
+                for _, line in line_anchors.iterrows():
+                    line_geom = line.geometry.buffer(0.01)  # Buffer to avoid precision issues with the intersect
+                    ground_vertices_geom = gpd.GeoSeries(
+                        [shapely.Point(xy) for xy in zip(ground_vertices_df["x"], ground_vertices_df["y"])],
+                        crs=line_anchors.crs
+                    )
+                    mask = ground_vertices_geom.intersects(line_geom)
+                    points = ground_vertices_df[mask] # Get points inside the line anchor
+                    points = gpd.GeoDataFrame(points, geometry=ground_vertices_geom[mask], crs=line_anchors.crs)
+
+                    # Ignoring the z value, get the distance along the line, then interpolate the z value
+                    line_2d = shapely.force_2d(line.geometry)
+
+                    # TODO: If the line vertex z value is 0, set its value to the z value of the point directly below it.
+                    # this way we can have lines with values set and unset at the same time and it will work properly
+                    def interpolate_z(row):
+                        p = row["geometry"]
+                        dist = line_2d.project(p)
+                        anchor_z = line.geometry.interpolate(dist).z
+                        if anchor_z != 0:
+                            return anchor_z
+                        else:
+                            return row["z"]
+
+                    z_values = points.apply(interpolate_z, axis=1)
+
+                    ground_vertices_df.loc[points.index, "z"] = z_values
+
+                print(f"Done! {time.time() - start}s")
+
+            print("Triangulating Roofs... ", end="")
             start = time.time()
             self.feedback.setProgressText("Creating roof mesh...")
             self.feedback.setProgress(30)
@@ -398,6 +456,9 @@ class DrCreateMeshTask(DrTask):
             triangles_df["v2"], triangles_df["v3"] = triangles_df["v3"], triangles_df["v2"]
 
             # Get roofs
+            print("Creating roofs DataFrame... ", end="")
+            start = time.time()
+
             self.feedback.setProgressText("Getting roof data...")
             rows = self.dao.get_rows("""
                 SELECT 
@@ -412,10 +473,16 @@ class DrCreateMeshTask(DrTask):
             ])
             if not roofs_df.empty:
                 roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
-                roofs_df.index = roofs_df["fid"] # type: ignore
+                roofs_df.index = roofs_df["fid"]  # type: ignore
 
-            bridges_df = self._create_bridges_df(triangles_df, vertices_df)
-            print(f"Bridges: {bridges_df}")
+            print(f"Done! {time.time() - start}s")
+
+            bridges_df: pd.DataFrame = pd.DataFrame()
+            if self.bridge_layer is not None:
+                print("Creating bridges DataFrame... ", end="")
+                start = time.time()
+                bridges_df = self._create_bridges_df(triangles_df, vertices_df)
+                print(f"Done! {time.time() - start}s")
 
             self.mesh = mesh_parser.Mesh(
                 polygons=triangles_df,
@@ -430,7 +497,7 @@ class DrCreateMeshTask(DrTask):
             self.feedback.setProgressText("Creating temp layer for visualization...")
             start = time.time()
             print("Creating temp layer... ", end="")
-            temp_layer = create_temp_mesh_layer(self.mesh)
+            temp_layer = create_temp_mesh_layer(self.mesh, layer_name=self.temp_layer_name)
             print(f"Done! {time.time() - start}s")
 
             if roughness_from_raster:
@@ -458,124 +525,244 @@ class DrCreateMeshTask(DrTask):
                 self.feedback.setProgressText("Refreshing temp layer...")
                 start = time.time()
                 print("Recreating temp layer... ", end="")
-                temp_layer = create_temp_mesh_layer(self.mesh)
+                temp_layer = create_temp_mesh_layer(self.mesh, layer_name=self.temp_layer_name)
                 print(f"Done! {time.time() - start}s")
 
-            # Delete old mesh
-            self.feedback.setProgressText("Saving mesh to GPKG file...")
-            self.dao.execute_sql(f"""
-                DELETE FROM cat_file
-                WHERE name = '{self.mesh_name}'
-            """)
+            if not self.temporal_mesh:
+                # Delete old mesh
+                self.feedback.setProgressText("Saving mesh to GPKG file...")
+                self.dao.execute_sql(f"""
+                    DELETE FROM cat_file
+                    WHERE name = '{self.mesh_name}'
+                """)
 
-            print("Dumping mesh data... ", end="")
-            start = time.time()
-            mesh_str, roof_str, losses_str, bridges_str = mesh_parser.dumps(self.mesh)
-            print(f"Done! {time.time() - start}s")
+                print("Dumping mesh data... ", end="")
+                start = time.time()
+                mesh_str, roof_str, losses_str, bridges_str = mesh_parser.dumps(self.mesh)
+                print(f"Done! {time.time() - start}s")
 
-            self.dao.execute_sql(f"""
-                INSERT INTO cat_file (name, iber2d, roof, losses, bridge)
-                VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}')
-            """)
+                self.dao.execute_sql(f"""
+                    INSERT INTO cat_file (name, iber2d, roof, losses, bridge)
+                    VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}')
+                """)
 
             self.feedback.setProgress(80)
 
-            # Add temp layer to TOC
-            tools_qt.add_layer_to_toc(temp_layer)
+            self.temp_layer = temp_layer
 
-            # Check for triangles with more than one inlet
-            inlet_warning = validate_inlets_in_triangles(temp_layer, layers["inlet"])
-            if inlet_warning.hasFeatures():
-                group_name = "Mesh inputs errors & warnings"
-                tools_qt.add_layer_to_toc(inlet_warning, group_name, create_groups=True)
-                project.layerTreeRoot().removeChildrenGroupWithoutLayers()
+            if self.inlet_layer is not None:
+                # Check for triangles with more than one inlet
+                inlet_warning = validate_inlets_in_triangles(temp_layer, layers["inlet"])
+                if inlet_warning.hasFeatures():
+                    group_name = "MESH INPUTS ERRORS & WARNINGS"
+                    tools_qt.add_layer_to_toc(inlet_warning, group_name, create_groups=True)
+                    project.layerTreeRoot().removeChildrenGroupWithoutLayers()
+                    iface.layerTreeView().model().sourceModel().modelReset.emit()
+
+                # Refresh TOC
                 iface.layerTreeView().model().sourceModel().modelReset.emit()
 
-            # Refresh TOC
-            iface.layerTreeView().model().sourceModel().modelReset.emit()
-
             self.message = "Process finished!!!"
-            self.feedback.setProgress(100)
+            if not self.temporal_mesh:
+                self.feedback.setProgress(100)
             return True
         except Exception:
             self.exception = traceback.format_exc()
             self.message = (
                 "Task failed. See the Log Messages Panel for more information."
             )
+            self.temp_layer = None
             return False
 
-    def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame):
-        context = QgsProcessingContext()
-        # Create mesh edges layer
-        mesh_edges_layer = self._create_mesh_edges_layer(polygons_df, vertices_df)  # FIXME: This takes too long
-        # Create buffer for each bridge
-        bridge_layer = tools_qgis.get_layer_by_tablename("bridge")
-        buffer_layer = self._create_bridge_buffer(bridge_layer, context)
-        # Join buffer with mesh edges
-        valid_edges_layer = self._create_valid_edges_layer(buffer_layer, mesh_edges_layer, context)
+    def _create_line_anchors_gdf(self, line_anchors: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+        line_anchors = line_anchors.copy()
+        line_anchors["geometry"] = line_anchors["geometry"].force_2d()
 
+        bridges = layer_to_gdf(
+            self.bridge_layer,
+            ["code"],
+            self.only_selected_features
+        )
+
+        if len(bridges) == 0:
+            print("No bridges found in the bridge layer.")
+            return line_anchors
+
+        rows = self.dao.get_rows(f"""
+            SELECT bridge_code, distance
+            FROM bridge_value
+            ORDER BY distance
+        """)
+        distances = pd.DataFrame(rows, columns=["bridge_code", "distance"])
+        # Normalize distances by bridge length
+        for value in distances.itertuples():
+            bridge = self.dao.get_row(f"SELECT length FROM bridge WHERE code = '{value.bridge_code}'")
+            if bridge is not None:
+                distances.loc[value.Index, "distance"] = round(value.distance / bridge[0], 3)
+        distances = distances.set_index("bridge_code")
+        distances = distances.groupby("bridge_code")["distance"].apply(list)
+
+        bridges.set_index("code", inplace=True)
+
+        bridges["distance"] = bridges.index.map(distances)
+
+        def make_bridge(row):
+            line: shapely.LineString = row["geometry"]
+            total_length = line.length
+
+            distances = set()
+
+            db_distances = row["distance"]
+            if isinstance(db_distances, list):
+                distances.update(db_distances)
+
+            for vert in line.coords:
+                dist = line.project(shapely.Point(vert)) / total_length
+                distances.add(dist)
+
+            points = []
+            for distance in sorted(distances):
+                point = line.interpolate(distance, normalized=True)
+                points.append(point)
+
+            geom = shapely.LineString(points)
+            return geom
+
+        bridges["geometry"] = bridges.apply(make_bridge, axis=1)
+        bridges = bridges.drop(columns=["distance"])
+
+        bridges["cellsize"] = np.inf # Infinity so that it will not affect the triangulation (keeps the minimum cell size)
+
+        return pd.concat([line_anchors, bridges], ignore_index=True) # type: ignore
+
+
+    def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame) -> pd.DataFrame:
+        bridges = layer_to_gdf(
+            self.bridge_layer,
+            ["code", "freeflow_cd", "deck_cd", "sumergeflow_cd", "gaugenumber"],
+            self.only_selected_features
+        )
         bridges_values_dict = self.get_bridges_values_dict()
 
-        bridge_list = []
-        for feature in valid_edges_layer.getFeatures():
-            relative_distance = 0
-            total_length = 0
-            bridge_feature = None
-            for bridge in bridge_layer.getFeatures():
-                if bridge["code"] == feature["code"]:
-                    total_length = bridge.geometry().length()
-                    bridge_feature = bridge
-                    break
-            line_last_vertex = feature.geometry().asPolyline()[-1]
-            # Get the absolute distance along the line to the point
-            absolute_distance = bridge_feature.geometry().lineLocatePoint(QgsGeometry.fromPointXY(line_last_vertex))
-            # Convert to relative distance (0 to 1)
-            relative_distance = absolute_distance / total_length
+        # Create a DataFrame with the tiangles and its vertices position (optimized_df)
+        polygons_df = polygons_df[polygons_df["category"] == "ground"].copy()
 
-            relative_distance = round(relative_distance, 2)
-            element_id = feature['pol_id']
-            side = feature['side']
+        c1 = vertices_df.loc[polygons_df["v1"], ['x', 'y', 'z']]
+        c2 = vertices_df.loc[polygons_df["v2"], ['x', 'y', 'z']]
+        c3 = vertices_df.loc[polygons_df["v3"], ['x', 'y', 'z']]
 
-            # Get bridge values based on code and distance
-            bridge_values = None
-            if feature["code"] in bridges_values_dict:
-                # Get values with distance >= relative_distance
-                matching_values = [v for v in bridges_values_dict[feature["code"]]
-                                 if v["distance"] >= relative_distance]
-                if matching_values:
-                    # Take the first matching value (smallest distance >= relative_distance)
-                    bridge_values = matching_values[0]
+        c1.columns = ["x1", "y1", "z1"]
+        c2.columns = ["x2", "y2", "z2"]
+        c3.columns = ["x3", "y3", "z3"]
 
-            # Set values from bridge_values if found, otherwise use defaults
-            lowerdeckelev = bridge_values["lowelev"] if bridge_values else None
-            bridgeopeningpercent = bridge_values["openingval"] if bridge_values else None
-            topelevn = bridge_values["topelev"] if bridge_values else None
+        c1.index = polygons_df.index
+        c2.index = polygons_df.index
+        c3.index = polygons_df.index
 
-            freepressureflowcd = feature['freeflow_cd']
-            deckcd = feature['deck_cd']
-            sumergeflowcd = feature['sumergeflow_cd']
-            gaugenumber = feature['gaugenumber']
+        optimized_df = pd.concat([polygons_df, c1, c2, c3], axis=1)
 
-            feature_list = [
-                element_id,
-                side,
-                1,
-                -999,
-                lowerdeckelev,
-                bridgeopeningpercent,
-                freepressureflowcd,
-                topelevn,
-                100,
-                deckcd,
-                sumergeflowcd,
-                gaugenumber,
-                0,
-                0,
-                0,
-                0,
-                0
+        # We create a DataFrame with the geometry of the triangles simplified to only the vertices (optimized_gdf)
+        # This will be used to check intersections with the bridges
+        coords = optimized_df[['x1','y1','x2','y2','x3','y3']].to_numpy()
+        vertices_geom = shapely.multipoints(coords.reshape(-1, 3, 2))
+
+        # We explode the MultiPoint geometries to create a GeoDataFrame with individual points
+        # index_parts=True ensures that we know the order of the points in the original triangles
+        # The index will have two levels: the triangle index and the point index (0, 1, 2)
+        optimized_gdf = gpd.GeoDataFrame(
+            optimized_df,
+            geometry=vertices_geom
+        ).explode(index_parts=True)
+
+        # Now we can check for intersections with the bridges
+        bridge_list = []  # Here we will store the bridge features
+        for bridge in bridges.itertuples():
+            bridge_geom: shapely.LineString = bridge.geometry
+
+            bridge_geom_buf = bridge_geom.buffer(0.01)
+            touching = optimized_gdf[
+                optimized_gdf.intersects(bridge_geom_buf)
             ]
-            bridge_list.append(feature_list)
+
+            # Segment the bridge geometry into straight segments so that only with the segments
+            # we can check for touching edge only by knowing which vertices are touching
+            segments = map(shapely.LineString, zip(bridge_geom.coords[:-1], bridge_geom.coords[1:]))
+            for segment_geom in segments:
+                mask = touching.intersects(segment_geom.buffer(0.01))
+                segment_touching = touching[mask]
+
+                for idx, group in segment_touching.groupby(level=0):
+                    side = -1
+                    if len(group) == 2:
+                        verts = group.index.get_level_values(1).to_list()
+                        # verts.sort()  # Sorting should not be necessary, as the order is already defined by the index
+                        if verts == [0, 1]:
+                            side = 1
+                        elif verts == [1, 2]:
+                            side = 2
+                        elif verts == [0, 2]:
+                            side = 3
+                    else:
+                        if len(group) > 2:
+                            raise ValueError(f"Found more than 2 vertices in group {group.index}. This is unexpected.")
+
+                        continue
+
+                    assert side != -1, f"Side not found for group {group.index}"
+
+                    # Get the relative distance along the bridge segment
+                    # We will get the middle point of the edge to calculate the distance
+                    v1 = group.iloc[0].geometry
+                    v2 = group.iloc[1].geometry
+                    mid_point = shapely.Point(
+                        (v1.x + v2.x) / 2,
+                        (v1.y + v2.y) / 2
+                    )
+
+                    # Get the absolute distance along the line to the point
+                    relative_distance = bridge_geom.project(mid_point, normalized=True)
+
+                    # Get bridge values based on code and distance
+                    bridge_values = None
+                    if bridge.code in bridges_values_dict:
+                        # Get values with distance <= relative_distance
+                        matching_values = [v for v in bridges_values_dict[bridge.code]
+                                           if v["distance"] <= relative_distance]
+                        if matching_values:
+                            # Take the last matching value (smallest distance <= relative_distance)
+                            bridge_values = matching_values[-1]
+
+                    # Set values from bridge_values if found, otherwise use defaults
+                    lowerdeckelev = bridge_values["lowelev"] if bridge_values else None
+                    bridgeopeningpercent = bridge_values["openingval"] if bridge_values else None
+                    topelevn = bridge_values["topelev"] if bridge_values else None
+
+                    freepressureflowcd = bridge.freeflow_cd
+                    deckcd = bridge.deck_cd
+                    sumergeflowcd = bridge.sumergeflow_cd
+                    gaugenumber = bridge.gaugenumber
+
+
+                    feature_list = [
+                        idx,
+                        side,
+                        1,
+                        -999,
+                        lowerdeckelev,
+                        bridgeopeningpercent,
+                        freepressureflowcd,
+                        topelevn,
+                        100,
+                        deckcd,
+                        sumergeflowcd,
+                        gaugenumber,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                    bridge_list.append(feature_list)
 
         bridges_df = pd.DataFrame(bridge_list, columns=["element_id", "side", "num1", "num2", "lowerdeckelev", "bridgeopeningpercent", "freepressureflowcd", "topelevn", "num3", "deckcd", "sumergeflowcd", "gaugenumber", "num4", "num5", "num6", "num7", "num8"])
 
@@ -585,84 +772,18 @@ class DrCreateMeshTask(DrTask):
         bridge_values_dict = {}
         rows = self.dao.get_rows("SELECT * FROM bridge_value ORDER BY bridge_code, distance ASC")
         for value in rows:
+            bridge = self.dao.get_row(f"SELECT length FROM bridge WHERE code = '{value['bridge_code']}'")
+            if bridge is not None:
+                length = bridge[0]
+            else:
+                continue
+
             if value["bridge_code"] not in bridge_values_dict.keys():
                 bridge_values_dict[value["bridge_code"]] = []
-            bridge_values_dict[value["bridge_code"]].append({"distance": value["distance"], "topelev": value["topelev"]
-                                                             , "lowelev": value["lowelev"], "openingval": value["openingval"]})
+            bridge_values_dict[value["bridge_code"]].append({
+                "distance": round(value["distance"] / length, 3),
+                "topelev": value["topelev"],
+                "lowelev": value["lowelev"],
+                "openingval": value["openingval"]
+            })
         return bridge_values_dict
-
-
-    def _create_valid_edges_layer(self, buffer_layer: QgsVectorLayer, mesh_edges_layer: QgsVectorLayer, context: QgsProcessingContext):
-        # Join buffer with mesh edges
-        alg_params = {
-            'DISCARD_NONMATCHING': True,
-            'INPUT': mesh_edges_layer,
-            'JOIN': buffer_layer,
-            'METHOD': 0,  # Create separate feature for each matching feature (one-to-many)
-            'PREDICATE': [5],  # are within
-            'PREFIX': '',
-            'OUTPUT': 'memory:'
-        }
-        valid_edges_layer: QgsVectorLayer = processing.run('qgis:joinattributesbylocation', alg_params, context=context)['OUTPUT']
-        return valid_edges_layer
-
-    def _create_bridge_buffer(self, layer: QgsVectorLayer, context: QgsProcessingContext):
-        # Buffer
-        alg_params = {
-            'DISSOLVE': False,
-            'DISTANCE': 0.1,
-            'END_CAP_STYLE': 0,  # Round
-            'INPUT': layer,
-            'JOIN_STYLE': 0,  # Round
-            'MITER_LIMIT': 2,
-            'SEGMENTS': 5,
-            'OUTPUT': 'memory:'
-        }
-        buffer_layer: QgsVectorLayer = processing.run('native:buffer', alg_params, context=context)['OUTPUT']
-        return buffer_layer
-
-    def _create_mesh_edges_layer(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame):
-        poly_df = polygons_df
-        feature_edges = {}
-        for pol in poly_df[poly_df["category"] == "ground"].itertuples():
-            vert = [pol.v1, pol.v2, pol.v3, pol.v4]
-            # Add last and first vertices as a edge if they are distinct
-            last_edge = [(vert[-1], vert[0])] if vert[-1] != vert[0] else []
-            edges = chain(self.pairwise(vert), last_edge)
-            for side, verts in enumerate(edges, start=1):
-                #edge = frozenset(verts)
-                feature_edges[verts] = (pol.Index, side)
-
-            if self.feedback.isCanceled():
-                self.message = "Task canceled."
-                return False
-
-        layer = QgsVectorLayer("LineString", "mesh_edges", "memory")
-        layer.setCrs(QgsCoordinateReferenceSystem(f"EPSG:{global_vars.data_epsg}"))
-        provider = layer.dataProvider()
-
-        fields = QgsFields()
-        fields.append(QgsField("pol_id", QVariant.String))
-        fields.append(QgsField("side", QVariant.Int))
-        provider.addAttributes(fields)
-        layer.updateFields()
-
-        features = []
-        for edge, (pol_id, side) in feature_edges.items():
-            coords = [vertices_df.loc[vert, ["x", "y"]].to_numpy() for vert in edge]
-            feature = QgsFeature()
-            feature.setGeometry(
-                QgsGeometry.fromPolyline([QgsPoint(*coord) for coord in coords])
-            )
-            feature.setAttributes([pol_id, side])
-            features.append(feature)
-        provider.addFeatures(features)
-        layer.updateExtents()
-
-        return layer
-
-    def pairwise(self, iterable):
-        # pairwise('ABCDEFG') --> AB BC CD DE EF FG
-        a, b = tee(iterable)
-        next(b, None)
-        return zip(a, b)

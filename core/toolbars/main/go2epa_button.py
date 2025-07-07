@@ -6,25 +6,22 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-import sys
-import json
 
 from functools import partial
 from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.PyQt.QtCore import QStringListModel, Qt, QTimer
-from qgis.PyQt.QtWidgets import QWidget, QComboBox, QCompleter, QFileDialog, QGroupBox, QSpacerItem, QSizePolicy, \
-    QGridLayout, QLabel, QTabWidget, QVBoxLayout, QGridLayout, QTextEdit
+from qgis.PyQt.QtCore import QTimer
+from qgis.PyQt.QtWidgets import QLabel, QTextEdit
 from qgis.core import QgsApplication
 
 from ...threads.epa_file_manager import DrEpaFileManager
 from ...shared.options import DrOptions
 from ...utils import tools_dr, Feedback
-from ...ui.ui_manager import DrGo2EpaUI, DrGo2EpaOptionsUi
+from ...ui.ui_manager import DrGo2EpaUI
 from .... import global_vars
-from ....lib import tools_qgis, tools_qt, tools_db, tools_os
+from ....lib import tools_qgis, tools_qt, tools_os
 from ..dialog import DrAction
 
 
@@ -39,11 +36,9 @@ class DrGo2IberButton(DrAction):
         self.cur_process = None
         self.cur_text = None
 
-
     def clicked_event(self):
 
         self._open_go2epa()
-
 
     # region private functions
 
@@ -77,7 +72,6 @@ class DrGo2IberButton(DrAction):
         else:
             tools_dr.open_dialog(self.dlg_go2epa, dlg_name='go2epa')
 
-
     def _set_signals(self):
 
         self.dlg_go2epa.btn_cancel.clicked.connect(self._cancel_task)
@@ -88,13 +82,11 @@ class DrGo2IberButton(DrAction):
         self.dlg_go2epa.btn_options.clicked.connect(self._go2epa_options)
         self.dlg_go2epa.mainTab.currentChanged.connect(partial(self._manage_btn_accept))
 
-
     def _manage_btn_file_path(self):
 
         path = tools_os.open_save_file_path(extension="*.inp")
         if path:
             tools_qt.set_widget_text(self.dlg_go2epa, 'txt_file_path', str(path))
-
 
     def _manage_btn_accept(self, index):
         """
@@ -114,7 +106,6 @@ class DrGo2IberButton(DrAction):
                 except RuntimeError:
                     pass
             self.dlg_go2epa.btn_accept.setEnabled(True)
-
 
     def _progress_changed(self, process, progress, text, new_line):
         # TextEdit log
@@ -141,7 +132,6 @@ class DrGo2IberButton(DrAction):
         scrollbar = txt_infolog.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
-
     def _check_fields(self):
 
         result_name = tools_qt.get_text(self.dlg_go2epa, self.dlg_go2epa.txt_file_path, False, False)
@@ -157,7 +147,6 @@ class DrGo2IberButton(DrAction):
 
         return True
 
-
     def _load_user_values(self):
         """ Load QGIS settings related with file_manager """
 
@@ -168,7 +157,6 @@ class DrGo2IberButton(DrAction):
         # value = tools_dr.get_config_parser('btn_go2epa', 'go2epa_chk_UD', "user", "session")
         # tools_qt.set_checked(self.dlg_go2epa, self.dlg_go2epa.chk_export_subcatch, value)
 
-
     def _save_user_values(self):
         """ Save QGIS settings related with file_manager """
 
@@ -177,7 +165,6 @@ class DrGo2IberButton(DrAction):
         tools_dr.set_config_parser('btn_go2epa', 'go2epa_file_path', f"{txt_file_path}")
         # chk_export_subcatch = f"{tools_qt.is_checked(self.dlg_go2epa, self.dlg_go2epa.chk_export_subcatch)}"
         # tools_dr.set_config_parser('btn_go2epa', 'go2epa_chk_UD', f"{chk_export_subcatch}")
-
 
     def _manage_form_settings(self, action):
 
@@ -191,7 +178,6 @@ class DrGo2IberButton(DrAction):
         #     # Set widgets form values
         #     if self.txt_result_name is not 'null': tools_qt.set_widget_text(self.dlg_go2epa, self.dlg_go2epa.txt_result_name, self.txt_result_name)
         #     # if self.chk_export_subcatch is not 'null': tools_qt.set_widget_text(self.dlg_go2epa, self.dlg_go2epa.chk_export_subcatch, self.chk_export_subcatch)
-
 
     def _go2epa_accept(self):
         """ Save INP, RPT and result name"""
@@ -251,17 +237,14 @@ class DrGo2IberButton(DrAction):
         QgsApplication.taskManager().addTask(self.go2epa_task)
         QgsApplication.taskManager().triggerTask(self.go2epa_task)
 
-
     def _cancel_task(self):
 
         if hasattr(self, 'go2epa_task'):
             self.go2epa_task.cancel()
 
-
     def _go2epa_options(self):
         self.go2epa_options = DrOptions(tabs_to_show=["tab_inp_swmm"])
         self.go2epa_options.open_options_dlg()
-
 
     def _calculate_elapsed_time(self, dialog):
 
