@@ -8,7 +8,7 @@ or (at your option) any later version.
 from functools import partial
 import os
 
-from qgis.PyQt.QtWidgets import QTableView, QTableWidgetItem, QSizePolicy, QLineEdit, \
+from qgis.PyQt.QtWidgets import QTableView, QSizePolicy, QLineEdit, \
     QApplication, QShortcut, QMenu, QAction
 from qgis.PyQt.QtGui import QKeySequence, QIcon, QDoubleValidator, QCursor
 from qgis.core import QgsFeature, QgsEditFormConfig, QgsProject, QgsMapLayer, QgsCoordinateTransform, QgsPointXY
@@ -24,7 +24,7 @@ from .... import global_vars
 from typing import Optional
 from sip import isdeleted
 from ....core.toolbars.dialog import DrAction
-from ....core.utils.item_delegates import NumericDelegate
+from ....core.utils.item_delegates import NumericDelegate, NumericTableWidgetItem
 
 class PlotParameters:
     """ Class to store plot parameters """
@@ -829,15 +829,15 @@ class DrBridgeButton(DrAction):
         # Insert default rows
         if is_new:
             widget.insertRow(0)
-            widget.setItem(0, 0, QTableWidgetItem('0.0'))
-            widget.setItem(0, 1, QTableWidgetItem(str(self.TOPELEV_DEFAULT)))
-            widget.setItem(0, 2, QTableWidgetItem(str(self.LOWELEV_DEFAULT)))
-            widget.setItem(0, 3, QTableWidgetItem('100'))
+            widget.setItem(0, 0, NumericTableWidgetItem('0.0'))
+            widget.setItem(0, 1, NumericTableWidgetItem(str(self.TOPELEV_DEFAULT)))
+            widget.setItem(0, 2, NumericTableWidgetItem(str(self.LOWELEV_DEFAULT)))
+            widget.setItem(0, 3, NumericTableWidgetItem('100'))
             widget.insertRow(1)
-            widget.setItem(1, 0, QTableWidgetItem(str(round(bridge.geometry().length(), 3))))
-            widget.setItem(1, 1, QTableWidgetItem(str(self.TOPELEV_DEFAULT)))
-            widget.setItem(1, 2, QTableWidgetItem(str(self.LOWELEV_DEFAULT)))
-            widget.setItem(1, 3, QTableWidgetItem('100'))
+            widget.setItem(1, 0, NumericTableWidgetItem(str(round(bridge.geometry().length(), 3))))
+            widget.setItem(1, 1, NumericTableWidgetItem(str(self.TOPELEV_DEFAULT)))
+            widget.setItem(1, 2, NumericTableWidgetItem(str(self.LOWELEV_DEFAULT)))
+            widget.setItem(1, 3, NumericTableWidgetItem('100'))
 
             # Update plot after inserting default rows
             self._update_bridge_profile_plot(widget)
@@ -864,19 +864,19 @@ class DrBridgeButton(DrAction):
             value = f"{row[headers_rel_dict.get(row0)]}"
             if value in (None, 'None', 'null'):
                 value = ''
-            widget.setItem(n, 0, QTableWidgetItem(value))
+            widget.setItem(n, 0, NumericTableWidgetItem(value))
             value = f"{row[headers_rel_dict.get(row1)]}"
             if value in (None, 'None', 'null'):
                 value = default_line_texts['topelev']
-            widget.setItem(n, 1, QTableWidgetItem(value))
+            widget.setItem(n, 1, NumericTableWidgetItem(value))
             value = f"{row[headers_rel_dict.get(row2)]}"
             if value in (None, 'None', 'null'):
                 value = default_line_texts['lowelev']
-            widget.setItem(n, 2, QTableWidgetItem(value))
+            widget.setItem(n, 2, NumericTableWidgetItem(value))
             value = f"{row[headers_rel_dict.get(row3)]}"
             if value in (None, 'None', 'null'):
                 value = default_line_texts['openingval']
-            widget.setItem(n, 3, QTableWidgetItem(value))
+            widget.setItem(n, 3, NumericTableWidgetItem(value))
 
         # Update profile plot after filling table
         self._update_bridge_profile_plot(widget)
@@ -894,7 +894,7 @@ class DrBridgeButton(DrAction):
         for r, row in enumerate(rows):
             columns = row.split("\t")
             for c, value in enumerate(columns):
-                item = QTableWidgetItem(value)
+                item = NumericTableWidgetItem(value)
                 row_pos = selected[0].topRow() + r
                 col_pos = selected[0].leftColumn() + c
                 tbl_bridge_value.setItem(row_pos, col_pos, item)
@@ -1080,10 +1080,10 @@ class DrBridgeButton(DrAction):
             if dialog.tbl_bridge_value.rowCount() == 0:
                 # Add a new default row
                 dialog.tbl_bridge_value.insertRow(0)
-                dialog.tbl_bridge_value.setItem(0, 0, QTableWidgetItem('0.0'))
-                dialog.tbl_bridge_value.setItem(0, 1, QTableWidgetItem(str(self.TOPELEV_DEFAULT)))
-                dialog.tbl_bridge_value.setItem(0, 2, QTableWidgetItem(str(self.LOWELEV_DEFAULT)))
-                dialog.tbl_bridge_value.setItem(0, 3, QTableWidgetItem('100'))
+                dialog.tbl_bridge_value.setItem(0, 0, NumericTableWidgetItem('0.0'))
+                dialog.tbl_bridge_value.setItem(0, 1, NumericTableWidgetItem(str(self.TOPELEV_DEFAULT)))
+                dialog.tbl_bridge_value.setItem(0, 2, NumericTableWidgetItem(str(self.LOWELEV_DEFAULT)))
+                dialog.tbl_bridge_value.setItem(0, 3, NumericTableWidgetItem('100'))
             elif len(selected_rows) == 1:
                 # Add a new row after the selected row with the same values
                 dialog.tbl_bridge_value.insertRow(selected_rows[0].row()+1)
@@ -1091,10 +1091,10 @@ class DrBridgeButton(DrAction):
                 item1 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 1) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 1) not in (None, '') else '0.0'
                 item2 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 2) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 2) not in (None, '') else '0.0'
                 item3 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 3) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 3) not in (None, '') else '100'
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 0, QTableWidgetItem(item0))
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 1, QTableWidgetItem(item1))
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 2, QTableWidgetItem(item2))
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 3, QTableWidgetItem(item3))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 0, NumericTableWidgetItem(item0))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 1, NumericTableWidgetItem(item1))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 2, NumericTableWidgetItem(item2))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 3, NumericTableWidgetItem(item3))
             elif len(selected_rows) == 0:
                 msg = "You have to select a row."
                 tools_qgis.show_warning(msg, dialog=dialog)

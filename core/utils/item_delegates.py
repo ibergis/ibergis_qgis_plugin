@@ -6,7 +6,7 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 
-from qgis.PyQt.QtWidgets import QStyledItemDelegate, QLineEdit, QDoubleSpinBox
+from qgis.PyQt.QtWidgets import QStyledItemDelegate, QLineEdit, QDoubleSpinBox, QTableWidgetItem
 from qgis.PyQt.QtCore import Qt
 
 
@@ -29,3 +29,10 @@ class NumericDelegate(QStyledItemDelegate):
         editor.setKeyboardTracking(False)
         editor.setToolTip("Enter a floating value")
         return editor
+
+class NumericTableWidgetItem(QTableWidgetItem):
+    def __lt__(self, other):
+        try:
+            return float(self.text()) < float(other.text())
+        except ValueError:
+            return False  # or True, depending on your desired behavior
