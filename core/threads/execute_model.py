@@ -40,15 +40,15 @@ class DrExecuteModel(DrTask):
 
     # Progress percentages
     PROGRESS_INIT = 0
-    PROGRESS_CONFIG = 5
-    PROGRESS_MESH_FILES = 25
-    PROGRESS_STATIC_FILES = 30
-    PROGRESS_INLET = 35
-    PROGRESS_HYETOGRAPHS = 40
-    PROGRESS_RAIN = 50
-    PROGRESS_CULVERTS = 60
-    PROGRESS_INP = 70
-    PROGRESS_IBER = 97
+    PROGRESS_CONFIG = 2
+    PROGRESS_MESH_FILES = 4
+    PROGRESS_STATIC_FILES = 5
+    PROGRESS_INLET = 6
+    PROGRESS_HYETOGRAPHS = 7
+    PROGRESS_RAIN = 8
+    PROGRESS_CULVERTS = 9
+    PROGRESS_INP = 10
+    PROGRESS_IBER = 90
     EXPORT_RESULTS = 99
     PROGRESS_END = 100
 
@@ -907,8 +907,12 @@ class DrExecuteModel(DrTask):
                 try:
                     # 0.000        1.00000    13:58:47:68       0.000       0.000     0.00%        --
                     output_parts = [x for x in output.strip().split(' ') if x != '']
-                    output_percentage = output_parts[5].replace('%', '')
-                    iber_percentage = tools_dr.lerp_progress(int(float(output_percentage)), init_progress, self.PROGRESS_IBER)
+                    if len(output_parts) == 7 and float(output_parts[5].replace('%', '')) < 100:
+                        output_percentage = output_parts[5].replace('%', '')
+                        iber_percentage = tools_dr.lerp_progress(int(float(output_percentage)), init_progress, self.PROGRESS_IBER)
+                        print(f"iber_percentage: {iber_percentage}")
+                    else:
+                        iber_percentage = None
                 except:
                     iber_percentage = None
                 self.progress_changed.emit(tools_qt.tr(title), iber_percentage, f'{output.strip()}', True)
