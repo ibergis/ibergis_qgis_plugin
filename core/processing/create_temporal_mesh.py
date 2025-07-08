@@ -202,7 +202,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         """ Add validation layers to project """
 
         # Find group
-        group_name = "DRAIN TEMPORAL"
+        group_name = "TEMPORAL"
         group = tools_qgis.find_toc_group(QgsProject.instance().layerTreeRoot(), group_name)
         if group is None:
             QgsProject.instance().layerTreeRoot().addGroup(group_name)

@@ -161,10 +161,10 @@ class DrMeshManagerButton(DrAction):
 
         # Remove layer if already exists
         layer_name = self.thread.layer.name()
-        tools_qgis.remove_layer_from_toc(layer_name, group_name="DRAIN TEMPORAL")
+        tools_qgis.remove_layer_from_toc(layer_name, group_name="TEMPORAL")
 
         # Add layer to TOC
-        tools_qt.add_layer_to_toc(self.thread.layer, group="DRAIN TEMPORAL")
+        tools_qt.add_layer_to_toc(self.thread.layer, group="TEMPORAL")
         iface.setActiveLayer(self.thread.layer)
         iface.zoomToActiveLayer()
 

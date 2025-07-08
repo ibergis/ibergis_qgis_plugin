@@ -413,7 +413,7 @@ class DrCreateMeshButton(DrAction):
         dlg.meshes_saved = False
 
         # Add temp layer to TOC
-        tools_qt.add_layer_to_toc(self.thread_triangulation.temp_layer, group="DRAIN TEMPORAL")
+        tools_qt.add_layer_to_toc(self.thread_triangulation.temp_layer, group="TEMPORAL")
         iface.setActiveLayer(self.thread_triangulation.temp_layer)
         iface.zoomToActiveLayer()
 
