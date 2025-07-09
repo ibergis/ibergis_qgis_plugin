@@ -105,7 +105,7 @@ class DrExecuteModel(DrTask):
         self.dialog.btn_close.setVisible(True)
 
         # Create report geopackage
-        if not self.isCanceled():
+        if not self.isCanceled() and result:
             self._create_results_folder()
 
         # self._close_file()
@@ -262,7 +262,9 @@ class DrExecuteModel(DrTask):
                 # Create hyetograph file
                 msg = "Creating hyetograph files..."
                 self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_INLET, tools_qt.tr(msg), False)
-                self._create_hyetograph_file()
+                status = self._create_hyetograph_file()
+                if not status:
+                    return False
                 msg = "done!"
                 self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_HYETOGRAPHS, tools_qt.tr(msg), True)
 
@@ -698,7 +700,7 @@ class DrExecuteModel(DrTask):
 
         if rain_class != 1:
             file_name.write_text("Hyetographs\n0\nEnd\n")
-            return
+            return True
 
         gdf = QgsVectorLayer(global_vars.gpkg_dao_data.db_filepath + "|layername=hyetograph", "hyetograph", "ogr")
         gdf_features = gdf.getFeatures()
@@ -713,6 +715,9 @@ class DrExecuteModel(DrTask):
                 file.write(f"{i}\n")
                 file.write(f"{ht_row.geometry().asPoint().x()} {ht_row.geometry().asPoint().y()}\n")
                 timeseries = timeseries_override if timeseries_override not in (None, '') else ht_row["timeseries"]
+                if timeseries in (None, '', 'null', 'NULL'):
+                    self.progress_changed.emit(None, None, f"\nERROR: Invalid timeseries for hyetograph {ht_row['code']}", True)
+                    return False
 
                 sql = f"""
                     SELECT time, value
@@ -720,15 +725,20 @@ class DrExecuteModel(DrTask):
                     WHERE timeseries ='{timeseries}'
                 """
                 ts_rows = self.dao.get_rows(sql)
-                if ts_rows:
-                    file.write(f"{len(ts_rows)}\n")
-                    for ts_row in ts_rows:
-                        hours, minutes = map(int, ts_row["time"].split(":"))
-                        seconds = hours * 3600 + minutes * 60
-                        file.write(f"{seconds} {ts_row['value']}\n")
+                if not ts_rows:
+                    self.progress_changed.emit(None, None, f"\nERROR: Timeseries values not found for timeseries {timeseries}", True)
+                    return False
+
+                file.write(f"{len(ts_rows)}\n")
+                for ts_row in ts_rows:
+                    hours, minutes = map(int, ts_row["time"].split(":"))
+                    seconds = hours * 3600 + minutes * 60
+                    file.write(f"{seconds} {ts_row['value']}\n")
+
                 self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_STATIC_FILES, self.PROGRESS_HYETOGRAPHS), '', False)
 
             file.write("End\n")
+        return True
 
     def _create_rain_file(self):
         file_name = Path(self.folder_path) / "Iber_Rain.dat"
