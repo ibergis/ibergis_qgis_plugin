@@ -43,7 +43,7 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
         if bt == "INLET TOTAL DISCHARGE (SUB)CRITICAL":
             for time, flow in value["timeseries"].items():
                 mesh_fp.write(
-                    f"{pol_id} {side} {time} -{flow} -1 -1 -41 2 1 {value['inlet']} -Hidrograma Q CriticoLento-\n"
+                    f"{pol_id} {side} {time} -{flow} -1 1 -41 2 1 {value['inlet']} -Hidrograma Q CriticoLento-\n"
                 )
         elif bt == "INLET WATER ELEVATION":
             for time, elevation in value["timeseries"].items():
