@@ -27,4 +27,4 @@ from .utilities.profile_btn import DrProfileButton
 from .utilities.mesh_manager_btn import DrMeshManagerButton
 
 # ToC
-from .toc.add_child_layer_button import DrAddChildLayerButton
+#from .toc.add_child_layer_button import DrAddChildLayerButton

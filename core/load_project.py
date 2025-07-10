@@ -76,6 +76,9 @@ class DrLoadProject(QObject):
         tools_qt._add_translator()
         self._translate_config()
 
+        # Create menu
+        tools_dr.create_drain_menu(True)
+
         # Manage actions of the different plugin_toolbars
         self._manage_toolbars()
 

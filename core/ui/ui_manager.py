@@ -255,6 +255,19 @@ class DrProfilesListUi(DrDialog, FORM_CLASS):
 # endregion
 
 
+# region Menu
+CONTEXT = "menu"
+
+UINAME = "load_menu"
+FORM_CLASS = _get_ui_class(f'{UINAME}.ui', f'{CONTEXT}')
+
+
+class DrLoadMenuUi(DrDialog, FORM_CLASS):
+    CONTEXT = CONTEXT
+    UINAME = UINAME
+# endregion
+
+
 # region SHARED
 FORM_CLASS = _get_ui_class('replace_in_file.ui')
 

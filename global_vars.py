@@ -24,6 +24,7 @@ list_configs = [                        # List of configuration files
     'drain',
     'user_params']
 project_loaded = False                  # True when selected project has been loaded
+load_project_menu = None               # Instance of class DrMenuLoad. Found in "/core/load_project_menu.py"
 configs = {}                            # Dictionary of configuration files. Value is an array of 2 columns:
                                         # [0]-> Filepath. [1]-> Instance of class ConfigParser  # noqa: E116
 configs['init'] = [None, None]          # User configuration file: init.config (located in user config folder)
