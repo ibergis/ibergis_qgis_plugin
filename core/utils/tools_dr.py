@@ -2774,8 +2774,10 @@ def reset_position_dialog(show_message=False, plugin='core', file_name='session'
         # Check if section exists in file
         if "dialogs_position" in parser:
             parser.remove_section("dialogs_position")
+        if "dialogs_dimension" in parser:
+            parser.remove_section("dialogs_dimension")
 
-        msg = "Reset position form done successfully."
+        msg = "Reset position and dimension form done successfully."
         title = "Info"
         if show_message:
             tools_qt.show_info_box(msg, title)
