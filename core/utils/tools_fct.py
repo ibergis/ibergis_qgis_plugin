@@ -27,8 +27,8 @@ def getconfig(p_input: dict) -> dict:
         # get widgets from sys_param_user
         column_names = ['columnname', 'label', 'datatype', 'widgettype',
                         'descript', 'layoutname', 'layoutorder', 'vdefault',
-                        'placeholder', 'columnname AS widgetname', 
-                        'false AS isparent', 'tabname', 'dv_querytext', 'dv_orderby_id', 
+                        'placeholder', 'columnname AS widgetname',
+                        'false AS isparent', 'tabname', 'dv_querytext', 'dv_orderby_id',
                         'CASE WHEN dv_isnullvalue = 1 THEN True ELSE False END AS isNullValue',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
@@ -373,10 +373,11 @@ def getinfofromid(p_input: dict) -> dict:
         v_islayer = p_input['feature'].get('isLayer')
         v_tablename = p_input['feature'].get('tableName')
 
+
         if v_islayer:
             column_names = ['columnname', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
                             'placeholder', 'columnname AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',
-                            'dv_orderby_id', 'dv_isnullvalue AS isNullValue',
+                            'dv_orderby_id', 'CASE WHEN dv_isnullvalue = 1 THEN True ELSE False END AS isNullValue',
                             'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                             'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
                             'CASE WHEN hidden = 1 THEN True ELSE False END AS hidden',
@@ -387,7 +388,7 @@ def getinfofromid(p_input: dict) -> dict:
                     f"WHERE formname = '{v_tablename}' " \
                     f"ORDER BY layoutorder, columnname"
 
-            v_raw_widgets = dao_config.get_rows(v_sql)
+            v_raw_widgets = dao_data.get_rows(v_sql)
 
             # format widgets as a json
             v_widgets = []
@@ -424,6 +425,10 @@ def getinfofromid(p_input: dict) -> dict:
                             for row in result:
                                 cmb_ids.append(row[0])
                                 cmb_names.append(row[1])
+
+                    if widget.get('isNullValue', False):
+                        cmb_ids.insert(0, None) if cmb_ids else None
+                        cmb_names.insert(0, None) if cmb_names else None
 
                     widget['comboIds'] = cmb_ids
                     widget['comboNames'] = cmb_names
