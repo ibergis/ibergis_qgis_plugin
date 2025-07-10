@@ -116,7 +116,7 @@ def validate_intersect(
     return output_layer
 
 def validate_intersect_v2(
-    layers_dict: dict, feedback: Feedback, include_roof: bool = False
+    layers_dict: dict, feedback: Feedback, include_roof: bool = True
 ) -> Optional[QgsVectorLayer]:
     feedback.setProgressText(f"Validating intersections for {layers_dict['ground'].name()}")
     feedback.setProgress(1)
@@ -213,6 +213,7 @@ def validate_vert_edge_v2(
     data["vertices"] = data.geometry.apply(
         lambda geom: [shapely.Point(c) for c in shapely.get_coordinates(geom, include_z=False)]
     )
+
     all_vertices = np.concatenate(data["vertices"].values)
     vertex_tree = shapely.STRtree(all_vertices)
 
@@ -255,13 +256,13 @@ def validate_vert_edge_v2(
         for vertex in vertices:
             # Step 3: Check polygon proximity
             close_polygons = nearby[
-                shapely.distance(vertex, nearby.geometry) < 0.1
+                shapely.distance(vertex, nearby.geometry) < 0.000001
             ]
             if close_polygons.empty:
                 continue
 
             # Step 4: Check vertex proximity using spatial index
-            candidate_idxs = vertex_tree.query(vertex.buffer(0.1), predicate="contains")
+            candidate_idxs = vertex_tree.query(vertex.buffer(0.000001), predicate="contains")
             nearby_vertices = all_vertices[candidate_idxs]
 
             for _, poly in close_polygons.iterrows():
@@ -274,6 +275,7 @@ def validate_vert_edge_v2(
 
                 if not has_close_vertex:
                     feat = QgsFeature()
+                    feat.setFields(output_layer.fields())
                     feat.setAttributes([poly["code"], poly["layer"]])
                     feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(vertex.x, vertex.y)))
                     features.append(feat)
@@ -285,8 +287,21 @@ def validate_vert_edge_v2(
 
         i += 1
 
+    # Remove duplicates: same geometry, code, and layer
+    unique = set()
+    deduped_features = []
     if features:
-        provider.addFeatures(features)
+        for feat in features:
+            geom = feat.geometry().asPoint()
+            code = feat["polygon_code"]
+            layer_name = feat["layer"]
+            key = (geom.x(), geom.y(), code, layer_name)
+            if key not in unique:
+                unique.add(key)
+                deduped_features.append(feat)
+
+    if deduped_features:
+        provider.addFeatures(deduped_features)
     output_layer.updateExtents()
 
     feedback.setProgressText(f"Validated vertex-edge for {layers_dict['ground'].name()}")
@@ -710,14 +725,14 @@ _validation_steps = [
         "check_missing_vertices": {
             "name": "Missing Vertices",
             "type": "error",
-            "function": validate_vert_edge_v2,
-            "layer": ["ground", "roof"],
+            "function": validate_vert_edge,
+            "layer": ["ground"],
         },
         "check_intersections": {
             "name": "Intersections",
             "type": "error",
-            "function": validate_intersect,
-            "layer": None,
+            "function": validate_intersect_v2,
+            "layer": ["ground", "roof"],
         },
     },
 ]

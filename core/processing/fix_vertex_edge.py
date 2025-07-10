@@ -110,10 +110,10 @@ class DrFixEdgeVertexAlgorithm(QgsProcessingAlgorithm):
 
         ground_features: dict[str, QgsFeature] = {}
         for feature in self.ground_layer.getFeatures():
-            ground_features[feature['code']] = feature
+            ground_features[feature['code']] = feature.id()
         roof_features: dict[str, QgsFeature] = {}
         for feature in self.roof_layer.getFeatures():
-            roof_features[feature['code']] = feature
+            roof_features[feature['code']] = feature.id()
 
         points_fid = []
         for point_feature in feature_iterator:
@@ -125,12 +125,12 @@ class DrFixEdgeVertexAlgorithm(QgsProcessingAlgorithm):
             feature = None
             if point_feature["layer"] == self.ground_layer.name():
                 if point_feature["polygon_code"] in ground_features:
-                    feature = ground_features[point_feature["polygon_code"]]
+                    feature = self.ground_layer.getFeature(ground_features[point_feature["polygon_code"]])
                 else:
                     feedback.pushWarning(self.tr(f"Polygon code {point_feature['polygon_code']} not found in ground layer"))
             elif point_feature["layer"] == self.roof_layer.name():
                 if point_feature["polygon_code"] in roof_features:
-                    feature = roof_features[point_feature["polygon_code"]]
+                    feature = self.roof_layer.getFeature(roof_features[point_feature["polygon_code"]])
                 else:
                     feedback.pushWarning(self.tr(f"Polygon code {point_feature['polygon_code']} not found in roof layer"))
             else:
@@ -176,17 +176,15 @@ class DrFixEdgeVertexAlgorithm(QgsProcessingAlgorithm):
                 continue
 
         # Commit changes
-        if self.roof_layer.isEditable():
-            if self.roof_layer.isModified():
-                self.roof_layer.commitChanges()
-            else:
-                self.roof_layer.rollBack()
+        if self.roof_layer.isModified():
+            self.roof_layer.commitChanges()
+        else:
+            self.roof_layer.rollBack()
 
-        if self.ground_layer.isEditable():
-            if self.ground_layer.isModified():
-                self.ground_layer.commitChanges()
-            else:
-                self.ground_layer.rollBack()
+        if self.ground_layer.isModified():
+            self.ground_layer.commitChanges()
+        else:
+            self.ground_layer.rollBack()
 
         self.ground_layer.updateExtents()
         self.ground_layer.triggerRepaint()

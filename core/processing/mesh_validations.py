@@ -109,9 +109,9 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
         if error_layers or warning_layers:
             group_name = "MESH INPUTS ERRORS & WARNINGS"
             for layer in error_layers:
-                tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+                tools_qt.add_layer_to_toc(layer, group_name)
             for layer in warning_layers:
-                tools_qt.add_layer_to_toc(layer, group_name, create_groups=True)
+                tools_qt.add_layer_to_toc(layer, group_name)
 
         return {}
 
