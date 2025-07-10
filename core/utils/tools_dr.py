@@ -963,6 +963,9 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
             if field['layoutname'] is None or field['layoutorder'] is None:
                 continue
 
+            if field.get('hidden') in (True, "True"):
+                continue
+
             if field['label']:
                 lbl = QLabel()
                 lbl.setObjectName('lbl' + field['widgetname'])

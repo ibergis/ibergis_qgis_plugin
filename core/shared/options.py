@@ -122,6 +122,14 @@ class DrOptions:
         tools_dr.build_dialog_options(
             self.dlg_go2epa_options, json_result['body']['form']['formTabs'], 0, self.epa_options_list)
 
+        # Remove empty groups
+        for group in self.dlg_go2epa_options.findChildren(QGroupBox):
+            child_widgets = group.findChildren(QWidget)
+            if not child_widgets:
+                parent_layout = group.parentWidget().layout()
+                parent_layout.removeWidget(group)
+                group.deleteLater()
+
         # Event on change from combo parent
         self._get_event_combo_parent(json_result)
         self.dlg_go2epa_options.btn_accept.clicked.connect(partial(self._update_values, self.epa_options_list))

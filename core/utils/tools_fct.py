@@ -30,6 +30,7 @@ def getconfig(p_input: dict) -> dict:
                         'placeholder', 'columnname AS widgetname',
                         'false AS isparent', 'tabname', 'dv_querytext', 'dv_orderby_id',
                         'CASE WHEN dv_isnullvalue = 1 THEN True ELSE False END AS isNullValue',
+                        'CASE WHEN hidden = 1 THEN True ELSE False END AS hidden',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
                         'vdefault AS value', 'tooltip', 'addparam'
