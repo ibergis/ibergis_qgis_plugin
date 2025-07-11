@@ -324,7 +324,7 @@ def validate_vert_edge(
 
     gdfs = []
     for layer in layers:
-        gdf = layer_to_gdf(layer, ["fid"])
+        gdf = layer_to_gdf(layer, ["code"])
         gdf["layer"] = layer.name()
         gdfs.append(gdf)
 
@@ -336,7 +336,7 @@ def validate_vert_edge(
     assert provider is not None, "Provider is None"
 
     provider.addAttributes([
-        QgsField("polygon_fid", QVariant.Int),
+        QgsField("polygon_code", QVariant.String),
         QgsField("layer", QVariant.String)
     ])
     output_layer.updateFields()
@@ -372,7 +372,7 @@ def validate_vert_edge(
                     if dist_to_verts > 0.1:
                         feature = QgsFeature()
                         feature.setAttributes([
-                            neighbour.fid,
+                            neighbour.code,
                             neighbour.layer
                         ])
                         feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(*p)))

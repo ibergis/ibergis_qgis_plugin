@@ -35,12 +35,12 @@ class DrMenuLoad(QObject):
         actions = self.iface.mainWindow().menuBar().actions()
         last_action = actions[-1]
 
-        self.main_menu = QMenu("&Drain", self.iface.mainWindow().menuBar())
-        self.main_menu.setObjectName("Drain")
+        self.main_menu = QMenu("&IberGIS", self.iface.mainWindow().menuBar())
+        self.main_menu.setObjectName("IberGIS")
         tools_dr.set_config_parser("menu", "load", "true", "project", "drain")
 
         icon_folder = f"{global_vars.plugin_dir}{os.sep}icons"
-        icon_path = f"{icon_folder}{os.sep}toolbars{os.sep}utilities{os.sep}99.png" #TODO: Change icon
+        icon_path = f"{icon_folder}{os.sep}dialogs{os.sep}24x24{os.sep}36.png"
         config_icon = QIcon(icon_path)
 
         # region Actions

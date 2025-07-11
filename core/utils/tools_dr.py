@@ -3114,7 +3114,7 @@ def create_drain_menu(project_loaded=False):
 def unset_drain_menu():
     """ Unset Drain menu (when plugin is disabled or reloaded) """
 
-    menu_drain = global_vars.iface.mainWindow().menuBar().findChild(QMenu, "Drain")
+    menu_drain = global_vars.iface.mainWindow().menuBar().findChild(QMenu, "IberGIS")
     if menu_drain not in (None, "None"):
         menu_drain.clear()  # I think it's good to clear the menu before deleting it, just in case
         menu_drain.deleteLater()
