@@ -1,4 +1,4 @@
-## WELCOME TO DRAIN PROJECT-QGIS PLUGIN
+## WELCOME TO IBERGIS PROJECT-QGIS PLUGIN
 
 Water management has always been complex and expensive. It has always been difficult to plan new water supply networks or effective control existing ones without making further capital investments. Nonetheless all these situations have come to an end. Since 2011 when IBER...
 
@@ -50,7 +50,7 @@ Built: Bug fix and new little functionalities with forward compatibility.<br>
 
 ## Third-Party Libraries
 
-Drain uses the following third-party libraries:
+IberGIS uses the following third-party libraries:
 
 - **swmm-api**: [swmm-api GitLab](https://gitlab.com/markuspichler/swmm_api)
   swmm-api provides a Pythonic interface to the EPA SWMM5 software, enabling advanced scripting, simulation control, and access to simulation results.
