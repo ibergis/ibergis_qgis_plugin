@@ -10,7 +10,7 @@ import os
 
 from qgis.core import QgsProcessingProvider
 from qgis.PyQt.QtGui import QIcon
-from .fix_vertex_edge import DrFixEdgeVertexAlgorithm
+from .fix_missing_vertex import DrFixMissingVertexAlgorithm
 from .mesh_validations import DrMeshValidationsAlgorithm
 from .remove_duplicate_vertices import DrRemoveDuplicateVertices
 from .simplify_mesh_input_geometries import SimplifyMeshInputGeometries
@@ -37,7 +37,7 @@ class DrainMeshProvider(QgsProcessingProvider):
         """
         Loads all algorithms belonging to this provider.
         """
-        self.addAlgorithm(DrFixEdgeVertexAlgorithm())
+        self.addAlgorithm(DrFixMissingVertexAlgorithm())
         self.addAlgorithm(DrMeshValidationsAlgorithm())
         self.addAlgorithm(DrRemoveDuplicateVertices())
         self.addAlgorithm(SimplifyMeshInputGeometries())
@@ -49,7 +49,7 @@ class DrainMeshProvider(QgsProcessingProvider):
         string should be a unique, short, character only string, eg "qgis" or
         "gdal". This string should not be localised.
         """
-        return 'DrainMeshProvider'
+        return 'IberGISMeshProvider'
 
     def name(self):
         """
@@ -58,7 +58,7 @@ class DrainMeshProvider(QgsProcessingProvider):
 
         This string should be short (e.g. "Lastools") and localised.
         """
-        return self.tr('Drain - Mesh')
+        return self.tr('IberGIS - Mesh')
 
     def icon(self):
         return QIcon(f"{self.plugin_dir}{os.sep}icons{os.sep}toolbars{os.sep}utilities{os.sep}59.png")

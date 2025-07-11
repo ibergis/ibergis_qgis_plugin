@@ -15,7 +15,7 @@ from typing import Any, Optional
 
 from ...lib import tools_qgis
 
-class DrFixEdgeVertexAlgorithm(QgsProcessingAlgorithm):
+class DrFixMissingVertexAlgorithm(QgsProcessingAlgorithm):
     GROUND_LAYER = 'GROUND_LAYER'
     ROOF_LAYER = 'ROOF_LAYER'
     POINT_LAYER = 'INPUT'
@@ -30,10 +30,10 @@ class DrFixEdgeVertexAlgorithm(QgsProcessingAlgorithm):
         super().__init__()
 
     def name(self) -> str:
-        return 'fix_edge_vertex'
+        return 'fix_missing_vertex'
 
     def displayName(self) -> str:
-        return 'Fix Edge Vertex Errors'
+        return 'Fix Missing Vertex Errors'
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
