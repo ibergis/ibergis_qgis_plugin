@@ -148,8 +148,8 @@ class DrBridgeButton(DrAction):
         # Connect dialog signals
         self.dialog.btn_cancel.clicked.connect(self.dialog.reject)
         self.dialog.btn_accept.clicked.connect(partial(self.accept_bridge, self.dialog, bridge, is_new))
-        self.dialog.btn_add.clicked.connect(partial(self._manage_table, self.dialog, True))
-        self.dialog.btn_del.clicked.connect(partial(self._manage_table, self.dialog, False))
+        self.dialog.btn_add.clicked.connect(partial(self._manage_table, self.dialog, bridge, True))
+        self.dialog.btn_del.clicked.connect(partial(self._manage_table, self.dialog, bridge, False))
         self.dialog.finished.connect(partial(self.close_dialog, self.dialog))
         self.dialog.tbl_bridge_value.itemChanged.connect(partial(self._onItemChanged, self.dialog.tbl_bridge_value))
         self.dialog.chk_dem.stateChanged.connect(partial(self._update_bridge_profile_plot, self.dialog.tbl_bridge_value))
@@ -1070,7 +1070,7 @@ class DrBridgeButton(DrAction):
             self.bridge_edit_action.setChecked(False)
             canvas.mapToolSet.disconnect(self._uncheck)
 
-    def _manage_table(self, dialog, is_add: bool):
+    def _manage_table(self, dialog, bridge: QgsFeature, is_add: bool):
         """ Manage table """
 
         selection_model = dialog.tbl_bridge_value.selectionModel()
@@ -1084,6 +1084,11 @@ class DrBridgeButton(DrAction):
                 dialog.tbl_bridge_value.setItem(0, 1, NumericTableWidgetItem(str(self.TOPELEV_DEFAULT)))
                 dialog.tbl_bridge_value.setItem(0, 2, NumericTableWidgetItem(str(self.LOWELEV_DEFAULT)))
                 dialog.tbl_bridge_value.setItem(0, 3, NumericTableWidgetItem('100'))
+                dialog.tbl_bridge_value.insertRow(1)
+                dialog.tbl_bridge_value.setItem(1, 0, NumericTableWidgetItem(str(round(bridge.geometry().length(), 3))))
+                dialog.tbl_bridge_value.setItem(1, 1, NumericTableWidgetItem(str(self.TOPELEV_DEFAULT)))
+                dialog.tbl_bridge_value.setItem(1, 2, NumericTableWidgetItem(str(self.LOWELEV_DEFAULT)))
+                dialog.tbl_bridge_value.setItem(1, 3, NumericTableWidgetItem('100'))
             elif len(selected_rows) == 1:
                 # Add a new row after the selected row with the same values
                 dialog.tbl_bridge_value.insertRow(selected_rows[0].row()+1)
