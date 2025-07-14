@@ -440,7 +440,7 @@ class DrExecuteModel(DrTask):
 
             if not losses_content:
                 losses_content = '0'
-            else:
+            elif losses_content != '0':
                 # Losses method
                 sql = "SELECT value FROM config_param_user WHERE parameter = 'options_losses_method'"
                 row = self.dao.get_row(sql)
