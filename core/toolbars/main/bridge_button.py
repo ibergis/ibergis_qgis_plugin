@@ -752,14 +752,15 @@ class DrBridgeButton(DrAction):
 
                 # Add point with lowelev = column_elev at next distance (if not last point)
                 if i < len(sorted_data) - 1:
-                    next_dist = sorted_data[i + 1][0]
+                    next_dist: float = sorted_data[i + 1][0]
+                    next_top: float = sorted_data[i + 1][1]
                     if has_invalid_elevations:
                         next_column_elev = 0
                     else:
                         next_column_elev = self._interpolate_dem_at_distance(next_dist, dem_distances, dem_values)
 
                     processed_distances.append(next_dist)
-                    processed_topelevs.append(top)
+                    processed_topelevs.append(next_top)
                     processed_lowelevs.append(next_column_elev)
                     processed_openingvals.append(0)
 
