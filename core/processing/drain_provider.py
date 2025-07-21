@@ -18,7 +18,6 @@ from .set_outlet_for_roofs import SetOutletForRoofs
 from .import_inlet_geometries import ImportInletGeometries
 from .check_project import DrCheckProjectAlgorithm
 
-
 class DrainProvider(QgsProcessingProvider):
 
     def __init__(self, plugin_dir):

@@ -162,7 +162,6 @@ VALUES
 (29, 'GEOMETRIC DUPLICATE', 'node', NULL, NULL, 1, 'Point', 4, 8, 3, 102),
 (30, 'GEOMETRIC ORPHAN', 'node', NULL, NULL, 1, 'Point', 5, 9, 3, 103),
 (31, 'GEOMETRIC DUPLICATE', 'inlet', NULL, NULL, 1, 'Point', 4, 8, 3, 104),
-(32, 'MANDATORY NULL', 'inlet', '{a_param, b_param}', 'AND method == "W_O"', 0, NULL, 2, 11, 3, 132),
 (33, 'MANDATORY NULL', 'inlet', '{weir_cd, orifice_cd}', 'AND method == "UPC"', 0, NULL, 2, 11, 3, 133),
 (34, 'MANDATORY NULL', 'inp_outfall', '{stage}', 'AND outfall_type == "FIXED"', 0, NULL, 2, 11, 3, 134),
 (35, 'MANDATORY NULL', 'inp_outfall', '{curve}', 'AND outfall_type == "TIDAL"', 0, NULL, 2, 11, 3, 135),

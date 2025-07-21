@@ -15,6 +15,13 @@ from .mesh_validations import DrMeshValidationsAlgorithm
 from .remove_duplicate_vertices import DrRemoveDuplicateVertices
 from .simplify_mesh_input_geometries import SimplifyMeshInputGeometries
 from .create_temporal_mesh import CreateTemporalMesh
+from .fix_intersections import FixIntersections
+from .check_small_polygons import CheckSmallPolygons
+from .fix_small_polygons import FixSmallPolygons
+from .check_invalid_donuts import CheckInvalidDonuts
+from .fix_geometry import FixGeometry
+from .fix_orphan_grounds import FixOrphanGrounds
+from .check_close_vertices import CheckCloseVertices
 
 
 class DrainMeshProvider(QgsProcessingProvider):
@@ -42,6 +49,13 @@ class DrainMeshProvider(QgsProcessingProvider):
         self.addAlgorithm(DrRemoveDuplicateVertices())
         self.addAlgorithm(SimplifyMeshInputGeometries())
         self.addAlgorithm(CreateTemporalMesh())
+        self.addAlgorithm(FixIntersections())
+        self.addAlgorithm(CheckSmallPolygons())
+        self.addAlgorithm(FixSmallPolygons())
+        self.addAlgorithm(CheckInvalidDonuts())
+        self.addAlgorithm(FixGeometry())
+        self.addAlgorithm(FixOrphanGrounds())
+        self.addAlgorithm(CheckCloseVertices())
 
     def id(self):
         """

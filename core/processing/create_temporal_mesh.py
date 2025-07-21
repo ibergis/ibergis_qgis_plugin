@@ -196,6 +196,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             return outputs
         else:
             feedback.pushWarning(self.tr('Error during mesh creation'))
+            feedback.pushWarning(task.exception)
             return {}
 
     def postProcessAlgorithm(self, context, feedback: Feedback):

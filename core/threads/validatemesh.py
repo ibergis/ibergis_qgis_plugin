@@ -118,7 +118,7 @@ def validate_intersect(
 def validate_intersect_v2(
     layers_dict: dict, feedback: Feedback, include_roof: bool = True
 ) -> Optional[QgsVectorLayer]:
-    feedback.setProgressText(f"Validating intersections for {layers_dict['ground'].name()}")
+    feedback.setProgressText(f"Validating intersections for {list(layer.name() for layer in layers_dict.values())}")
     feedback.setProgress(1)
 
     layers: list[QgsVectorLayer] = [layers_dict["ground"]]
@@ -167,7 +167,7 @@ def validate_intersect_v2(
 
     output_layer.updateExtents()
 
-    feedback.setProgressText(f"Validated intersections for {layers_dict['ground'].name()}")
+    feedback.setProgressText(f"Validated intersections for {list(layer.name() for layer in layers_dict.values())}")
     feedback.setProgress(100)
     return output_layer
 
@@ -189,7 +189,7 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
 def validate_vert_edge_v2(
     layers_dict: dict, feedback: Feedback, include_roof: bool = False
 ) -> Optional[QgsVectorLayer]:
-    feedback.setProgressText(f"Validating vertex-edge for {layers_dict['ground'].name()}")
+    feedback.setProgressText(f"Validating vertex-edge for {list(layer.name() for layer in layers_dict.values())}")
     feedback.setProgress(1)
 
     # Calculate total features across all layers
@@ -304,14 +304,14 @@ def validate_vert_edge_v2(
         provider.addFeatures(deduped_features)
     output_layer.updateExtents()
 
-    feedback.setProgressText(f"Validated vertex-edge for {layers_dict['ground'].name()}")
+    feedback.setProgressText(f"Validated vertex-edge for {list(layer.name() for layer in layers_dict.values())}")
     feedback.setProgress(100)
     return output_layer
 
 def validate_vert_edge(
     layers_dict: dict, feedback: Feedback, include_roof: bool = False
 ) -> Optional[QgsVectorLayer]:
-    feedback.setProgressText(f"Validating vertex-edge for {layers_dict['ground'].name()}")
+    feedback.setProgressText(f"Validating vertex-edge for {list(layer.name() for layer in layers_dict.values())}")
     feedback.setProgress(1)
 
     # Calculate total features across all layers
@@ -387,7 +387,7 @@ def validate_vert_edge(
 
     output_layer.updateExtents()
 
-    feedback.setProgressText(f"Validated vertex-edge for {layers_dict['ground'].name()}")
+    feedback.setProgressText(f"Validated vertex-edge for {list(layer.name() for layer in layers_dict.values())}")
     feedback.setProgress(100)
     return output_layer
 
@@ -495,7 +495,7 @@ def validate_roof_layer(
 
 
 def validate_distance(
-    layer: QgsVectorLayer, feedback: Feedback
+    layer: QgsVectorLayer, feedback: Feedback, tolerance: float = 0.00001, use_cellsize: bool = True
 ) -> Optional[QgsVectorLayer]:
     feedback.setProgressText(f"Validating distance for {layer.name()}")
     feedback.setProgress(1)
@@ -521,14 +521,20 @@ def validate_distance(
         vertices_gdf.groupby("geometry")["cellsize"].idxmin()
     ]
 
+    if use_cellsize:
+        max_dist = max(cellsize)
+    else:
+        max_dist = tolerance
+
     join = vertices_gdf.sjoin_nearest(
-        vertices_gdf, max_distance=max(cellsize), distance_col="dist", exclusive=True
+        vertices_gdf, max_distance=max_dist, distance_col="dist", exclusive=True
     )
     if feedback.isCanceled():
         return
-    join = join[join["dist"] > 1e-5]
-    join["cellsize"] = join[["cellsize_left", "cellsize_right"]].max(axis=1)
-    join = join[join["dist"] < join["cellsize"]]
+    join = join[join["dist"] < tolerance]
+    if use_cellsize:
+        join["cellsize"] = join[["cellsize_left", "cellsize_right"]].max(axis=1)
+        join = join[join["dist"] < join["cellsize"]]
 
     output_layer = QgsVectorLayer("Point", "Close Vertices Warning", "memory")
     output_layer.setCrs(layer.crs())
@@ -725,7 +731,7 @@ _validation_steps = [
         "check_missing_vertices": {
             "name": "Missing Vertices",
             "type": "error",
-            "function": validate_vert_edge,
+            "function": validate_vert_edge_v2,
             "layer": ["ground"],
         },
         "check_intersections": {
