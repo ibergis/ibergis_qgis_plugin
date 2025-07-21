@@ -404,6 +404,13 @@ class DrBridgeButton(DrAction):
         # Commit
         global_vars.gpkg_dao_data.commit()
 
+        bridge_layer = tools_qgis.get_layer_by_tablename('bridge')
+        if bridge_layer is None:
+            tools_qgis.show_warning("Bridge layer not found.")
+            return
+        bridge_layer.dataProvider().reloadData()
+        bridge_layer.triggerRepaint()
+
         # Reload manager table
         tools_dr.close_dialog(dialog)
 

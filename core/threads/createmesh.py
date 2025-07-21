@@ -26,6 +26,7 @@ import time
 import numpy as np
 import pandas as pd
 import processing
+import bisect
 
 
 class DrCreateMeshTask(DrTask):
@@ -611,6 +612,7 @@ class DrCreateMeshTask(DrTask):
         bridges = layer_to_gdf(
             bridge_layer,
             ["code"],
+            do_normalize=False
         )
 
         if len(bridges) == 0:
@@ -716,6 +718,7 @@ class DrCreateMeshTask(DrTask):
             # we can check for touching edge only by knowing which vertices are touching
             segments = map(shapely.LineString, zip(bridge_geom.coords[:-1], bridge_geom.coords[1:]))
             for segment_geom in segments:
+
                 mask = touching.intersects(segment_geom.buffer(0.01))
                 segment_touching = touching[mask]
 
@@ -753,17 +756,20 @@ class DrCreateMeshTask(DrTask):
                     # Get bridge values based on code and distance
                     bridge_values = None
                     if bridge.code in bridges_values_dict:
-                        # Get values with distance <= relative_distance
-                        matching_values = [v for v in bridges_values_dict[bridge.code]
-                                           if v["distance"] <= relative_distance]
-                        if matching_values:
-                            # Take the last matching value (smallest distance <= relative_distance)
-                            bridge_values = matching_values[-1]
+                        values = bridges_values_dict[bridge.code]
+                        # Extract the distances for bisect
+                        distances = [v["distance"] for v in values]
+                        index = bisect.bisect_right(distances, relative_distance)
+                        bridge_values = values[index - 1] if index > 0 else None
+                        bridge_next_value = values[index] if index < len(values) else None
+                    else:
+                        bridge_values = None
+                        bridge_next_value = None
 
                     # Set values from bridge_values if found, otherwise use defaults
-                    lowerdeckelev = bridge_values["lowelev"] if bridge_values else None
-                    bridgeopeningpercent = bridge_values["openingval"] if bridge_values else None
-                    topelevn = bridge_values["topelev"] if bridge_values else None
+                    lowerdeckelev = (bridge_values["lowelev"]+bridge_next_value["lowelev"])/2 if bridge_values and bridge_next_value else None
+                    bridgeopeningpercent = (bridge_values["openingval"]) if bridge_values else None
+                    topelevn = (bridge_values["topelev"]+bridge_next_value["topelev"])/2 if bridge_values and bridge_next_value else None
 
                     freepressureflowcd = bridge.freeflow_cd
                     deckcd = bridge.deck_cd
