@@ -110,7 +110,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
 
         # Validate intersection
         if self.validate_layers:
-            self.validation_layer_intersect = validatemesh.validate_intersect(
+            self.validation_layer_intersect = validatemesh.validate_intersect_v2(
                 {"ground": self.ground_layer}, feedback
             )
             if self.validation_layer_intersect is None:
@@ -218,12 +218,12 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             # Add validation layer
             QgsProject.instance().addMapLayer(self.validation_layer_intersect, False)
             group.addLayer(self.validation_layer_intersect)
-            feedback.setProgressText(self.tr('Input layers validated'))
+            feedback.pushWarning(self.tr('Intersection errors found'))
         elif self.validation_layer_vert_edge is not None and self.validation_layer_vert_edge.featureCount() > 0:
             # Add validation layer
             QgsProject.instance().addMapLayer(self.validation_layer_vert_edge, False)
             group.addLayer(self.validation_layer_vert_edge)
-            feedback.setProgressText(self.tr('Input layers validated'))
+            feedback.pushWarning(self.tr('Missing vertices found'))
 
         return {}
 

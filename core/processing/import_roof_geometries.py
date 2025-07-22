@@ -266,7 +266,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         if self.converted_geometries_layer is None or self.file_target is None or self.field_map is None or self.unique_fields is None:
             return {}
 
-        db_filepath: str = f"{global_vars.project_vars['project_gpkg']}"
+        db_filepath: str = f"{global_vars.project_vars['project_gpkg_path']}"
         db_filepath: str = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
         self.dao.init_db(db_filepath)
 

@@ -139,7 +139,7 @@ class DrLoadProject(QObject):
         global_vars.project_vars['main_schema'] = tools_qgis.get_project_variable('gwMainSchema')
         global_vars.project_vars['project_role'] = tools_qgis.get_project_variable('gwProjectRole')
         global_vars.project_vars['project_type'] = tools_qgis.get_project_variable('gwProjectType')
-        global_vars.project_vars['project_gpkg'] = tools_qgis.get_project_variable('project_gpkg_path')
+        global_vars.project_vars['project_gpkg_path'] = tools_qgis.get_project_variable('project_gpkg_path')
 
     def _get_user_variables(self):
         """ Get config related with user variables """
@@ -195,7 +195,7 @@ class DrLoadProject(QObject):
         global_vars.gpkg_dao_data = gpkg_dao_data
 
         # Define filepath of data GPKG
-        db_filepath = f"{global_vars.project_vars['project_gpkg']}"
+        db_filepath = f"{global_vars.project_vars['project_gpkg_path']}"
         db_filepath = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
 
         if db_filepath is None:

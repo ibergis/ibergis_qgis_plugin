@@ -232,7 +232,7 @@ class DrEpaFileManager(DrTask):
         # Input layer
         output_layer_name = f'{input_layer}_output'
         input_layer_name = input_layer
-        input_path = f"{QgsProject.instance().absolutePath()}{os.sep}{global_vars.project_vars['project_gpkg']}"
+        input_path = f"{QgsProject.instance().absolutePath()}{os.sep}{global_vars.project_vars['project_gpkg_path']}"
         input_layer_uri = f"{input_path}|layername={input_layer_name}"
         input_layer = QgsVectorLayer(input_layer_uri, input_layer_name, 'ogr')
 
