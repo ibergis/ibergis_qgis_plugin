@@ -339,8 +339,8 @@ INSERT INTO ground (geom) VALUES(ST_GeomFromText('MULTIPOLYGON (((418351.857102 
 -- -----------
 -- INP_OUTFALL
 -- -----------
-INSERT INTO inp_outfall (elev, outfall_type, stage, geom) VALUES(27.830, 'FREE', NULL, ST_GeomFromText('POINT (418670.68587686174 4578106.617988236)', <SRID_VALUE>));
-INSERT INTO inp_outfall (elev, outfall_type, stage, geom) VALUES(25.680, 'NORMAL', NULL, ST_GeomFromText('POINT (418723.93759786186 4577570.231249673)', <SRID_VALUE>));
+INSERT INTO inp_outfall (elev, outfall_type, stage, geom) VALUES(27.830, 'FREE', NULL, ST_GeomFromText('POINT (418670.685877 4578106.617988)', <SRID_VALUE>));
+INSERT INTO inp_outfall (elev, outfall_type, stage, geom) VALUES(25.680, 'NORMAL', NULL, ST_GeomFromText('POINT (418723.937598 4577570.23125)', <SRID_VALUE>));
 INSERT INTO inp_outfall (elev, outfall_type, stage, geom) VALUES(34.000, 'FIXED', 33.0, ST_GeomFromText('POINT (418490.7708482869 4577557.4220293965)', <SRID_VALUE>));
 INSERT INTO inp_outfall (elev, outfall_type, stage, geom) VALUES(30.000, 'FREE', 0.0, ST_GeomFromText('POINT (418440.0567244498 4578032.6662221765)', <SRID_VALUE>));
 

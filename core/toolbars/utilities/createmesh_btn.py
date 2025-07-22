@@ -66,7 +66,7 @@ class DrCreateMeshButton(DrAction):
         # Roughness
         rows = [
             [None, "Fill losses with zeroes"],
-            ["ground_layer", "Ground"],
+            ["ground_layer", "Column scs_cn from ground layer"],
             *raster_layers,
         ]
         tools_qt.fill_combo_values(dlg.cmb_losses_layer, rows, add_empty=False)

@@ -107,6 +107,7 @@ class DrExecuteModel(DrTask):
         # Create report geopackage
         if not self.isCanceled() and result:
             self._create_results_folder()
+            self._delete_raster_results()
 
         # self._close_file()
         if self.timer:
@@ -192,6 +193,14 @@ class DrExecuteModel(DrTask):
                 msg = "Imported results"
                 self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
         self.progress_changed.emit(None, self.PROGRESS_END, None, False)
+
+    def _delete_raster_results(self):
+        """Delete raster results folder"""
+
+        netcdf_path: str = f'{self.folder_path}{os.sep}DrainResults{os.sep}rasters.nc'
+        raster_files: str = f'{self.folder_path}{os.sep}RasterResults'
+        if os.path.exists(netcdf_path) and os.path.exists(raster_files):
+            shutil.rmtree(raster_files)
 
     def _import_results_progress_changed(self, process, progress, text, new_line):
         self.progress_changed.emit(tools_qt.tr("Import results"), None, text, new_line)
