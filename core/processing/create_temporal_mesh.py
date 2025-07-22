@@ -111,7 +111,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         # Validate intersection
         if self.validate_layers:
             self.validation_layer_intersect = validatemesh.validate_intersect_v2(
-                {"ground": self.ground_layer}, feedback
+                {"ground": self.ground_layer}, feedback, False
             )
             if self.validation_layer_intersect is None:
                 feedback.pushWarning("Intersection validation layer not found")
