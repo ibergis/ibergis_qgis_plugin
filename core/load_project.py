@@ -44,12 +44,12 @@ class DrLoadProject(QObject):
         # Get variables from qgis project
         self._get_project_variables()
 
-        # Check if loaded project is valid for Drain
-        if not self._check_project(show_warning):
-            return
-
         # Set database connection to Geopackage file
         if not self._check_database_connection():
+            return
+
+        # Check if loaded project is valid for Drain
+        if not self._check_project(show_warning):
             return
 
         # TODO: Get SRID from table node
@@ -152,7 +152,30 @@ class DrLoadProject(QObject):
         global_vars.date_format = tools_dr.get_config_parser('system', 'date_format', "user", "init", False)
 
     def _check_project(self, show_warning):
-        """ TODO: Check if loaded project is valid for Drain """
+        """ Check if loaded project is valid for Drain """
+
+        # Check if table 'ground' and 'roof' are loaded
+        layer_ground = tools_qgis.get_layer_by_tablename("ground")
+        layer_roof = tools_qgis.get_layer_by_tablename("roof")
+        if (layer_ground, layer_roof) == (None, None):  # If no ibergis layers are present
+            return False
+
+        # Check missing layers
+        missing_layers = {}
+        if layer_ground is None:
+            missing_layers['ground'] = True
+        if layer_roof is None:
+            missing_layers['roof'] = True
+
+        # Show message if layers are missing
+        if missing_layers:
+            if show_warning:
+                title = "IberGIS plugin cannot be loaded"
+                msg = f"QGIS project seems to be a IberGIS project, but layer(s) {0} are missing"
+                msg_params = ([k for k, v in missing_layers.items()],)
+                tools_qgis.show_warning(msg, 20, title=title, msg_params=msg_params)
+            return False
+
         return True
 
     def _check_database_connection(self):

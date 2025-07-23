@@ -81,6 +81,8 @@ class DrExecuteModel(DrTask):
         self.do_export = self.params.get('do_export', True)
         self.do_run = self.params.get('do_run', True)
         self.do_import = self.params.get('do_import', True)
+        self.do_write_inlets = self.params.get('do_write_inlets', True)
+        self.pinlet_layer = self.params.get('pinlet_layer', tools_qgis.get_layer_by_tablename('pinlet'))
 
     def run(self):
 
@@ -165,7 +167,7 @@ class DrExecuteModel(DrTask):
         if self.isCanceled():
             return
 
-        if created_netcdf:
+        if created_netcdf and self.do_import:
             msg = "Do you want to import the results into the project?"
             title = 'Import results'
             result: Optional[bool] = tools_qt.show_question(msg, title, force_action=True)
@@ -261,7 +263,7 @@ class DrExecuteModel(DrTask):
                 # Create inlet file
                 msg = "Creating inlet files..."
                 self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_STATIC_FILES, tools_qt.tr(msg), False)
-                self._create_inlet_file(mesh_id)
+                self._create_inlet_file(mesh_id, self.pinlet_layer)
                 msg = "done!"
                 self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_INLET, tools_qt.tr(msg), True)
 
@@ -543,34 +545,42 @@ class DrExecuteModel(DrTask):
             shutil.copy(folder / file_name, self.folder_path)
             self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(tools_dr.lerp_progress(i, 0, len(file_names)), self.PROGRESS_MESH_FILES, self.PROGRESS_STATIC_FILES), '', False)
 
-    def _create_inlet_file(self, selected_mesh: Optional[QgsMeshLayer] = None):
+    def _create_inlet_file(self, selected_mesh: Optional[QgsMeshLayer] = None, pinlet_layer: Optional[QgsVectorLayer] = None):
         file_name = Path(self.folder_path) / "Iber_SWMM_inlet_info.dat"
 
         # Convert pinlets into inlets
-        converted_inlets: Optional[List[QgsFeature]] = self._convert_pinlets_into_inlets(selected_mesh)
+        converted_inlets: Optional[List[QgsFeature]] = self._convert_pinlets_into_inlets(selected_mesh, pinlet_layer)
 
-        sql = "SELECT gully_id, outlet_type, node_id, xcoord, ycoord, zcoord, width, length, depth, method, weir_cd, " \
+        if self.do_write_inlets:
+            # Get existing inlets from current project
+            sql = "SELECT gully_id, outlet_type, node_id, xcoord, ycoord, zcoord, width, length, depth, method, weir_cd, " \
               "orifice_cd, a_param, b_param, efficiency FROM vi_inlet ORDER BY gully_id;"
-        rows = self.dao.get_rows(sql)
+            rows = self.dao.get_rows(sql)
 
-        # Fetch column names
-        column_names = ['gully_id', 'outlet_type', 'node_id', 'xcoord', 'ycoord', 'zcoord', 'width', 'length',
-                        'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
-        if rows:
-            column_names = [key for key in rows[0].keys()]
+            # Fetch column names
+            column_names = ['gully_id', 'outlet_type', 'node_id', 'xcoord', 'ycoord', 'zcoord', 'width', 'length',
+                            'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
+            if rows:
+                column_names = [key for key in rows[0].keys()]
+            # Write new inlets
+            mode = 'w'
+        else:
+            # Append pinlets to existing file
+            mode = 'a'
 
-        with open(file_name, 'w', newline='') as dat_file:
-            # Write column headers
-            header_str = f"{' '.join(column_names)}\n"
-            dat_file.write(header_str)
+        with open(file_name, mode, newline='') as dat_file:
             transform_dict = {None: -9999, 'TO NETWORK': 'To_network', 'SINK': 'Sink', 'NULL': -9999}
-            for row in rows:
-                values = []
-                for value in row:
-                    value_str = str(transform_dict.get(value, value))
-                    values.append(value_str)
-                values_str = f"{' '.join(values)}\n"
-                dat_file.write(values_str)
+            if self.do_write_inlets:
+                # Write column headers
+                header_str = f"{' '.join(column_names)}\n"
+                dat_file.write(header_str)
+                for row in rows:
+                    values = []
+                    for value in row:
+                        value_str = str(transform_dict.get(value, value))
+                        values.append(value_str)
+                    values_str = f"{' '.join(values)}\n"
+                    dat_file.write(values_str)
             if converted_inlets:
                 # Write converted inlets
                 ordered_keys = ['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
@@ -585,13 +595,12 @@ class DrExecuteModel(DrTask):
                     values_str = f"{' '.join(values)}\n"
                     dat_file.write(values_str)
 
-    def _convert_pinlets_into_inlets(self, selected_mesh: Optional[int] = None,  gometry_layer_name: Optional[str] = 'pinlet', minimum_size: Optional[float] = 2) -> Optional[List[QgsFeature]]:
+    def _convert_pinlets_into_inlets(self, selected_mesh: Optional[int] = None, pinlet_layer: Optional[QgsVectorLayer] = None, minimum_size: Optional[float] = 2) -> Optional[List[QgsFeature]]:
         """Convert pinlets into inlets"""
         if selected_mesh is None:
             return None
 
         # Get pinlet layer
-        pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename(gometry_layer_name)
         if pinlet_layer is None:
             return None
 
