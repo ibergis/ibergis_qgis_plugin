@@ -27,7 +27,11 @@ from pathlib import Path
 from ... import global_vars
 
 try:
-    from packages.gmsh import gmsh
+    import platform
+    if platform.system() == "Windows":
+        from packages.gmsh import gmsh
+    else:
+        import gmsh
     import pandamesh.common
     import pandamesh.gmsh_geometry
 
