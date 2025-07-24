@@ -1,4 +1,5 @@
 import datetime
+import os
 from functools import partial
 from time import time
 
@@ -13,7 +14,7 @@ from ...ui.ui_manager import DrCreateMeshUi
 from ...utils import Feedback, tools_dr
 from ...utils.meshing_process import create_anchor_layers
 from .... import global_vars
-from ....lib import tools_qt, tools_os
+from ....lib import tools_qt, tools_os, tools_qgis
 from qgis.utils import iface
 
 
@@ -226,6 +227,7 @@ class DrCreateMeshButton(DrAction):
         layers = {}
         for layer in ["ground", "roof"]:
             layer_path = f"{path}{layer}"
+            layer_path = os.path.abspath(layer_path)
             lyrs = []
             for lyr in QgsProject.instance().mapLayers().values():
                 if lyr.source() == layer_path:
@@ -233,10 +235,12 @@ class DrCreateMeshButton(DrAction):
                     lyrs.append(lyr)
 
             if len(lyrs) == 0:
-                self.message = f"Layer '{layer}' not found in the QGIS project."
+                msg = f"Layer '{layer}' not found in the QGIS project."
+                tools_qgis.show_warning(msg, dialog=dlg)
                 return False
             elif len(lyrs) > 1:
-                self.message = f"Layer '{layer}' found multiple times in the QGIS project."
+                msg = f"Layer '{layer}' found multiple times in the QGIS project."
+                tools_qgis.show_warning(msg, dialog=dlg)
                 return False
             else:
                 layers[layer] = lyrs[0]
