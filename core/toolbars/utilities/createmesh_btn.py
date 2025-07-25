@@ -117,7 +117,6 @@ class DrCreateMeshButton(DrAction):
                     self.dlg_mesh.list_validations.addItem(validation["list_item"])
 
         tools_dr.open_dialog(self.dlg_mesh, dlg_name="create_mesh")
-        # tools_dr.load_settings(self.dlg_mesh)
 
     def _execute_process(self):
         dlg = self.dlg_mesh
