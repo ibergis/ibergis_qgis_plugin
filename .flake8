@@ -13,6 +13,7 @@ exclude =
     dbmodel,
     test,
     generate_swmm_inp,
+    resources,
     i18n_manager.py,
     schema_i18n_update.py,
     i18n_generator.py
