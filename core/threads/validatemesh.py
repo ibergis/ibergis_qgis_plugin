@@ -174,14 +174,14 @@ def validate_intersect_v2(
 
 
 def get_polygon_vertices(geom: shapely.Polygon) -> list:
-    assert type(geom) == shapely.Polygon
+    assert isinstance(geom, shapely.Polygon)
     rings = [geom.exterior.coords]
     rings += [interior.coords for interior in geom.interiors]
     return list(itertools.chain(*rings))
 
 
 def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
-    assert type(geom) == shapely.MultiPolygon
+    assert isinstance(geom, shapely.MultiPolygon)
     verts = []
     for poly in geom.geoms:
         verts += get_polygon_vertices(poly)
@@ -514,7 +514,7 @@ def validate_distance(
         if feedback.isCanceled():
             return
         geom = row.geometry
-        assert type(geom) == shapely.Polygon, f"{type(geom)}"
+        assert isinstance(geom, shapely.Polygon), f"{type(geom)}"
         new_verts = list(map(shapely.Point, get_polygon_vertices(geom)))
         vertices += new_verts
         cellsize += [row.cellsize] * len(new_verts)

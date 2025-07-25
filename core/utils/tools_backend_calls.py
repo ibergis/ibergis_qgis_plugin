@@ -250,9 +250,9 @@ def set_layer_index(**kwargs):
     layers_name_list = kwargs['tableName']
     if not layers_name_list:
         return
-    if type(layers_name_list) == str:
+    if isinstance(layers_name_list, str):
         tools_qgis.set_layer_index(layers_name_list)
-    if type(layers_name_list) == list:
+    if isinstance(layers_name_list, list):
         for layer_name in layers_name_list:
             tools_qgis.set_layer_index(layer_name)
 
@@ -373,10 +373,10 @@ def refresh_canvas(**kwargs):
         layers_name_list = kwargs['tableName']
         if not layers_name_list:
             return
-        if type(layers_name_list) == str:
+        if isinstance(layers_name_list, str):
             layer = tools_qgis.get_layer_by_tablename(layers_name_list)
             layer.triggerRepaint()
-        elif type(layers_name_list) == list:
+        elif isinstance(layers_name_list, list):
             for layer_name in layers_name_list:
                 tools_qgis.set_layer_index(layer_name)
     except Exception:
@@ -553,11 +553,11 @@ def get_filter_qtableview(dialog, widget_list, complet_result, filter_fields='')
             if widget.property('widgetcontrols') is not None and 'columnId' in widget.property('widgetcontrols'):
                 if widget.property('widgetcontrols')['columnId'] is not None:
                     column_id = widget.property('widgetcontrols')['columnId']
-            if type(widget) == QComboBox:
+            if isinstance(widget, QComboBox):
                 value = tools_qt.get_combo_value(dialog, widget, column_id)
                 if value == -1:
                     value = None
-            elif type(widget) is QgsDateTimeEdit:
+            elif isinstance(widget, QgsDateTimeEdit):
                 value = tools_qt.get_calendar_date(dialog, widget, date_format='yyyy-MM-dd')
             else:
                 value = tools_qt.get_text(dialog, widget, False, False)

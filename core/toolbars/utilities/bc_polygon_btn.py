@@ -204,7 +204,7 @@ class DrCreateBCFromPolygon(DrAction):
             next_level = self.dropdown_tree
             for option in selected_path:
                 next_level = next_level[option]
-            if type(next_level) == dict:
+            if isinstance(next_level, dict):
                 self.boundary_type = None
                 tools_qt.fill_combo_box_list(
                     self.dlg, combos[level], next_level, allow_nulls=False

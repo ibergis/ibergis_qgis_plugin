@@ -1457,7 +1457,7 @@ class DrNonVisual:
                 item = tbl_timeseries_value.item(y, x)
                 if item is not None and item.data(0) not in (None, ''):
                     value = item.data(0)
-                    if x == 1 and type(value) == str:
+                    if x == 1 and isinstance(value, str):
                         # Convert to HH:mm time format
                         # for i in range(0, len(time_formats_list)):
                             # value = QTime.fromString(item.data(0), time_formats_list[i])  # Try to convert
@@ -1487,14 +1487,14 @@ class DrNonVisual:
                                 invalid_times.append(item.data(0))
                         else:
                             invalid_times.append(item.data(0))
-                    elif x == 0 and type(value) == str:
+                    elif x == 0 and isinstance(value, str):
                         # Convert to MM/dd/yyyy date format
                         for i in range(0, len(date_formats_list)):
                             value = QDate.fromString(item.data(0), date_formats_list[i])  # Try to convert
                             if not value.isNull():
                                 value = value.toString(output_date_format)  # Convert QDate to string
                                 break
-                        if type(value) != str and value.isNull():
+                        if not isinstance(value, str) and value.isNull():
                             invalid_dates.append(item.data(0))
                     else:
                         try:  # Try to convert to float, otherwise put quotes
@@ -1662,7 +1662,7 @@ class DrNonVisual:
 
                     # List with all QLineEdit children
                     child_list = self.dialog.tab_lidlayers.widget(i).children()
-                    visible_widgets = [widget for widget in child_list if type(widget) == QLineEdit]
+                    visible_widgets = [widget for widget in child_list if isinstance(widget, QLineEdit)]
                     visible_widgets = self._order_list(visible_widgets)
 
                     for x, value in enumerate(row):
@@ -1698,13 +1698,13 @@ class DrNonVisual:
                 # List with all QLineEdit children
                 child_list = dialog.tab_lidlayers.widget(i).children()
                 visible_widgets = [widget for widget in child_list if
-                                   type(widget) == QLineEdit or type(widget) == QComboBox]
+                                   isinstance(widget, QLineEdit) or isinstance(widget, QComboBox)]
                 visible_widgets = self._order_list(visible_widgets)
 
                 for y, widget in enumerate(visible_widgets):
                     value = tools_dr.get_config_parser('nonvisual_lids', f"{widget.objectName()}", "user", "session")
 
-                    if type(widget) == QLineEdit:
+                    if isinstance(widget, QLineEdit):
                         tools_qt.set_widget_text(dialog, widget, str(value))
                     else:
                         tools_qt.set_combo_value(widget, str(value), 0)
@@ -1725,11 +1725,11 @@ class DrNonVisual:
                 tab_name = dialog.tab_lidlayers.widget(i).objectName().upper()
                 # List with all QLineEdit children
                 child_list = dialog.tab_lidlayers.widget(i).children()
-                visible_widgets = [widget for widget in child_list if type(widget) == QLineEdit or type(widget) == QComboBox]
+                visible_widgets = [widget for widget in child_list if isinstance(widget, QLineEdit) or isinstance(widget, QComboBox)]
                 visible_widgets = self._order_list(visible_widgets)
 
                 for y, widget in enumerate(visible_widgets):
-                    if type(widget) == QLineEdit:
+                    if isinstance(widget, QLineEdit):
                         value = tools_qt.get_text(dialog, widget)
                     else:
                         value = tools_qt.get_combo_value(dialog, widget)

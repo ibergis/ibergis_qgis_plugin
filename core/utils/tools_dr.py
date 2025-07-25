@@ -594,7 +594,7 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
 
         # widgetcontrols
         widgetcontrols = field.get('widgetcontrols')
-        if type(widgetcontrols) == str:
+        if isinstance(widgetcontrols, str):
             widgetcontrols = json.loads(widgetcontrols)
 
         if widgetcontrols:
@@ -1061,7 +1061,7 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
                     if iseditable in (False, "False"):
                         widget.setReadOnly(True)
                         widget.setStyleSheet("QWidget {background: rgb(242, 242, 242);color: rgb(100, 100, 100)}")
-                    if type(widget) == QLineEdit:
+                    if isinstance(widget, QLineEdit):
                         if 'placeholder' in field:
                             widget.setPlaceholderText(field['placeholder'])
                 elif type(widget) in (QComboBox, QCheckBox):
@@ -2492,7 +2492,7 @@ def set_completer_widget(tablename, widget, field_id, add_id=False):
 
     if not widget:
         return
-    if type(tablename) == list and type(field_id) == list:
+    if isinstance(tablename, list) and isinstance(field_id, list):
         return set_multi_completer_widget(tablename, widget, field_id, add_id=add_id)
     if add_id:
         field_id += '_id'
