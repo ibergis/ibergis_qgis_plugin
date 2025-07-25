@@ -230,7 +230,7 @@ class DrCreateMeshButton(DrAction):
             layer_path = os.path.abspath(layer_path)
             lyrs = []
             for lyr in QgsProject.instance().mapLayers().values():
-                if lyr.source() == layer_path:
+                if os.path.normpath(lyr.source()) == os.path.normpath(layer_path):
                     print(f"Layer: {lyr.name()} - {lyr.source()}")
                     lyrs.append(lyr)
 
