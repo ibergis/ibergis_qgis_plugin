@@ -127,10 +127,10 @@ class DrBridgeButton(DrAction):
         self.add_profile_widget(self.dialog)
 
         # Fill bridge fields
-        if bridge is not None and is_new == False:
+        if bridge is not None and not is_new:
             self._fill_fields(bridge)
 
-        if bridge is not None and is_new == True:
+        if bridge is not None and is_new:
             self.dialog.txt_length.setText(str(round(bridge.geometry().length(), 3)))
 
         # Set scale-to-fit and fill table
@@ -193,7 +193,7 @@ class DrBridgeButton(DrAction):
         """ Edit bridge """
 
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and isdeleted(self.dialog) == False and self.dialog.isVisible():
+        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
             # Bring the existing dialog to the front
             self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
             self.dialog.raise_()
@@ -417,7 +417,7 @@ class DrBridgeButton(DrAction):
         """ Add bridge interactively by drawing a linestring and then opening the bridge dialog. """
 
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and isdeleted(self.dialog) == False and self.dialog.isVisible():
+        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
             # Bring the existing dialog to the front
             self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
             self.dialog.raise_()
