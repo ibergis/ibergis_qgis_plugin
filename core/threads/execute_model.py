@@ -13,6 +13,7 @@ import threading
 import traceback
 import processing
 import time
+import platform
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import QgsProcessingContext, QgsVectorLayer, QgsFeature, \
@@ -893,7 +894,10 @@ class DrExecuteModel(DrTask):
 
     def _run_iber(self):
         # iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"  # TODO: Add checkbox to select between Iber and IberPlus
-        iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"
+        if platform.system() == "Windows":
+            iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus.exe"
+        else:
+            iber_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}drain{os.sep}IberPlus"
         title = "Run Iber"
 
         if not os.path.exists(iber_exe_path):
