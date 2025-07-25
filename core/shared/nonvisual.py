@@ -1813,7 +1813,7 @@ class DrNonVisual:
             # List of children
             list = dialog.tab_lidlayers.widget(i).children()
             for y in list:
-                if type(y) != QGridLayout:
+                if not isinstance(y, QGridLayout):
                     y.show()
                     for j in widgets_hide[lid_id]:
                         if j == y.objectName():

@@ -142,7 +142,7 @@ def show_info(text, duration=10, context_name=None, parameter=None, logger_file=
         :param logger_file: Whether it should log the message in a file or not (bool)
         :param title: The title of the message (String) """
 
-    show_message(text, 0, duration, context_name, parameter, title, logger_file, dialog=dialog, 
+    show_message(text, 0, duration, context_name, parameter, title, logger_file, dialog=dialog,
                  msg_params=msg_params, title_params=title_params)
 
 
@@ -1100,7 +1100,7 @@ def check_query_layer(layer):
         # TODO:: Find differences between PostgreSQL and query layers, and replace this if condition.
         table_uri = layer.dataProvider().dataSourceUri()
         if 'SELECT row_number() over ()' in str(table_uri) or 'srid' not in str(table_uri) or \
-                layer is None or type(layer) != QgsVectorLayer:
+                layer is None or not isinstance(layer, QgsVectorLayer):
             return False
         return True
     except Exception:

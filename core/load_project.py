@@ -382,7 +382,7 @@ class DrLoadProject(QObject):
             return
 
         list_actions = list_actions.replace(' ', '').split(',')
-        if type(list_actions) != list:
+        if not isinstance(list_actions, list):
             list_actions = [list_actions]
 
         toolbar_name = tools_qt.tr(f'toolbar_{toolbar_id}_name')
