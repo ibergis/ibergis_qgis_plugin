@@ -15,7 +15,11 @@ class MaybeGmsh:
 
     def __init__(self):
         try:
-            from packages.gmsh import gmsh
+            import platform
+            if platform.system() == "Windows":
+                from packages.gmsh import gmsh
+            else:
+                import gmsh
 
             self.gmsh = gmsh
             self.ok = True

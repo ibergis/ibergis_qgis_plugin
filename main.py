@@ -22,7 +22,12 @@ try:
 
     import geopandas  # noqa: F401
     imported_packages.append('geopandas')
-    from packages.gmsh import gmsh  # noqa: F401
+    
+    import platform
+    if platform.system() == "Windows":
+        from packages.gmsh import gmsh  # noqa: F401
+    else:
+        import gmsh  # noqa: F401
     imported_packages.append('gmsh')
     import pandamesh  # noqa: F401
     imported_packages.append('pandamesh')

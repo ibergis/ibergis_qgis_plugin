@@ -9,7 +9,12 @@ import geopandas as gpd
 import shapely
 import numpy as np
 import time
-from packages.gmsh import gmsh
+import platform
+
+if platform.system() == "Windows":
+    from packages.gmsh import gmsh
+else:
+    import gmsh
 
 
 # From pandamesh
