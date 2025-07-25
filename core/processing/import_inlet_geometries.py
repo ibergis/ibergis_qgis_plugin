@@ -218,8 +218,6 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         self.addParameter(weir_cd)
         self.addParameter(orifice_cd)
 
-
-
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
         main process algorithm of this tool

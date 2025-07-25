@@ -27,6 +27,7 @@ from ...core.threads.validatemesh import validate_distance
 from typing import Optional
 import geopandas as gpd
 
+
 class CheckCloseVertices(QgsProcessingAlgorithm):
     """
     Class to check close vertices.

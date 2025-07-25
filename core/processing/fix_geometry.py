@@ -26,6 +26,7 @@ from typing import Optional
 import processing
 import geopandas as gpd
 
+
 class FixGeometry(QgsProcessingAlgorithm):
     """
     Class to fix geometry on ground and roof layers.

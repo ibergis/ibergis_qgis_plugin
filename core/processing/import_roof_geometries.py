@@ -194,7 +194,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         self.addParameter(infiltr_vol)
         self.addParameter(annotation)
 
-
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
         main process algorithm of this tool

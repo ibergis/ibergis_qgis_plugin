@@ -115,6 +115,7 @@ def validate_intersect(
     feedback.setProgress(100)
     return output_layer
 
+
 def validate_intersect_v2(
     layers_dict: dict, feedback: Feedback, include_roof: bool = True
 ) -> Optional[QgsVectorLayer]:
@@ -185,6 +186,7 @@ def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
     for poly in geom.geoms:
         verts += get_polygon_vertices(poly)
     return verts
+
 
 def validate_vert_edge_v2(
     layers_dict: dict, feedback: Feedback, include_roof: bool = False
@@ -307,6 +309,7 @@ def validate_vert_edge_v2(
     feedback.setProgressText(f"Validated vertex-edge for {list(layer.name() for layer in layers_dict.values())}")
     feedback.setProgress(100)
     return output_layer
+
 
 def validate_vert_edge(
     layers_dict: dict, feedback: Feedback, include_roof: bool = False

@@ -374,7 +374,6 @@ def getinfofromid(p_input: dict) -> dict:
         v_islayer = p_input['feature'].get('isLayer')
         v_tablename = p_input['feature'].get('tableName')
 
-
         if v_islayer:
             column_names = ['columnname', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',
                             'placeholder', 'columnname AS widgetname', 'false AS isparent', 'tabname', 'dv_querytext',

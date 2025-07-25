@@ -2847,6 +2847,7 @@ def open_help_link(context, uiname, tabname=None):
     file_path = "https://drain-iber.github.io/testing/en/docs/drain/for-users/user-manual/index.html"
     tools_os.open_file(file_path)
 
+
 def open_dlg_help():
     """ Opens the help page for the last focused dialog """
 
@@ -3105,11 +3106,13 @@ def set_widgets(dialog, complet_result, field, tablename, class_info):
 
     return label, widget
 
+
 def create_drain_menu(project_loaded=False):
     """ Create the Drain menu """
     if global_vars.load_project_menu is None:
         global_vars.load_project_menu = DrMenuLoad()
     global_vars.load_project_menu.read_menu(project_loaded)
+
 
 def unset_drain_menu():
     """ Unset Drain menu (when plugin is disabled or reloaded) """

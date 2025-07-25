@@ -28,6 +28,7 @@ from ..threads.project_gpkg_schema_create import DrGpkgCreateSchemaTask
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
 
+
 class DrGpkgBase:
     """Base class for geopackage operations"""
 
@@ -348,7 +349,6 @@ class DrAdminButton(DrGpkgBase):
 
         # Set signals
         self._set_signals_create_project()
-
 
     def load_base(self, dict_folders):
         """"""

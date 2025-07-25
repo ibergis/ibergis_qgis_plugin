@@ -60,7 +60,6 @@ class DrProjectCheckButton(DrAction):
         QgsApplication.taskManager().addTask(self.check_project_task)
         QgsApplication.taskManager().triggerTask(self.check_project_task)
 
-
     def _progress_update(self, process, progress, text, new_line):
         # Progress bar
         if progress is not None:
@@ -79,7 +78,6 @@ class DrProjectCheckButton(DrAction):
         # Scroll to the bottom
         scrollbar = txt_infolog.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
-
 
     def _open_dialog(self):
 

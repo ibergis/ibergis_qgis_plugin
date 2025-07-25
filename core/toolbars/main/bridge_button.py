@@ -26,6 +26,7 @@ from sip import isdeleted
 from ....core.toolbars.dialog import DrAction
 from ....core.utils.item_delegates import NumericDelegate, NumericTableWidgetItem
 
+
 class PlotParameters:
     """ Class to store plot parameters """
     # MAIN
@@ -52,7 +53,6 @@ class PlotParameters:
     # DEM
     DEM_LINE_COLOR = 'green'
     GROUND_FILL_COLOR = '#a16900'
-
 
 
 class DrBridgeButton(DrAction):
@@ -98,7 +98,6 @@ class DrBridgeButton(DrAction):
             if button is not None:
                 # Show the menu below the button
                 self.menu.exec_(button.mapToGlobal(button.rect().bottomLeft()))
-
 
     def manage_bridge(self, bridge: Optional[QgsFeature] = None, is_new: bool = False):
         """ Opens Bridge dialog. Called from 'Bridge add' button and 'Bridge edit' button. """
@@ -450,7 +449,6 @@ class DrBridgeButton(DrAction):
 
         # Connect to featureAdded signal
         bridge_layer.featureAdded.connect(self._on_bridge_feature_added)
-
 
     # region private functions
 

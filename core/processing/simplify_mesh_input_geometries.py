@@ -286,7 +286,6 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
             feedback.pushWarning("Vertex-edge validation layer not found")
             self.validation_layer_vert_edge = None
 
-
     def get_layer_type(self, layer: QgsVectorLayer) -> Optional[str]:
         for feature in layer.getFeatures():
             return feature['layer']

@@ -28,6 +28,7 @@ import geopandas as gpd
 import os
 import tempfile
 
+
 class FixIntersections(QgsProcessingAlgorithm):
     """
     Class to fix intersections on ground and roof layers.

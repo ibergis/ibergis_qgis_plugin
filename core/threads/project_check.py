@@ -20,6 +20,7 @@ from ... import global_vars
 from ...lib import tools_qgis, tools_log, tools_qt
 from functools import partial
 
+
 class DrProjectCheckTask(DrTask):
 
     task_finished = pyqtSignal(list)

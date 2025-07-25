@@ -2018,7 +2018,6 @@ class DrNonVisual:
                 col_pos = selected[0].leftColumn() + c
                 tbl_raster_value.setItem(row_pos, col_pos, item)
 
-
     def _populate_raster_combo(self, cmb_raster_type):
         """ Populates raster dialog combos """
 
@@ -2298,7 +2297,6 @@ class DrNonVisual:
         self.raster_import_dlg.btn_ok.clicked.connect(partial(self._import_rasters_accept, self.raster_import_dlg))
         self.raster_import_dlg.btn_push_raster_input_folder.clicked.connect(self._open_raster_input_folder)
         self.raster_import_dlg.cmb_time_system.currentIndexChanged.connect(self._on_time_system_changed)
-
 
         # Open dialog
         tools_dr.open_dialog(self.raster_import_dlg, dlg_name='nonvisual_raster_import')

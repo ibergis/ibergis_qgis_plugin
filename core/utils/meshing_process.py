@@ -255,7 +255,6 @@ try:
 
         return layer
 
-
     # 2D algorithms: https://gmsh.info/doc/texinfo/gmsh.html#Mesh-options
     ALGORITHMS = {
         "MeshAdapt": 1,

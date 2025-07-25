@@ -28,6 +28,7 @@ from swmm_api.output_file import OBJECTS, VARIABLES
 import os
 import sys
 
+
 class COLS:
     INVERT_ELEV = 'SOK'
     IN_OFFSET = 'IN_OFF'
@@ -39,6 +40,7 @@ class COLS:
     WATER = 'water'
     FLOODING = 'flooding'
     LABEL = 'label'
+
 
 class ProfilePlotter:
     def __init__(self, inp=None, out=None, c_inv="black", c_ground_line="brown", ground_line_style="dashed", c_crown="black", c_ground="brown", c_water="blue", c_pipe="grey", lw=1, mh_width=0.5, offset_ymax=0.5, offsets=0, zero_node=None, depth_agg_func=None):
@@ -145,7 +147,6 @@ class ProfilePlotter:
             else:
                 in_off = sok
 
-
             buk_in = profile_height + in_off
                 # _update_res(x - stations[zero_node], sok, in_off, out_off, buk, gok, water, node)
 
@@ -172,10 +173,8 @@ class ProfilePlotter:
 
             _update_res(x - stations[zero_node], in_off, out_off, sok, buk_in, buk_off, gok, water, flooding, node)
 
-
             # print(res)
         return res  # Returns the dictionary with the longitudinal data
-
 
     def iter_over_inp_(self, sub_list, sub_graph):
         links = links_dict(self.inp)
@@ -193,18 +192,15 @@ class ProfilePlotter:
                 if isinstance(following_link, Conduit):
                     x += following_link.length
 
-
     def iter_over_inp(self, start_node, end_node):
         sub_list, sub_graph = get_path_subgraph(self.inp, start=start_node, end=end_node)
         return self.iter_over_inp_(sub_list, sub_graph)
-
 
     def get_node_station(self, start_node, end_node, zero_node=None):
         stations = dict(self.iter_over_inp(start_node, end_node))
         if zero_node:
             return self.set_zero_node(stations, zero_node)
         return stations
-
 
     def set_zero_node(self, stations, zero_node):
         return {node: stations[node] - stations[zero_node] for node in stations}
@@ -228,7 +224,6 @@ class ProfilePlotter:
         x_int = x1 + frac * (x2 - x1)
         y_int = y1a + frac * (y2a - y1a)
         return x_int, y_int
-
 
     def plot_longitudinal(self, start_node, end_node, timestamp, ax=None, add_node_labels=False):
         res = self.get_longitudinal_data(start_node, end_node, timestamp)
@@ -280,7 +275,6 @@ class ProfilePlotter:
             y1_w = water_elev_up
             y2_w = water_elev_down
 
-
             # Water line
             ax.plot([x1, x2], [y1_w, y2_w], c=self.c_water, lw=self.lw)
 
@@ -289,7 +283,6 @@ class ProfilePlotter:
                 y1_energy = res[COLS.WATER][i]
                 y2_energy = res[COLS.WATER][i + 1]
                 ax.plot([x1, x2], [y1_energy, y2_energy], c=self.c_water, lw=self.lw)
-
 
                 # Do they cross?
                 cross = (y1_energy - y1_top) * (y2_energy - y2_top) < 0
@@ -344,7 +337,6 @@ class ProfilePlotter:
                 # Add the text of the io_flooding value centered at the top of the manhole
                 ax.text(x, ground_elev + 0.1, f"{io_flooding:.2f}",  # Ajusta el +0.1 según la escala de tu eje y
                         ha='center', va='bottom', fontsize=8, rotation=0, color='red', zorder=15)
-
 
         ax.fill_between(res[COLS.STATION], bottom, res[COLS.GROUND_ELEV], color=self.c_ground, alpha=0.7, zorder=0)
 

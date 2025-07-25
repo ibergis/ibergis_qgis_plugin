@@ -132,7 +132,6 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         self.addParameter(custom_roughness)
         self.addParameter(scs_cn)
 
-
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
         main process algorithm of this tool

@@ -666,7 +666,6 @@ class DrCreateMeshTask(DrTask):
 
         return pd.concat([line_anchors, bridges], ignore_index=True)  # type: ignore
 
-
     def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame, bridge_layer: QgsVectorLayer) -> pd.DataFrame:
         bridges = layer_to_gdf(
             bridge_layer,
@@ -775,7 +774,6 @@ class DrCreateMeshTask(DrTask):
                     deckcd = bridge.deck_cd
                     sumergeflowcd = bridge.sumergeflow_cd
                     gaugenumber = bridge.gaugenumber
-
 
                     feature_list = [
                         idx,

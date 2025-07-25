@@ -30,6 +30,7 @@ class NumericDelegate(QStyledItemDelegate):
         editor.setToolTip("Enter a floating value")
         return editor
 
+
 class NumericTableWidgetItem(QTableWidgetItem):
     def __lt__(self, other):
         try:

@@ -490,7 +490,6 @@ class DrLoadProject(QObject):
             except IndexError:
                 pass
 
-
     def _translate_config(self):
         """ Update config.gpkg language from selected locale """
 
