@@ -372,7 +372,7 @@ class DrNonVisual:
             tools_qt.set_widget_text(self.dialog, txt_name, curve_name)
             tools_qt.set_widget_enabled(self.dialog, txt_name, False)
 
-        tools_qt.set_combo_value(cmb_curve_type, curve_type, 0)
+        tools_qt.set_combo_value(cmb_curve_type, curve_type, 0, add_new=False)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
 
         # Populate table curve_values
@@ -412,7 +412,7 @@ class DrNonVisual:
     def _manage_curve_type(self, dialog, curve_type_headers, table, index):
         """ Manage curve values table headers """
 
-        curve_type = tools_qt.get_text(dialog, 'cmb_curve_type', return_string_null=False)
+        curve_type = tools_qt.get_combo_value(dialog, 'cmb_curve_type')
         if curve_type and curve_type_headers:
             headers = curve_type_headers.get(curve_type)
             table.setHorizontalHeaderLabels(headers)
@@ -820,7 +820,7 @@ class DrNonVisual:
         if not duplicate:
             tools_qt.set_widget_enabled(self.dialog, txt_name, False)
             tools_qt.set_widget_text(self.dialog, txt_name, pattern_name)
-        tools_qt.set_widget_text(self.dialog, cmb_pattern_type, pattern_type)
+        tools_qt.set_combo_value(cmb_pattern_type, pattern_type, 0, add_new=False)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
 
         # Populate table pattern_values
@@ -1264,8 +1264,8 @@ class DrNonVisual:
         if not duplicate:
             tools_qt.set_widget_text(self.dialog, txt_idval, idval)
             tools_qt.set_widget_enabled(self.dialog, txt_idval, False)
-        tools_qt.set_widget_text(self.dialog, cmb_timeser_type, timeser_type)
-        tools_qt.set_widget_text(self.dialog, cmb_times_type, times_type)
+        tools_qt.set_combo_value(self.dialog.cmb_timeser_type, timeser_type, 0, add_new=False)
+        tools_qt.set_combo_value(self.dialog.cmb_times_type, times_type, 0, add_new=False)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
         tools_qt.set_widget_text(self.dialog, txt_fname, fname)
 
@@ -2052,7 +2052,7 @@ class DrNonVisual:
             tools_qt.set_widget_text(self.dialog, txt_name, raster_name)
             tools_qt.set_widget_enabled(self.dialog, txt_name, False)
 
-        tools_qt.set_combo_value(cmb_raster_type, raster_type, 0)
+        tools_qt.set_combo_value(cmb_raster_type, raster_type, 0, add_new=False)
 
         # Populate table raster_values
         sql = f"SELECT time, fname FROM cat_raster_value WHERE raster = '{raster_name}'"
