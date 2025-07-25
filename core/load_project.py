@@ -500,7 +500,7 @@ class DrLoadProject(QObject):
         sql_dir = os.path.normpath(os.path.join(global_vars.plugin_dir, 'dbmodel'))
         i18n_dml_path = os.path.join(sql_dir, "i18n", locale, "dml.sql")
         if not os.path.exists(i18n_dml_path):
-            i18n_dml_path = os.path.join(sql_dir, "i18n", "en_US", "dml.sql") # Default to en_US
+            i18n_dml_path = os.path.join(sql_dir, "i18n", "en_US", "dml.sql")  # Default to en_US
 
         config_gpkg_path = os.path.join(global_vars.plugin_dir, 'config', 'config.gpkg')
 

@@ -268,8 +268,8 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
             self.USE_Z_VALS,
             self.tr(
                 'Use z-coordinates for conduits and nodes instead'
-                +' of \"Elevation\"/\"InOffset\"/\"OutOffset\" in '
-                +'the attribute tables'    
+                + ' of \"Elevation\"/\"InOffset\"/\"OutOffset\" in '
+                + 'the attribute tables'    
             ),
             defaultValue=False,
             optional=True
@@ -350,7 +350,7 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
             elif k in def_tables_dict.keys():
                 export_data[k]['d_type'] = 'table'
             else:
-                #unknown data type
+                # unknown data type
                 raise QgsProcessingException(
                     'Unknown file type for file ' 
                     + k
@@ -372,7 +372,7 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
 
         # store pandas dataframes for each layer     
         feedback.setProgressText('Reading layers and tables...')   
-        read_data_direct(export_data, feedback = feedback)
+        read_data_direct(export_data, feedback=feedback)
         feedback.setProgressText(self.tr('done \n'))
 
         feedback.setProgressText(self.tr('preparing data for input file:'))
@@ -385,7 +385,7 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
             inp_dict,
             export_params
         ):
-            feedback.setProgressText(self.tr(data_name+'...'))
+            feedback.setProgressText(self.tr(data_name + '...'))
             data_entry = export_data[data_name]['data']
             data_type = export_data[data_name]['d_type']
             f_name = export_data[data_name]['file']
@@ -440,7 +440,7 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
                     else:
                         coords_nodes = None
                     # use z coordinate if desired
-                    processed_data_dict[data_name]['data'] =  use_z_if_available(
+                    processed_data_dict[data_name]['data'] = use_z_if_available(
                         processed_data_dict[data_name]['data'],
                         sections_coords,
                         export_params['use_z_bool'],
@@ -461,14 +461,14 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
                 ):
                     # add nodes names to all_nodes list
                     new_nodes = processed_data_dict[data_name]['data']['Name'].tolist()
-                    export_params['all_nodes'] = export_params['all_nodes']+new_nodes
+                    export_params['all_nodes'] = export_params['all_nodes'] + new_nodes
                     # update coordinates
                     inp_dict['COORDINATES']['data'] = pd.concat(
                         [
                             inp_dict['COORDINATES']['data'],
                             sections_coords['COORDINATES']['data']
                         ],
-                        ignore_index = True
+                        ignore_index=True
                     )
                     inp_dict['COORDINATES']['data'] = inp_dict['COORDINATES']['data'].reset_index(drop=True)
                 elif data_name in ['RAINGAGES', 'SUBCATCHMENTS']:
@@ -499,7 +499,7 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
                         inp_dict['XSECTIONS']['data'],
                         xsections_data['data']
                     ],
-                    ignore_index = True
+                    ignore_index=True
                 )
                 inp_dict['XSECTIONS']['data'] = inp_dict['XSECTIONS']['data'].reset_index(drop=True)
             inp_dict.update(processed_data_dict)
@@ -523,7 +523,7 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
 
         # run export handler
         for data_name in [
-            'OPTIONS',  #  first, needed for link_offsets
+            'OPTIONS',  # first, needed for link_offsets
             'SUBCATCHMENTS',
             'JUNCTIONS',  # second: nodes for coordinates section
             'OUTFALLS',
@@ -558,7 +558,7 @@ class GenerateSwmmInpFile(QgsProcessingAlgorithm):
                 )
 
         # delete sections with empty data
-        inp_dict = {k: v for k, v in inp_dict.items() if len(v['data'])>0}
+        inp_dict = {k: v for k, v in inp_dict.items() if len(v['data']) > 0}
 
         feedback.setProgressText(self.tr('done \n'))
 

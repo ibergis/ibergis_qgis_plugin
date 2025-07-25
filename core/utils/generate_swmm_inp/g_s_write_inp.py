@@ -29,8 +29,8 @@ import os
 import pandas as pd
 
 inflow_keys_dict = {
-    'DWF':['Name','Baseline','Patterns'],
-    'INFLOWS':[
+    'DWF': ['Name', 'Baseline', 'Patterns'],
+    'INFLOWS': [
         'Name',
         'Time_Series',
         'Type',
@@ -68,7 +68,7 @@ def write_inp(
         :param list only_cols: optional list of column names which should be printed exclusively
         """
         if section_name in inp_dict.keys():
-            feedback.setProgressText('writing ['+section_name+']...')
+            feedback.setProgressText('writing [' + section_name + ']...')
             print_df = inp_dict[section_name]['data']
             if 'annotations' in inp_dict[section_name].keys():
                 # join annotations to df
@@ -79,9 +79,9 @@ def write_inp(
                         orient='index',
                         columns=['Name']
                     )
-                    annotations_df['Name'] = [';'+str(i) for i in annotations_df['Name']]
+                    annotations_df['Name'] = [';' + str(i) for i in annotations_df['Name']]
                     # prepare indices for insertion
-                    replace_index = [k-0.5 for k in print_df.index if print_df.loc[k, 'Name'] in annotations_df.index]
+                    replace_index = [k - 0.5 for k in print_df.index if print_df.loc[k, 'Name'] in annotations_df.index]
                     annotations_df.index = replace_index
                     missing_cols = print_df.columns.drop('Name')
                     annotations_df[missing_cols] = ''
@@ -91,7 +91,7 @@ def write_inp(
                     print_df = print_df.sort_index(ascending=True)
             if only_cols is not None:
                 print_df = print_df[only_cols]
-            file1.write('['+section_name+']\n')
+            file1.write('[' + section_name + ']\n')
             # Write column headers in SWMM style
             if len(print_df.columns) > 0:
                 header_line = ';;' + ''.join(str(col).ljust(15) for col in print_df.columns)
@@ -123,12 +123,12 @@ def write_inp(
         outfalls_df = inp_dict['OUTFALLS']['data']
         file1.write('[OUTFALLS]\n')
         for i in range(len(outfalls_df)):
-            outl =  outfalls_df.loc[i, :]
-            file1.write(str(outl['Name'])+'    '+
-                        str(outl['Elevation'])+'    '+
-                        str(outl['Type'])+'    '+
-                        str(outl['Data'])+'    '+
-                        str(outl['FlapGate'])+'    '+
+            outl = outfalls_df.loc[i, :]
+            file1.write(str(outl['Name']) + '    ' +
+                        str(outl['Elevation']) + '    ' +
+                        str(outl['Type']) + '    ' +
+                        str(outl['Data']) + '    ' +
+                        str(outl['FlapGate']) + '    ' +
                         str(outl['RouteTo']))
             file1.write('\n')
         file1.write('\n')
@@ -139,18 +139,18 @@ def write_inp(
         dividers_df = inp_dict['DIVIDERS']['data']
         file1.write('[DIVIDERS]\n')
         for i in range(len(dividers_df)):
-            div =  dividers_df.loc[i, :]
-            file1.write(str(div['Name'])+'    '+
-                        str(div['Elevation'])+'    '+
-                        str(div['DivertLink'])+'    '+
-                        str(div['Type'])+'    '+
-                        str(div['CutoffFlow'])+'    '+
-                        str(div['WeirMinFlo'])+'    '+
-                        str(div['WeirMaxDep'])+'    '+
-                        str(div['WeirCoeff'])+'    '+
-                        str(div['MaxDepth'])+'    '+
-                        str(div['InitDepth'])+'    '+
-                        str(div['SurDepth'])+'    '+
+            div = dividers_df.loc[i, :]
+            file1.write(str(div['Name']) + '    ' +
+                        str(div['Elevation']) + '    ' +
+                        str(div['DivertLink']) + '    ' +
+                        str(div['Type']) + '    ' +
+                        str(div['CutoffFlow']) + '    ' +
+                        str(div['WeirMinFlo']) + '    ' +
+                        str(div['WeirMaxDep']) + '    ' +
+                        str(div['WeirCoeff']) + '    ' +
+                        str(div['MaxDepth']) + '    ' +
+                        str(div['InitDepth']) + '    ' +
+                        str(div['SurDepth']) + '    ' +
                         str(div['Aponded']))
             file1.write('\n')  
         file1.write('\n')    
@@ -176,13 +176,13 @@ def write_inp(
         file1.write('[XSECTIONS]\n')
         for i in range(len(xsections_df)):
             xscn = xsections_df.loc[i, :]
-            file1.write(str(xscn['Name'])+'   '+
-                        str(xscn['XsectShape'])+'    '+
-                        str(xscn['Geom1'])+'    '+
-                        str(xscn['Geom2'])+'    '+
-                        str(xscn['Geom3'])+'    '+
-                        str(xscn['Geom4'])+'    '+
-                        str(xscn['Barrels'])+'    '+
+            file1.write(str(xscn['Name']) + '   ' +
+                        str(xscn['XsectShape']) + '    ' +
+                        str(xscn['Geom1']) + '    ' +
+                        str(xscn['Geom2']) + '    ' +
+                        str(xscn['Geom3']) + '    ' +
+                        str(xscn['Geom4']) + '    ' +
+                        str(xscn['Barrels']) + '    ' +
                         str(xscn['Culvert']))
             file1.write('\n')
         file1.write('\n')
@@ -210,12 +210,12 @@ def write_inp(
         file1.write('[LOSSES]\n')
         losses_df = inp_dict['LOSSES']['data']
         for i in range(len(losses_df)):
-            los = losses_df.loc[i,:]
-            file1.write(str(los['Name'])+'   '+
-                        str(los['Kentry'])+'   '+
-                        str(los['Kexit'])+'   '+
-                        str(los['Kavg'])+'   '+
-                        str(los['FlapGate'])+'   '+
+            los = losses_df.loc[i, :]
+            file1.write(str(los['Name']) + '   ' +
+                        str(los['Kentry']) + '   ' +
+                        str(los['Kexit']) + '   ' +
+                        str(los['Kavg']) + '   ' +
+                        str(los['FlapGate']) + '   ' +
                         str(los['Seepage']))
             file1.write('\n')
         file1.write('\n')
@@ -231,7 +231,7 @@ def write_inp(
     def compose_dict_text(dict_i, section, inflow_keys_dict):
         """writes text lines from inflows dictionaries"""
         section_keys = inflow_keys_dict[section]
-        return ['    '.join([str(dict_i[item_key][s_k]) for s_k in section_keys])+'\n' for item_key in dict_i.keys()]
+        return ['    '.join([str(dict_i[item_key][s_k]) for s_k in section_keys]) + '\n' for item_key in dict_i.keys()]
 
     # inflows
     if 'INFLOWS' in inp_dict.keys():
@@ -272,14 +272,14 @@ def write_inp(
             curve_dict_i = curves_dict[curve_key].copy()
             for i in range(len(curve_dict_i['frame'])):
                 if i == 0:
-                    file1.write(curve_dict_i['Name']+'    '+
-                                curve_dict_i['Type']+'    '+
-                                str(curve_dict_i['frame'].iloc[0, 0])+'    '+
+                    file1.write(curve_dict_i['Name'] + '    ' +
+                                curve_dict_i['Type'] + '    ' +
+                                str(curve_dict_i['frame'].iloc[0, 0]) + '    ' +
                                 str(curve_dict_i['frame'].iloc[0, 1]))
                     file1.write('\n')
                 else:
-                    file1.write(curve_dict_i['Name']+'    '+'    '+
-                                 str(curve_dict_i['frame'].iloc[i, 0])+'    '+
+                    file1.write(curve_dict_i['Name'] + '    ' + '    ' +
+                                 str(curve_dict_i['frame'].iloc[i, 0]) + '    ' +
                                  str(curve_dict_i['frame'].iloc[i, 1]))
                     file1.write('\n')
             file1.write(';\n')
@@ -293,7 +293,7 @@ def write_inp(
         for ts_key in timeseries_dict.keys():
             ts_dict_i = timeseries_dict[ts_key].copy()
             ts_df = ts_dict_i['TimeSeries']
-            file1.write(';'+ts_dict_i['Annotations']+'\n')
+            file1.write(';' + ts_dict_i['Annotations'] + '\n')
             file1.write(ts_df.to_string(header=False, index=False))
             file1.write('\n')
         file1.write('\n')
@@ -306,20 +306,20 @@ def write_inp(
         for patterns_key in patterns_dict.keys():
             patterns_dict_i = patterns_dict[patterns_key].copy()
             if patterns_dict_i['Type'] == 'DAILY':
-                file1.write(patterns_dict_i['Name']+'    '+
-                            patterns_dict_i['Type']+'    '+
+                file1.write(patterns_dict_i['Name'] + '    ' +
+                            patterns_dict_i['Type'] + '    ' +
                             '    '.join([str(j) for j in patterns_dict_i['Factors'].iloc[:, 0]]))
                 file1.write('\n')
             else:
-                for i in range(int(len(patterns_dict_i['Factors'])/6)):
+                for i in range(int(len(patterns_dict_i['Factors']) / 6)):
                     if i == 0:
-                        file1.write(patterns_dict_i['Name']+'    '+
-                                    patterns_dict_i['Type']+'    '+
+                        file1.write(patterns_dict_i['Name'] + '    ' +
+                                    patterns_dict_i['Type'] + '    ' +
                                     '    '.join([str(j) for j in patterns_dict_i['Factors'].iloc[0:6, 0]]))
                         file1.write('\n')
                     else:
-                        file1.write(patterns_dict_i['Name']+'    '+'    '+
-                                    '    '.join([str(j) for j in patterns_dict_i['Factors'].iloc[6*i:6*(i+1), 0]]))
+                        file1.write(patterns_dict_i['Name'] + '    ' + '    ' +
+                                    '    '.join([str(j) for j in patterns_dict_i['Factors'].iloc[6 * i:6 * (i + 1), 0]]))
                         file1.write('\n')
             file1.write(';\n')
         file1.write('\n')
@@ -359,7 +359,7 @@ def write_inp(
         file1.write('[POLYGONS]\n')
         for pol_key in polygons_dict.keys():
             pol_df = polygons_dict[pol_key].copy()
-            pol_df['subcatch']=pol_key
+            pol_df['subcatch'] = pol_key
             pol_df = pol_df[['subcatch', 'X_Coord', 'Y_Coord']]
             file1.write(pol_df.to_string(header=False, index=False))
             file1.write('\n')

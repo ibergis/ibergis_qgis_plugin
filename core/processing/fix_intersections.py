@@ -21,7 +21,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis
-from ...core.utils import  Feedback, tools_dr
+from ...core.utils import Feedback, tools_dr
 from typing import Optional
 import processing
 import geopandas as gpd
@@ -103,11 +103,11 @@ class FixIntersections(QgsProcessingAlgorithm):
 
         # Merge layers
         merged_layer = processing.run("native:mergevectorlayers",
-                                      {'LAYERS':[
+                                      {'LAYERS': [
                                           self.ground_layer,
                                           self.roof_layer
                                           ],
-                                          'CRS':QgsProject.instance().crs(),'OUTPUT':'TEMPORARY_OUTPUT'})['OUTPUT']
+                                          'CRS': QgsProject.instance().crs(), 'OUTPUT': 'TEMPORARY_OUTPUT'})['OUTPUT']
         if merged_layer is None:
             feedback.pushWarning(self.tr('Error merging layers.'))
             return {}
@@ -118,7 +118,7 @@ class FixIntersections(QgsProcessingAlgorithm):
         feedback.setProgress(20)
 
         tmp_gpkg = os.path.join(tempfile.gettempdir(), "splited_layer.gpkg")
-        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT':merged_layer,'OUTPUT':tmp_gpkg})['OUTPUT']
+        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT': merged_layer, 'OUTPUT': tmp_gpkg})['OUTPUT']
         if splited_layer is None:
             feedback.pushWarning(self.tr('Error splitting multipolygons into single polygons.'))
             return {}
@@ -132,9 +132,9 @@ class FixIntersections(QgsProcessingAlgorithm):
         # Clean intersections
         cleaned_layer_result = processing.run("grass:v.clean", {
             'input': tmp_gpkg,
-            'type':[0,1,2,3,4,5,6],'tool':[0],'threshold':'','-b':False,'-c':False,'output':'TEMPORARY_OUTPUT',
-            'error':'TEMPORARY_OUTPUT','GRASS_REGION_PARAMETER':None,'GRASS_SNAP_TOLERANCE_PARAMETER':-1,'GRASS_MIN_AREA_PARAMETER':0.0001,
-            'GRASS_OUTPUT_TYPE_PARAMETER':0,'GRASS_VECTOR_DSCO':'','GRASS_VECTOR_LCO':'','GRASS_VECTOR_EXPORT_NOCAT':False})
+            'type': [0, 1, 2, 3, 4, 5, 6], 'tool': [0], 'threshold': '', '-b': False, '-c': False, 'output': 'TEMPORARY_OUTPUT',
+            'error': 'TEMPORARY_OUTPUT', 'GRASS_REGION_PARAMETER': None, 'GRASS_SNAP_TOLERANCE_PARAMETER': -1, 'GRASS_MIN_AREA_PARAMETER': 0.0001,
+            'GRASS_OUTPUT_TYPE_PARAMETER': 0, 'GRASS_VECTOR_DSCO': '', 'GRASS_VECTOR_LCO': '', 'GRASS_VECTOR_EXPORT_NOCAT': False})
         if cleaned_layer_result is None:
             feedback.pushWarning(self.tr('Error cleaning intersections.'))
             return {}
@@ -162,7 +162,7 @@ class FixIntersections(QgsProcessingAlgorithm):
         processing_features = 1
 
         for idx, intersection in duplicated_geometries.iterrows():
-            feedback.setProgress(tools_dr.lerp_progress(processing_features/len(duplicated_geometries)*100, 35, 90))
+            feedback.setProgress(tools_dr.lerp_progress(processing_features / len(duplicated_geometries) * 100, 35, 90))
             processing_features += 1
 
             # Get all duplicated features
@@ -268,15 +268,15 @@ class FixIntersections(QgsProcessingAlgorithm):
             for field in layer.fields():
                 if field.name() == 'fid':
                     if layer == self.roof_layer:
-                        new_feature[field.name()] = len(roof_features)+1
+                        new_feature[field.name()] = len(roof_features) + 1
                     elif layer == self.ground_layer:
-                        new_feature[field.name()] = len(ground_features)+1
+                        new_feature[field.name()] = len(ground_features) + 1
                     continue
                 if field.name() == 'code':
                     if layer == self.roof_layer:
-                        new_feature[field.name()] = f'RF{len(roof_features)+1}'
+                        new_feature[field.name()] = f'RF{len(roof_features) + 1}'
                     elif layer == self.ground_layer:
-                        new_feature[field.name()] = f'GR{len(ground_features)+1}'
+                        new_feature[field.name()] = f'GR{len(ground_features) + 1}'
                     continue
                 new_feature[field.name()] = feature[field.name()]
             new_feature.setGeometry(feature.geometry())

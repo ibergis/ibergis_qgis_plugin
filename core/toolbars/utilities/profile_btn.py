@@ -523,9 +523,9 @@ class DrProfileButton(DrAction):
         plot_type: int = 0 if self.dlg_draw_profile.rb_instant.isChecked() else 1  # 0 - Static, 1 - Dynamic (time series)
 
         # Define the path of the files
-        inputfile   = f"{results_folder}{os.sep}Iber_SWMM.inp"
-        inifile     = f"{results_folder}{os.sep}Iber_SWMM.ini"
-        outputfile  = f"{results_folder}{os.sep}Iber_SWMM.out"
+        inputfile = f"{results_folder}{os.sep}Iber_SWMM.inp"
+        inifile = f"{results_folder}{os.sep}Iber_SWMM.ini"
+        outputfile = f"{results_folder}{os.sep}Iber_SWMM.out"
 
         # Load the simulation
         inp = read_inp_file(inputfile)
@@ -556,7 +556,7 @@ class DrProfileButton(DrAction):
 
         # Period of results, 1 - Dynamic (time series)
         custom_start = pd.Timestamp(custom_start)
-        custom_end   = pd.Timestamp(custom_end)
+        custom_end = pd.Timestamp(custom_end)
         print(f"Custom start = {custom_start}")
         print(f"Custom end   = {custom_end}")
 

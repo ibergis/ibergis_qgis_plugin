@@ -171,7 +171,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 self.check_mandatory_null_or_outlayer(query, sys_messages_dict, feedback)
             # endregion MANDATORY NULL
 
-            feedback.setProgress(tools_dr.lerp_progress(int(index+1/len(queries)*100), 0, 70))
+            feedback.setProgress(tools_dr.lerp_progress(int(index + 1 / len(queries) * 100), 0, 70))
 
         # Hardcoded checks
         feedback.setProgressText(f'Executing: hardcoded checks')
@@ -288,7 +288,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 msg_params = (method_name,)
                 feedback.pushWarning(self.tr(msg, list_params=msg_params))
 
-            feedback.setProgress(tools_dr.lerp_progress(int(index+1/len(validations)*100), 80, 90))
+            feedback.setProgress(tools_dr.lerp_progress(int(index + 1 / len(validations) * 100), 80, 90))
 
         self.dao_data.close_db()
         self.dao_config.close_db()
@@ -501,11 +501,11 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 if error_msg != '':
                     if query['except_lvl'] == 2:
                         msg = 'WARNING-{0}/{1} ({2}) ({3}): {4}'
-                        msg_params = (query['error_code'], index+1, query['table_name'], query['query_type'], error_msg)
+                        msg_params = (query['error_code'], index + 1, query['table_name'], query['query_type'], error_msg)
                         self.warning_messages.append(self.tr(msg, list_params=msg_params))
                     else:
                         msg = 'ERROR-{0}/{1} ({2}) ({3}): {4}'
-                        msg_params = (query['error_code'], index+1, query['table_name'], query['query_type'], error_msg)
+                        msg_params = (query['error_code'], index + 1, query['table_name'], query['query_type'], error_msg)
                         self.error_messages.append(self.tr(msg, list_params=msg_params))
 
             # Save info message for valid columns

@@ -80,7 +80,7 @@ def getconfig(p_input: dict) -> dict:
 
                         # Execute on config gpkg if not configured
                         if not result and not executed:
-                            result = global_vars.gpkg_dao_data.get_row(v_querystring) ## TODO: change to data gpkg
+                            result = global_vars.gpkg_dao_data.get_row(v_querystring)  # TODO: change to data gpkg
                         if result:
                             cmb_ids = result[0]
                             cmb_names = result[1]

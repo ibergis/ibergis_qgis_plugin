@@ -652,7 +652,7 @@ class DrExecuteModel(DrTask):
             minimum_size_area: Optional[float] = None
             for pinlet_feature in pinlet_layer_features:
                 if pinlet_feature['code'] == pinlet_code:
-                    minimum_size_area = pinlet_feature.geometry().area()/100*minimum_size
+                    minimum_size_area = pinlet_feature.geometry().area() / 100 * minimum_size
                     pinlet_perimeter = pinlet_feature.geometry().length()
                     parent_pinlet = pinlet_feature
                     break

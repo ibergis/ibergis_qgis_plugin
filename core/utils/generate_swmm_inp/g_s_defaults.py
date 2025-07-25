@@ -154,15 +154,15 @@ def_options_dtypes_dict = {
         'dtype': [int, float]
     },
     'INERTIAL_DAMPING': {
-        'dtype':[str], 
+        'dtype': [str], 
         'values': ['NONE', 'PARTIAL', 'FULL']
     },
     'NORMAL_FLOW_LIMITED': {
-        'dtype':[str], 
+        'dtype': [str], 
         'values': ['SLOPE', 'FROUDE', 'BOTH']
     },
     'SURCHARGE_METHOD': {
-        'dtype':[str], 
+        'dtype': [str], 
         'values': ['EXTRAN', 'SLOT']
     },
     'MIN_SURFAREA': {
@@ -893,7 +893,7 @@ st_files_path = os.path.join('test_data', 'swmm_data')
 
 # default geometries when no geometry is given in the input file
 def_point_geom = QgsGeometry.fromWkt(
-    'POINT(' + str(0) + ' '+str(0) + ')'
+    'POINT(' + str(0) + ' ' + str(0) + ')'
 )
 def_line_geom = QgsGeometry.fromWkt(
     'LINESTRING (0 0, 0 1)'
@@ -1078,7 +1078,7 @@ def_qgis_fields_dict = {
 def_ogr_driver_dict = {
     'ESRI Shapefile': 'shp',
     'GPKG': 'gpkg',
-    'FlatGeobuf':'fgb',
+    'FlatGeobuf': 'fgb',
     'GML': 'gml',
     'GeoJSON': 'geojson',
     'KML': 'kml'

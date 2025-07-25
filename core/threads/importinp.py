@@ -203,7 +203,7 @@ class DrImportInpTask(DrTask):
         for gpkg in gpkgs:
             if self.isCanceled():
                 return
-            self.PROGRESS_IMPORT_GPKGS = int(math.ceil((len(gpkgs)/10))*(gpkgs.index(gpkg)+1)+self.PROGRESS_IMPORT_NON_VISUAL)
+            self.PROGRESS_IMPORT_GPKGS = int(math.ceil((len(gpkgs) / 10)) * (gpkgs.index(gpkg) + 1) + self.PROGRESS_IMPORT_NON_VISUAL)
             gpkg_file = f"{self.save_folder}{os.sep}{gpkg}.gpkg"
             title = "Import gpkgs to project"
             msg = "Processing file...{0}"
@@ -348,7 +348,7 @@ class DrImportInpTask(DrTask):
             for idx, f in enumerate(pattern.factors):
                 if self.isCanceled():
                     return
-                values_str = f"('{pattern_name}', {idx+1}, {f})"
+                values_str = f"('{pattern_name}', {idx + 1}, {f})"
                 values.append(values_str)
 
             values_str = ", ".join(values)

@@ -866,7 +866,7 @@ def set_tabs_enabled(dialog):
     qtabwidget = dialog.findChild(QTabWidget, 'mainTab')
     for x in range(0, qtabwidget.count() - 1):
         qtabwidget.widget(x).setEnabled(False)
-    qtabwidget.setTabEnabled(qtabwidget.count()-1, True)
+    qtabwidget.setTabEnabled(qtabwidget.count() - 1, True)
 
     btn_accept = dialog.findChild(QPushButton, 'btn_accept')
     if btn_accept:
@@ -2122,7 +2122,7 @@ def manage_json_return(json_result, sql, rubber_band=None, i=None):
                     fill_layer_temp(v_layer, json_result['body']['data'], key, counter, sort_val=i)
 
                     # Increase iterator
-                    i = i+1
+                    i = i + 1
 
                     # Get values for set layer style
                     opacity = 100

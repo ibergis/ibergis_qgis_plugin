@@ -248,7 +248,7 @@ class DrCreateMeshTask(DrTask):
                                 layers["ground"].source(),
                                 selectedFeaturesOnly=True,
                             ),
-                            'OUTPUT':'TEMPORARY_OUTPUT',
+                            'OUTPUT': 'TEMPORARY_OUTPUT',
                         }
                     )['OUTPUT']
 
@@ -260,7 +260,7 @@ class DrCreateMeshTask(DrTask):
                                 layers["ground"].source(),
                                 selectedFeaturesOnly=True,
                             ),
-                            'OUTPUT':'TEMPORARY_OUTPUT',
+                            'OUTPUT': 'TEMPORARY_OUTPUT',
                         }
                     )['OUTPUT']
 
@@ -272,7 +272,7 @@ class DrCreateMeshTask(DrTask):
                                 layers["ground"].source(),
                                 selectedFeaturesOnly=True,
                             ),
-                            'OUTPUT':'TEMPORARY_OUTPUT',
+                            'OUTPUT': 'TEMPORARY_OUTPUT',
                         }
                     )['OUTPUT']
 
@@ -427,7 +427,7 @@ class DrCreateMeshTask(DrTask):
                         crs=line_anchors.crs
                     )
                     mask = ground_vertices_geom.intersects(line_geom)
-                    points = ground_vertices_df[mask] # Get points inside the line anchor
+                    points = ground_vertices_df[mask]  # Get points inside the line anchor
                     points = gpd.GeoDataFrame(points, geometry=ground_vertices_geom[mask], crs=line_anchors.crs)
 
                     # Ignoring the z value, get the distance along the line, then interpolate the z value
@@ -662,9 +662,9 @@ class DrCreateMeshTask(DrTask):
         bridges["geometry"] = bridges.apply(make_bridge, axis=1)
         bridges = bridges.drop(columns=["distance"])
 
-        bridges["cellsize"] = np.inf # Infinity so that it will not affect the triangulation (keeps the minimum cell size)
+        bridges["cellsize"] = np.inf  # Infinity so that it will not affect the triangulation (keeps the minimum cell size)
 
-        return pd.concat([line_anchors, bridges], ignore_index=True) # type: ignore
+        return pd.concat([line_anchors, bridges], ignore_index=True)  # type: ignore
 
 
     def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame, bridge_layer: QgsVectorLayer) -> pd.DataFrame:
@@ -693,7 +693,7 @@ class DrCreateMeshTask(DrTask):
 
         # We create a DataFrame with the geometry of the triangles simplified to only the vertices (optimized_gdf)
         # This will be used to check intersections with the bridges
-        coords = optimized_df[['x1','y1','x2','y2','x3','y3']].to_numpy()
+        coords = optimized_df[['x1', 'y1', 'x2', 'y2', 'x3', 'y3']].to_numpy()
         vertices_geom = shapely.multipoints(coords.reshape(-1, 3, 2))
 
         # We explode the MultiPoint geometries to create a GeoDataFrame with individual points
@@ -767,9 +767,9 @@ class DrCreateMeshTask(DrTask):
                         bridge_next_value = None
 
                     # Set values from bridge_values if found, otherwise use defaults
-                    lowerdeckelev = (bridge_values["lowelev"]+bridge_next_value["lowelev"])/2 if bridge_values and bridge_next_value else None
+                    lowerdeckelev = (bridge_values["lowelev"] + bridge_next_value["lowelev"]) / 2 if bridge_values and bridge_next_value else None
                     bridgeopeningpercent = (bridge_values["openingval"]) if bridge_values else None
-                    topelevn = (bridge_values["topelev"]+bridge_next_value["topelev"])/2 if bridge_values and bridge_next_value else None
+                    topelevn = (bridge_values["topelev"] + bridge_next_value["topelev"]) / 2 if bridge_values and bridge_next_value else None
 
                     freepressureflowcd = bridge.freeflow_cd
                     deckcd = bridge.deck_cd

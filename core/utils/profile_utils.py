@@ -37,7 +37,7 @@ class COLS:
     GROUND_ELEV = 'GOK'  # rim elevation
     STATION = 'x'
     WATER = 'water'
-    FLOODING ='flooding'
+    FLOODING = 'flooding'
     LABEL = 'label'
 
 class ProfilePlotter:
@@ -90,7 +90,7 @@ class ProfilePlotter:
         if out is not None:
             if depth_agg_func is None:
                 depth_agg_func = lambda s: s.mean()
-            nodes_depth = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.DEPTH)).to_dict() # This gives me the maximums.
+            nodes_depth = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.DEPTH)).to_dict()  # This gives me the maximums.
             nodes_depth_dic = out.get_part(OBJECTS.NODE, None, VARIABLES.NODE.DEPTH).to_dict()
             nodes_flooding = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.FLOODING)).to_dict()
             nodes_flooding_dic = out.get_part(OBJECTS.NODE, None, VARIABLES.NODE.FLOODING).to_dict()
@@ -131,7 +131,7 @@ class ProfilePlotter:
                 else:
                     profile_height = 0
 
-                #sok_ = sok
+                # sok_ = sok
                 if isinstance(prior_conduit, Weir):
                     pass
                 elif isinstance(prior_conduit, Orifice):
@@ -156,7 +156,7 @@ class ProfilePlotter:
                 else:
                     profile_height = 0
 
-                #sok_ = sok
+                # sok_ = sok
                 if isinstance(following_conduit, Weir):
                     out_off = following_conduit.height_crest
                 elif isinstance(following_conduit, Orifice):
@@ -253,7 +253,7 @@ class ProfilePlotter:
             x1 = res[COLS.STATION][i]
             x2 = res[COLS.STATION][i + 1]
 
-            diameter = res[COLS.CROWN_ELEV_OFF][i]-res[COLS.OUT_OFFSET][i]
+            diameter = res[COLS.CROWN_ELEV_OFF][i] - res[COLS.OUT_OFFSET][i]
 
             # Bottom of the conduit
             y1_down = res[COLS.OUT_OFFSET][i]
@@ -267,7 +267,7 @@ class ProfilePlotter:
 
             # Water elevation (clipped to the conduit)
             water_elev_up = res[COLS.WATER][i]
-            water_elev_down = res[COLS.WATER][i+1]
+            water_elev_down = res[COLS.WATER][i + 1]
             if water_elev_up <= y1_down:
                 water_elev_up = y1_down
             if water_elev_down <= y2_down:
@@ -285,9 +285,9 @@ class ProfilePlotter:
             ax.plot([x1, x2], [y1_w, y2_w], c=self.c_water, lw=self.lw)
 
             # Energy line
-            if res[COLS.WATER][i] >= y1_top or res[COLS.WATER][i+1] >= y2_top:
+            if res[COLS.WATER][i] >= y1_top or res[COLS.WATER][i + 1] >= y2_top:
                 y1_energy = res[COLS.WATER][i]
-                y2_energy = res[COLS.WATER][i+1]
+                y2_energy = res[COLS.WATER][i + 1]
                 ax.plot([x1, x2], [y1_energy, y2_energy], c=self.c_water, lw=self.lw)
 
 
@@ -302,17 +302,17 @@ class ProfilePlotter:
 
                     # Left subsegment
                     if y1_energy > y1_top:
-                        ax.fill_between([x1, x_int], [y1_down, y_int-diameter], [y1_top, y_int], color=self.c_water, alpha=1, zorder =10)
+                        ax.fill_between([x1, x_int], [y1_down, y_int - diameter], [y1_top, y_int], color=self.c_water, alpha=1, zorder=10)
                     else:
-                        ax.fill_between([x1, x_int], [y1_down, y_int-diameter], [y1_energy, y_int], color=self.c_water, alpha=1, zorder =10)
-                        #Review
+                        ax.fill_between([x1, x_int], [y1_down, y_int - diameter], [y1_energy, y_int], color=self.c_water, alpha=1, zorder=10)
+                        # Review
 
                     # Right subsegment
                     if y2_energy < y2_top:
-                        ax.fill_between([x_int, x2], [y_int-diameter, y2_energy], [y_int, y2_energy], color=self.c_water, alpha=1, zorder =10)
+                        ax.fill_between([x_int, x2], [y_int - diameter, y2_energy], [y_int, y2_energy], color=self.c_water, alpha=1, zorder=10)
                     else:
-                        ax.fill_between([x_int, x2], [y_int, y2_down], [y_int, y2_top], color=self.c_water, alpha=1, zorder =10)
-                        #Review
+                        ax.fill_between([x_int, x2], [y_int, y2_down], [y_int, y2_top], color=self.c_water, alpha=1, zorder=10)
+                        # Review
 
             # Fill between the water level and the bottom of the pipe
             ax.fill_between([x1, x2], [y1_down, y2_down], [y1_top, y2_top], color=self.c_pipe, alpha=1)
@@ -333,11 +333,11 @@ class ProfilePlotter:
             altura_total = ground_elev - invert_elev
 
             if node_type != "OUTFALL":
-                rect = plt.Rectangle((x - self.mh_width/2, invert_elev), self.mh_width, altura_total,
+                rect = plt.Rectangle((x - self.mh_width / 2, invert_elev), self.mh_width, altura_total,
                                      edgecolor='black', facecolor=self.c_pipe, lw=self.lw, alpha=1, zorder=14)
                 ax.add_patch(rect)
 
-                rect_water = plt.Rectangle((x - self.mh_width/2, invert_elev), self.mh_width, water_elev - invert_elev,
+                rect_water = plt.Rectangle((x - self.mh_width / 2, invert_elev), self.mh_width, water_elev - invert_elev,
                                            edgecolor='black', facecolor=self.c_water, alpha=1, zorder=14)
                 ax.add_patch(rect_water)
 
@@ -351,7 +351,7 @@ class ProfilePlotter:
         ax.grid(True, zorder=-10)
 
         ax.set_xlim(res[COLS.STATION][0], res[COLS.STATION][-1])
-        ax.set_ylim(bottom=bottom, top = (max(res[COLS.GROUND_ELEV]) + self.offset_ymax))
+        ax.set_ylim(bottom=bottom, top=(max(res[COLS.GROUND_ELEV]) + self.offset_ymax))
 
         secax = ax.secondary_xaxis('top')
         secax.set_xticks(res[COLS.STATION], minor=False)
@@ -372,7 +372,7 @@ class ProfilePlotter:
         plt.subplots_adjust(bottom=0.3)
         self.plot_longitudinal(start_node, end_node, timestamp_range[0], ax=ax)
         slider_ax = fig.add_axes((0.15, 0.1, 0.7, 0.03))
-        slider = Slider(slider_ax, 'Timestep', 0, len(timestamp_range)-1, valinit=0, valstep=1)
+        slider = Slider(slider_ax, 'Timestep', 0, len(timestamp_range) - 1, valinit=0, valstep=1)
 
         play_ax = fig.add_axes((0.45, 0.02, 0.1, 0.05))
         play_button = Button(play_ax, 'Play')

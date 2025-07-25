@@ -300,10 +300,10 @@ def adjust_datetime(
         if not any([x.isNull() for x in dt_val_list]):
             dt_val_list = [dt_val.toString(str_output_format) for dt_val in dt_val_list]
             feedback.pushWarning(
-                'Timeseries \"'+ts_name+'\" '+dt_type+'column was derived from strings (assumed format: '+d_f
+                'Timeseries \"' + ts_name + '\" ' + dt_type + 'column was derived from strings (assumed format: ' + d_f
             )
         else:
-            raise QgsProcessingException(str(ts_name)+': column '+dt_type+' could not be converted properly. Tested formats: '+dt_formats)
+            raise QgsProcessingException(str(ts_name) + ': column ' + dt_type + ' could not be converted properly. Tested formats: ' + dt_formats)
     return dt_val_list
 
 
@@ -348,7 +348,7 @@ def get_timeseries_from_table(ts_raw, name_col, feedback):
                         'Date',
                         'MM/dd/yyyy',
                         ts_name,
-                        feedback = None
+                        feedback=None
                     )
                 # ts_df['Time'] = adjust_datetime(
                 #     ts_df['Time'],
@@ -387,7 +387,7 @@ def check_deprecated(
     for dep_col in cols_deprecated.keys():
         if dep_col in df.columns:
             feedback.pushWarning(
-                'Warning: usage of columns name \"' + dep_col +'\" in section '
+                'Warning: usage of columns name \"' + dep_col + '\" in section '
                 + swmm_section
                 + ' is deprecated and will be removed in future versions of the plugin. Please use \"'
                 + cols_deprecated[dep_col] + '\" instead.'
@@ -411,7 +411,7 @@ def check_columns(
     if len(missing_cols) == 0:
         pass
     else:
-        err_message = 'Missing columns in '+swmm_data_file+': '+', '.join(missing_cols)
-        err_message = err_message+'. Please add columns or check if the correct file/layer was selected. '
-        err_message = err_message+'For further advice regarding columns, read the documentation file in the plugin folder.'
+        err_message = 'Missing columns in ' + swmm_data_file + ': ' + ', '.join(missing_cols)
+        err_message = err_message + '. Please add columns or check if the correct file/layer was selected. '
+        err_message = err_message + 'For further advice regarding columns, read the documentation file in the plugin folder.'
         raise QgsProcessingException(err_message)

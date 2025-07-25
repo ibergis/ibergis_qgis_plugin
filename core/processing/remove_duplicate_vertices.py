@@ -153,7 +153,7 @@ class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
                     if changes:
                         layer.dataProvider().changeGeometryValues(changes)
 
-                    feedback.setProgress(tools_dr.lerp_progress(int(i / total_features * 100), min_progress+5, max_progress))
+                    feedback.setProgress(tools_dr.lerp_progress(int(i / total_features * 100), min_progress + 5, max_progress))
 
                 # Commit changes
                 layer.commitChanges()

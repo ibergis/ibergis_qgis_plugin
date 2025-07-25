@@ -22,7 +22,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis
-from ...core.utils import  Feedback
+from ...core.utils import Feedback
 from ...core.threads.validatemesh import validate_distance
 from typing import Optional
 import geopandas as gpd

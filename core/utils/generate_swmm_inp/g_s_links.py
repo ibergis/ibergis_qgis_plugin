@@ -71,7 +71,7 @@ def get_conduits_from_shapefile(conduits_raw):
     xsections_cols = def_sections_dict['XSECTIONS']
     losses_cols = def_sections_dict['LOSSES']
     conduits_df = conduits_raw[conduits_cols].copy()
-    conduits_df = conduits_df.apply(lambda x: x.astype("string"), axis = 0)
+    conduits_df = conduits_df.apply(lambda x: x.astype("string"), axis=0)
     conduits_df['Name'] = [str(x) for x in conduits_df['Name']]
     # Asteriscs indicate that InOffset or OutOffset is the same as node elevation:
     conduits_df['InOffset'] = conduits_df['InOffset'].fillna('*')
@@ -79,7 +79,7 @@ def get_conduits_from_shapefile(conduits_raw):
     conduits_df['InitFlow'] = conduits_df['InitFlow'].fillna('0')
     conduits_df['MaxFlow'] = conduits_df['MaxFlow'].fillna('0')
     xsections_df = conduits_raw[xsections_cols].copy()
-    xsections_df = xsections_df.apply(lambda x: x.astype("string"), axis = 0)
+    xsections_df = xsections_df.apply(lambda x: x.astype("string"), axis=0)
     xsections_df['Culvert'] = xsections_df['Culvert'].fillna('')
     if any(xsections_df['XsectShape'] == 'IRREGULAR') or any(xsections_df['XsectShape'] == 'CUSTOM') or any(xsections_df['XsectShape'] == 'STREET'):
         if 'Shp_Trnsct' not in conduits_raw.columns:
@@ -116,7 +116,7 @@ def get_conduits_from_shapefile(conduits_raw):
     xsections_df['Geom4'] = xsections_df.apply(lambda x: fill_empty_xsects(x, 'Geom4'), axis=1)
     xsections_df['Barrels'] = xsections_df.apply(lambda x: fill_empty_xsects(x, 'Barrels'), axis=1)
     losses_df = conduits_raw[losses_cols].copy()
-    losses_df = losses_df.apply(lambda x: x.astype("string"), axis = 0)
+    losses_df = losses_df.apply(lambda x: x.astype("string"), axis=0)
     losses_df['FlapGate'] = losses_df['FlapGate'].fillna('NO')
     losses_df['Seepage'] = losses_df['Seepage'].fillna('0')
     losses_df['Kentry'] = losses_df['Kentry'].fillna('0')
@@ -143,9 +143,9 @@ def get_street_from_tables(streets_inlets_raw):
             return inl_row[cols_needed_i[0]], inl_row[cols_needed_i[1]], '', '', ''
         else:
             if inl_row[cols_needed_i[2]] == 'GENERIC':
-                return inl_row[cols_needed_i[0]], inl_row[cols_needed_i[1]],  inl_row[cols_needed_i[2]], inl_row['OpenFract'], inl_row['SplashVel']
+                return inl_row[cols_needed_i[0]], inl_row[cols_needed_i[1]], inl_row[cols_needed_i[2]], inl_row['OpenFract'], inl_row['SplashVel']
             else:
-                return inl_row[cols_needed_i[0]], inl_row[cols_needed_i[1]],  inl_row[cols_needed_i[2]], '', ''
+                return inl_row[cols_needed_i[0]], inl_row[cols_needed_i[1]], inl_row[cols_needed_i[2]], '', ''
     inlets_df[['Shape1', 'Shape2', 'Shape3', 'Shape4', 'Shape5']] = [inl_type_adjustment(inlets_df.loc[i]) for i in inlets_df.index]
     inlets_df = inlets_df.drop(columns=all_inl_type_cols)
     return streets_df, inlets_df, inlets_usage_df
@@ -303,7 +303,7 @@ def get_transects_from_table(transects_raw):
         tr_roughn_i = tr_data_i[['RoughnessLeftBank', 'RoughnessRightBank', 'RoughnessChannel']].values.tolist()[0]
         tr_bank_i = tr_data_i[['BankStationLeft', 'BankStationRight']].values.tolist()[0]
         tr_modifier_i = tr_data_i[['ModifierMeander', 'ModifierStations', 'ModifierElevations']].values.tolist()[0]
-        NC_data_i = ['NC']+tr_roughn_i
+        NC_data_i = ['NC'] + tr_roughn_i
         NC_string_i = '    '.join([str(i) for i in NC_data_i])
         X1_data_i = ['X1', T_Name, '', tr_count_i] + tr_bank_i + [0.0, 0.0] + tr_modifier_i
         X1_string_i = '    '.join([str(i) for i in X1_data_i])
@@ -316,7 +316,7 @@ def get_transects_from_table(transects_raw):
             return '    '.join([str(i) for i in tr_line])
         GR_strings_i = [concat_tr_str(x) for x in tr_vals_i_list_splitted]
         GR_strings_i_joined = '\n'.join(GR_strings_i)
-        tr_string = NC_string_i+'\n'+X1_string_i+'\n'+GR_strings_i_joined
+        tr_string = NC_string_i + '\n' + X1_string_i + '\n' + GR_strings_i_joined
         return tr_string
     transects_string_list = [write_transect_lines(x) for x in tr_data['TransectName']]
     return transects_string_list
@@ -333,7 +333,7 @@ def get_inlet_from_inp(inlets_raw_line):
     init_elems = inlets_raw_line[:2]
     inl_type_i = inlets_raw_line[1]
     inl_cols_i = inl_types_def[inl_type_i]
-    inl_vals_i = {col: inlets_raw_line[2+i] for i, col in enumerate(inl_cols_i)}
+    inl_vals_i = {col: inlets_raw_line[2 + i] for i, col in enumerate(inl_cols_i)}
     inl_missing = {col_0: np.nan for col_0 in all_inl_type_cols if col_0 not in inl_vals_i.keys()}
     inl_vals_i.update(inl_missing)
     # adjustment for generec shapes
@@ -374,9 +374,9 @@ def adjust_outlets_list(outl_list_i, feedback):
         curve_name = outl_list_i[5]
         flap_gate = outl_list_i[6]
         outl_list_i[:5]
-        return outl_list_i[:5]+[np.nan, np.nan]+[flap_gate, curve_name]
+        return outl_list_i[:5] + [np.nan, np.nan] + [flap_gate, curve_name]
     else:
-        return outl_list_i+[np.nan]
+        return outl_list_i + [np.nan]
 
 
 # geometry
@@ -411,7 +411,7 @@ def get_line_from_points(
         from_point = from_geom.asPoint()
         to_geom = all_geoms.loc[to_node, 'geometry']
         to_point = to_geom.asPoint()
-        l_all_verts = [from_point]+l_verts_points+[to_point]
+        l_all_verts = [from_point] + l_verts_points + [to_point]
         line_geom = QgsGeometry.fromPolylineXY(l_all_verts)
     return [line_name, line_geom]
 
@@ -444,7 +444,7 @@ def get_elevation_from_node(node_name, dict_all_vals):
         if section_i in dict_all_vals.keys():
             if node_name in dict_all_vals[section_i]['data']['Name'].values:
                 matching_df = dict_all_vals[section_i]['data']
-                z_coord = matching_df.loc[matching_df['Name']==node_name, 'Elevation'].tolist()[0]
+                z_coord = matching_df.loc[matching_df['Name'] == node_name, 'Elevation'].tolist()[0]
                 z_coord = float(z_coord)
                 break
     return z_coord
@@ -476,13 +476,13 @@ def add_z_to_lines(sr, import_parameters_dict, dict_all_vals):
             z_coord_first = z_coord_first + float(in_offset)
         if out_offset != NULL:
             z_coord_last = z_coord_last + float(out_offset)
-    z_diff = z_coord_last-z_coord_first
+    z_diff = z_coord_last - z_coord_first
     len_line = f_geometry.length()
-    slope = z_diff/len_line
+    slope = z_diff / len_line
     vtx_list = []
     for i, vert in enumerate(f_geometry.vertices()):
         dist = f_geometry.distanceToVertex(i)
-        z_interpol = z_coord_first + dist*slope
+        z_interpol = z_coord_first + dist * slope
         vert.addZValue(z_interpol)
         vtx_list.append(vert)
     f_geometry_with_z = QgsGeometry.fromPolyline(vtx_list)

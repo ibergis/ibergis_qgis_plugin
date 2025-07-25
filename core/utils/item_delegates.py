@@ -13,7 +13,7 @@ from qgis.PyQt.QtCore import Qt
 class NumericDelegate(QStyledItemDelegate):
     """ Delegate for numeric fields (double - SpinBox) """
 
-    def __init__(self, parent=None, min_value: float=0, max_value: float=100000, step: float=1, decimals: int=3):
+    def __init__(self, parent=None, min_value: float = 0, max_value: float = 100000, step: float = 1, decimals: int = 3):
         super(NumericDelegate, self).__init__(parent)
         self.min_value = min_value
         self.max_value = max_value

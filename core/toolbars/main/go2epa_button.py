@@ -198,7 +198,7 @@ class DrGo2IberButton(DrAction):
         self.dlg_go2epa.txt_infolog.clear()
         status = self._check_fields()
         if status is False:
-            return                
+            return 
 
         # Get widgets values
         self.export_file_path = tools_qt.get_text(self.dlg_go2epa, 'txt_file_path')

@@ -833,8 +833,8 @@ class DrBridgeButton(DrAction):
                 y_center = (min(all_elevs) + max(all_elevs)) / 2 if all_elevs else 5
 
                 # Set ranges centered on the data with margins
-                self.plot_widget.axes.set_xlim(x_center - x_range/2 - x_margin, x_center + x_range/2 + x_margin)
-                self.plot_widget.axes.set_ylim(((y_center - y_range/2 - y_margin) - 10), (y_center + y_range/2 + y_margin) + 1)
+                self.plot_widget.axes.set_xlim(x_center - x_range / 2 - x_margin, x_center + x_range / 2 + x_margin)
+                self.plot_widget.axes.set_ylim(((y_center - y_range / 2 - y_margin) - 10), (y_center + y_range / 2 + y_margin) + 1)
                 self.plot_widget.axes.set_aspect('auto')
 
         # Refresh the plot
@@ -1111,15 +1111,15 @@ class DrBridgeButton(DrAction):
                 dialog.tbl_bridge_value.setItem(1, 3, NumericTableWidgetItem('100'))
             elif len(selected_rows) == 1:
                 # Add a new row after the selected row with the same values
-                dialog.tbl_bridge_value.insertRow(selected_rows[0].row()+1)
+                dialog.tbl_bridge_value.insertRow(selected_rows[0].row() + 1)
                 item0 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 0) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 0) not in (None, '') else '0.0'
                 item1 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 1) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 1) not in (None, '') else '0.0'
                 item2 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 2) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 2) not in (None, '') else '0.0'
                 item3 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 3) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 3) not in (None, '') else '100'
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 0, NumericTableWidgetItem(item0))
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 1, NumericTableWidgetItem(item1))
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 2, NumericTableWidgetItem(item2))
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 3, NumericTableWidgetItem(item3))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row() + 1, 0, NumericTableWidgetItem(item0))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row() + 1, 1, NumericTableWidgetItem(item1))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row() + 1, 2, NumericTableWidgetItem(item2))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row() + 1, 3, NumericTableWidgetItem(item3))
             elif len(selected_rows) == 0:
                 msg = "You have to select a row."
                 tools_qgis.show_warning(msg, dialog=dialog)
