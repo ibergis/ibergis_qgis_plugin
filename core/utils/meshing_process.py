@@ -436,7 +436,7 @@ try:
             # List of triangles in the polygon
             tri = element_tags[np.where(element_types == _TRIANGLE)[0][0]]
             for field in extra_fields:
-                extra_data[field][start : start + len(tri)] = feature[field]
+                extra_data[field][start: start + len(tri)] = feature[field]
             start += len(tri)
 
         if feedback is not None:
