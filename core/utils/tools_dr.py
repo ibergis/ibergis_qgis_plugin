@@ -440,12 +440,14 @@ def add_layer_database(tablename=None, the_geom="the_geom", field_id="id", group
                      f"user={global_vars.dao_db_credentials['user']} password={global_vars.dao_db_credentials['password']} " \
                      f"port={global_vars.dao_db_credentials['port']} mode=2 schema={global_vars.dao_db_credentials['schema']} " \
                      f"column={the_geom} table={tablename}"
-        if alias: tablename = alias
+        if alias:
+            tablename = alias
         layer = QgsRasterLayer(connString, tablename)
         tools_qt.add_layer_to_toc(layer, group, sub_group, create_groups=create_groups)
 
     else:
-        if alias: tablename = alias
+        if alias:
+            tablename = alias
         layer = QgsVectorLayer(uri.uri(), f'{tablename}', 'postgres')
         tools_qt.add_layer_to_toc(layer, group, sub_group, create_groups=create_groups, sub_sub_group=sub_sub_group)
 
@@ -1758,7 +1760,8 @@ def add_combo(field, dialog=None, complet_result=None):
                 return widget
             functions = [widgetfunction]
         for f in functions:
-            if 'isFilter' in f and f['isFilter']: continue
+            if 'isFilter' in f and f['isFilter']:
+                continue
             columnname = field['columnname']
             parameters = f['parameters']
 
@@ -2464,7 +2467,8 @@ def add_tableview_header(widget, field):
 
 def fill_tableview_rows(widget, field):
 
-    if field is None or field['value'] is None: return widget
+    if field is None or field['value'] is None:
+        return widget
     model = widget.model()
 
     for item in field['value']:
@@ -2943,7 +2947,8 @@ def set_filter_listeners(complet_result, dialog, widget_list, columnname, widget
     # QTableView and we gain in performance
     last_widget = None
     for widget in widget_list:
-        if widget.property('isfilter') is not True: continue
+        if widget.property('isfilter') is not True:
+            continue
         module = tools_backend_calls
         functions = None
         if widget.property('widgetfunction') is not None and isinstance(widget.property('widgetfunction'), list):
@@ -2958,7 +2963,8 @@ def set_filter_listeners(complet_result, dialog, widget_list, columnname, widget
         if widget.property('widgetfunction') is not None and 'functionName' in widget.property('widgetfunction'):
             widgetfunction = widget.property('widgetfunction')['functionName']
             functions = [widget.property('widgetfunction')]
-        if widgetfunction is False: continue
+        if widgetfunction is False:
+            continue
 
         linkedobject = ""
         if widget.property('linkedobject') is not None:

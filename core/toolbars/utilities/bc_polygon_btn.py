@@ -255,7 +255,8 @@ class DrCreateBCFromPolygon(DrAction):
             timeseries = tools_qt.get_combo_value(
                 self.dlg, self.dlg.cmb_timeseries
             )
-            if timeseries == '': timeseries = None
+            if timeseries == '':
+                timeseries = None
             feature.setAttribute("timeseries", timeseries)
         if config["other1"]:
             other1_str = self.dlg.txt_other1.text()

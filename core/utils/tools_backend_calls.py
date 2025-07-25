@@ -513,10 +513,12 @@ def fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields):
     if complet_list is False:
         return False, False
     for field in complet_list['body']['data']['fields']:
-        if 'hidden' in field and field['hidden']: continue
+        if 'hidden' in field and field['hidden']:
+            continue
 
         widget = dialog.findChild(QTableView, field['widgetname'])
-        if widget is None: continue
+        if widget is None:
+            continue
         widget = tools_dr.add_tableview_header(widget, field)
         widget = tools_dr.fill_tableview_rows(widget, field)
         widget = tools_dr.set_tablemodel_config(dialog, widget, field['widgetname'], 1, True)
