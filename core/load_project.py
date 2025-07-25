@@ -122,9 +122,6 @@ class DrLoadProject(QObject):
         msg_params = (plugin_version,)
         tools_log.log_info(msg, msg_params=msg_params)
 
-        # Reset dialogs position
-        tools_dr.reset_position_dialog()
-
         # Call gw_fct_setcheckproject and create GwProjectLayersConfig thread
         self._config_layers()
 
