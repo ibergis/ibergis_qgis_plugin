@@ -621,7 +621,7 @@ def validate_null_geometry(
 
 
 def validate_dem_coverage(layers_dict: dict, feedback: Feedback) -> QgsVectorLayer:
-    if layers_dict["dem"] == None:
+    if layers_dict["dem"] is None:
         return QgsVectorLayer("Polygon", "Empty", "memory")
 
     dem: QgsRasterLayer = layers_dict["dem"]

@@ -486,7 +486,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                         break
                 if inlet_code not in nearest_outlets.keys():
                     # Set outlet as None or set the minimum one. Depends on checkbox parameter "bool_set_nones"
-                    if self.bool_force_belows and min_outlet != None:
+                    if self.bool_force_belows and min_outlet is not None:
                         nearest_outlets[inlet_code] = min_outlet['code']
                         if isInlet:
                             self.below_inlets.append(inlet_code)
