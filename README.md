@@ -25,6 +25,11 @@ QGIS: Geoprocessing software<br>
 <br>
 If you didn't install QGIS using the standalone installer, you may need to install the matplotlib python library manually.
 
+**Linux users**: You will need to install the Python packages listed in the `requirements.txt` file. These packages are bundled for Windows but must be installed separately on Linux systems.
+```bash
+pip install -r requirements.txt
+```
+
 ## INSTALL
 
 
