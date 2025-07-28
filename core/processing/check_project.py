@@ -629,13 +629,13 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         if query['table_name']:
             if condition_select is not None:
                 # Build check query with WHERE clause and additional conditions
-                check_query = f'SELECT *, AsWKT(CastAutomagic(geom)) as geom_wkt FROM {query['table_name']} WHERE ({columns_select}) '
-                check_query_nogeom = f'SELECT * FROM {query['table_name']} WHERE ({columns_select}) '
+                check_query = f"SELECT *, AsWKT(CastAutomagic(geom)) as geom_wkt FROM {query['table_name']} WHERE ({columns_select}) "
+                check_query_nogeom = f"SELECT * FROM {query['table_name']} WHERE ({columns_select}) "
                 check_query += condition_select
             else:
                 # Build check query with WHERE clause
-                check_query = f'SELECT *, AsWKT(CastAutomagic(geom)) as geom_wkt FROM {query['table_name']} WHERE {columns_select} '
-                check_query_nogeom = f'SELECT * FROM {query['table_name']} WHERE {columns_select} '
+                check_query = f"SELECT *, AsWKT(CastAutomagic(geom)) as geom_wkt FROM {query['table_name']} WHERE {columns_select} "
+                check_query_nogeom = f"SELECT * FROM {query['table_name']} WHERE {columns_select} "
 
         return check_query, check_query_nogeom, columns_checked
 
@@ -718,7 +718,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         duplicates = list(set(duplicates))
 
         # Create temporal layer
-        temporal_layer = QgsVectorLayer(f'{query['geometry_type']}', f'{query['query_type'].replace(" ", "_").lower()}_{query['table_name']}', 'memory')
+        temporal_layer = QgsVectorLayer(f'{query["geometry_type"]}', f'{query["query_type"].replace(" ", "_").lower()}_{query["table_name"]}', 'memory')
         if temporal_layer is None:
             msg = 'ERROR-{0} ({1}): Error creating temporal layer for table "{2}"'
             msg_params = (query['error_code'], query['query_type'], query['table_name'])

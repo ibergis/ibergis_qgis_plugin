@@ -853,12 +853,12 @@ class DrExecuteModel(DrTask):
                 if ht_row["z_start"] is None or str(ht_row["z_start"]) == "NULL":
                     file.write("0 ")
                 else:
-                    file.write(f"{ht_row["z_start"]} ")
+                    file.write(f"{ht_row['z_start']} ")
                 # 8 - z_end
                 if ht_row["z_end"] is None or str(ht_row["z_end"]) == "NULL":
                     file.write("0 ")
                 else:
-                    file.write(f"{ht_row["z_end"]} ")
+                    file.write(f"{ht_row['z_end']} ")
 
                 # 9 - culvert type
                 if ht_row["culvert_type"] == "CIRCULAR":
@@ -867,11 +867,11 @@ class DrExecuteModel(DrTask):
                     file.write("1 ")
 
                 # 10, 11, 12, 13 - geom2(width), geom1(height), manning, code
-                file.write(f"{0 if str(ht_row["geom2"]) == "NULL" else ht_row["geom2"]} " +
-                           f"{0 if str(ht_row["geom1"]) == "NULL" else ht_row["geom1"]} " +
-                           f"{0 if str(ht_row["manning"]) == "NULL" else ht_row["manning"]} " +
-                           f"{0 if str(ht_row["collapse_moment"]) == "NULL" else ht_row["collapse_moment"]} " +
-                           f"{ht_row["code"]}\n")
+                file.write(f"{0 if str(ht_row['geom2']) == 'NULL' else ht_row['geom2']} " +
+                           f"{0 if str(ht_row['geom1']) == 'NULL' else ht_row['geom1']} " +
+                           f"{0 if str(ht_row['manning']) == 'NULL' else ht_row['manning']} " +
+                           f"{0 if str(ht_row['collapse_moment']) == 'NULL' else ht_row['collapse_moment']} " +
+                           f"{ht_row['code']}\n")
 
                 self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(tools_dr.lerp_progress(i, 10, gdf.featureCount()), self.PROGRESS_RAIN, self.PROGRESS_CULVERTS), '', False)
 
