@@ -78,14 +78,14 @@ class ProfilePlotter:
         in_off = 0
         out_off = 0
         # ---------------
-        nodes_depth = None
-        nodes_flood = None
+        nodes_depth = None  # noqa: F841
+        nodes_flood = None  # noqa: F841
         if out is not None:
             if depth_agg_func is None:
                 depth_agg_func = lambda s: s.mean()
-            nodes_depth = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.DEPTH)).to_dict()  # This gives me the maximums.
+            nodes_depth = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.DEPTH)).to_dict()  # This gives me the maximums. # noqa: F841
             nodes_depth_dic = out.get_part(OBJECTS.NODE, None, VARIABLES.NODE.DEPTH).to_dict()
-            nodes_flooding = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.FLOODING)).to_dict()
+            nodes_flooding = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.FLOODING)).to_dict()  # noqa: F841
             nodes_flooding_dic = out.get_part(OBJECTS.NODE, None, VARIABLES.NODE.FLOODING).to_dict()
         # ---------------
         stations_ = list(self.iter_over_inp_(sub_list, sub_graph))

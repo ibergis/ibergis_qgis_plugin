@@ -191,7 +191,6 @@ class DrEpaFileManager(DrTask):
         FILE_TIMESERIES = self._create_timeseries_file()
         FILE_INFLOWS = self._create_inflows_file()
         FILE_TRANSECTS = None  # TODO: ARCHIVO EXCEL 'vi_transects'
-        FILE_STREETS = None
         USE_Z_BOOL = self.params.get('use_z_bool', False)
         params = {
             'QGIS_OUT_INP_FILE': self.QGIS_OUT_INP_FILE,
@@ -464,7 +463,6 @@ class DrEpaFileManager(DrTask):
             sheet_name = "CONTROLS"
             df.to_excel(writer, sheet_name=sheet_name, index=False)
             # Get the xlsxwriter workbook and worksheet objects
-            workbook = writer.book
             worksheet = writer.sheets[sheet_name]
 
             # Set the column alignment to the left for all columns

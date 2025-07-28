@@ -89,7 +89,6 @@ class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
 
         for layer in [self.ground_layer, self.roof_layer]:
             feedback.setProgressText(f"Processing layer: {layer.name()}")
-            db_path = global_vars.gpkg_dao_data.db_filepath.replace('\\', '/')
 
             # Set progress range
             min_progress: int = 0

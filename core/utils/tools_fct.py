@@ -157,7 +157,6 @@ def getselectors(p_input: dict) -> dict:
     v_message: str
     v_fields_aux: {}
     v_fields: list
-    v_raw_values: list
 
     try:
 
@@ -179,7 +178,6 @@ def getselectors(p_input: dict) -> dict:
             label = tab_json["label"]
             orderBy = tab_json["orderBy"]
             manageAll = tab_json["manageAll"]
-            query_filter = tab_json["query_filter"]
             typeaheadFilter = tab_json.get("typeaheadFilter")
             typeaheadForced = tab_json["typeaheadForced"]
 
@@ -363,7 +361,6 @@ def getinfofromid(p_input: dict) -> dict:
     v_sql: str
     v_raw_widgets: list = []
     v_widgets: list = []
-    v_raw_values: list = []
     v_addparam: Union[str, dict]
 
     try:

@@ -517,14 +517,13 @@ class DrProfileButton(DrAction):
 
         # Define the path of the files
         inputfile = f"{results_folder}{os.sep}Iber_SWMM.inp"
-        inifile = f"{results_folder}{os.sep}Iber_SWMM.ini"
         outputfile = f"{results_folder}{os.sep}Iber_SWMM.out"
 
         # Load the simulation
         inp = read_inp_file(inputfile)
         out = read_out_file(outputfile)
 
-        res_out = out.to_frame()
+        out.to_frame()
 
         # SWMM API and SWMM library versions. Informative.
         print(f'SWMM API version - {swmm_api_version}')

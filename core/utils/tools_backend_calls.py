@@ -29,8 +29,6 @@ def add_object(**kwargs):
     """
     dialog = kwargs['dialog']
     button = kwargs['widget']
-    index_tab = dialog.tab_main.currentIndex()
-    tab_name = dialog.tab_main.widget(index_tab).objectName()
     func_params = kwargs['func_params']
     complet_result = kwargs['complet_result']
     feature_type = complet_result['body']['feature']['featureType']
@@ -98,11 +96,6 @@ def delete_object(**kwargs):
         at lines:   widget.clicked.connect(partial(getattr(module, function_name), **kwargs))
     """
     dialog = kwargs['dialog']
-    try:
-        index_tab = dialog.tab_main.currentIndex()
-        tab_name = dialog.tab_main.widget(index_tab).objectName()
-    except Exception:
-        tab_name = 'main'
     func_params = kwargs['func_params']
     complet_result = kwargs['complet_result']
 
@@ -215,9 +208,6 @@ def filter_table(**kwargs):
         field_id = str(complet_result['body']['feature']['idName'])
     feature_id = complet_result['body']['feature']['id']
     filter_fields = f'"{field_id}":{{"value":"{feature_id}","filterSign":"="}}, '
-    colname = None
-    if func_params:
-        colname = func_params.get('columnfind')
     filter_fields = get_filter_qtableview(dialog, widget_list, complet_result, filter_fields)
     try:
         index_tab = dialog.tab_main.currentIndex()
@@ -658,7 +648,7 @@ def get_selector(**kwargs):
     Function connected -> global_vars.signal_manager.refresh_selectors.connect(tools_dr.refresh_selectors)
     """
 
-    tab_name = kwargs.get('tab')
+    return
 
 
 def show_message(**kwargs):

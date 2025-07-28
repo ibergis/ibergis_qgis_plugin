@@ -107,7 +107,6 @@ class DrNonVisual:
             self.manager_dlg.main_tab.widget(tab_idx).setObjectName(key)
             self.manager_dlg.main_tab.widget(tab_idx).setProperty('function', f"get_{dict_views_project[key]}")
             function_name = f"get_{dict_views_project[key]}"
-            _id = 0
 
             self._fill_manager_table(qtableview, key)
 
@@ -802,7 +801,6 @@ class DrNonVisual:
         """ Fills in all the values for ud pattern dialog """
 
         # Variables
-        txt_id = self.dialog.txt_pattern
         txt_name = self.dialog.txt_name
         cmb_pattern_type = self.dialog.cmb_pattern_type
         txt_descript = self.dialog.txt_descript
@@ -1241,10 +1239,7 @@ class DrNonVisual:
         """ Fills in all the values for timeseries dialog """
 
         # Variables
-        txt_id = self.dialog.txt_id
         txt_idval = self.dialog.txt_idval
-        cmb_timeser_type = self.dialog.cmb_timeser_type
-        cmb_times_type = self.dialog.cmb_times_type
         txt_descript = self.dialog.txt_descript
         txt_fname = self.dialog.txt_fname
         tbl_timeseries_value = self.dialog.tbl_timeseries_value
@@ -1440,13 +1435,11 @@ class DrNonVisual:
     def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, timeseries):
         """ Insert table values into cat_timeseries_value """
 
-        time_formats_list = ['HH:mm:ss', 'HH:mm', 'HH', 'H:mm', 'H']
         date_formats_list = ['MM/dd/yyyy', 'M/dd/yyyy', 'MM/d/yyyy', 'M/d/yyyy',
                              'MM.dd.yyyy', 'M.dd.yyyy', 'MM.d.yyyy', 'M.d.yyyy',
                              'MM-dd-yyyy', 'M-dd-yyyy', 'MM-d-yyyy', 'M-d-yyyy']
         invalid_times = list()
         invalid_dates = list()
-        output_time_format = 'HH:mm'
         output_date_format = 'MM/dd/yyyy'
 
         values = list()
@@ -1458,15 +1451,6 @@ class DrNonVisual:
                 if item is not None and item.data(0) not in (None, ''):
                     value = item.data(0)
                     if x == 1 and isinstance(value, str):
-                        # Convert to HH:mm time format
-                        # for i in range(0, len(time_formats_list)):
-                            # value = QTime.fromString(item.data(0), time_formats_list[i])  # Try to convert
-                            # if not value.isNull():
-                            #    value = value.toString(output_time_format if time_formats_list[i] != 'HH:mm:ss' else output_time_format+':ss')  # Convert QTime to string
-                            #    break
-                        # if type(value) != str and value.isNull():
-                        #    invalid_times.append(item.data(0))
-
                         time_values = item.data(0).split(':')
                         if len(time_values) == 2:
                             # Check if both values are integers
@@ -1722,7 +1706,6 @@ class DrNonVisual:
 
         for i in range(dialog.tab_lidlayers.count()):
             if dialog.tab_lidlayers.isTabVisible(i):
-                tab_name = dialog.tab_lidlayers.widget(i).objectName().upper()
                 # List with all QLineEdit children
                 child_list = dialog.tab_lidlayers.widget(i).children()
                 visible_widgets = [widget for widget in child_list if isinstance(widget, QLineEdit) or isinstance(widget, QComboBox)]
@@ -1977,7 +1960,7 @@ class DrNonVisual:
         paste_shortcut.activated.connect(partial(self._paste_raster_values, tbl_raster_value))
 
         # Populate combobox
-        raster_type_headers = self._populate_raster_combo(cmb_raster_type)
+        self._populate_raster_combo(cmb_raster_type)
 
         # Populate data if editing raster
         tools_qt.set_widget_text(self.dialog, self.dialog.txt_raster_id, raster_id)

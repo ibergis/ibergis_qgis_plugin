@@ -539,6 +539,7 @@ class DrImportInpTask(DrTask):
                     if new_name in lids_db:
                         continue
                     message = f'The curve "{lid_name}" has been renamed to "{new_name}" to avoid a collision with an existing curve.'
+                    print(message)
                     self.mappings["curves"][lid_name] = new_name
                     lid_name = new_name
                     break

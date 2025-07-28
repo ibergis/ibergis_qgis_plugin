@@ -103,8 +103,6 @@ class DrCreateMeshTask(DrTask):
 
             # Load input layers
             self.dao = global_vars.gpkg_dao_data.clone()
-            db_path = self.dao.db_filepath.replace('\\', '/')
-            path = f"{db_path}|layername="
 
             layers: dict[str, Union[QgsVectorLayer, QgsRasterLayer]] = {}
 

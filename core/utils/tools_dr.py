@@ -1323,7 +1323,6 @@ def add_button(**kwargs):
 def add_spinbox(**kwargs):
 
     field = kwargs['field']
-    module = tools_backend_calls
     widget = None
     if field['widgettype'] == 'spinbox':
         widget = QSpinBox()
@@ -1530,13 +1529,11 @@ def add_hyperlink(field):
                     return widget
             else:
                 msg = "Parameter {0} is null for widget hyperlink"
-                msg_params = ("widgetfunction",)
                 tools_qgis.show_message(msg, 2, parameter=real_name)
         else:
             tools_log.log_info(field['widgetfunction'])
     else:
         msg = "Parameter {0} not found for widget type hyperlink"
-        msg_params = ("widgetfunction",)
         tools_qgis.show_message(msg, 2, parameter=real_name)
 
     if func_name is not None:
@@ -2954,7 +2951,6 @@ def set_filter_listeners(complet_result, dialog, widget_list, columnname, widget
         if widget.property('widgetfunction') is not None and isinstance(widget.property('widgetfunction'), list):
             functions = []
             for function in widget.property('widgetfunction'):
-                func_names = []
                 widgetfunction = function['functionName']
                 if 'isFilter' in function:
                     if function['isFilter']:
@@ -3216,9 +3212,6 @@ def _manage_check(**kwargs):
             widget = getattr(self, f"_manage_{field['widgettype']}")(**kwargs)
         """
 
-    dialog = kwargs['dialog']
-    field = kwargs['field']
-    class_info = kwargs['class']
     widget = add_checkbox(**kwargs)
     # widget.stateChanged.connect(partial(get_values, dialog, widget, class_info.my_json))
     return widget
@@ -3307,9 +3300,6 @@ def _manage_doubleSpinbox(**kwargs):
         widget = getattr(self, f"_manage_{field['widgettype']}")(**kwargs)
     """
 
-    dialog = kwargs['dialog']
-    field = kwargs['field']
-    info = kwargs['info']
     widget = add_spinbox(**kwargs)
     return widget
 
