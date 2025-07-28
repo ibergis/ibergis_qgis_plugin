@@ -161,7 +161,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                         'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
                     })['OUTPUT']
                 self.nearest_valid_inlet_outlets = self.getNearestValidOutlets(nearest_inlet_outlets, feedback, True)
-            except:
+            except Exception:
                 self.nearest_valid_inlet_outlets = None
         if self.file_pinlets:
             try:
@@ -180,7 +180,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                         'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
                     })['OUTPUT']
                 self.nearest_valid_pinlet_outlets = self.getNearestValidOutlets(nearest_pinlet_outlets, feedback, False)
-            except:
+            except Exception:
                 self.nearest_valid_pinlet_outlets = None
         if feedback.isCanceled():
             return {}

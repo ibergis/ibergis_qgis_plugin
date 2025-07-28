@@ -120,7 +120,7 @@ class DrBCScenarioManagerButton(DrAction):
     def _reload_manager_table(self):
         try:
             self.dlg_manager.tbl_bcs.model().select()
-        except:
+        except Exception:
             pass
 
     def _filter_table(self, text):

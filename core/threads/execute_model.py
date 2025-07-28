@@ -945,7 +945,7 @@ class DrExecuteModel(DrTask):
                         print(f"iber_percentage: {iber_percentage}")
                     else:
                         iber_percentage = None
-                except:
+                except Exception:
                     iber_percentage = None
                 self.progress_changed.emit(tools_qt.tr(title), iber_percentage, f'{output.strip()}', True)
 

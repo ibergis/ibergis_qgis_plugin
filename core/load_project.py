@@ -480,7 +480,7 @@ class DrLoadProject(QObject):
                             if subwidget.objectName() == 'mUpdateExpressionText':  # This is the expression text field
                                 try:
                                     subwidget.fieldChanged.disconnect()
-                                except:
+                                except Exception:
                                     pass
                                 # When you type something in the expression text field, the button "Update all" is
                                 # enabled. This will disable it again.

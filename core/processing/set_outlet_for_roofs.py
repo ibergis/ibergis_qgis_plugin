@@ -142,7 +142,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                     'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
                 })['OUTPUT']
                 self.nearest_valid_roof_outlets = self.getNearestValidOutlets(nearest_roof_outlets, feedback)
-            except:
+            except Exception:
                 self.nearest_valid_roof_outlets = None
 
         if feedback.isCanceled():

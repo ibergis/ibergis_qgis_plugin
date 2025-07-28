@@ -102,7 +102,7 @@ class DrOptions:
                         lyt_col = lyt_name_split[-1]
                         row = int(lyt_row) - 1
                         col = int(lyt_col) - 1
-                    except:
+                    except Exception:
                         msg = "Layout '{0}' has an invalid name. It has to end with {1} indicating where in the dialog it should go."
                         msg_params = (lyt[0], "row_column",)
                         tools_qgis.show_warning(msg, msg_params=msg_params)

@@ -426,7 +426,7 @@ def add_layer_database(tablename=None, the_geom="the_geom", field_id="id", group
     if the_geom:
         try:
             uri.setSrid(f"{global_vars.data_epsg}")
-        except:
+        except Exception:
             pass
     create_groups = get_config_parser("system", "force_create_qgis_group_layer", "user", "init", prefix=False)
     create_groups = tools_os.set_boolean(create_groups, default=False)
@@ -947,7 +947,7 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
 
     try:
         fields = row[pos]
-    except:
+    except Exception:
         fields = row
 
     field_id = ''
