@@ -14,7 +14,6 @@ from qgis import processing
 
 from ...lib import tools_qt, tools_qgis
 from ..utils import tools_dr
-from ... import global_vars
 
 
 class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
