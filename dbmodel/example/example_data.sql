@@ -724,9 +724,6 @@ UPDATE inp_conduit SET shape='CIRCULAR', curve_transect=null WHERE code IN ('C31
 UPDATE inp_dwf SET pattern1 = 'DAILY_PATTERN', pattern2='MONTHLY_PATTERN', pattern3='HOURLY_PATTERN', pattern4='WEEKEND_PATTERN';
 UPDATE inp_inflow  SET type = 'FLOW', pattern ='WEEKEND_PATTERN';
 UPDATE config_param_user SET value=1 where parameter= 'options_rain_class';
-UPDATE config_param_user SET isconflictive = 'YES' where value ='inp_report_input';
-UPDATE config_param_user SET isconflictive = '1' where value  = 'result_results_raster';
-UPDATE config_param_user SET isconflictive = '5' where value  = 'result_results_raster_cell';
 
 
 -- -------------------

@@ -12,8 +12,7 @@ This version of Giswater is provided by Giswater Association
 
 CREATE TABLE config_param_user (
     parameter text primary key,
-    value text CHECK (typeof(value)='text' OR value=NULL),
-    isconflictive boolean check (isconflictive in (0, 1) or isconflictive is null)
+    value text CHECK (typeof(value)='text' OR value=NULL)
 );
 
 CREATE TABLE sys_message (
