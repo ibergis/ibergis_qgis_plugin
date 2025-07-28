@@ -23,7 +23,7 @@ from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QSt
     QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, QToolButton, \
-    QWidget, QDockWidget, QMenu
+    QWidget, QMenu
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \

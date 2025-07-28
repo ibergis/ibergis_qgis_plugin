@@ -6,7 +6,8 @@ from qgis.core import (
     QgsVectorLayer,
     QgsRasterLayer,
     QgsProcessingParameterVectorLayer,
-    QgsProcessing
+    QgsProcessing,
+    QgsProject
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from typing import Any
