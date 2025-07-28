@@ -59,8 +59,6 @@ class DrLoadProject(QObject):
         # Removes all deprecated variables defined at drain.config
         # tools_dr.remove_deprecated_config_vars()
 
-        global_vars.project_vars['project_role'] = None
-
         # Check if user has config files 'init' and 'session' and its parameters
         tools_dr.user_params_to_userconfig()
 
@@ -130,11 +128,6 @@ class DrLoadProject(QObject):
         """ Manage QGIS project variables """
 
         global_vars.project_vars = {}
-        global_vars.project_vars['info_type'] = tools_qgis.get_project_variable('gwInfoType')
-        global_vars.project_vars['add_schema'] = tools_qgis.get_project_variable('gwAddSchema')
-        global_vars.project_vars['main_schema'] = tools_qgis.get_project_variable('gwMainSchema')
-        global_vars.project_vars['project_role'] = tools_qgis.get_project_variable('gwProjectRole')
-        global_vars.project_vars['project_type'] = tools_qgis.get_project_variable('gwProjectType')
         global_vars.project_vars['project_gpkg_path'] = tools_qgis.get_project_variable('project_gpkg_path')
 
     def _get_user_variables(self):

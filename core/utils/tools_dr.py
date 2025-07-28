@@ -355,13 +355,9 @@ def disconnect_signal(section, signal_name=None, pop=True):
 def create_body(form='', feature='', filter_fields='', extras=None):
     """ Create and return parameters as body to functions"""
 
-    info_types = {'full': 1}
-    info_type = info_types.get(global_vars.project_vars['info_type'])
     lang = QSettings().value('locale/globalLocale', QLocale().name())
 
     client = f'{{"client":{{"device":4, "lang":"{lang}"'
-    if info_type is not None:
-        client += f', "infoType":{info_type}'
     if global_vars.project_epsg is not None:
         client += f', "epsg":{global_vars.project_epsg}'
     client += '}, '
@@ -471,8 +467,7 @@ def add_layer_database(tablename=None, the_geom="the_geom", field_id="id", group
         # Set layer config
         if tablename:
             feature = '"tableName":"' + str(tablename_og) + '", "isLayer":true'
-            extras = '"infoType":"' + str(global_vars.project_vars['info_type']) + '"'
-            body = create_body(feature=feature, extras=extras)
+            body = create_body(feature=feature)
             json_result = execute_procedure('gw_fct_getinfofromid', body)
             config_layer_attributes(json_result, layer, alias)
 
@@ -962,7 +957,7 @@ def _create_field_label(field):
     """Create label widget for field"""
     if not field['label']:
         return None
-    
+
     lbl = QLabel()
     lbl.setObjectName('lbl' + field['widgetname'])
     lbl.setText(field['label'])
@@ -1070,7 +1065,7 @@ def _create_button_widget(field, dialog, temp_layers_added):
 def _create_widget_by_type(field, dialog, _json, temp_layers_added, module):
     """Create widget based on field type"""
     widget_type = field['widgettype']
-    
+
     if widget_type == 'text' or widget_type == 'linetext':
         return _create_text_widget(field, dialog, _json)
     elif widget_type == 'combo':
@@ -1083,7 +1078,7 @@ def _create_widget_by_type(field, dialog, _json, temp_layers_added, module):
         return _create_spinbox_widget(field, dialog, _json)
     elif widget_type == 'button':
         return _create_button_widget(field, dialog, temp_layers_added)
-    
+
     return None
 
 
@@ -1100,7 +1095,7 @@ def _configure_widget_editability(widget, field):
     elif type(widget) in (QComboBox, QCheckBox):
         if iseditable in (False, "False"):
             widget.setEnabled(False)
-    
+
     widget.setObjectName(field['widgetname'])
     if iseditable is not None:
         widget.setEnabled(bool(iseditable))
@@ -2256,8 +2251,6 @@ def get_config_value(parameter='', columns='value', table='config_param_user', s
     sql = f"SELECT {columns} FROM {table} WHERE parameter = '{parameter}' "
     if sql_added:
         sql += sql_added
-    if table == 'config_param_user':
-        sql += " AND cur_user = current_user"
     sql += ";"
     row = tools_db.get_row(sql, log_info=log_info)
     return row
@@ -2366,7 +2359,6 @@ def docker_dialog(dialog):
 def init_docker(docker_param='qgis_info_docker'):
     """ Get user config parameter @docker_param """
 
-    global_vars.session_vars['info_docker'] = True
     # Show info or form in docker?
     row = get_config_value(docker_param)
     if not row:
@@ -2380,7 +2372,6 @@ def init_docker(docker_param='qgis_info_docker'):
         if global_vars.session_vars['dialog_docker']:
             if global_vars.session_vars['docker_type']:
                 if global_vars.session_vars['docker_type'] != 'qgis_info_docker':
-                    global_vars.session_vars['info_docker'] = False
                     return None
 
     if value == 'true':
@@ -2724,12 +2715,12 @@ def manage_current_selections_docker(result, open=False):
             elif user_value['value']:
                 title += f"{user_value['value']} | "
 
-        if global_vars.session_vars['current_selections'] is None:
-            global_vars.session_vars['current_selections'] = QDockWidget(title[:-3])
-        else:
-            global_vars.session_vars['current_selections'].setWindowTitle(title[:-3])
-        if open:
-            global_vars.iface.addDockWidget(Qt.LeftDockWidgetArea, global_vars.session_vars['current_selections'])
+        # if global_vars.session_vars['current_selections'] is None:
+        #     global_vars.session_vars['current_selections'] = QDockWidget(title[:-3])
+        # else:
+        #     global_vars.session_vars['current_selections'].setWindowTitle(title[:-3])
+        # if open:
+        #     global_vars.iface.addDockWidget(Qt.LeftDockWidgetArea, global_vars.session_vars['current_selections'])
 
 
 def manage_user_config_folder(user_folder_dir):

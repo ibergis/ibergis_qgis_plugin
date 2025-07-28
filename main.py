@@ -105,11 +105,7 @@ class Drain(QObject):
 
         try:
             # Reset values for global_vars.project_vars
-            global_vars.project_vars['info_type'] = None
-            global_vars.project_vars['add_schema'] = None
-            global_vars.project_vars['main_schema'] = None
-            global_vars.project_vars['project_role'] = None
-            global_vars.project_vars['project_type'] = None
+            global_vars.project_vars['project_gpkg_path'] = None
         except Exception as e:
             msg = "Exception in unload when reset values for global_vars.project_vars: {0}"
             msg_params = (e,)
@@ -496,12 +492,6 @@ class Drain(QObject):
         docker_info = self.iface.mainWindow().findChild(QDockWidget, 'docker')
         if docker_info:
             self.iface.removeDockWidget(docker_info)
-
-        # Remove 'current_selections' docker
-        if global_vars.session_vars['current_selections']:
-            self.iface.removeDockWidget(global_vars.session_vars['current_selections'])
-            global_vars.session_vars['current_selections'].deleteLater()
-            global_vars.session_vars['current_selections'] = None
 
         # Manage 'dialog_docker' from global_vars.session_vars and remove it if exists
         tools_dr.close_docker()

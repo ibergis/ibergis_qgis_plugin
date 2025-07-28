@@ -23,36 +23,28 @@ list_configs = [                        # List of configuration files
     'dev',
     'drain',
     'user_params']
-project_loaded = False                  # True when selected project has been loaded
-load_project_menu = None               # Instance of class DrMenuLoad. Found in "/core/load_project_menu.py"
-configs = {}                            # Dictionary of configuration files. Value is an array of 2 columns:
-                                        # [0]-> Filepath. [1]-> Instance of class ConfigParser  # noqa: E116
-configs['init'] = [None, None]          # User configuration file: init.config (located in user config folder)
-configs['session'] = [None, None]       # Session configuration file: session.config (located in user config folder)
-configs['dev'] = [None, None]           # Developer configuration file: dev.config (located in plugin config folder)
-configs['drain'] = [None, None]         # Plugin configuration file: drain.config (located in plugin config folder)
-configs['user_params'] = [None, None]   # Settings configuration file: user_params.config (plugin config folder)
-schema_name = None                      # Schema name retrieved from QGIS project connection with PostgreSql
-project_type = None                     # Project type get from table "sys_version"
-data_epsg = None                        # SRID retrieved from QGIS project layer "v_edit_node"
-project_epsg = None                     # EPSG of QGIS project
-logger = None                           # Instance of class DrLogger. Found in "/lib/tools_log.py"
-signal_manager = None                   # Instance of class DrSignalManager. Found in "/core/utils/signal_manager.py"
-plugin_settings = None                  # Instance of class QSettings. QGIS settings related to plugin variables such as toolbars and checkable actions
-current_user = None                     # Current user connected with PostgreSql
-db_qsql_data = None                     # Instance of class QSqlDatabase (QSQLITE) used to manage QTableView widgets
-db_qsql_config = None                   # Instance of class QSqlDatabase (QSQLITE) used to manage QTableView widgets
-dao = None                              # Instance of class DrPgDao. Found in "/lib/tools_db.py"
-dao_db_credentials = None               # Credentials used to establish the connection with PostgreSql. Saving {db, schema, table, service, host, port, user, password, sslmode}
-gpkg_dao_data = None                    # Instance of class DrGpkgDao. Found in "/lib/tools_gpkg.py"
-gpkg_dao_config = None                  # Instance of class DrGpkgDao. Found in "/lib/tools_gpkg.py"
-project_vars = {}                       # Project variables from QgsProject related to Giswater
-project_vars['info_type'] = None        # gwInfoType
-project_vars['add_schema'] = None       # gwAddSchema
-project_vars['main_schema'] = None      # gwMainSchema
-project_vars['project_role'] = None     # gwProjectRole
-project_vars['project_type'] = None     # gwProjectType
-project_vars['project_gpkg_path'] = None     # gwProjectGpkgPath
+project_loaded = False                    # True when selected project has been loaded
+load_project_menu = None                  # Instance of class DrMenuLoad. Found in "/core/load_project_menu.py"
+configs = {}                              # Dictionary of configuration files. Value is an array of 2 columns:
+                                          # [0]-> Filepath. [1]-> Instance of class ConfigParser  # noqa: E116
+configs['init'] = [None, None]            # User configuration file: init.config (located in user config folder)
+configs['session'] = [None, None]         # Session configuration file: session.config (located in user config folder)
+configs['dev'] = [None, None]             # Developer configuration file: dev.config (located in plugin config folder)
+configs['drain'] = [None, None]           # Plugin configuration file: drain.config (located in plugin config folder)
+configs['user_params'] = [None, None]     # Settings configuration file: user_params.config (plugin config folder)
+schema_name = None                        # Schema name retrieved from QGIS project connection with PostgreSql
+project_type = None                       # Project type get from table "sys_version"
+data_epsg = None                          # SRID retrieved from QGIS project layer "v_edit_node"
+project_epsg = None                       # EPSG of QGIS project
+logger = None                             # Instance of class DrLogger. Found in "/lib/tools_log.py"
+signal_manager = None                     # Instance of class DrSignalManager. Found in "/core/utils/signal_manager.py"
+plugin_settings = None                    # Instance of class QSettings. QGIS settings related to plugin variables such as toolbars and checkable actions
+db_qsql_data = None                       # Instance of class QSqlDatabase (QSQLITE) used to manage QTableView widgets
+db_qsql_config = None                     # Instance of class QSqlDatabase (QSQLITE) used to manage QTableView widgets
+gpkg_dao_data = None                      # Instance of class DrGpkgDao. Found in "/lib/tools_gpkg.py"
+gpkg_dao_config = None                    # Instance of class DrGpkgDao. Found in "/lib/tools_gpkg.py"
+project_vars = {}                         # Project variables from QgsProject related to Giswater
+project_vars['project_gpkg_path'] = None  # gwProjectGpkgPath
 # endregion
 
 
@@ -74,9 +66,7 @@ session_vars['last_error'] = None          # An instance of the last database ru
 session_vars['last_error_msg'] = None      # An instance of the last database runtime error message used in threads
 session_vars['threads'] = []               # An instance of the different threads for the execution of the Giswater functionalities (type:list)
 session_vars['dialog_docker'] = None       # An instance of DrDocker from "/core/ui/docker.py" which is used to mount a docker form
-session_vars['info_docker'] = None         # An instance of current status of the info docker form configured by user. Can be True or False
 session_vars['docker_type'] = None         # An instance of current status of the docker form configured by user. Can be configured "qgis_info_docker" and "qgis_form_docker"
-session_vars['current_selections'] = None  # An instance of the current selections docker.
 snappers = []                              # A list of all the snapper managers, used to disable them in 'Reset plugin' action
 active_rubberbands = []                    # A list of all active rubber bands, used to disable them in 'Reset plugin' action
 active_signals = {}                        # A dictionary containing all connected signals, first key is dlg_name/file_name, then there are all the signal names.

@@ -292,12 +292,8 @@ def refresh_attribute_table(**kwargs):
             tools_log.log_info(msg)
             continue
 
-        # Get sys variale
-        qgis_project_infotype = global_vars.project_vars['info_type']
-
         feature = '"tableName":"' + str(layer_name) + '", "id":"", "isLayer":true'
-        extras = f'"infoType":"{qgis_project_infotype}"'
-        body = tools_dr.create_body(feature=feature, extras=extras)
+        body = tools_dr.create_body(feature=feature)
         result = tools_dr.execute_procedure('gw_fct_getinfofromid', body)
         if not result:
             continue
