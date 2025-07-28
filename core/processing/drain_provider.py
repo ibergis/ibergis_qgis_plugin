@@ -18,7 +18,6 @@ from .set_outlet_for_roofs import SetOutletForRoofs
 from .import_inlet_geometries import ImportInletGeometries
 from .check_project import DrCheckProjectAlgorithm
 
-
 class DrainProvider(QgsProcessingProvider):
 
     def __init__(self, plugin_dir):
@@ -53,7 +52,7 @@ class DrainProvider(QgsProcessingProvider):
         string should be a unique, short, character only string, eg "qgis" or
         "gdal". This string should not be localised.
         """
-        return 'DrainProvider'
+        return 'IberGISProvider'
 
     def name(self):
         """
@@ -62,7 +61,7 @@ class DrainProvider(QgsProcessingProvider):
 
         This string should be short (e.g. "Lastools") and localised.
         """
-        return self.tr('Drain')
+        return self.tr('IberGIS')
 
     def icon(self):
         return QIcon(f"{self.plugin_dir}{os.sep}icons{os.sep}toolbars{os.sep}utilities{os.sep}59.png")

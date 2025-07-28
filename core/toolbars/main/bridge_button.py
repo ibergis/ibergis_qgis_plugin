@@ -148,8 +148,8 @@ class DrBridgeButton(DrAction):
         # Connect dialog signals
         self.dialog.btn_cancel.clicked.connect(self.dialog.reject)
         self.dialog.btn_accept.clicked.connect(partial(self.accept_bridge, self.dialog, bridge, is_new))
-        self.dialog.btn_add.clicked.connect(partial(self._manage_table, self.dialog, True))
-        self.dialog.btn_del.clicked.connect(partial(self._manage_table, self.dialog, False))
+        self.dialog.btn_add.clicked.connect(partial(self._manage_table, self.dialog, bridge, True))
+        self.dialog.btn_del.clicked.connect(partial(self._manage_table, self.dialog, bridge, False))
         self.dialog.finished.connect(partial(self.close_dialog, self.dialog))
         self.dialog.tbl_bridge_value.itemChanged.connect(partial(self._onItemChanged, self.dialog.tbl_bridge_value))
         self.dialog.chk_dem.stateChanged.connect(partial(self._update_bridge_profile_plot, self.dialog.tbl_bridge_value))
@@ -161,6 +161,9 @@ class DrBridgeButton(DrAction):
 
         # Open dialog
         tools_dr.open_dialog(self.dialog, dlg_name='bridge')
+
+        # Update profile plot after filling table
+        self._update_bridge_profile_plot(self.dialog.tbl_bridge_value)
 
     def add_profile_widget(self, dialog):
         """ Add profile widget """
@@ -401,6 +404,13 @@ class DrBridgeButton(DrAction):
         # Commit
         global_vars.gpkg_dao_data.commit()
 
+        bridge_layer = tools_qgis.get_layer_by_tablename('bridge')
+        if bridge_layer is None:
+            tools_qgis.show_warning("Bridge layer not found.")
+            return
+        bridge_layer.dataProvider().reloadData()
+        bridge_layer.triggerRepaint()
+
         # Reload manager table
         tools_dr.close_dialog(dialog)
 
@@ -472,9 +482,6 @@ class DrBridgeButton(DrAction):
         # Set reasonable default limits
         self.plot_widget.axes.set_xlim(0, 100)
         self.plot_widget.axes.set_ylim(0, 10)
-
-        # Reduce padding around the plot
-        self.plot_widget.figure.tight_layout(pad=1)
 
         # Refresh the plot
         self.plot_widget.draw()
@@ -571,7 +578,6 @@ class DrBridgeButton(DrAction):
                     point_along_line.transform(transform)
 
                 # Sample the DEM at this point
-                print(f'distance: {distance}, bridge_length: {bridge_length}')
                 point_xy = QgsPointXY(point_along_line.asPoint())
                 val, res = dem_layer.dataProvider().sample(point_xy, 1)
 
@@ -707,12 +713,18 @@ class DrBridgeButton(DrAction):
         distances, topelevs, lowelevs, openingvals = zip(*sorted_data)
 
         # Get DEM data if checkbox is checked
+        dem_error = False
         dem_distances = []
         dem_values = []
         if self.dialog.chk_dem.isChecked() and self.dialog.cmb_dem.currentText():
             dem_distances, dem_values = self._get_dem_profile_along_bridge()
             if len(dem_distances) < 2 or len(dem_values) < 2:
-                self._show_empty_plot('Invalid DEM data', is_error=True)
+                dem_error = True
+                dem_distances = []
+                dem_values = []
+
+        if dem_error and self.dialog.chk_dem.isChecked():
+            self._show_empty_plot('Invalid DEM data', is_error=True)
 
         # Process data to add bridge columns when openingval is 0
         processed_distances = []
@@ -752,21 +764,23 @@ class DrBridgeButton(DrAction):
 
                 # Add point with lowelev = column_elev at next distance (if not last point)
                 if i < len(sorted_data) - 1:
-                    next_dist = sorted_data[i + 1][0]
+                    next_dist: float = sorted_data[i + 1][0]
+                    next_top: float = sorted_data[i + 1][1]
                     if has_invalid_elevations:
                         next_column_elev = 0
                     else:
                         next_column_elev = self._interpolate_dem_at_distance(next_dist, dem_distances, dem_values)
 
                     processed_distances.append(next_dist)
-                    processed_topelevs.append(top)
+                    processed_topelevs.append(next_top)
                     processed_lowelevs.append(next_column_elev)
                     processed_openingvals.append(0)
 
         # Plot DEM line first (background)
-        if dem_distances and dem_values:
+        if not dem_error and self.dialog.chk_dem.isChecked():
             label = 'DEM Ground'
             self.plot_widget.axes.plot(dem_distances, dem_values, color=PlotParameters.DEM_LINE_COLOR, linewidth=2, label=label, alpha=0.7, zorder=1)
+            self.plot_widget.axes.fill_between(dem_distances, dem_values, 0, alpha=0.6, color=PlotParameters.GROUND_FILL_COLOR, zorder=2)
 
         # Plot the bridge lines on top
         self.plot_widget.axes.plot(processed_distances, processed_topelevs, color=PlotParameters.TOPELEV_LINE_COLOR, linewidth=1.5, label='Top Elevation', marker=PlotParameters.TOPELEV_MARKER_COLOR, markersize=3, zorder=3)
@@ -774,7 +788,6 @@ class DrBridgeButton(DrAction):
 
         # Fill area between top and low elevation and between ground and 0
         self.plot_widget.axes.fill_between(processed_distances, processed_lowelevs, processed_topelevs, alpha=0.5, color=PlotParameters.ELEVATION_FILL_COLOR, zorder=2)
-        self.plot_widget.axes.fill_between(dem_distances, dem_values, 0, alpha=0.6, color=PlotParameters.GROUND_FILL_COLOR, zorder=2)
 
         # Customize plot
         self.plot_widget.axes.set_xlabel(PlotParameters.X_LABEL)
@@ -791,25 +804,38 @@ class DrBridgeButton(DrAction):
             all_elevs = list(topelevs) + list(lowelevs)
             if dem_values:
                 all_elevs.extend(dem_values)
+            all_distances = list(distances)
 
-            x_range = max(processed_distances) - min(processed_distances)
-            y_range = max(all_elevs) - min(all_elevs) if all_elevs else 10
+            if self.dialog.chk_dem.isChecked():
+                # Calculate data ranges
+                x_min, x_max = min(all_distances), max(all_distances)
+                y_min, y_max = min(all_elevs), max(all_elevs)
+                x_range = x_max - x_min
+                y_range = y_max - y_min
 
-            # Add margins
-            x_margin = x_range * 0.02 if x_range > 0 else 1
-            y_margin = y_range * 0.1 if y_range > 0 else 1
+                # Add a small margin (5% of range, or 1 if range is 0)
+                x_margin = x_range * 0.05 if x_range > 0 else 1
+                y_margin = y_range * 0.05 if y_range > 0 else 1
 
-            # Calculate centers for both axes
-            x_center = (min(processed_distances) + max(processed_distances)) / 2
-            y_center = (min(all_elevs) + max(all_elevs)) / 2 if all_elevs else 5
+                self.plot_widget.axes.set_xlim(x_min - x_margin, x_max + x_margin)
+                self.plot_widget.axes.set_ylim(y_min - y_margin, y_max + y_margin)
+                self.plot_widget.axes.set_aspect('equal', adjustable='datalim')
+            else:
+                x_range = max(processed_distances) - min(processed_distances)
+                y_range = max(all_elevs) - min(all_elevs) if all_elevs else 10
 
-            # Set ranges centered on the data with margins
-            self.plot_widget.axes.set_xlim(x_center - x_range/2 - x_margin, x_center + x_range/2 + x_margin)
-            self.plot_widget.axes.set_ylim(((y_center - y_range/2 - y_margin) - 10), (y_center + y_range/2 + y_margin) + 1)
+                # Add margins
+                x_margin = x_range * 0.02 if x_range > 0 else 1
+                y_margin = y_range * 0.1 if y_range > 0 else 1
 
-            self.plot_widget.axes.set_aspect('auto')
-            # Manually set the aspect ratio to be wider
-            self.plot_widget.axes.set_box_aspect(0.3)
+                # Calculate centers for both axes
+                x_center = (min(processed_distances) + max(processed_distances)) / 2
+                y_center = (min(all_elevs) + max(all_elevs)) / 2 if all_elevs else 5
+
+                # Set ranges centered on the data with margins
+                self.plot_widget.axes.set_xlim(x_center - x_range/2 - x_margin, x_center + x_range/2 + x_margin)
+                self.plot_widget.axes.set_ylim(((y_center - y_range/2 - y_margin) - 10), (y_center + y_range/2 + y_margin) + 1)
+                self.plot_widget.axes.set_aspect('auto')
 
         # Refresh the plot
         self.plot_widget.draw()
@@ -838,9 +864,6 @@ class DrBridgeButton(DrAction):
             widget.setItem(1, 1, NumericTableWidgetItem(str(self.TOPELEV_DEFAULT)))
             widget.setItem(1, 2, NumericTableWidgetItem(str(self.LOWELEV_DEFAULT)))
             widget.setItem(1, 3, NumericTableWidgetItem('100'))
-
-            # Update plot after inserting default rows
-            self._update_bridge_profile_plot(widget)
             return
 
         # Populate table timeseries_values
@@ -877,9 +900,6 @@ class DrBridgeButton(DrAction):
             if value in (None, 'None', 'null'):
                 value = default_line_texts['openingval']
             widget.setItem(n, 3, NumericTableWidgetItem(value))
-
-        # Update profile plot after filling table
-        self._update_bridge_profile_plot(widget)
 
     def _paste_bridge_values(self, tbl_bridge_value):
         """ Paste bridge values from clipboard """
@@ -1070,7 +1090,7 @@ class DrBridgeButton(DrAction):
             self.bridge_edit_action.setChecked(False)
             canvas.mapToolSet.disconnect(self._uncheck)
 
-    def _manage_table(self, dialog, is_add: bool):
+    def _manage_table(self, dialog, bridge: QgsFeature, is_add: bool):
         """ Manage table """
 
         selection_model = dialog.tbl_bridge_value.selectionModel()
@@ -1084,6 +1104,11 @@ class DrBridgeButton(DrAction):
                 dialog.tbl_bridge_value.setItem(0, 1, NumericTableWidgetItem(str(self.TOPELEV_DEFAULT)))
                 dialog.tbl_bridge_value.setItem(0, 2, NumericTableWidgetItem(str(self.LOWELEV_DEFAULT)))
                 dialog.tbl_bridge_value.setItem(0, 3, NumericTableWidgetItem('100'))
+                dialog.tbl_bridge_value.insertRow(1)
+                dialog.tbl_bridge_value.setItem(1, 0, NumericTableWidgetItem(str(round(bridge.geometry().length(), 3))))
+                dialog.tbl_bridge_value.setItem(1, 1, NumericTableWidgetItem(str(self.TOPELEV_DEFAULT)))
+                dialog.tbl_bridge_value.setItem(1, 2, NumericTableWidgetItem(str(self.LOWELEV_DEFAULT)))
+                dialog.tbl_bridge_value.setItem(1, 3, NumericTableWidgetItem('100'))
             elif len(selected_rows) == 1:
                 # Add a new row after the selected row with the same values
                 dialog.tbl_bridge_value.insertRow(selected_rows[0].row()+1)

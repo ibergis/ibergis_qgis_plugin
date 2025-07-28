@@ -727,9 +727,9 @@ def add_layer_to_toc(layer, group=None, sub_group=None, create_groups=False, sub
         return
 
     root = QgsProject.instance().layerTreeRoot()
-    my_group = root.findGroup("DRAIN TEMPORAL")
+    my_group = root.findGroup("TEMPORAL")
     if my_group is None:
-        my_group = root.insertGroup(0, "DRAIN TEMPORAL")
+        my_group = root.insertGroup(0, "TEMPORAL")
     my_group.insertLayer(0, layer)
 
 
@@ -994,7 +994,7 @@ def show_details(detail_text, title=None, inf_text=None, msg_params=None, title_
 
 def show_warning_open_file(text, inf_text, file_path, context_name=None, msg_params=None, inf_text_params=None):
     """ Show warning message with a button to open @file_path """
-    
+
     text = tr(text, context_name, list_params=msg_params)
     inf_text = tr(inf_text, context_name, list_params=inf_text_params)
 
@@ -1041,7 +1041,7 @@ def show_question(text, title=None, inf_text=None, context_name=None, parameter=
     return False
 
 
-def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=None, 
+def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=None,
                   msg_params=None, title_params=None, inf_text_params=None):
     """ Show information box to the user """
 

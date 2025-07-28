@@ -66,7 +66,7 @@ class DrCreateMeshButton(DrAction):
         # Roughness
         rows = [
             [None, "Fill losses with zeroes"],
-            ["ground_layer", "Ground"],
+            ["ground_layer", "Column scs_cn from ground layer"],
             *raster_layers,
         ]
         tools_qt.fill_combo_values(dlg.cmb_losses_layer, rows, add_empty=False)
@@ -413,7 +413,7 @@ class DrCreateMeshButton(DrAction):
         dlg.meshes_saved = False
 
         # Add temp layer to TOC
-        tools_qt.add_layer_to_toc(self.thread_triangulation.temp_layer, group="DRAIN TEMPORAL")
+        tools_qt.add_layer_to_toc(self.thread_triangulation.temp_layer, group="TEMPORAL")
         iface.setActiveLayer(self.thread_triangulation.temp_layer)
         iface.zoomToActiveLayer()
 

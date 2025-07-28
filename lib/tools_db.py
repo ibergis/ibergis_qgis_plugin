@@ -74,6 +74,25 @@ def execute_sql(sql, log_sql=False, log_error=False, commit=True, filepath=None,
     return True
 
 
+def execute_sql_placeholder(sql, data, commit=True):
+    """ Execute selected query """
+
+    dao = global_vars.gpkg_dao_data
+    dao.last_error = None
+    status = True
+    try:
+        cursor = dao.get_cursor()
+        cursor.execute(sql, data)
+    except Exception as e:
+        dao.last_error = e
+        status = False
+        dao.conn.rollback()
+    finally:
+        if status:
+            dao.conn.commit()
+        return status
+
+
 def check_function(function_name, schema_name=None, commit=True, aux_conn=None):
     """ Check if @function_name exists in selected schema """
 
@@ -104,4 +123,3 @@ def get_uri():
                           global_vars.dao_db_credentials['password'])
 
     return uri
-

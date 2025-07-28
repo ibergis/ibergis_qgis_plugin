@@ -110,8 +110,8 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
 
         # Validate intersection
         if self.validate_layers:
-            self.validation_layer_intersect = validatemesh.validate_intersect(
-                {"ground": self.ground_layer}, feedback
+            self.validation_layer_intersect = validatemesh.validate_intersect_v2(
+                {"ground": self.ground_layer}, feedback, False
             )
             if self.validation_layer_intersect is None:
                 feedback.pushWarning("Intersection validation layer not found")
@@ -123,7 +123,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         # Validate vertex-edge
         if self.validate_layers:
             self.validation_layer_vert_edge = validatemesh.validate_vert_edge_v2(
-                {"ground": self.ground_layer, "roof": self.roof_layer}, feedback, True
+                {"ground": self.ground_layer}, feedback, False
             )
             if self.validation_layer_vert_edge is None:
                 feedback.pushWarning("Vertex-edge validation layer not found")
@@ -196,13 +196,14 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             return outputs
         else:
             feedback.pushWarning(self.tr('Error during mesh creation'))
+            feedback.pushWarning(task.exception)
             return {}
 
     def postProcessAlgorithm(self, context, feedback: Feedback):
         """ Add validation layers to project """
 
         # Find group
-        group_name = "DRAIN TEMPORAL"
+        group_name = "TEMPORAL"
         group = tools_qgis.find_toc_group(QgsProject.instance().layerTreeRoot(), group_name)
         if group is None:
             QgsProject.instance().layerTreeRoot().addGroup(group_name)
@@ -217,12 +218,12 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             # Add validation layer
             QgsProject.instance().addMapLayer(self.validation_layer_intersect, False)
             group.addLayer(self.validation_layer_intersect)
-            feedback.setProgressText(self.tr('Input layers validated'))
+            feedback.pushWarning(self.tr('Intersection errors found'))
         elif self.validation_layer_vert_edge is not None and self.validation_layer_vert_edge.featureCount() > 0:
             # Add validation layer
             QgsProject.instance().addMapLayer(self.validation_layer_vert_edge, False)
             group.addLayer(self.validation_layer_vert_edge)
-            feedback.setProgressText(self.tr('Input layers validated'))
+            feedback.pushWarning(self.tr('Missing vertices found'))
 
         return {}
 

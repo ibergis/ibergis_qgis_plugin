@@ -26,7 +26,7 @@ from ..i18n.i18n_manager import DrSchemaI18NManager
 from ..utils import tools_dr
 from ..threads.project_gpkg_schema_create import DrGpkgCreateSchemaTask
 from ... import global_vars
-from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao
+from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
 
 class DrGpkgBase:
     """Base class for geopackage operations"""
@@ -683,24 +683,21 @@ class DrAdminButton(DrGpkgBase):
             print(load_sample)
             if not load_sample:
                 return
-            print(self.populate_config_params(config_dao))
-            return self.populate_config_params(config_dao)
+            print(self.populate_config_params())
+            return self.populate_config_params()
         elif self.rdb_data.isChecked():
             msg = "Execute '{0}' (empty data)"
             msg_params = ("load_sample_data",)
             tools_log.log_info(msg, msg_params=msg_params)
             tools_dr.set_config_parser('btn_admin', 'create_schema_type', 'rdb_data', prefix=False)
-            print(self.populate_config_params(config_dao))
-            return self.populate_config_params(config_dao)
+            print(self.populate_config_params())
+            return self.populate_config_params()
 
-    def populate_config_params(self, data_dao=None):
+    def populate_config_params(self):
         """Populate table config_param_user"""
 
-        if not data_dao:
-            data_dao = self.gpkg_dao_data
-
         sql_select = "SELECT columnname, vdefault FROM config_form_fields WHERE formtype = 'form_options'"
-        rows = data_dao.get_rows(sql_select)
+        rows = tools_db.get_rows(sql_select)
         print(f"rows-{rows}")
 
         if not rows:
@@ -710,7 +707,7 @@ class DrAdminButton(DrGpkgBase):
             data = (row[0], row[1])
             sql_insert = "INSERT INTO config_param_user (parameter, value) VALUES (?,?)"
             try:
-                global_vars.gpkg_dao_data.execute_sql_placeholder(sql_insert, data)
+                tools_db.execute_sql_placeholder(sql_insert, data)
             except Exception:
                 msg = "Error executing SQL: {0}\nDatabase error: {1}"
                 msg_params = (sql_insert, global_vars.gpkg_dao_data.last_error,)

@@ -496,8 +496,8 @@ class DrBCScenarioManagerButton(DrAction):
             tools_qgis.show_warning(msg, dialog=self.dlg_bc)
             return
 
-        sql = f"""INSERT INTO {self.tablename_value} (code, custom_code, descript, bscenario, boundary_type, timeseries, other1, other2, geom) 
-            SELECT {idval}, custom_code, descript, bscenario, boundary_type, timeseries, other1, other2, geom FROM {self.tablename_value} WHERE code = '{code_from}' """
+        sql = f"""INSERT INTO {self.tablename_value} (custom_code, descript, bscenario, boundary_type, timeseries, other1, other2, geom) 
+            SELECT custom_code, descript, {idval}, boundary_type, timeseries, other1, other2, geom FROM {self.tablename_value} WHERE bscenario = '{code_from}' """
         status = tools_db.execute_sql(sql, commit=False)
         if status is False:
             msg = "There was an error inserting the scenario geometries"

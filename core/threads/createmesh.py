@@ -1,5 +1,4 @@
 import traceback
-from itertools import chain, tee
 
 from geopandas import gpd
 from qgis.core import (
@@ -9,16 +8,9 @@ from qgis.core import (
     QgsProject,
     QgsRasterLayer,
     QgsVectorLayer,
-    QgsGeometry,
-    QgsFeature,
-    QgsField,
-    QgsPoint,
-    QgsCoordinateReferenceSystem,
-    QgsFields,
-    QgsProcessingContext
+    QgsProcessingFeatureSourceDefinition,
 )
 from qgis.utils import iface
-from qgis.PyQt.QtCore import QVariant
 import shapely
 
 from . import createmesh_core as core
@@ -34,6 +26,7 @@ import time
 import numpy as np
 import pandas as pd
 import processing
+import bisect
 
 
 class DrCreateMeshTask(DrTask):
@@ -119,8 +112,8 @@ class DrCreateMeshTask(DrTask):
                 "ground": self.ground_layer,
                 "roof": self.roof_layer,
                 "inlet": self.inlet_layer,
-                "bridge": self.bridge_layer,
-                "mesh_anchor_points": self.point_anchor_layer
+                # "bridge": self.bridge_layer,
+                # "mesh_anchor_points": self.point_anchor_layer
             }
 
             layers["dem"] = self.dem_layer
@@ -235,6 +228,7 @@ class DrCreateMeshTask(DrTask):
 
             point_anchors = None
             line_anchors = None
+            bridge_layer = self.bridge_layer
             complete_line_anchors = None
 
             if not self.temporal_mesh:
@@ -242,20 +236,57 @@ class DrCreateMeshTask(DrTask):
                 print("Creating anchor GeoDataFrames... ", end="")
                 start = time.time()
 
+                point_anchor_layer = self.point_anchor_layer
+                line_anchor_layer = self.line_anchor_layer
+
+                if self.only_selected_features:
+                    point_anchor_layer = processing.run(
+                        "native:intersection",
+                        {
+                            'INPUT': self.point_anchor_layer,
+                            'OVERLAY': QgsProcessingFeatureSourceDefinition(
+                                layers["ground"].source(),
+                                selectedFeaturesOnly=True,
+                            ),
+                            'OUTPUT':'TEMPORARY_OUTPUT',
+                        }
+                    )['OUTPUT']
+
+                    line_anchor_layer = processing.run(
+                        "native:intersection",
+                        {
+                            'INPUT': self.line_anchor_layer,
+                            'OVERLAY': QgsProcessingFeatureSourceDefinition(
+                                layers["ground"].source(),
+                                selectedFeaturesOnly=True,
+                            ),
+                            'OUTPUT':'TEMPORARY_OUTPUT',
+                        }
+                    )['OUTPUT']
+
+                    bridge_layer = processing.run(
+                        "native:intersection",
+                        {
+                            'INPUT': self.bridge_layer,
+                            'OVERLAY': QgsProcessingFeatureSourceDefinition(
+                                layers["ground"].source(),
+                                selectedFeaturesOnly=True,
+                            ),
+                            'OUTPUT':'TEMPORARY_OUTPUT',
+                        }
+                    )['OUTPUT']
+
                 point_anchors = layer_to_gdf(
-                    self.point_anchor_layer,
+                    point_anchor_layer,
                     ["cellsize", "z_value"],
-                    self.only_selected_features
                 )
 
                 line_anchors = layer_to_gdf(
-                    self.line_anchor_layer,
+                    line_anchor_layer,
                     ["cellsize"],
-                    self.only_selected_features
                 )
 
-                complete_line_anchors = self._create_line_anchors_gdf(line_anchors)
-                print(complete_line_anchors)
+                complete_line_anchors = self._create_line_anchors_gdf(line_anchors, bridge_layer)
 
                 print(f"Done! {time.time() - start}s")
 
@@ -478,10 +509,10 @@ class DrCreateMeshTask(DrTask):
             print(f"Done! {time.time() - start}s")
 
             bridges_df: pd.DataFrame = pd.DataFrame()
-            if self.bridge_layer is not None:
+            if bridge_layer is not None:
                 print("Creating bridges DataFrame... ", end="")
                 start = time.time()
-                bridges_df = self._create_bridges_df(triangles_df, vertices_df)
+                bridges_df = self._create_bridges_df(triangles_df, vertices_df, bridge_layer)
                 print(f"Done! {time.time() - start}s")
 
             self.mesh = mesh_parser.Mesh(
@@ -574,14 +605,14 @@ class DrCreateMeshTask(DrTask):
             self.temp_layer = None
             return False
 
-    def _create_line_anchors_gdf(self, line_anchors: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    def _create_line_anchors_gdf(self, line_anchors: gpd.GeoDataFrame, bridge_layer: QgsVectorLayer) -> gpd.GeoDataFrame:
         line_anchors = line_anchors.copy()
         line_anchors["geometry"] = line_anchors["geometry"].force_2d()
 
         bridges = layer_to_gdf(
-            self.bridge_layer,
+            bridge_layer,
             ["code"],
-            self.only_selected_features
+            do_normalize=False
         )
 
         if len(bridges) == 0:
@@ -636,11 +667,10 @@ class DrCreateMeshTask(DrTask):
         return pd.concat([line_anchors, bridges], ignore_index=True) # type: ignore
 
 
-    def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame) -> pd.DataFrame:
+    def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame, bridge_layer: QgsVectorLayer) -> pd.DataFrame:
         bridges = layer_to_gdf(
-            self.bridge_layer,
+            bridge_layer,
             ["code", "freeflow_cd", "deck_cd", "sumergeflow_cd", "gaugenumber"],
-            self.only_selected_features
         )
         bridges_values_dict = self.get_bridges_values_dict()
 
@@ -688,6 +718,7 @@ class DrCreateMeshTask(DrTask):
             # we can check for touching edge only by knowing which vertices are touching
             segments = map(shapely.LineString, zip(bridge_geom.coords[:-1], bridge_geom.coords[1:]))
             for segment_geom in segments:
+
                 mask = touching.intersects(segment_geom.buffer(0.01))
                 segment_touching = touching[mask]
 
@@ -725,17 +756,20 @@ class DrCreateMeshTask(DrTask):
                     # Get bridge values based on code and distance
                     bridge_values = None
                     if bridge.code in bridges_values_dict:
-                        # Get values with distance <= relative_distance
-                        matching_values = [v for v in bridges_values_dict[bridge.code]
-                                           if v["distance"] <= relative_distance]
-                        if matching_values:
-                            # Take the last matching value (smallest distance <= relative_distance)
-                            bridge_values = matching_values[-1]
+                        values = bridges_values_dict[bridge.code]
+                        # Extract the distances for bisect
+                        distances = [v["distance"] for v in values]
+                        index = bisect.bisect_right(distances, relative_distance)
+                        bridge_values = values[index - 1] if index > 0 else None
+                        bridge_next_value = values[index] if index < len(values) else None
+                    else:
+                        bridge_values = None
+                        bridge_next_value = None
 
                     # Set values from bridge_values if found, otherwise use defaults
-                    lowerdeckelev = bridge_values["lowelev"] if bridge_values else None
-                    bridgeopeningpercent = bridge_values["openingval"] if bridge_values else None
-                    topelevn = bridge_values["topelev"] if bridge_values else None
+                    lowerdeckelev = (bridge_values["lowelev"]+bridge_next_value["lowelev"])/2 if bridge_values and bridge_next_value else None
+                    bridgeopeningpercent = (bridge_values["openingval"]) if bridge_values else None
+                    topelevn = (bridge_values["topelev"]+bridge_next_value["topelev"])/2 if bridge_values and bridge_next_value else None
 
                     freepressureflowcd = bridge.freeflow_cd
                     deckcd = bridge.deck_cd

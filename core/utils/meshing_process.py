@@ -146,7 +146,7 @@ try:
         data = data[~data.is_empty]  # type: ignore
         return data
 
-    def layer_to_gdf(layer: QgsVectorLayer, fields: list = [], only_selected: bool = False) -> gpd.GeoDataFrame:
+    def layer_to_gdf(layer: QgsVectorLayer, fields: list = [], only_selected: bool = False, do_normalize: bool = True) -> gpd.GeoDataFrame:
         geoms = []
 
         data: dict[str, list] = {}
@@ -174,7 +174,8 @@ try:
         # gdf = gpd.GeoDataFrame(geometry=geoms, data=data, crs=layer.crs().authid())  # type: ignore
         gdf = gpd.GeoDataFrame(geometry=geoms, data=data)  # type: ignore
         gdf: gpd.GeoDataFrame = gdf.explode(ignore_index=True)  # type: ignore
-        gdf["geometry"] = gdf["geometry"].normalize()  # type: ignore
+        if do_normalize:
+            gdf["geometry"] = gdf["geometry"].normalize()  # type: ignore
 
         return gdf
 

@@ -189,6 +189,13 @@ class Drain(QObject):
             tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         try:
+            # Remove 'Drain menu'
+            tools_dr.unset_drain_menu()
+        except Exception as e:
+            msg_params = ("tools_dr.unset_drain_menu()",)
+            tools_log.log_info(msg, parameter=str(e), msg_params=msg_params)
+
+        try:
             # Check if project is current loaded and remove giswater action from PluginMenu and Toolbars
             if self.load_project:
                 global_vars.project_type = None
@@ -218,6 +225,7 @@ class Drain(QObject):
             layers = QgsProject.instance().mapLayers().values()
             if hide_gw_button is False and len(layers) == 0:
                 self._set_info_button()
+                tools_dr.create_drain_menu(False)
         except Exception as e:
             msg_params = ("self._set_info_button()", e,)
             tools_qt.show_exception_message(msg, msg_params=msg_params)

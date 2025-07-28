@@ -76,6 +76,9 @@ class DrLoadProject(QObject):
         tools_qt._add_translator()
         self._translate_config()
 
+        # Create menu
+        tools_dr.create_drain_menu(True)
+
         # Manage actions of the different plugin_toolbars
         self._manage_toolbars()
 
@@ -119,9 +122,6 @@ class DrLoadProject(QObject):
         msg_params = (plugin_version,)
         tools_log.log_info(msg, msg_params=msg_params)
 
-        # Reset dialogs position
-        tools_dr.reset_position_dialog()
-
         # Call gw_fct_setcheckproject and create GwProjectLayersConfig thread
         self._config_layers()
 
@@ -136,7 +136,7 @@ class DrLoadProject(QObject):
         global_vars.project_vars['main_schema'] = tools_qgis.get_project_variable('gwMainSchema')
         global_vars.project_vars['project_role'] = tools_qgis.get_project_variable('gwProjectRole')
         global_vars.project_vars['project_type'] = tools_qgis.get_project_variable('gwProjectType')
-        global_vars.project_vars['project_gpkg'] = tools_qgis.get_project_variable('project_gpkg_path')
+        global_vars.project_vars['project_gpkg_path'] = tools_qgis.get_project_variable('project_gpkg_path')
 
     def _get_user_variables(self):
         """ Get config related with user variables """
@@ -192,7 +192,7 @@ class DrLoadProject(QObject):
         global_vars.gpkg_dao_data = gpkg_dao_data
 
         # Define filepath of data GPKG
-        db_filepath = f"{global_vars.project_vars['project_gpkg']}"
+        db_filepath = f"{global_vars.project_vars['project_gpkg_path']}"
         db_filepath = f"{QgsProject.instance().absolutePath()}{os.sep}{db_filepath}"
 
         if db_filepath is None:

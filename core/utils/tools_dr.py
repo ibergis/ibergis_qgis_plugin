@@ -12,6 +12,7 @@ import os
 import random
 import re
 import sys
+import webbrowser
 
 if 'nt' in sys.builtin_module_names:
     import ctypes
@@ -22,7 +23,7 @@ from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QSt
     QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, QToolButton, \
-    QWidget, QDockWidget, QApplication
+    QWidget, QDockWidget, QMenu
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
@@ -32,6 +33,7 @@ from qgis.gui import QgsDateTimeEdit, QgsRubberBand
 from ..ui.dialog import DrDialog
 from ..ui.main_window import DrMainWindow
 from ..ui.docker import DrDocker
+from ..load_project_menu import DrMenuLoad
 from . import tools_backend_calls, tools_fct
 from ... import global_vars
 from ...lib import tools_qgis, tools_qt, tools_log, tools_os, tools_db
@@ -267,10 +269,6 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=False, title=None, hide_config_w
 
     # Create btn_help
     add_btn_help(dlg)
-
-    # Center dialog
-    screen_geometry = QApplication.primaryScreen().geometry()
-    dlg.move(screen_geometry.center() - dlg.rect().center())
 
     dlg.show()
     # Open dialog
@@ -961,6 +959,9 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
             check_parameters(field)
 
             if field['layoutname'] is None or field['layoutorder'] is None:
+                continue
+
+            if field.get('hidden') in (True, "True"):
                 continue
 
             if field['label']:
@@ -2769,8 +2770,10 @@ def reset_position_dialog(show_message=False, plugin='core', file_name='session'
         # Check if section exists in file
         if "dialogs_position" in parser:
             parser.remove_section("dialogs_position")
+        if "dialogs_dimension" in parser:
+            parser.remove_section("dialogs_dimension")
 
-        msg = "Reset position form done successfully."
+        msg = "Reset position and dimension form done successfully."
         title = "Info"
         if show_message:
             tools_qt.show_info_box(msg, title)
@@ -2839,6 +2842,24 @@ def open_help_link(context, uiname, tabname=None):
 
     file_path = "https://drain-iber.github.io/testing/en/docs/drain/for-users/user-manual/index.html"
     tools_os.open_file(file_path)
+
+def open_dlg_help():
+    """ Opens the help page for the last focused dialog """
+
+    parser = configparser.ConfigParser(comment_prefixes=";", allow_no_value=True, strict=False)
+    path = f"{global_vars.plugin_dir}{os.sep}config{os.sep}drain.config"
+    if not os.path.exists(path):
+        webbrowser.open_new_tab('https://drain-iber.github.io/testing/en/docs/drain/for-users/user-manual/index.html')
+        return True
+
+    try:
+        parser.read(path)
+        web_tag = parser.get('web_tag', global_vars.session_vars['last_focus'])
+        webbrowser.open_new_tab(f'https://drain-iber.github.io/testing/en/docs/drain/for-users/user-manual/{web_tag}')
+    except Exception:
+        webbrowser.open_new_tab('https://drain-iber.github.io/testing/en/docs/drain/for-users/user-manual/index.html')
+    finally:
+        return True
 
 
 # region private functions
@@ -3079,6 +3100,21 @@ def set_widgets(dialog, complet_result, field, tablename, class_info):
         pass
 
     return label, widget
+
+def create_drain_menu(project_loaded=False):
+    """ Create the Drain menu """
+    if global_vars.load_project_menu is None:
+        global_vars.load_project_menu = DrMenuLoad()
+    global_vars.load_project_menu.read_menu(project_loaded)
+
+def unset_drain_menu():
+    """ Unset Drain menu (when plugin is disabled or reloaded) """
+
+    menu_drain = global_vars.iface.mainWindow().menuBar().findChild(QMenu, "IberGIS")
+    if menu_drain not in (None, "None"):
+        menu_drain.clear()  # I think it's good to clear the menu before deleting it, just in case
+        menu_drain.deleteLater()
+        global_vars.load_project_menu = None
 
 
 def _manage_text(**kwargs):

@@ -162,7 +162,6 @@ VALUES
 (29, 'GEOMETRIC DUPLICATE', 'node', NULL, NULL, 1, 'Point', 4, 8, 3, 102),
 (30, 'GEOMETRIC ORPHAN', 'node', NULL, NULL, 1, 'Point', 5, 9, 3, 103),
 (31, 'GEOMETRIC DUPLICATE', 'inlet', NULL, NULL, 1, 'Point', 4, 8, 3, 104),
-(32, 'MANDATORY NULL', 'inlet', '{a_param, b_param}', 'AND method == "W_O"', 0, NULL, 2, 11, 3, 132),
 (33, 'MANDATORY NULL', 'inlet', '{weir_cd, orifice_cd}', 'AND method == "UPC"', 0, NULL, 2, 11, 3, 133),
 (34, 'MANDATORY NULL', 'inp_outfall', '{stage}', 'AND outfall_type == "FIXED"', 0, NULL, 2, 11, 3, 134),
 (35, 'MANDATORY NULL', 'inp_outfall', '{curve}', 'AND outfall_type == "TIDAL"', 0, NULL, 2, 11, 3, 135),
@@ -1271,7 +1270,7 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_delta_time', 'lyt_main_1_2', 3, 'integer', 'text', 'Delta time:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Increase of maximum time', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_tmax', 'lyt_main_2_1', 2, 'integer', 'text', 'Tmax:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, '10800', 'Maximum time of simulation', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_tmax', 'lyt_main_2_1', 2, 'integer', 'text', 'Tmax:', NULL, 0, 0, NULL, NULL, NULL, 1, NULL, NULL, '10800', 'Maximum time of simulation', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_rank_results', 'lyt_main_2_1', 3, 'integer', 'text', 'Rank results:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '300', 'Rank of results', NULL);
