@@ -1285,7 +1285,7 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_viscosity_coeff', 'lyt_main_1_2', 5, 'double', 'text', 'Viscosity coefficient:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, '0.00001', 'Viscosity coefficient', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_t0', 'lyt_main_2_1', 1, 'integer', 'text', 'Initial time:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Initial time', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_t0', 'lyt_main_2_1', 1, 'integer', 'text', 'Initial time:', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0', 'Initial time', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_simulation_details', 'lyt_main_2_1', 5, 'boolean', 'check', 'Simulation details are written:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Simulation details are written or not', NULL);

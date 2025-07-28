@@ -554,15 +554,13 @@ class DrExecuteModel(DrTask):
 
         if self.do_write_inlets:
             # Get existing inlets from current project
-            sql = "SELECT gully_id, outlet_type, node_id, xcoord, ycoord, zcoord, width, length, depth, method, weir_cd, " \
-              "orifice_cd, a_param, b_param, efficiency FROM vi_inlet ORDER BY gully_id;"
+            sql = "SELECT code, outlet_type, outlet_node, xcoord, ycoord, top_elev, width, " \
+                    "length, depth, method, weir_cd, orifice_cd, a_param, b_param, efficiency FROM vi_inlet ORDER BY code;"
             rows = self.dao.get_rows(sql)
 
-            # Fetch column names
-            column_names = ['gully_id', 'outlet_type', 'node_id', 'xcoord', 'ycoord', 'zcoord', 'width', 'length',
+            # File headers
+            headers = ['gully_id', 'outlet_type', 'node_id', 'xcoord', 'ycoord', 'zcoord', 'width', 'length',
                             'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
-            if rows:
-                column_names = [key for key in rows[0].keys()]
             # Write new inlets
             mode = 'w'
         else:
@@ -573,7 +571,7 @@ class DrExecuteModel(DrTask):
             transform_dict = {None: -9999, 'TO NETWORK': 'To_network', 'SINK': 'Sink', 'NULL': -9999}
             if self.do_write_inlets:
                 # Write column headers
-                header_str = f"{' '.join(column_names)}\n"
+                header_str = f"{' '.join(headers)}\n"
                 dat_file.write(header_str)
                 for row in rows:
                     values = []

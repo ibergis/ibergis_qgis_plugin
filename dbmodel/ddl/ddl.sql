@@ -937,12 +937,12 @@ create view if not exists vi_xsections as
     select code as Link, shape as Shape, geom1 as Geom1, geom2 as Geom2, null as Geom3, null as Geom4, null as barrels, null as culvert from inp_weir;
 
 CREATE VIEW IF NOT EXISTS vi_inlet AS
-SELECT code AS gully_id,
+SELECT code,
     outlet_type,
-   	outlet_node AS node_id,
+   	outlet_node,
    	ST_X(geom) AS xcoord,
    	ST_Y(geom) AS ycoord,
-   	top_elev AS zcoord,
+   	top_elev,
   	width,
     length,
     depth,
