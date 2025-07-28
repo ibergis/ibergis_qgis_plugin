@@ -5,17 +5,12 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
-import json
-import math
 import subprocess
 import os
-from collections import OrderedDict
-from decimal import Decimal
 from functools import partial
 
 from qgis.PyQt.QtCore import QDate, QDateTime
-from qgis.PyQt.QtGui import QDoubleValidator
-from qgis.PyQt.QtWidgets import QListWidgetItem, QLineEdit, QAction, QButtonGroup
+from qgis.PyQt.QtWidgets import QListWidgetItem, QAction, QButtonGroup
 from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression
 from qgis.gui import QgsMapToolEmitPoint
 
@@ -23,8 +18,7 @@ from ..dialog import DrAction
 from ...ui.ui_manager import DrProfileUi, DrProfilesListUi
 from ...utils import tools_dr
 from ...utils.snap_manager import DrSnapManager
-from ....lib import tools_qt, tools_log, tools_qgis, tools_os
-from .... import global_vars
+from ....lib import tools_qt, tools_qgis, tools_os
 
 try:
     import matplotlib.pyplot as plt
@@ -512,7 +506,6 @@ class DrProfileButton(DrAction):
         from swmm_api import read_inp_file, read_out_file
         import pandas as pd
         from ...utils.profile_utils import ProfilePlotter
-        import sys
 
         # Get parameters
         results_folder = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder)
@@ -523,15 +516,14 @@ class DrProfileButton(DrAction):
         plot_type: int = 0 if self.dlg_draw_profile.rb_instant.isChecked() else 1  # 0 - Static, 1 - Dynamic (time series)
 
         # Define the path of the files
-        inputfile   = f"{results_folder}{os.sep}Iber_SWMM.inp"
-        inifile     = f"{results_folder}{os.sep}Iber_SWMM.ini"
-        outputfile  = f"{results_folder}{os.sep}Iber_SWMM.out"
+        inputfile = f"{results_folder}{os.sep}Iber_SWMM.inp"
+        outputfile = f"{results_folder}{os.sep}Iber_SWMM.out"
 
         # Load the simulation
         inp = read_inp_file(inputfile)
         out = read_out_file(outputfile)
 
-        res_out = out.to_frame()
+        out.to_frame()
 
         # SWMM API and SWMM library versions. Informative.
         print(f'SWMM API version - {swmm_api_version}')
@@ -556,7 +548,7 @@ class DrProfileButton(DrAction):
 
         # Period of results, 1 - Dynamic (time series)
         custom_start = pd.Timestamp(custom_start)
-        custom_end   = pd.Timestamp(custom_end)
+        custom_end = pd.Timestamp(custom_end)
         print(f"Custom start = {custom_start}")
         print(f"Custom end   = {custom_end}")
 

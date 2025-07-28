@@ -218,8 +218,6 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         self.addParameter(weir_cd)
         self.addParameter(orifice_cd)
 
-
-
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
         main process algorithm of this tool
@@ -359,7 +357,7 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
                         except KeyError:
                             src_value = None
                     attributes[target_field_names.index(tgt_field)] = src_value
-            feedback.setProgress(tools_dr.lerp_progress(int(feature_index*100/num_features), 16, 90))
+            feedback.setProgress(tools_dr.lerp_progress(int(feature_index * 100 / num_features), 16, 90))
             feature_index += 1
             if (repeated_params):
                 continue
@@ -459,8 +457,8 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         """ Check if parameters are valid """
 
         error_message = ''
-        source_layer : QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
-        target_layer : QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_TARGET, context)
+        source_layer: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
+        target_layer: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_TARGET, context)
         inlet_layer = tools_qgis.get_layer_by_tablename('inlet')
         pinlet_layer = tools_qgis.get_layer_by_tablename('pinlet')
 

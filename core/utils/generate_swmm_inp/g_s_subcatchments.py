@@ -127,11 +127,11 @@ def prepare_infiltration_inp_lines(
         current_infiltration_method = main_infiltration_method
     if len(inp_line) == 4:
         # fill non-HORTON or missing values
-        inp_line = inp_line+[np.nan, np.nan]
+        inp_line = inp_line + [np.nan, np.nan]
     if len(inp_line) == 5:
         # fill missing values
-        inp_line = inp_line+[np.nan]
-    inp_line = inp_line+[current_infiltration_method]
+        inp_line = inp_line + [np.nan]
+    inp_line = inp_line + [current_infiltration_method]
     return inp_line
 
 
@@ -200,7 +200,7 @@ def get_polygon_from_verts(polyg_name, dict_all_vals):
     all_polygons = dict_all_vals['POLYGONS']['data']
     verts = all_polygons.copy()[all_polygons.index == polyg_name]
     verts = verts.reset_index(drop=True)
-    if len(verts) == 0: # no geometry given
+    if len(verts) == 0:  # no geometry given
         polyg_geom = NULL
     elif len(verts) < 3:  # only 1 or 2 vertices
         # set geometry to buffer around first vertice
@@ -221,16 +221,16 @@ def create_polygons_df(df_processed, dict_all_vals, feedback):
     :param QgsProcessingFeedback feedback
     :return: pd.DataFrame
     """
-    #polygons_created = [
+    # polygons_created = [
     #    get_polygon_from_verts(n, dict_all_vals) for n in df_processed['Name']
-    #]
+    # ]
     polygons_created = []
     len_itms = len(df_processed['Name'])
     for i, n in enumerate(df_processed['Name']):
         if feedback.isCanceled():
             break
         polygons_created = polygons_created + [get_polygon_from_verts(n, dict_all_vals)]
-        feedback.setProgress((i+1)/len_itms*95)
+        feedback.setProgress((i + 1) / len_itms * 95)
     polygons_created = pd.DataFrame(
         polygons_created,
         columns=['Name', 'geometry']

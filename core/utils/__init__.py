@@ -1,1 +1,1 @@
-from .feedback import Feedback as Feedback
+from .feedback import Feedback as Feedback  # noqa: F401

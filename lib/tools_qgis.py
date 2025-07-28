@@ -60,7 +60,7 @@ def show_message(text, message_level=1, duration=10, context_name=None, paramete
         :param logger_file: Whether it should log the message in a file or not (bool)
     """
 
-    global user_parameters
+    global user_parameters  # noqa: F824
 
     # Get optional parameter 'show_message_durations'
     dev_duration = user_parameters.get('show_message_durations')
@@ -100,7 +100,7 @@ def show_message_link(text, url, btn_text="Open", message_level=0, duration=10, 
         :param logger_file: Whether it should log the message in a file or not (bool)
     """
 
-    global user_parameters
+    global user_parameters  # noqa: F824
 
     # Get optional parameter 'show_message_durations'
     dev_duration = user_parameters.get('show_message_durations')
@@ -142,7 +142,7 @@ def show_info(text, duration=10, context_name=None, parameter=None, logger_file=
         :param logger_file: Whether it should log the message in a file or not (bool)
         :param title: The title of the message (String) """
 
-    show_message(text, 0, duration, context_name, parameter, title, logger_file, dialog=dialog, 
+    show_message(text, 0, duration, context_name, parameter, title, logger_file, dialog=dialog,
                  msg_params=msg_params, title_params=title_params)
 
 
@@ -1100,7 +1100,7 @@ def check_query_layer(layer):
         # TODO:: Find differences between PostgreSQL and query layers, and replace this if condition.
         table_uri = layer.dataProvider().dataSourceUri()
         if 'SELECT row_number() over ()' in str(table_uri) or 'srid' not in str(table_uri) or \
-                layer is None or type(layer) != QgsVectorLayer:
+                layer is None or not isinstance(layer, QgsVectorLayer):
             return False
         return True
     except Exception:
@@ -1245,6 +1245,6 @@ def draw_polygon(points, rubber_band, border=QColor(255, 0, 0, 100), width=3, du
     # wait to simulate a flashing effect
     if duration_time is not None:
         # Qtimer singleShot works with ms, we manage transformation to seconds
-        QTimer.singleShot(int(duration_time)*1000, rubber_band.reset)
+        QTimer.singleShot(int(duration_time) * 1000, rubber_band.reset)
 
 # endregion

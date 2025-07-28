@@ -204,7 +204,7 @@ class DrCreateBCFromPolygon(DrAction):
             next_level = self.dropdown_tree
             for option in selected_path:
                 next_level = next_level[option]
-            if type(next_level) == dict:
+            if isinstance(next_level, dict):
                 self.boundary_type = None
                 tools_qt.fill_combo_box_list(
                     self.dlg, combos[level], next_level, allow_nulls=False
@@ -255,7 +255,8 @@ class DrCreateBCFromPolygon(DrAction):
             timeseries = tools_qt.get_combo_value(
                 self.dlg, self.dlg.cmb_timeseries
             )
-            if timeseries == '': timeseries = None
+            if timeseries == '':
+                timeseries = None
             feature.setAttribute("timeseries", timeseries)
         if config["other1"]:
             other1_str = self.dlg.txt_other1.text()

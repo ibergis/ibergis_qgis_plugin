@@ -61,7 +61,7 @@ all_st_type_cols = [
 
 
 # Export
-#----------
+# ----------
 # Junctions
 def get_junctions_from_layer(junctions_raw):
     junctions_df = junctions_raw.copy()
@@ -165,9 +165,9 @@ def get_storages_from_layer(storages_raw):
     # drop and keep columns
     storage_df = storage_df.drop(columns=st_types_needed)
     storage_inp_cols = [
-                'Name', 'Elevation', 'MaxDepth','InitDepth','Type',
-                'Shape1','Shape2','Shape3','SurDepth','Fevap','Psi',
-                'Ksat','IMD'
+                'Name', 'Elevation', 'MaxDepth', 'InitDepth', 'Type',
+                'Shape1', 'Shape2', 'Shape3', 'SurDepth', 'Fevap', 'Psi',
+                'Ksat', 'IMD'
             ]
     storage_df = storage_df[storage_inp_cols]
     return storage_df
@@ -221,7 +221,7 @@ def compose_hydrograph_df(hydrog):
         h_name = hydrog['Name']
         df_rg = pd.DataFrame(
             {'Name': h_name, 'RG_Month': hydrog['Rain_Gage']},
-            index = [0]
+            index=[0]
         )
         for i, t in enumerate(['Short', 'Medium', 'Long']):
             df_i = pd.DataFrame(
@@ -229,14 +229,14 @@ def compose_hydrograph_df(hydrog):
                     'Name': h_name,
                     'RG_Month': hydrog['Months'],
                     'Response': t,
-                    'R': hydrog['R_'+t+'Term'],
-                    'T': hydrog['T_'+t+'Term'],
-                    'K': hydrog['K_'+t+'Term'],
-                    'D_max': hydrog['D_max_'+t+'Term'],
-                    'D_recovery': hydrog['D_recovery_'+t+'Term'],
-                    'D_init': hydrog['D_init_'+t+'Term']
+                    'R': hydrog['R_' + t + 'Term'],
+                    'T': hydrog['T_' + t + 'Term'],
+                    'K': hydrog['K_' + t + 'Term'],
+                    'D_max': hydrog['D_max_' + t + 'Term'],
+                    'D_recovery': hydrog['D_recovery_' + t + 'Term'],
+                    'D_init': hydrog['D_init_' + t + 'Term']
                 },
-                index = [i+1]
+                index=[i + 1]
             )
             df_rg = pd.concat([df_rg, df_i])
         return df_rg
@@ -273,7 +273,7 @@ def get_inflows_from_table(inflows_raw, all_nodes, feedback):
             inflow_df = inflow_df[inflow_df['Name'] != ";"]
             inflow_df['Name'] = [str(x) for x in inflow_df['Name']]
             if inflow_type != 'Hydrographs':
-                missing_nodes = list(inflow_df.loc[~inflow_df['Name'].isin(all_nodes),'Name'])
+                missing_nodes = list(inflow_df.loc[~inflow_df['Name'].isin(all_nodes), 'Name'])
                 if len(missing_nodes) > 0:
                     feedback.pushWarning(
                         'Warning: Missing nodes for inflows: '
@@ -324,7 +324,7 @@ def get_inflows_from_table(inflows_raw, all_nodes, feedback):
 
 
 # Import
-#-------
+# -------
 # Outfalls
 def get_outfalls_from_inp(outfalls_line, feedback):
     """
@@ -377,7 +377,7 @@ def get_storages_from_inp(st_raw_line, feedback):
     init_elems = st_raw_line[:5]
     st_type_i = st_raw_line[4]
     st_cols_i = st_types_def[st_type_i]
-    st_vals_i = {col: st_raw_line[5+i] for i, col in enumerate(st_cols_i)}
+    st_vals_i = {col: st_raw_line[5 + i] for i, col in enumerate(st_cols_i)}
     st_missing = {col_0: np.nan for col_0 in all_st_type_cols if col_0 not in st_vals_i.keys()}
     st_vals_i.update(st_missing)
     type_elems = [st_vals_i[t_c] for t_c in all_st_type_cols]
@@ -390,7 +390,7 @@ def get_storages_from_inp(st_raw_line, feedback):
         sur_elems = sur_elems + [np.nan, np.nan, np.nan]
     # resulting line
     st_line_adjusted = init_elems + type_elems + sur_elems
-    return(st_line_adjusted)
+    return (st_line_adjusted)
 
     
 # Hydrographs
@@ -408,8 +408,8 @@ def get_hydrogrphs(hg_name, df_hydrographs_raw):
         hg_i = subdf[subdf['Response'] == t]
         if t == 'Short':
             hg_rg['Months'] = list(hg_i['RG_Month'])[0]
-        hg_i = hg_i.drop(columns = ['RG_Month', 'Response'])
-        ren_dict = {c: c+'_'+t+'Term' for c in hg_i.columns if c != 'Name'}
+        hg_i = hg_i.drop(columns=['RG_Month', 'Response'])
+        ren_dict = {c: c + '_' + t + 'Term' for c in hg_i.columns if c != 'Name'}
         hg_i = hg_i.rename(columns=ren_dict)
         hg_rg = hg_rg.join(
             hg_i.set_index('Name'),
@@ -431,9 +431,9 @@ def create_point_from_x_y(sr, i, n, feedback):
     x_coord = sr['X_Coord']
     y_coord = sr['Y_Coord']
     geom = QgsGeometry.fromWkt(
-        'POINT(' + str(x_coord) + ' '+str(y_coord) + ')'
+        'POINT(' + str(x_coord) + ' ' + str(y_coord) + ')'
     )
-    feedback.setProgress(((i+1)/n)*100)
+    feedback.setProgress(((i + 1) / n) * 100)
     if feedback.isCanceled():
         pass
     return [sr['Name'], geom]
@@ -452,10 +452,10 @@ def create_points_df(data, feedback):
             data.loc[i,],
             i,
             n,
-            feedback) for i in data.index] # point geometries
+            feedback) for i in data.index]  # point geometries
         df_out = pd.DataFrame(all_geoms, columns=['Name', 'geometry']).set_index('Name')
     else:
-        df_out = pd.DataFrame(columns = ['Name', 'geometry']).set_index('Name')
+        df_out = pd.DataFrame(columns=['Name', 'geometry']).set_index('Name')
     return df_out
 
 
@@ -467,6 +467,6 @@ def add_z_to_points(sr):
     """
     f_geometry = sr['geometry']
     z_coord = sr['Elevation']
-    f_geometry_string_z = f_geometry.asWkt()[:-1]+' '+str(z_coord)+')'
+    f_geometry_string_z = f_geometry.asWkt()[:-1] + ' ' + str(z_coord) + ')'
     f_geometry_z = QgsGeometry.fromWkt(f_geometry_string_z)
     return f_geometry_z

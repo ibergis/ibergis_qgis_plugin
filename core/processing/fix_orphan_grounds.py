@@ -21,12 +21,13 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis
-from ...core.utils import  Feedback, tools_dr
+from ...core.utils import Feedback, tools_dr
 from typing import Optional
 import processing
 import geopandas as gpd
 import os
 import tempfile
+
 
 class FixOrphanGrounds(QgsProcessingAlgorithm):
     """
@@ -103,11 +104,11 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
 
         # Merge layers
         merged_layer = processing.run("native:mergevectorlayers",
-                                      {'LAYERS':[
+                                      {'LAYERS': [
                                           self.ground_layer,
                                           self.roof_layer
                                           ],
-                                          'CRS':QgsProject.instance().crs(),'OUTPUT':'TEMPORARY_OUTPUT'})['OUTPUT']
+                                          'CRS': QgsProject.instance().crs(), 'OUTPUT': 'TEMPORARY_OUTPUT'})['OUTPUT']
         if merged_layer is None:
             feedback.pushWarning(self.tr('Error merging layers.'))
             return {}
@@ -118,7 +119,7 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
         feedback.setProgress(20)
 
         tmp_gpkg = os.path.join(tempfile.gettempdir(), "splited_layer.gpkg")
-        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT':merged_layer,'OUTPUT':tmp_gpkg})['OUTPUT']
+        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT': merged_layer, 'OUTPUT': tmp_gpkg})['OUTPUT']
         if splited_layer is None:
             feedback.pushWarning(self.tr('Error splitting multipolygons into single polygons.'))
             return {}
@@ -144,7 +145,7 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
         grounds = cleaned_gdf[cleaned_gdf.layer == self.ground_layer.name()]
 
         for _, ground in grounds.iterrows():
-            feedback.setProgress(tools_dr.lerp_progress(processing_features/len(grounds)*100, 35, 90))
+            feedback.setProgress(tools_dr.lerp_progress(processing_features / len(grounds) * 100, 35, 90))
             processing_features += 1
 
             if feedback.isCanceled():
@@ -230,15 +231,15 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
             for field in layer.fields():
                 if field.name() == 'fid':
                     if layer == self.roof_layer:
-                        new_feature[field.name()] = len(roof_features)+1
+                        new_feature[field.name()] = len(roof_features) + 1
                     elif layer == self.ground_layer:
-                        new_feature[field.name()] = len(ground_features)+1
+                        new_feature[field.name()] = len(ground_features) + 1
                     continue
                 if field.name() == 'code':
                     if layer == self.roof_layer:
-                        new_feature[field.name()] = f'RF{len(roof_features)+1}'
+                        new_feature[field.name()] = f'RF{len(roof_features) + 1}'
                     elif layer == self.ground_layer:
-                        new_feature[field.name()] = f'GR{len(ground_features)+1}'
+                        new_feature[field.name()] = f'GR{len(ground_features) + 1}'
                     continue
                 new_feature[field.name()] = feature[field.name()]
             new_feature.setGeometry(feature.geometry())

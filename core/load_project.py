@@ -59,7 +59,6 @@ class DrLoadProject(QObject):
         # Removes all deprecated variables defined at drain.config
         # tools_dr.remove_deprecated_config_vars()
 
-        project_role = global_vars.project_vars.get('project_role')
         global_vars.project_vars['project_role'] = None
 
         # Check if user has config files 'init' and 'session' and its parameters
@@ -379,7 +378,7 @@ class DrLoadProject(QObject):
             return
 
         list_actions = list_actions.replace(' ', '').split(',')
-        if type(list_actions) != list:
+        if not isinstance(list_actions, list):
             list_actions = [list_actions]
 
         toolbar_name = tools_qt.tr(f'toolbar_{toolbar_id}_name')
@@ -477,7 +476,7 @@ class DrLoadProject(QObject):
                             if subwidget.objectName() == 'mUpdateExpressionText':  # This is the expression text field
                                 try:
                                     subwidget.fieldChanged.disconnect()
-                                except:
+                                except Exception:
                                     pass
                                 # When you type something in the expression text field, the button "Update all" is
                                 # enabled. This will disable it again.
@@ -486,7 +485,6 @@ class DrLoadProject(QObject):
                         break
             except IndexError:
                 pass
-
 
     def _translate_config(self):
         """ Update config.gpkg language from selected locale """
@@ -497,7 +495,7 @@ class DrLoadProject(QObject):
         sql_dir = os.path.normpath(os.path.join(global_vars.plugin_dir, 'dbmodel'))
         i18n_dml_path = os.path.join(sql_dir, "i18n", locale, "dml.sql")
         if not os.path.exists(i18n_dml_path):
-            i18n_dml_path = os.path.join(sql_dir, "i18n", "en_US", "dml.sql") # Default to en_US
+            i18n_dml_path = os.path.join(sql_dir, "i18n", "en_US", "dml.sql")  # Default to en_US
 
         config_gpkg_path = os.path.join(global_vars.plugin_dir, 'config', 'config.gpkg')
 

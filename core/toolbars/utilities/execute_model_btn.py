@@ -84,7 +84,7 @@ class DrExecuteModelButton(DrAction):
         if not os.path.exists(self.export_path):
             try:
                 os.mkdir(self.export_path)
-            except:
+            except Exception:
                 msg = "The specified folder doesn't exist and it couldn't be created. Make sure the specified folder exists."
                 tools_qt.show_info_box(msg)
                 return False

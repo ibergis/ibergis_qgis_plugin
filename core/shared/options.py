@@ -26,7 +26,6 @@ class DrOptions:
         self.tabs_to_show = tabs_to_show
         if self.tabs_to_show is None:
             self.tabs_to_show = ["tab_inp_swmm", "tab_rpt_swmm", "tab_main", "tab_rpt_iber", "tab_plugins"]
-        con_name = "dlg_options"
         self.tab_aliases = {"tab_inp_swmm": tools_qt.tr("SWMM OPTIONS"), "tab_rpt_swmm": tools_qt.tr("SWMM RESULTS"),
                             "tab_main": tools_qt.tr("IBER OPTIONS"), "tab_rpt_iber": tools_qt.tr("IBER RESULTS"),
                             "tab_plugins": tools_qt.tr("IBER PLUGINS")
@@ -102,7 +101,7 @@ class DrOptions:
                         lyt_col = lyt_name_split[-1]
                         row = int(lyt_row) - 1
                         col = int(lyt_col) - 1
-                    except:
+                    except Exception:
                         msg = "Layout '{0}' has an invalid name. It has to end with {1} indicating where in the dialog it should go."
                         msg_params = (lyt[0], "row_column",)
                         tools_qgis.show_warning(msg, msg_params=msg_params)

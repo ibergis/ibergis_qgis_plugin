@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 from ...lib import tools_qgis
 
+
 class DrFixMissingVertexAlgorithm(QgsProcessingAlgorithm):
     GROUND_LAYER = 'GROUND_LAYER'
     ROOF_LAYER = 'ROOF_LAYER'

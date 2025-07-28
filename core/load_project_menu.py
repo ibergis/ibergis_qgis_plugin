@@ -256,12 +256,6 @@ class DrMenuLoad(QObject):
 
         tools_qgis.show_info(msg)
 
-    def _open_current_selections(self):
-        return
-
-        if lib_vars.session_vars['current_selections']:
-            global_vars.iface.addDockWidget(Qt.LeftDockWidgetArea, lib_vars.session_vars['current_selections'])
-
     def _reset_plugin(self):
         """ Called in reset plugin action """
 

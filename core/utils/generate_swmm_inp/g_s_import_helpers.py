@@ -99,7 +99,7 @@ def sect_list_import_handler(
             # skip if the section is already processed
             pass
         else:
-            feedback.setProgressText('Preparing section \"'+section_name+'\"')
+            feedback.setProgressText('Preparing section \"' + section_name + '\"')
             # preparation
             if section_name == 'INFILTRATION':
                 data_dict['data'] = [
@@ -135,7 +135,7 @@ def sect_list_import_handler(
             # do nothing if the section is not in the import file
             pass
         else:
-            feedback.setProgressText('Preparing section \"'+section_name+'\"')
+            feedback.setProgressText('Preparing section \"' + section_name + '\"')
             data_dict = dict_all_vals[section_name]
             feedback.setProgress(1)
             if out_type == 'geodata':
@@ -341,7 +341,7 @@ def concat_quoted_vals(text_line):
                 else:
                     i += 1
             else:  # is quoted and has been separated
-                text_line_new[i] = text_line_new[i]+[t_l]
+                text_line_new[i] = text_line_new[i] + [t_l]
                 if t_l.endswith('"'):
                     quoted_elem = 0  # set not quoted again
                     i += 1
@@ -376,10 +376,10 @@ def get_annotations(
     :param int endpoint
     :param in section_len
     """
-    annot_text_list = [x[1:] for x in section_text[startpoint:(endpoint+1)]]
+    annot_text_list = [x[1:] for x in section_text[startpoint:(endpoint + 1)]]
     annot_text = ' '.join(annot_text_list)
-    if endpoint+1 != section_len:
-        feature_name = section_text[endpoint+1].split()[0]
+    if endpoint + 1 != section_len:
+        feature_name = section_text[endpoint + 1].split()[0]
         return [feature_name, annot_text]
 
 
@@ -395,12 +395,12 @@ def extract_sections_from_text(
     :param str section_key 
     :return: dict
     """
-    section_text = inp_text[text_limits[0]+1:text_limits[1]]
+    section_text = inp_text[text_limits[0] + 1:text_limits[1]]
     # find descriptions
     section_len = len(section_text)
     annotations_list = [i for i, x in enumerate(section_text) if x.startswith(';')]
-    annot_starts = [i for i in annotations_list if i-1 not in annotations_list]
-    annot_ends = [i for i in annotations_list if i+1 not in annotations_list]
+    annot_starts = [i for i in annotations_list if i - 1 not in annotations_list]
+    annot_ends = [i for i in annotations_list if i + 1 not in annotations_list]
     annot_result_list = [get_annotations(section_text, s, e, section_len) for s, e in zip(annot_starts, annot_ends)]
     annot_dict = {i[0]: i[1] for i in annot_result_list if i is not None}
     # exclude empty comments
@@ -592,11 +592,11 @@ def add_layer_on_completion(
     :param QgsProcessingContext context
     :param str layer_color
     """
-    layer_filename = layer_name+'.'+geodata_driver_extension
+    layer_filename = layer_name + '.' + geodata_driver_extension
     file_path = os.path.join(folder_save, layer_filename)
     if os.path.isfile(file_path):
         if geodata_driver_extension in ['gpkg', 'fgb', 'gml', 'kml']:
-            file_path = file_path+'|layername='+layer_name
+            file_path = file_path + '|layername=' + layer_name
         vlayer = QgsVectorLayer(
             file_path,
             layer_name,

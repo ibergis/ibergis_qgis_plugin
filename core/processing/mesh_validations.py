@@ -3,7 +3,6 @@ from qgis.core import (
     QgsProcessingContext,
     QgsProcessingFeedback,
     QgsProcessingParameterBoolean,
-    QgsProject,
     QgsVectorLayer,
     QgsRasterLayer,
     QgsProcessingParameterVectorLayer,

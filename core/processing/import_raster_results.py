@@ -226,7 +226,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         for i in range(layer.bandCount()):
             end_time = start_time.addSecs(interval_seconds)
             dt_range = QgsDateTimeRange(start_time, end_time)
-            ranges[i+1] = dt_range
+            ranges[i + 1] = dt_range
             start_time = start_time.addSecs(interval_seconds)
 
         temporal.setFixedRangePerBand(ranges)
@@ -255,11 +255,11 @@ class ImportRasterResults(QgsProcessingAlgorithm):
             keys: list[float] = sorted(main_colors.keys())
             color = QColor(0, 0, 0)  # Default color
 
-            for i in range(len(keys)-1):
-                if keys[i] <= val <= keys[i+1]:
-                    ratio = (val - keys[i]) / (keys[i+1] - keys[i])
+            for i in range(len(keys) - 1):
+                if keys[i] <= val <= keys[i + 1]:
+                    ratio = (val - keys[i]) / (keys[i + 1] - keys[i])
                     c1 = main_colors[keys[i]]
-                    c2 = main_colors[keys[i+1]]
+                    c2 = main_colors[keys[i + 1]]
 
                     # Calculate color
                     r = int(c1.red() + (c2.red() - c1.red()) * ratio)

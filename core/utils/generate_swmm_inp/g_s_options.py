@@ -47,7 +47,7 @@ def adjust_options_dtypes(opt_key, opt_val, opt_source, feedback=None):
         d_type_def = [str]
     if opt_source == 'table':
         d_type_val = type(opt_val)
-        if d_type_val in d_type_def: # correct datatype
+        if d_type_val in d_type_def:  # correct datatype
             if d_type_def[0] in [time, datetime]:
                 # time to string; if d_type_val is not correct (e.g. float) it will be printed as str anyway
                 d_struct = def_option_i['format']
@@ -56,8 +56,8 @@ def adjust_options_dtypes(opt_key, opt_val, opt_source, feedback=None):
                 # check if value is valid
                 def_vals = def_option_i['values']
                 if opt_val not in def_vals:
-                    raise QgsProcessingException('[OPTIONS]: Value for ' + opt_key + ' must be one of '+', '.join(def_vals))
-            else: # will be printed to str in the inp file
+                    raise QgsProcessingException('[OPTIONS]: Value for ' + opt_key + ' must be one of ' + ', '.join(def_vals))
+            else:  # will be printed to str in the inp file
                 pass
     if opt_source == 'input':
         if d_type_def[0] == datetime:

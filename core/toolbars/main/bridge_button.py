@@ -10,7 +10,7 @@ import os
 
 from qgis.PyQt.QtWidgets import QTableView, QSizePolicy, QLineEdit, \
     QApplication, QShortcut, QMenu, QAction
-from qgis.PyQt.QtGui import QKeySequence, QIcon, QDoubleValidator, QCursor
+from qgis.PyQt.QtGui import QKeySequence, QIcon, QDoubleValidator
 from qgis.core import QgsFeature, QgsEditFormConfig, QgsProject, QgsMapLayer, QgsCoordinateTransform, QgsPointXY
 from qgis.PyQt.QtCore import Qt
 from qgis.utils import iface
@@ -25,6 +25,7 @@ from typing import Optional
 from sip import isdeleted
 from ....core.toolbars.dialog import DrAction
 from ....core.utils.item_delegates import NumericDelegate, NumericTableWidgetItem
+
 
 class PlotParameters:
     """ Class to store plot parameters """
@@ -52,7 +53,6 @@ class PlotParameters:
     # DEM
     DEM_LINE_COLOR = 'green'
     GROUND_FILL_COLOR = '#a16900'
-
 
 
 class DrBridgeButton(DrAction):
@@ -99,7 +99,6 @@ class DrBridgeButton(DrAction):
                 # Show the menu below the button
                 self.menu.exec_(button.mapToGlobal(button.rect().bottomLeft()))
 
-
     def manage_bridge(self, bridge: Optional[QgsFeature] = None, is_new: bool = False):
         """ Opens Bridge dialog. Called from 'Bridge add' button and 'Bridge edit' button. """
 
@@ -128,10 +127,10 @@ class DrBridgeButton(DrAction):
         self.add_profile_widget(self.dialog)
 
         # Fill bridge fields
-        if bridge is not None and is_new == False:
+        if bridge is not None and not is_new:
             self._fill_fields(bridge)
 
-        if bridge is not None and is_new == True:
+        if bridge is not None and is_new:
             self.dialog.txt_length.setText(str(round(bridge.geometry().length(), 3)))
 
         # Set scale-to-fit and fill table
@@ -194,7 +193,7 @@ class DrBridgeButton(DrAction):
         """ Edit bridge """
 
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and isdeleted(self.dialog) == False and self.dialog.isVisible():
+        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
             # Bring the existing dialog to the front
             self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
             self.dialog.raise_()
@@ -418,7 +417,7 @@ class DrBridgeButton(DrAction):
         """ Add bridge interactively by drawing a linestring and then opening the bridge dialog. """
 
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and isdeleted(self.dialog) == False and self.dialog.isVisible():
+        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
             # Bring the existing dialog to the front
             self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
             self.dialog.raise_()
@@ -450,7 +449,6 @@ class DrBridgeButton(DrAction):
 
         # Connect to featureAdded signal
         bridge_layer.featureAdded.connect(self._on_bridge_feature_added)
-
 
     # region private functions
 
@@ -833,8 +831,8 @@ class DrBridgeButton(DrAction):
                 y_center = (min(all_elevs) + max(all_elevs)) / 2 if all_elevs else 5
 
                 # Set ranges centered on the data with margins
-                self.plot_widget.axes.set_xlim(x_center - x_range/2 - x_margin, x_center + x_range/2 + x_margin)
-                self.plot_widget.axes.set_ylim(((y_center - y_range/2 - y_margin) - 10), (y_center + y_range/2 + y_margin) + 1)
+                self.plot_widget.axes.set_xlim(x_center - x_range / 2 - x_margin, x_center + x_range / 2 + x_margin)
+                self.plot_widget.axes.set_ylim(((y_center - y_range / 2 - y_margin) - 10), (y_center + y_range / 2 + y_margin) + 1)
                 self.plot_widget.axes.set_aspect('auto')
 
         # Refresh the plot
@@ -1055,16 +1053,16 @@ class DrBridgeButton(DrAction):
                     return False
 
             sql = "INSERT INTO bridge_value (bridge_code, distance"
-            sql += f", topelev" if row[1] != 'null' else ""
-            sql += f", lowelev" if row[2] != 'null' else ""
-            sql += f", openingval" if row[3] != 'null' else ""
-            sql += f") "
+            sql += ", topelev" if row[1] != 'null' else ""
+            sql += ", lowelev" if row[2] != 'null' else ""
+            sql += ", openingval" if row[3] != 'null' else ""
+            sql += ") "
             sql += f"VALUES ('{code}'"
             sql += f", {row[0]}" if row[0] != 'null' else ""
             sql += f", {row[1]}" if row[1] != 'null' else ""
             sql += f", {row[2]}" if row[2] != 'null' else ""
             sql += f", {row[3]}" if row[3] != 'null' else ""
-            sql += f")"
+            sql += ")"
 
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
@@ -1111,15 +1109,15 @@ class DrBridgeButton(DrAction):
                 dialog.tbl_bridge_value.setItem(1, 3, NumericTableWidgetItem('100'))
             elif len(selected_rows) == 1:
                 # Add a new row after the selected row with the same values
-                dialog.tbl_bridge_value.insertRow(selected_rows[0].row()+1)
+                dialog.tbl_bridge_value.insertRow(selected_rows[0].row() + 1)
                 item0 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 0) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 0) not in (None, '') else '0.0'
                 item1 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 1) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 1) not in (None, '') else '0.0'
                 item2 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 2) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 2) not in (None, '') else '0.0'
                 item3 = dialog.tbl_bridge_value.item(selected_rows[0].row(), 3) if dialog.tbl_bridge_value.item(selected_rows[0].row(), 3) not in (None, '') else '100'
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 0, NumericTableWidgetItem(item0))
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 1, NumericTableWidgetItem(item1))
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 2, NumericTableWidgetItem(item2))
-                dialog.tbl_bridge_value.setItem(selected_rows[0].row()+1, 3, NumericTableWidgetItem(item3))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row() + 1, 0, NumericTableWidgetItem(item0))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row() + 1, 1, NumericTableWidgetItem(item1))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row() + 1, 2, NumericTableWidgetItem(item2))
+                dialog.tbl_bridge_value.setItem(selected_rows[0].row() + 1, 3, NumericTableWidgetItem(item3))
             elif len(selected_rows) == 0:
                 msg = "You have to select a row."
                 tools_qgis.show_warning(msg, dialog=dialog)

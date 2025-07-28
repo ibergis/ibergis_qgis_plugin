@@ -67,8 +67,8 @@ class DrSchemaI18NManager:
         self.dlg_qm.lbl_info.clear()
         self._close_db_org()
         # Connection with origin db
-        path_i18n =  f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}drain_i18n.gpkg"
-        path_sample =  f"{self.plugin_dir}{os.sep}config{os.sep}config.gpkg"
+        path_i18n = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}drain_i18n.gpkg"
+        path_sample = f"{self.plugin_dir}{os.sep}config{os.sep}config.gpkg"
         status_i18n = self._init_db_i18n(path_i18n)
         status_org = self._init_db_org(path_sample)
 
@@ -198,7 +198,7 @@ class DrSchemaI18NManager:
                 else:
                     msg = "Incorrect languages, make sure to have the giswater project in english"
                     tools_qt.show_info_box(msg)
-                    break                   
+                    break 
 
         self._vacuum_commit(self.conn_i18n, self.cursor_i18n)      
         self.dlg_qm.lbl_info.clear()
@@ -599,7 +599,7 @@ class DrSchemaI18NManager:
                 num_line -= 1  
             
             if num_line < 0:
-                return None  
+                return None 
 
             # Now extract the value between quotes using regex
             pattern = rf'{re.escape(key_text)}"(.*?)"'

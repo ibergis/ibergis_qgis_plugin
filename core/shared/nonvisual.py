@@ -107,7 +107,6 @@ class DrNonVisual:
             self.manager_dlg.main_tab.widget(tab_idx).setObjectName(key)
             self.manager_dlg.main_tab.widget(tab_idx).setProperty('function', f"get_{dict_views_project[key]}")
             function_name = f"get_{dict_views_project[key]}"
-            _id = 0
 
             self._fill_manager_table(qtableview, key)
 
@@ -429,7 +428,7 @@ class DrNonVisual:
             # If not first row, check if previous row has a smaller value than current row
             if row - 1 >= 0:
                 cur_cell = table.item(row, column)
-                prev_cell = table.item(row-1, column)
+                prev_cell = table.item(row - 1, column)
                 if None not in (cur_cell, prev_cell):
                     if cur_cell.data(0) not in (None, '') and prev_cell.data(0) not in (None, ''):
                         cur_value = float(cur_cell.data(0))
@@ -468,7 +467,7 @@ class DrNonVisual:
             for i, n in enumerate(x_values):
                 if i == 0 or n is None:
                     continue
-                if (n > x_values[i-1]) or (curve_type == 'SHAPE' and global_vars.project_type == 'ud'):
+                if (n > x_values[i - 1]) or (curve_type == 'SHAPE' and global_vars.project_type == 'ud'):
                     continue
                 valid = False
                 self.valid = (False, "Invalid curve. First column values must be ascending.")
@@ -512,7 +511,7 @@ class DrNonVisual:
             for j, value in enumerate(item):
                 if value != 'null':
                     last_idx = j
-            clean_list.append(item[:last_idx+1])
+            clean_list.append(item[:last_idx + 1])
 
         # Convert list items to float
         float_list = []
@@ -539,8 +538,8 @@ class DrNonVisual:
             # Draw curve with points (0, 1.33y), (x, y), (2x, 0)
             x = x_list[0]
             y = y_list[0]
-            x_array = np.array([0, x, 2*x])
-            y_array = np.array([1.33*y, y, 0])
+            x_array = np.array([0, x, 2 * x])
+            y_array = np.array([1.33 * y, y, 0])
 
             # Define x_array as 100 equally spaced values between the min and max of original x_array
             xnew = np.linspace(x_array.min(), x_array.max(), 100)
@@ -593,7 +592,7 @@ class DrNonVisual:
                 fig_title = f"{file_name}"
                 if area and geom1 and geom2:
                     fig_title = f"{file_name} (S: {round(area * 100, 2)} dm2 - {round(geom1, 2)} x {round(geom2, 2)})"
-                plot_widget.axes.text(min(y_list_inverted)*1.1, max(x_list)*1.07, f"{fig_title}", fontsize=8)
+                plot_widget.axes.text(min(y_list_inverted) * 1.1, max(x_list) * 1.07, f"{fig_title}", fontsize=8)
         else:
             plot_widget.axes.plot(x_list, y_list, color='indianred')
 
@@ -802,7 +801,6 @@ class DrNonVisual:
         """ Fills in all the values for ud pattern dialog """
 
         # Variables
-        txt_id = self.dialog.txt_pattern
         txt_name = self.dialog.txt_name
         cmb_pattern_type = self.dialog.cmb_pattern_type
         txt_descript = self.dialog.txt_descript
@@ -833,7 +831,7 @@ class DrNonVisual:
             values[row[2]] = row[3]
         table = self.dialog.findChild(QTableWidget, f"tbl_{pattern_type.lower()}")
         for i in range(0, table.columnCount()):
-            value = f"{values.get(i+1)}"
+            value = f"{values.get(i + 1)}"
             if value == 'None':
                 value = ''
             table.setItem(0, i, QTableWidgetItem(value))
@@ -985,7 +983,7 @@ class DrNonVisual:
 
             for n, x in enumerate(row):
                 sql = "INSERT INTO cat_pattern_value (pattern, timestep, value) "
-                sql += f"VALUES ({pattern_name}, {n+1}, {x});"
+                sql += f"VALUES ({pattern_name}, {n + 1}, {x});"
                 result = tools_db.execute_sql(sql, commit=False)
                 if not result:
                     msg = "There was an error inserting pattern value."
@@ -1014,7 +1012,7 @@ class DrNonVisual:
             for j, value in enumerate(item):
                 if value != 'null':
                     last_idx = j
-            clean_list.append(item[:last_idx+1])
+            clean_list.append(item[:last_idx + 1])
 
         # Convert list items to float
         float_list = []
@@ -1241,10 +1239,7 @@ class DrNonVisual:
         """ Fills in all the values for timeseries dialog """
 
         # Variables
-        txt_id = self.dialog.txt_id
         txt_idval = self.dialog.txt_idval
-        cmb_timeser_type = self.dialog.cmb_timeser_type
-        cmb_times_type = self.dialog.cmb_times_type
         txt_descript = self.dialog.txt_descript
         txt_fname = self.dialog.txt_fname
         tbl_timeseries_value = self.dialog.tbl_timeseries_value
@@ -1440,13 +1435,11 @@ class DrNonVisual:
     def _insert_timeseries_value(self, dialog, tbl_timeseries_value, times_type, timeseries):
         """ Insert table values into cat_timeseries_value """
 
-        time_formats_list = ['HH:mm:ss', 'HH:mm', 'HH', 'H:mm', 'H']
         date_formats_list = ['MM/dd/yyyy', 'M/dd/yyyy', 'MM/d/yyyy', 'M/d/yyyy',
                              'MM.dd.yyyy', 'M.dd.yyyy', 'MM.d.yyyy', 'M.d.yyyy',
                              'MM-dd-yyyy', 'M-dd-yyyy', 'MM-d-yyyy', 'M-d-yyyy']
         invalid_times = list()
         invalid_dates = list()
-        output_time_format = 'HH:mm'
         output_date_format = 'MM/dd/yyyy'
 
         values = list()
@@ -1457,16 +1450,7 @@ class DrNonVisual:
                 item = tbl_timeseries_value.item(y, x)
                 if item is not None and item.data(0) not in (None, ''):
                     value = item.data(0)
-                    if x == 1 and type(value) == str:
-                        # Convert to HH:mm time format
-                        #for i in range(0, len(time_formats_list)):
-                            #value = QTime.fromString(item.data(0), time_formats_list[i])  # Try to convert
-                            #if not value.isNull():
-                            #    value = value.toString(output_time_format if time_formats_list[i] != 'HH:mm:ss' else output_time_format+':ss')  # Convert QTime to string
-                            #    break
-                        #if type(value) != str and value.isNull():
-                        #    invalid_times.append(item.data(0))
-
+                    if x == 1 and isinstance(value, str):
                         time_values = item.data(0).split(':')
                         if len(time_values) == 2:
                             # Check if both values are integers
@@ -1487,14 +1471,14 @@ class DrNonVisual:
                                 invalid_times.append(item.data(0))
                         else:
                             invalid_times.append(item.data(0))
-                    elif x == 0 and type(value) == str:
+                    elif x == 0 and isinstance(value, str):
                         # Convert to MM/dd/yyyy date format
                         for i in range(0, len(date_formats_list)):
                             value = QDate.fromString(item.data(0), date_formats_list[i])  # Try to convert
                             if not value.isNull():
                                 value = value.toString(output_date_format)  # Convert QDate to string
                                 break
-                        if type(value) != str and value.isNull():
+                        if not isinstance(value, str) and value.isNull():
                             invalid_dates.append(item.data(0))
                     else:
                         try:  # Try to convert to float, otherwise put quotes
@@ -1662,7 +1646,7 @@ class DrNonVisual:
 
                     # List with all QLineEdit children
                     child_list = self.dialog.tab_lidlayers.widget(i).children()
-                    visible_widgets = [widget for widget in child_list if type(widget) == QLineEdit]
+                    visible_widgets = [widget for widget in child_list if isinstance(widget, QLineEdit)]
                     visible_widgets = self._order_list(visible_widgets)
 
                     for x, value in enumerate(row):
@@ -1698,13 +1682,13 @@ class DrNonVisual:
                 # List with all QLineEdit children
                 child_list = dialog.tab_lidlayers.widget(i).children()
                 visible_widgets = [widget for widget in child_list if
-                                   type(widget) == QLineEdit or type(widget) == QComboBox]
+                                   isinstance(widget, QLineEdit) or isinstance(widget, QComboBox)]
                 visible_widgets = self._order_list(visible_widgets)
 
                 for y, widget in enumerate(visible_widgets):
                     value = tools_dr.get_config_parser('nonvisual_lids', f"{widget.objectName()}", "user", "session")
 
-                    if type(widget) == QLineEdit:
+                    if isinstance(widget, QLineEdit):
                         tools_qt.set_widget_text(dialog, widget, str(value))
                     else:
                         tools_qt.set_combo_value(widget, str(value), 0)
@@ -1722,14 +1706,13 @@ class DrNonVisual:
 
         for i in range(dialog.tab_lidlayers.count()):
             if dialog.tab_lidlayers.isTabVisible(i):
-                tab_name = dialog.tab_lidlayers.widget(i).objectName().upper()
                 # List with all QLineEdit children
                 child_list = dialog.tab_lidlayers.widget(i).children()
-                visible_widgets = [widget for widget in child_list if type(widget) == QLineEdit or type(widget) == QComboBox]
+                visible_widgets = [widget for widget in child_list if isinstance(widget, QLineEdit) or isinstance(widget, QComboBox)]
                 visible_widgets = self._order_list(visible_widgets)
 
                 for y, widget in enumerate(visible_widgets):
-                    if type(widget) == QLineEdit:
+                    if isinstance(widget, QLineEdit):
                         value = tools_qt.get_text(dialog, widget)
                     else:
                         value = tools_qt.get_combo_value(dialog, widget)
@@ -1813,7 +1796,7 @@ class DrNonVisual:
             # List of children
             list = dialog.tab_lidlayers.widget(i).children()
             for y in list:
-                if type(y) != QGridLayout:
+                if not isinstance(y, QGridLayout):
                     y.show()
                     for j in widgets_hide[lid_id]:
                         if j == y.objectName():
@@ -1977,7 +1960,7 @@ class DrNonVisual:
         paste_shortcut.activated.connect(partial(self._paste_raster_values, tbl_raster_value))
 
         # Populate combobox
-        raster_type_headers = self._populate_raster_combo(cmb_raster_type)
+        self._populate_raster_combo(cmb_raster_type)
 
         # Populate data if editing raster
         tools_qt.set_widget_text(self.dialog, self.dialog.txt_raster_id, raster_id)
@@ -2017,7 +2000,6 @@ class DrNonVisual:
                 row_pos = selected[0].topRow() + r
                 col_pos = selected[0].leftColumn() + c
                 tbl_raster_value.setItem(row_pos, col_pos, item)
-
 
     def _populate_raster_combo(self, cmb_raster_type):
         """ Populates raster dialog combos """
@@ -2223,7 +2205,7 @@ class DrNonVisual:
 
         try:
             self.manager_dlg.main_tab.currentWidget().model().select()
-        except:
+        except Exception:
             pass
 
     def _connect_dialog_signals(self):
@@ -2235,18 +2217,18 @@ class DrNonVisual:
         """ Note: row & column parameters are passed by the signal """
 
         # Add a new row if the edited row is the last one
-        if row >= (table.rowCount()-1):
-            headers = ['Multiplier' for n in range(0, table.rowCount()+1)]
+        if row >= (table.rowCount() - 1):
+            headers = ['Multiplier' for n in range(0, table.rowCount() + 1)]
             table.insertRow(table.rowCount())
             table.setVerticalHeaderLabels(headers)
         # Remove "last" row (empty one) if the real last row is empty
-        elif row == (table.rowCount()-2):
+        elif row == (table.rowCount() - 2):
             for n in range(0, table.columnCount()):
                 item = table.item(row, n)
                 if item is not None:
                     if item.data(0) not in (None, ''):
                         return
-            table.setRowCount(table.rowCount()-1)
+            table.setRowCount(table.rowCount() - 1)
 
     def _read_tbl_values(self, table, clear_nulls=False):
 
@@ -2298,7 +2280,6 @@ class DrNonVisual:
         self.raster_import_dlg.btn_ok.clicked.connect(partial(self._import_rasters_accept, self.raster_import_dlg))
         self.raster_import_dlg.btn_push_raster_input_folder.clicked.connect(self._open_raster_input_folder)
         self.raster_import_dlg.cmb_time_system.currentIndexChanged.connect(self._on_time_system_changed)
-
 
         # Open dialog
         tools_dr.open_dialog(self.raster_import_dlg, dlg_name='nonvisual_raster_import')
@@ -2410,7 +2391,7 @@ class DrNonVisual:
 
             time_str = QTime(0, 0, 0).addSecs(current_seconds).toString('HH:mm:ss')
 
-            self._set_progress_text(f"Imported raster {raster} with time {time_str}", tools_dr.lerp_progress(int(index/len(filtered_files)*100), 0, 90), True)
+            self._set_progress_text(f"Imported raster {raster} with time {time_str}", tools_dr.lerp_progress(int(index / len(filtered_files) * 100), 0, 90), True)
 
         global_vars.gpkg_dao_data.commit()
         self._set_progress_text("Rasters imported successfully", 100, True)

@@ -28,6 +28,7 @@ from ..threads.project_gpkg_schema_create import DrGpkgCreateSchemaTask
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
 
+
 class DrGpkgBase:
     """Base class for geopackage operations"""
 
@@ -349,7 +350,6 @@ class DrAdminButton(DrGpkgBase):
         # Set signals
         self._set_signals_create_project()
 
-
     def load_base(self, dict_folders):
         """"""
 
@@ -595,15 +595,17 @@ class DrAdminButton(DrGpkgBase):
     def _select_path(self):
         """ Select file path"""
 
-        path = tools_qt.get_text(self.dlg_readsql, 'data_file')
+        path = tools_qt.get_text(self.dlg_readsql, 'data_path')
         if path is None or path == '':
             path = self.plugin_dir
 
         if not os.path.exists(path):
-            folder_path = os.path.dirname(__file__)
+            path = os.path.dirname(__file__)
 
         message = tools_qt.tr("Select GPKG path")
-        file_path = QFileDialog.getExistingDirectory(None, message)
+        file_path = QFileDialog.getExistingDirectory(None, message, path)
+        if file_path is None or file_path == '':
+            return
         self.dlg_readsql.data_path.setText(file_path)
 
     def _select_file_gpkg(self):

@@ -26,7 +26,7 @@ from typing import Optional, Iterable
 from pathlib import Path
 from ... import global_vars
 
-try:
+try:  # noqa: C901
     import platform
     if platform.system() == "Windows":
         from packages.gmsh import gmsh
@@ -255,7 +255,6 @@ try:
 
         return layer
 
-
     # 2D algorithms: https://gmsh.info/doc/texinfo/gmsh.html#Mesh-options
     ALGORITHMS = {
         "MeshAdapt": 1,
@@ -436,7 +435,7 @@ try:
             # List of triangles in the polygon
             tri = element_tags[np.where(element_types == _TRIANGLE)[0][0]]
             for field in extra_fields:
-                extra_data[field][start : start + len(tri)] = feature[field]
+                extra_data[field][start: start + len(tri)] = feature[field]
             start += len(tri)
 
         if feedback is not None:

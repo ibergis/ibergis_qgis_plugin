@@ -80,7 +80,7 @@ def getconfig(p_input: dict) -> dict:
 
                         # Execute on config gpkg if not configured
                         if not result and not executed:
-                            result = global_vars.gpkg_dao_data.get_row(v_querystring) ## TODO: change to data gpkg
+                            result = global_vars.gpkg_dao_data.get_row(v_querystring)  # TODO: change to data gpkg
                         if result:
                             cmb_ids = result[0]
                             cmb_names = result[1]
@@ -157,7 +157,6 @@ def getselectors(p_input: dict) -> dict:
     v_message: str
     v_fields_aux: {}
     v_fields: list
-    v_raw_values: list
 
     try:
 
@@ -179,7 +178,6 @@ def getselectors(p_input: dict) -> dict:
             label = tab_json["label"]
             orderBy = tab_json["orderBy"]
             manageAll = tab_json["manageAll"]
-            query_filter = tab_json["query_filter"]
             typeaheadFilter = tab_json.get("typeaheadFilter")
             typeaheadForced = tab_json["typeaheadForced"]
 
@@ -363,7 +361,6 @@ def getinfofromid(p_input: dict) -> dict:
     v_sql: str
     v_raw_widgets: list = []
     v_widgets: list = []
-    v_raw_values: list = []
     v_addparam: Union[str, dict]
 
     try:
@@ -373,7 +370,6 @@ def getinfofromid(p_input: dict) -> dict:
 
         v_islayer = p_input['feature'].get('isLayer')
         v_tablename = p_input['feature'].get('tableName')
-
 
         if v_islayer:
             column_names = ['columnname', 'label', 'descript', 'datatype', 'widgettype', 'layoutname', 'layoutorder', 'vdefault',

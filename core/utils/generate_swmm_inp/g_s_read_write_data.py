@@ -94,7 +94,7 @@ def load_layer_to_df(
     vlayer,
     select_cols=[],
     with_id=False,
-    feedback = QgsProcessingFeedback
+    feedback=QgsProcessingFeedback
 ):
     """
     reads layer attributes and geometries
@@ -104,7 +104,7 @@ def load_layer_to_df(
     :param QgsProcessingFeedback feedback
     :return: pd.DataFrame
     """
-    feedback.setProgressText('    layer: '+vlayer.name())
+    feedback.setProgressText('    layer: ' + vlayer.name())
     cols = [f.name() for f in vlayer.fields()]
     if len(select_cols) > 0:
         if all([x in cols for x in select_cols]):
@@ -139,23 +139,23 @@ def load_layer_to_df(
     duplicat_names_list = list(set(duplicat_names_list))
     if missing_names_list or duplicat_names_list or missing_geoms_list:
         exception_text = (
-            'Error in layer '+ vlayer.name()+':\n'
-            +(
+            'Error in layer ' + vlayer.name() + ':\n'
+            + (
                 (
                     '  missing attribute \"Name\" (primary key in SWMM) for feature(s) with id = '
-                    +', '.join(missing_names_list)
-                    +'\n'
+                    + ', '.join(missing_names_list)
+                    + '\n'
                 ) if missing_names_list else ''
-            )+(
+            ) + (
                 (
                     '  duplicat attribute \"Name\" (primary key in SWMM): '
-                    +', '.join(duplicat_names_list)
-                    +'\n'
+                    + ', '.join(duplicat_names_list)
+                    + '\n'
                 ) if duplicat_names_list else ''
-           )+(
+           ) + (
                 (
                     '  missing geometries: '
-                    +', '.join(missing_geoms_list)
+                    + ', '.join(missing_geoms_list)
                 ) if missing_geoms_list else ''
             )
         )
@@ -164,10 +164,10 @@ def load_layer_to_df(
     # data generator
     if with_id is True:
         datagen = ([f[col] for col in cols] + [f.geometry()] + [f.id()] for f in vlayer.getFeatures())
-        df = pd.DataFrame.from_records(data=datagen, columns=cols+['geometry', 'id'])
+        df = pd.DataFrame.from_records(data=datagen, columns=cols + ['geometry', 'id'])
     else:
-        datagen = ([f[col] for col in cols]+[f.geometry()] for f in vlayer.getFeatures())
-        df = pd.DataFrame.from_records(data=datagen, columns=cols+['geometry'])
+        datagen = ([f[col] for col in cols] + [f.geometry()] for f in vlayer.getFeatures())
+        df = pd.DataFrame.from_records(data=datagen, columns=cols + ['geometry'])
     return df
 
 
@@ -175,7 +175,7 @@ def read_data_direct(
     export_data,
     select_cols=[],
     with_id=False,
-    feedback = QgsProcessingFeedback
+    feedback=QgsProcessingFeedback
 ):
     """
     reads layers from swmm model (main read function)
@@ -216,7 +216,7 @@ def read_data_from_table_direct(tab_file, sheet=0, feedback=QgsProcessingFeedbac
     :param str file
     :param str/int sheet
     """
-    feedback.setProgressText('    table: '+sheet)
+    feedback.setProgressText('    table: ' + sheet)
     table_layers = QgsVectorLayer(tab_file, 'NoGeometry', 'ogr')
     table_provider = table_layers.dataProvider()
     sublayers = table_provider.subLayers()
@@ -236,7 +236,7 @@ def read_data_from_table_direct(tab_file, sheet=0, feedback=QgsProcessingFeedbac
         else:
             s_n = None
     if s_n is not None:
-        tab_layer_to_load = tab_file+'|layername='+str(s_n)
+        tab_layer_to_load = tab_file + '|layername=' + str(s_n)
         vlayer = QgsVectorLayer(tab_layer_to_load, 'NoGeometry', 'ogr')
         cols = [f.name() for f in vlayer.fields()]
         datagen = ([f[col] for col in cols] for f in vlayer.getFeatures())
@@ -247,7 +247,7 @@ def read_data_from_table_direct(tab_file, sheet=0, feedback=QgsProcessingFeedbac
             # for pandas prior to 2.1.0:
             data_df = data_df.applymap(replace_null_nan)
         if all([x.startswith('Field') for x in data_df.columns]):
-            rename_cols = {i:j for i, j in zip(cols, data_df.loc[0,:].tolist())}
+            rename_cols = {i: j for i, j in zip(cols, data_df.loc[0, :].tolist())}
             data_df = data_df.drop(index=0)
             data_df.rename(columns=rename_cols, inplace=True)
         data_df.dropna(axis=0, how='all', inplace=True)  # delete empty rows
@@ -327,7 +327,7 @@ def transform_crs_function(
             )
         )
         fid = ft.id()
-        vector_layer.changeGeometry(fid,geom)
+        vector_layer.changeGeometry(fid, geom)
     vector_layer.commitChanges()
     vector_layer.setCrs(transform_crs)
 
@@ -359,7 +359,7 @@ def create_layer_from_df(
 
     # create layer with geometry type 
     if section_name in def_sections_geoms_dict.keys():
-        feedback.setProgressText('Writing layer for section \"'+section_name+'\"')
+        feedback.setProgressText('Writing layer for section \"' + section_name + '\"')
         geom_type = def_sections_geoms_dict[section_name]
         if add_z_bool:
             if section_name in [
@@ -369,8 +369,8 @@ def create_layer_from_df(
                 'STORAGE',
                 'CONDUITS'
             ]:
-                geom_type = geom_type+'Z'
-        geom_type = geom_type+'?crs='+crs_result
+                geom_type = geom_type + 'Z'
+        geom_type = geom_type + '?crs=' + crs_result
     else:
         geom_type = 'NoGeometry'  # for simple tables
     vector_layer = QgsVectorLayer(geom_type, layer_name, 'memory')
@@ -416,8 +416,8 @@ def create_layer_from_df(
     if not create_empty:
         data_df_column_order = list(layer_fields.keys())
         if geom_type != 'NoGeometry':
-            data_df_column_order = data_df_column_order+['geometry']
-            if any ([g == NULL for g in data_df['geometry']]):
+            data_df_column_order = data_df_column_order + ['geometry']
+            if any([g == NULL for g in data_df['geometry']]):
                 no_geom_features = list(data_df.loc[data_df['geometry'] == NULL, 'Name'])
                 feedback.pushWarning(
                     'Warning: in section \"'
@@ -451,8 +451,8 @@ def create_layer_from_df(
                 'CONVERT_CURVED_GEOMETRIES': False,
                 'OUTPUT': 'TEMPORARY_OUTPUT'
             },
-            feedback = feedback,
-            context = context
+            feedback=feedback,
+            context=context
         )
         vector_layer2 = reprojected['OUTPUT']
         vector_layer2.updateExtents()
@@ -476,10 +476,10 @@ def save_layer_to_file(
     # create layer
     fname = os.path.join(
         folder_save, 
-        layer_name+ '.' +geodata_driver_extension
+        layer_name + '.' + geodata_driver_extension
     )
     if os.path.isfile(fname):
-        raise QgsProcessingException('File '+fname
+        raise QgsProcessingException('File ' + fname
         + ' already exists. Please choose another folder.')
     try:
         options = QgsVectorFileWriter.SaveVectorOptions()
@@ -536,19 +536,19 @@ def layerlist_to_excel(
     """
     save_name = def_tables_dict[section_name]['filename']
     if result_prefix != '':
-        save_name = result_prefix+'_'+save_name
+        save_name = result_prefix + '_' + save_name
     if desired_table_format is not None:
         ext = desired_table_format
     else: 
-        ext = '.xlsx' # default setting
+        ext = '.xlsx'  # default setting
     save_name_ext = save_name + ext
     fname = os.path.join(folder_save, save_name_ext)
     feedback.setProgressText(
         'Writing file '
         + str(fname)
-        +' for section \"'
-        +section_name
-        +'\"'
+        + ' for section \"'
+        + section_name
+        + '\"'
     )
     for vector_layer in layer_list:
         if vector_layer.featureCount() == 0:
@@ -557,13 +557,13 @@ def layerlist_to_excel(
             vector_layer.addFeature(new_ft)
             vector_layer.commitChanges()
     if os.path.isfile(fname):
-        raise QgsProcessingException('File '+fname
+        raise QgsProcessingException('File ' + fname
         + ' already exists. Please choose another folder.')
     else:
         processing.run(
             "native:exporttospreadsheet", 
             {
-                'LAYERS' : layer_list,
+                'LAYERS': layer_list,
                 'USE_ALIAS': False,
                 'FORMATTED_VALUES': False,
                 'OUTPUT': fname,
