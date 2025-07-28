@@ -403,7 +403,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         if query['create_layer']:
             # Create temporal layer
-            temporal_layer = QgsVectorLayer(f'{query['geometry_type']}', f'{query['query_type'].replace(" ", "_").lower()}_{query['table_name']}', 'memory')
+            temporal_layer = QgsVectorLayer(f'{query["geometry_type"]}', f'{query["query_type"].replace(" ", "_").lower()}_{query["table_name"]}', 'memory')
             temporal_layer.setCrs(QgsProject.instance().crs())
             temporal_layer.dataProvider().addAttributes([QgsField('Code', QVariant.String), QgsField('Exception', QVariant.String)])
             temporal_layer.updateFields()

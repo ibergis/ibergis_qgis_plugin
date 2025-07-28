@@ -639,9 +639,9 @@ class DrExecuteModel(DrTask):
         grouped_splited_polygons: dict[str, List[QgsFeature]] = {}
         for feature in splited_polygons:
             if feature['code'] in grouped_splited_polygons.keys():
-                grouped_splited_polygons[f'{feature['code']}'].append(feature)
+                grouped_splited_polygons[f'{feature["code"]}'].append(feature)
             else:
-                grouped_splited_polygons[f'{feature['code']}'] = [feature]
+                grouped_splited_polygons[f'{feature["code"]}'] = [feature]
 
         # Get valid polygons and get its centroids
         for pinlet_code in grouped_splited_polygons.keys():
