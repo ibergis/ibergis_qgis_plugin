@@ -91,508 +91,48 @@ class DrCreateMeshTask(DrTask):
             self.feedback.setProgressText("Starting process!")
             self.temp_layer = None
 
-            if not self.temporal_mesh:
-                # Remove previous temp layers
-                project = QgsProject.instance()
-                layer_ids = (x.id() for x in project.mapLayersByName("Mesh Temp Layer"))
-                project.removeMapLayers(layer_ids)
-                group_name = "MESH INPUTS ERRORS & WARNINGS"
-                temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
-                if temp_group is not None:
-                    project.removeMapLayers(temp_group.findLayerIds())
+            if not self._setup_project():
+                return False
 
             # Load input layers
             self.dao = global_vars.gpkg_dao_data.clone()
+            layers = self._prepare_input_layers()
 
-            layers: dict[str, Union[QgsVectorLayer, QgsRasterLayer]] = {}
+            if not self._validate_roughness_data(layers):
+                return False
 
-            layers = {
-                "ground": self.ground_layer,
-                "roof": self.roof_layer,
-                "inlet": self.inlet_layer,
-                # "bridge": self.bridge_layer,
-                # "mesh_anchor_points": self.point_anchor_layer
-            }
-
-            layers["dem"] = self.dem_layer
-
-            # Validate missing ground roughness values
-            if self.roughness_layer == "ground_layer":
-                rows = self.dao.get_rows(
-                    "SELECT fid FROM ground WHERE landuse IS NULL AND custom_roughness IS NULL"
-                )
-                if rows is not None and len(rows) > 0:
-                    self.message = "Roughness information missing in following objects in Ground layer: "
-                    self.message += ", ".join(str(row["fid"]) for row in rows)
-                    self.message += ". Review your data and try again."
-                    return False
-
-            # Validate that ground layer bbox is inside landuse bbox
-            if isinstance(self.roughness_layer, QgsRasterLayer):
-                lu_extent = self.roughness_layer.extent()
-                gr_extent = layers["ground"].extent()
-                if not lu_extent.contains(gr_extent):
-                    self.message = "The selected landuse layer does not contains the area of Ground layer."
-                    return False
-
-            # Validate landuses roughness values
-            if self.roughness_layer is not None:
-                print("Validating landuses... ", end="")
-                start = time.time()
-
-                rows = self.dao.get_rows("SELECT id, idval, manning FROM cat_landuses")
-                landuses_df = pd.DataFrame(
-                    rows, columns=["id", "idval", "manning"]
-                ).set_index("id")
-                missing_roughness = []
-
-                if self.roughness_layer == "ground_layer":
-                    rows = self.dao.get_rows(
-                        "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
-                    )
-                    used_landuses = [] if rows is None else [row[0] for row in rows]
-
-                    missing_roughness = [
-                        landuse
-                        for landuse in used_landuses
-                        if landuse not in landuses_df["idval"].values
-                        or landuses_df[landuses_df["idval"] == landuse]["manning"]
-                        .isna()
-                        .any()
-                    ]
-                else:
-                    rows = self.roughness_layer.height()
-                    cols = self.roughness_layer.width()
-                    provider = self.roughness_layer.dataProvider()
-                    bl = provider.block(1, provider.extent(), cols, rows)
-                    unique_values = set(
-                        [bl.value(r, c) for r in range(rows) for c in range(cols)]
-                    )
-                    used_landuses = {int(x) for x in unique_values if x != 255}
-                    missing_roughness = [
-                        str(landuse)
-                        for landuse in used_landuses
-                        if landuse not in landuses_df.index
-                        or np.isnan(landuses_df.loc[landuse, "manning"])
-                    ]
-
-                print(f"Done! {time.time() - start}s")
-
-                if missing_roughness:
-                    self.message = "The following landuses are used, but don't have a value for roughness: "
-                    self.message += f"{', '.join(missing_roughness)}. "
-                    self.message += (
-                        "Please, verify the 'cat_landuses' table and try again."
-                    )
-                    return False
-
-            # Validate missing ground losses values
-            if self.losses_layer == "ground_layer":
-                rows = self.dao.get_rows(
-                    "SELECT fid FROM ground WHERE scs_cn IS NULL"
-                )
-                if len(rows):
-                    self.message = "Losses information ('scs_cn' column) missing in following objects in Ground layer: "
-                    self.message += ", ".join(str(row["fid"]) for row in rows)
-                    self.message += ". Review your data and try again."
-                    return False
-
-            # Validate that ground layer bbox is inside landuse bbox
-            if isinstance(self.losses_layer, QgsRasterLayer):
-                ll_extent = self.losses_layer.extent()
-                gr_extent = layers["ground"].extent()
-                if not ll_extent.contains(gr_extent):
-                    self.message = "The selected losses layer does not contains the area of Ground layer."
-                    return False
+            if not self._validate_losses_data(layers):
+                return False
 
             self.feedback.setProgress(5)
 
             # Validate inputs
-            if self.execute_validations:
-                self.feedback.setProgressText("Validating inputs...")
-                validation_layers = validate_input_layers(
-                    layers, self.execute_validations, self.feedback
-                )
-                if self.feedback.isCanceled() or validation_layers is None:
-                    self.message = "Task canceled."
-                    return False
+            if not self._validate_inputs(layers):
+                return False
 
-                self.error_layers, self.warning_layers = validation_layers
-
-                if self.error_layers:
-                    self.message = "There are errors in input data. Please, check the error layers."
-                    self.feedback.setProgress(100)
-                    return False
-
-            point_anchors = None
-            line_anchors = None
-            bridge_layer = self.bridge_layer
-            complete_line_anchors = None
-
-            if not self.temporal_mesh:
-                # Create anchor GeoDataFrames
-                print("Creating anchor GeoDataFrames... ", end="")
-                start = time.time()
-
-                point_anchor_layer = self.point_anchor_layer
-                line_anchor_layer = self.line_anchor_layer
-
-                if self.only_selected_features:
-                    point_anchor_layer = processing.run(
-                        "native:intersection",
-                        {
-                            'INPUT': self.point_anchor_layer,
-                            'OVERLAY': QgsProcessingFeatureSourceDefinition(
-                                layers["ground"].source(),
-                                selectedFeaturesOnly=True,
-                            ),
-                            'OUTPUT': 'TEMPORARY_OUTPUT',
-                        }
-                    )['OUTPUT']
-
-                    line_anchor_layer = processing.run(
-                        "native:intersection",
-                        {
-                            'INPUT': self.line_anchor_layer,
-                            'OVERLAY': QgsProcessingFeatureSourceDefinition(
-                                layers["ground"].source(),
-                                selectedFeaturesOnly=True,
-                            ),
-                            'OUTPUT': 'TEMPORARY_OUTPUT',
-                        }
-                    )['OUTPUT']
-
-                    bridge_layer = processing.run(
-                        "native:intersection",
-                        {
-                            'INPUT': self.bridge_layer,
-                            'OVERLAY': QgsProcessingFeatureSourceDefinition(
-                                layers["ground"].source(),
-                                selectedFeaturesOnly=True,
-                            ),
-                            'OUTPUT': 'TEMPORARY_OUTPUT',
-                        }
-                    )['OUTPUT']
-
-                point_anchors = layer_to_gdf(
-                    point_anchor_layer,
-                    ["cellsize", "z_value"],
-                )
-
-                line_anchors = layer_to_gdf(
-                    line_anchor_layer,
-                    ["cellsize"],
-                )
-
-                complete_line_anchors = self._create_line_anchors_gdf(line_anchors, bridge_layer)
-
-                print(f"Done! {time.time() - start}s")
+            point_anchors, line_anchors, bridge_layer, complete_line_anchors = self._prepare_anchors(layers)
 
             # Create mesh
-            self.feedback.setProgressText("Creating ground mesh...")
-            self.feedback.setProgress(15)
-            gt_feedback = QgsFeedback()
-
-            def gt_progress(x):
-                return self.feedback.setProgress(x / 100 * (30 - 15) + 15)
-
-            gt_feedback.progressChanged.connect(gt_progress)
-
-            ground_triangulation_result = triangulate_custom(
-                layers["ground"],
-                ["custom_roughness", "landuse", "scs_cn"],
-                point_anchors=point_anchors,
-                line_anchors=complete_line_anchors,
-                do_clean_up=self.clean_geometries,
-                only_selected_features=self.only_selected_features,
-                clean_tolerance=self.clean_tolerance,
-                enable_transition=self.enable_transition,
-                transition_slope=self.transition_slope,
-                transition_start=self.transition_start,
-                transition_extent=self.transition_extent,
-                feedback=gt_feedback,
-            )
-            if self.feedback.isCanceled() or ground_triangulation_result is None:
-                self.message = "Task canceled."
+            ground_triangulation_result = self._create_ground_mesh(layers, complete_line_anchors)
+            if ground_triangulation_result is None:
                 return False
 
             triangles, vertices, extra_data = ground_triangulation_result
+            ground_triangles_df, ground_vertices_df = self._process_ground_data(triangles, vertices, extra_data, layers)
 
-            # Triangles
-            ground_triangles_df = pd.DataFrame(triangles, columns=["v1", "v2", "v3"], dtype=np.uint32)
-            ground_triangles_df["v4"] = ground_triangles_df["v1"]
-            ground_triangles_df["category"] = "ground"
-            ground_triangles_df["landuse"] = extra_data["landuse"]
-            ground_triangles_df["custom_roughness"] = extra_data["custom_roughness"]
-            ground_triangles_df["scs_cn"] = extra_data["scs_cn"]
+            roof_vertices_df, roof_triangles_df = self._create_roof_mesh(layers, ground_vertices_df)
 
-            # Get ground roughness
-            roughness_from_raster = False
-            if self.roughness_layer is None:  # Fill with zeros
-                ground_triangles_df["roughness"] = 0
-            elif self.roughness_layer == "ground_layer":  # From ground layer
-                print("Getting roughness from ground layer... ", end="")
-                start = time.time()
+            vertices_df, triangles_df = self._combine_mesh_data(ground_vertices_df, ground_triangles_df, roof_vertices_df, roof_triangles_df)
 
-                def get_roughness(row):
-                    custom_roughness = row["custom_roughness"]
-                    if custom_roughness is None or np.isnan(custom_roughness):
-                        return landuses_df.loc[landuses_df['idval'] == row["landuse"], 'manning'].values[0]
-                    else:
-                        return row["custom_roughness"]
+            roofs_df = self._create_roofs_dataframe()
 
-                # TODO: Try to not use apply
-                # ground_triangles_df["roughness"] = ground_triangles_df["custom_roughness"].fillna()
-                ground_triangles_df["roughness"] = ground_triangles_df.apply(get_roughness, axis=1)
-                print(f"Done! {time.time() - start}s")
-            else:  # From raster layer
-                ground_triangles_df["roughness"] = np.nan
-                roughness_from_raster = True
+            bridges_df = self._create_bridges_dataframe(triangles_df, vertices_df, bridge_layer)
 
-            ground_triangles_df = ground_triangles_df.drop(columns=["landuse", "custom_roughness"])
-
-            # Get ground losses
-            losses_from_raster = False
-            losses_data = {}
-            if self.losses_layer is None:
-                losses_data = {"method": 0}
-            else:
-                rows = self.dao.get_rows("""
-                    SELECT parameter, value 
-                    FROM config_param_user 
-                    WHERE parameter IN [
-                        'options_losses_method',
-                        'options_losses_scs_cn_multiplier',
-                        'options_losses_scs_ia_coefficient',
-                        'options_losses_starttime'
-                    ]
-                """)
-                params = {}
-                if rows is not None:
-                    params = {row["parameter"]: row["value"] for row in rows}
-
-                cn_mult = params.get("options_losses_scs_cn_multiplier") or -9999
-                ia_coef = params.get("options_losses_scs_ia_coefficient") or -9999
-                new_var = params.get("options_losses_starttime") or -9999
-                losses_data = {
-                    "method": 2,
-                    "cn_multiplier": cn_mult,
-                    "ia_coefficient": ia_coef,
-                    "start_time": new_var,
-                }
-
-                if self.losses_layer == "ground_layer":  # From ground layer
-                    pass  # already calculated
-                else:  # From raster layer
-                    losses_from_raster = True
-
-            # Vertices
-            ground_vertices_df = pd.DataFrame(vertices, columns=["x", "y"])
-            ground_vertices_df["category"] = "ground"
-
-            # Get z-values from DEM
-            if self.dem_layer is None:
-                ground_vertices_df["z"] = 0
-            else:
-                print("Getting z-values from DEM... ", end="")
-                start = time.time()
-
-                ground_crs = layers["ground"].crs()
-                dem_crs = self.dem_layer.crs()
-                qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
-
-                def get_z(x, y):
-                    point = qct.transform(QgsPointXY(x, y))
-                    val, res = self.dem_layer.dataProvider().sample(point, 1)
-                    return val if res else 0
-
-                ground_vertices_df["z"] = ground_vertices_df.apply(lambda row: get_z(row["x"], row["y"]), axis=1)
-
-                print(f"Done! {time.time() - start}s")
-
-            if not self.temporal_mesh:
-                print("Setting z-values from anchors... ", end="")
-                start = time.time()
-
-                # Get z-values from point anchors
-                for _, anchor in point_anchors.iterrows():
-                    x, y = anchor.geometry.x, anchor.geometry.y
-                    mask = (ground_vertices_df["x"] == x) & (ground_vertices_df["y"] == y)
-                    ground_vertices_df.loc[mask, "z"] = anchor["z_value"]
-
-                # Get z-values from line anchors
-                for _, line in line_anchors.iterrows():
-                    line_geom = line.geometry.buffer(0.01)  # Buffer to avoid precision issues with the intersect
-                    ground_vertices_geom = gpd.GeoSeries(
-                        [shapely.Point(xy) for xy in zip(ground_vertices_df["x"], ground_vertices_df["y"])],
-                        crs=line_anchors.crs
-                    )
-                    mask = ground_vertices_geom.intersects(line_geom)
-                    points = ground_vertices_df[mask]  # Get points inside the line anchor
-                    points = gpd.GeoDataFrame(points, geometry=ground_vertices_geom[mask], crs=line_anchors.crs)
-
-                    # Ignoring the z value, get the distance along the line, then interpolate the z value
-                    line_2d = shapely.force_2d(line.geometry)
-
-                    # TODO: If the line vertex z value is 0, set its value to the z value of the point directly below it.
-                    # this way we can have lines with values set and unset at the same time and it will work properly
-                    def interpolate_z(row):
-                        p = row["geometry"]
-                        dist = line_2d.project(p)
-                        anchor_z = line.geometry.interpolate(dist).z
-                        if anchor_z != 0:
-                            return anchor_z
-                        else:
-                            return row["z"]
-
-                    z_values = points.apply(interpolate_z, axis=1)
-
-                    ground_vertices_df.loc[points.index, "z"] = z_values
-
-                print(f"Done! {time.time() - start}s")
-
-            print("Triangulating Roofs... ", end="")
-            start = time.time()
-            self.feedback.setProgressText("Creating roof mesh...")
-            self.feedback.setProgress(30)
-            roof_triangulation_result = core.triangulate_roof(layers["roof"], self.only_selected_features, self.feedback)
-
-            if self.feedback.isCanceled() or roof_triangulation_result is None:
-                self.message = "Task canceled."
+            if not self._finalize_mesh(triangles_df, vertices_df, roofs_df, bridges_df):
                 return False
 
-            roof_vertices_df, roof_triangles_df = roof_triangulation_result
-
-            if not roof_vertices_df.empty and not roof_triangles_df.empty:
-                roof_triangles_df["v1"] += len(ground_vertices_df)
-                roof_triangles_df["v2"] += len(ground_vertices_df)
-                roof_triangles_df["v3"] += len(ground_vertices_df)
-                roof_triangles_df["v4"] += len(ground_vertices_df)
-
-            # To avoid changing the type of the column when concatenating,
-            # if not, the nan's change the datatype of the column to object
-            ground_triangles_df["roof_id"] = -1
-
-            print(f"Done! {time.time() - start}s")
-
-            vertices_df = pd.concat([ground_vertices_df, roof_vertices_df], ignore_index=True)
-            triangles_df = pd.concat([ground_triangles_df, roof_triangles_df], ignore_index=True)
-
-            vertices_df.index += 1
-            triangles_df.index += 1
-            triangles_df["v1"] += 1
-            triangles_df["v2"] += 1
-            triangles_df["v3"] += 1
-            triangles_df["v4"] += 1
-
-            triangles_df["v2"], triangles_df["v3"] = triangles_df["v3"], triangles_df["v2"]
-
-            # Get roofs
-            print("Creating roofs DataFrame... ", end="")
-            start = time.time()
-
-            self.feedback.setProgressText("Getting roof data...")
-            rows = self.dao.get_rows("""
-                SELECT 
-                    code, fid, slope, width, roughness, isconnected,
-                    outlet_code, outlet_vol, street_vol, infiltr_vol
-                FROM roof
-            """)
-
-            roofs_df = pd.DataFrame(rows, columns=[
-                "code", "fid", "slope", "width", "roughness", "isconnected",
-                "outlet_code", "outlet_vol", "street_vol", "infiltr_vol"
-            ])
-            if not roofs_df.empty:
-                roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
-                roofs_df.index = roofs_df["fid"]  # type: ignore
-
-            print(f"Done! {time.time() - start}s")
-
-            bridges_df: pd.DataFrame = pd.DataFrame()
-            if bridge_layer is not None:
-                print("Creating bridges DataFrame... ", end="")
-                start = time.time()
-                bridges_df = self._create_bridges_df(triangles_df, vertices_df, bridge_layer)
-                print(f"Done! {time.time() - start}s")
-
-            self.mesh = mesh_parser.Mesh(
-                polygons=triangles_df,
-                vertices=vertices_df,
-                roofs=roofs_df,
-                losses=losses_data,
-                boundary_conditions={},
-                bridges=bridges_df
-            )
-
-            # Create temp layer
-            self.feedback.setProgressText("Creating temp layer for visualization...")
-            start = time.time()
-            print("Creating temp layer... ", end="")
-            temp_layer = create_temp_mesh_layer(self.mesh, layer_name=self.temp_layer_name)
-            print(f"Done! {time.time() - start}s")
-
-            if roughness_from_raster:
-                self.feedback.setProgressText("Getting ground roughness from raster...")
-                print("Getting ground roughness from raster... ", end="")
-                start = time.time()
-
-                fids, landuses = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
-                roughness = landuses_df.loc[landuses, "manning"].values
-                triangles_df.loc[fids, "roughness"] = roughness
-
-                print(f"Done! {time.time() - start}s")
-
-            if losses_from_raster:
-                self.feedback.setProgressText("Getting ground losses from raster...")
-                print("Getting ground losses from raster... ", end="")
-                start = time.time()
-
-                fids, scs_cn = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
-                triangles_df.loc[fids, "scs_cn"] = scs_cn
-
-                print(f"Done! {time.time() - start}s")
-
-            if losses_from_raster or roughness_from_raster:
-                self.feedback.setProgressText("Refreshing temp layer...")
-                start = time.time()
-                print("Recreating temp layer... ", end="")
-                temp_layer = create_temp_mesh_layer(self.mesh, layer_name=self.temp_layer_name)
-                print(f"Done! {time.time() - start}s")
-
-            if not self.temporal_mesh:
-                # Delete old mesh
-                self.feedback.setProgressText("Saving mesh to GPKG file...")
-                self.dao.execute_sql(f"""
-                    DELETE FROM cat_file
-                    WHERE name = '{self.mesh_name}'
-                """)
-
-                print("Dumping mesh data... ", end="")
-                start = time.time()
-                mesh_str, roof_str, losses_str, bridges_str = mesh_parser.dumps(self.mesh)
-                print(f"Done! {time.time() - start}s")
-
-                self.dao.execute_sql(f"""
-                    INSERT INTO cat_file (name, iber2d, roof, losses, bridge)
-                    VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}')
-                """)
-
-            self.feedback.setProgress(80)
-
-            self.temp_layer = temp_layer
-
-            if self.inlet_layer is not None:
-                # Check for triangles with more than one inlet
-                inlet_warning = validate_inlets_in_triangles(temp_layer, layers["inlet"])
-                if inlet_warning.hasFeatures():
-                    group_name = "MESH INPUTS ERRORS & WARNINGS"
-                    tools_qt.add_layer_to_toc(inlet_warning, group_name, create_groups=True)
-                    project.layerTreeRoot().removeChildrenGroupWithoutLayers()
-                    iface.layerTreeView().model().sourceModel().modelReset.emit()
-
-                # Refresh TOC
-                iface.layerTreeView().model().sourceModel().modelReset.emit()
+            if not self._validate_inlets(layers):
+                return False
 
             self.message = "Process finished!!!"
             if not self.temporal_mesh:
@@ -605,6 +145,606 @@ class DrCreateMeshTask(DrTask):
             )
             self.temp_layer = None
             return False
+
+    def _setup_project(self) -> bool:
+        """Setup project by removing previous temp layers if not temporal mesh."""
+        if not self.temporal_mesh:
+            # Remove previous temp layers
+            project = QgsProject.instance()
+            layer_ids = (x.id() for x in project.mapLayersByName("Mesh Temp Layer"))
+            project.removeMapLayers(layer_ids)
+            group_name = "MESH INPUTS ERRORS & WARNINGS"
+            temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
+            if temp_group is not None:
+                project.removeMapLayers(temp_group.findLayerIds())
+        return True
+
+    def _prepare_input_layers(self) -> dict:
+        """Prepare input layers dictionary."""
+        layers = {
+            "ground": self.ground_layer,
+            "roof": self.roof_layer,
+            "inlet": self.inlet_layer,
+        }
+        layers["dem"] = self.dem_layer
+        return layers
+
+    def _validate_roughness_data(self, layers: dict) -> bool:
+        """Validate roughness data based on roughness layer type."""
+        # Validate missing ground roughness values
+        if self.roughness_layer == "ground_layer":
+            rows = self.dao.get_rows(
+                "SELECT fid FROM ground WHERE landuse IS NULL AND custom_roughness IS NULL"
+            )
+            if rows is not None and len(rows) > 0:
+                self.message = "Roughness information missing in following objects in Ground layer: "
+                self.message += ", ".join(str(row["fid"]) for row in rows)
+                self.message += ". Review your data and try again."
+                return False
+
+        # Validate that ground layer bbox is inside landuse bbox
+        if isinstance(self.roughness_layer, QgsRasterLayer):
+            lu_extent = self.roughness_layer.extent()
+            gr_extent = layers["ground"].extent()
+            if not lu_extent.contains(gr_extent):
+                self.message = "The selected landuse layer does not contains the area of Ground layer."
+                return False
+
+        # Validate landuses roughness values
+        if self.roughness_layer is not None:
+            print("Validating landuses... ", end="")
+            start = time.time()
+
+            rows = self.dao.get_rows("SELECT id, idval, manning FROM cat_landuses")
+            landuses_df = pd.DataFrame(
+                rows, columns=["id", "idval", "manning"]
+            ).set_index("id")
+            missing_roughness = []
+
+            if self.roughness_layer == "ground_layer":
+                rows = self.dao.get_rows(
+                    "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
+                )
+                used_landuses = [] if rows is None else [row[0] for row in rows]
+
+                missing_roughness = [
+                    landuse
+                    for landuse in used_landuses
+                    if landuse not in landuses_df["idval"].values
+                    or landuses_df[landuses_df["idval"] == landuse]["manning"]
+                    .isna()
+                    .any()
+                ]
+            else:
+                rows = self.roughness_layer.height()
+                cols = self.roughness_layer.width()
+                provider = self.roughness_layer.dataProvider()
+                bl = provider.block(1, provider.extent(), cols, rows)
+                unique_values = set(
+                    [bl.value(r, c) for r in range(rows) for c in range(cols)]
+                )
+                used_landuses = {int(x) for x in unique_values if x != 255}
+                missing_roughness = [
+                    str(landuse)
+                    for landuse in used_landuses
+                    if landuse not in landuses_df.index
+                    or np.isnan(landuses_df.loc[landuse, "manning"])
+                ]
+
+            print(f"Done! {time.time() - start}s")
+
+            if missing_roughness:
+                self.message = "The following landuses are used, but don't have a value for roughness: "
+                self.message += f"{', '.join(missing_roughness)}. "
+                self.message += (
+                    "Please, verify the 'cat_landuses' table and try again."
+                )
+                return False
+        return True
+
+    def _validate_losses_data(self, layers: dict) -> bool:
+        """Validate losses data based on losses layer type."""
+        # Validate missing ground losses values
+        if self.losses_layer == "ground_layer":
+            rows = self.dao.get_rows(
+                "SELECT fid FROM ground WHERE scs_cn IS NULL"
+            )
+            if len(rows):
+                self.message = "Losses information ('scs_cn' column) missing in following objects in Ground layer: "
+                self.message += ", ".join(str(row["fid"]) for row in rows)
+                self.message += ". Review your data and try again."
+                return False
+
+        # Validate that ground layer bbox is inside landuse bbox
+        if isinstance(self.losses_layer, QgsRasterLayer):
+            ll_extent = self.losses_layer.extent()
+            gr_extent = layers["ground"].extent()
+            if not ll_extent.contains(gr_extent):
+                self.message = "The selected losses layer does not contains the area of Ground layer."
+                return False
+        return True
+
+    def _validate_inputs(self, layers: dict) -> bool:
+        """Validate input layers if validations are enabled."""
+        if self.execute_validations:
+            self.feedback.setProgressText("Validating inputs...")
+            validation_layers = validate_input_layers(
+                layers, self.execute_validations, self.feedback
+            )
+            if self.feedback.isCanceled() or validation_layers is None:
+                self.message = "Task canceled."
+                return False
+
+            self.error_layers, self.warning_layers = validation_layers
+
+            if self.error_layers:
+                self.message = "There are errors in input data. Please, check the error layers."
+                self.feedback.setProgress(100)
+                return False
+        return True
+
+    def _prepare_anchors(self, layers: dict) -> tuple:
+        """Prepare anchor data and return point_anchors, line_anchors, bridge_layer, complete_line_anchors."""
+        point_anchors = None
+        line_anchors = None
+        bridge_layer = self.bridge_layer
+        complete_line_anchors = None
+
+        if not self.temporal_mesh:
+            # Create anchor GeoDataFrames
+            print("Creating anchor GeoDataFrames... ", end="")
+            start = time.time()
+
+            point_anchor_layer = self.point_anchor_layer
+            line_anchor_layer = self.line_anchor_layer
+
+            if self.only_selected_features:
+                point_anchor_layer = processing.run(
+                    "native:intersection",
+                    {
+                        'INPUT': self.point_anchor_layer,
+                        'OVERLAY': QgsProcessingFeatureSourceDefinition(
+                            layers["ground"].source(),
+                            selectedFeaturesOnly=True,
+                        ),
+                        'OUTPUT': 'TEMPORARY_OUTPUT',
+                    }
+                )['OUTPUT']
+
+                line_anchor_layer = processing.run(
+                    "native:intersection",
+                    {
+                        'INPUT': self.line_anchor_layer,
+                        'OVERLAY': QgsProcessingFeatureSourceDefinition(
+                            layers["ground"].source(),
+                            selectedFeaturesOnly=True,
+                        ),
+                        'OUTPUT': 'TEMPORARY_OUTPUT',
+                    }
+                )['OUTPUT']
+
+                bridge_layer = processing.run(
+                    "native:intersection",
+                    {
+                        'INPUT': self.bridge_layer,
+                        'OVERLAY': QgsProcessingFeatureSourceDefinition(
+                            layers["ground"].source(),
+                            selectedFeaturesOnly=True,
+                        ),
+                        'OUTPUT': 'TEMPORARY_OUTPUT',
+                    }
+                )['OUTPUT']
+
+            point_anchors = layer_to_gdf(
+                point_anchor_layer,
+                ["cellsize", "z_value"],
+            )
+
+            line_anchors = layer_to_gdf(
+                line_anchor_layer,
+                ["cellsize"],
+            )
+
+            complete_line_anchors = self._create_line_anchors_gdf(line_anchors, bridge_layer)
+
+            print(f"Done! {time.time() - start}s")
+
+        return point_anchors, line_anchors, bridge_layer, complete_line_anchors
+
+    def _create_ground_mesh(self, layers: dict, complete_line_anchors) -> tuple:
+        """Create ground mesh triangulation."""
+        self.feedback.setProgressText("Creating ground mesh...")
+        self.feedback.setProgress(15)
+        gt_feedback = QgsFeedback()
+
+        def gt_progress(x):
+            return self.feedback.setProgress(x / 100 * (30 - 15) + 15)
+
+        gt_feedback.progressChanged.connect(gt_progress)
+
+        ground_triangulation_result = triangulate_custom(
+            layers["ground"],
+            ["custom_roughness", "landuse", "scs_cn"],
+            point_anchors=self._get_point_anchors() if not self.temporal_mesh else None,
+            line_anchors=complete_line_anchors,
+            do_clean_up=self.clean_geometries,
+            only_selected_features=self.only_selected_features,
+            clean_tolerance=self.clean_tolerance,
+            enable_transition=self.enable_transition,
+            transition_slope=self.transition_slope,
+            transition_start=self.transition_start,
+            transition_extent=self.transition_extent,
+            feedback=gt_feedback,
+        )
+        if self.feedback.isCanceled() or ground_triangulation_result is None:
+            self.message = "Task canceled."
+            return None
+
+        return ground_triangulation_result
+
+    def _get_point_anchors(self):
+        """Get point anchors for triangulation."""
+        if not self.temporal_mesh:
+            return layer_to_gdf(
+                self.point_anchor_layer,
+                ["cellsize", "z_value"],
+            )
+        return None
+
+    def _process_ground_data(self, triangles, vertices, extra_data, layers: dict) -> tuple:
+        """Process ground triangulation data into DataFrames."""
+        # Initialize raster flags
+        self.roughness_from_raster = False
+        self.losses_from_raster = False
+        
+        # Triangles
+        ground_triangles_df = pd.DataFrame(triangles, columns=["v1", "v2", "v3"], dtype=np.uint32)
+        ground_triangles_df["v4"] = ground_triangles_df["v1"]
+        ground_triangles_df["category"] = "ground"
+        ground_triangles_df["landuse"] = extra_data["landuse"]
+        ground_triangles_df["custom_roughness"] = extra_data["custom_roughness"]
+        ground_triangles_df["scs_cn"] = extra_data["scs_cn"]
+
+        # Get ground roughness
+        ground_triangles_df = self._process_ground_roughness(ground_triangles_df)
+
+        # Vertices
+        ground_vertices_df = pd.DataFrame(vertices, columns=["x", "y"])
+        ground_vertices_df["category"] = "ground"
+
+        # Get z-values from DEM
+        ground_vertices_df = self._process_dem_z_values(ground_vertices_df, layers)
+
+        # Set z-values from anchors
+        if not self.temporal_mesh:
+            ground_vertices_df = self._process_anchor_z_values(ground_vertices_df)
+
+        return ground_triangles_df, ground_vertices_df
+
+    def _process_ground_roughness(self, ground_triangles_df: pd.DataFrame) -> pd.DataFrame:
+        """Process ground roughness values."""
+        if self.roughness_layer is None:  # Fill with zeros
+            ground_triangles_df["roughness"] = 0
+        elif self.roughness_layer == "ground_layer":  # From ground layer
+            print("Getting roughness from ground layer... ", end="")
+            start = time.time()
+
+            rows = self.dao.get_rows("SELECT id, idval, manning FROM cat_landuses")
+            landuses_df = pd.DataFrame(
+                rows, columns=["id", "idval", "manning"]
+            ).set_index("id")
+
+            def get_roughness(row):
+                custom_roughness = row["custom_roughness"]
+                if custom_roughness is None or np.isnan(custom_roughness):
+                    return landuses_df.loc[landuses_df['idval'] == row["landuse"], 'manning'].values[0]
+                else:
+                    return row["custom_roughness"]
+
+            ground_triangles_df["roughness"] = ground_triangles_df.apply(get_roughness, axis=1)
+            print(f"Done! {time.time() - start}s")
+        else:  # From raster layer
+            ground_triangles_df["roughness"] = np.nan
+            self.roughness_from_raster = True
+
+        ground_triangles_df = ground_triangles_df.drop(columns=["landuse", "custom_roughness"])
+        return ground_triangles_df
+
+    def _process_ground_losses(self) -> dict:
+        """Process ground losses configuration."""
+        losses_data = {}
+        if self.losses_layer is None:
+            losses_data = {"method": 0}
+        else:
+            rows = self.dao.get_rows("""
+                SELECT parameter, value 
+                FROM config_param_user 
+                WHERE parameter IN [
+                    'options_losses_method',
+                    'options_losses_scs_cn_multiplier',
+                    'options_losses_scs_ia_coefficient',
+                    'options_losses_starttime'
+                ]
+            """)
+            params = {}
+            if rows is not None:
+                params = {row["parameter"]: row["value"] for row in rows}
+
+            cn_mult = params.get("options_losses_scs_cn_multiplier") or -9999
+            ia_coef = params.get("options_losses_scs_ia_coefficient") or -9999
+            new_var = params.get("options_losses_starttime") or -9999
+            losses_data = {
+                "method": 2,
+                "cn_multiplier": cn_mult,
+                "ia_coefficient": ia_coef,
+                "start_time": new_var,
+            }
+
+            if self.losses_layer == "ground_layer":  # From ground layer
+                pass  # already calculated
+            else:  # From raster layer
+                self.losses_from_raster = True
+
+        return losses_data
+
+    def _process_dem_z_values(self, ground_vertices_df: pd.DataFrame, layers: dict) -> pd.DataFrame:
+        """Process z-values from DEM."""
+        if self.dem_layer is None:
+            ground_vertices_df["z"] = 0
+        else:
+            print("Getting z-values from DEM... ", end="")
+            start = time.time()
+
+            ground_crs = layers["ground"].crs()
+            dem_crs = self.dem_layer.crs()
+            qct = QgsCoordinateTransform(ground_crs, dem_crs, QgsProject.instance())
+
+            def get_z(x, y):
+                point = qct.transform(QgsPointXY(x, y))
+                val, res = self.dem_layer.dataProvider().sample(point, 1)
+                return val if res else 0
+
+            ground_vertices_df["z"] = ground_vertices_df.apply(lambda row: get_z(row["x"], row["y"]), axis=1)
+
+            print(f"Done! {time.time() - start}s")
+
+        return ground_vertices_df
+
+    def _process_anchor_z_values(self, ground_vertices_df: pd.DataFrame) -> pd.DataFrame:
+        """Process z-values from anchors."""
+        print("Setting z-values from anchors... ", end="")
+        start = time.time()
+
+        point_anchors = self._get_point_anchors()
+        line_anchors = layer_to_gdf(self.line_anchor_layer, ["cellsize"])
+
+        # Get z-values from point anchors
+        for _, anchor in point_anchors.iterrows():
+            x, y = anchor.geometry.x, anchor.geometry.y
+            mask = (ground_vertices_df["x"] == x) & (ground_vertices_df["y"] == y)
+            ground_vertices_df.loc[mask, "z"] = anchor["z_value"]
+
+        # Get z-values from line anchors
+        for _, line in line_anchors.iterrows():
+            line_geom = line.geometry.buffer(0.01)  # Buffer to avoid precision issues with the intersect
+            ground_vertices_geom = gpd.GeoSeries(
+                [shapely.Point(xy) for xy in zip(ground_vertices_df["x"], ground_vertices_df["y"])],
+                crs=line_anchors.crs
+            )
+            mask = ground_vertices_geom.intersects(line_geom)
+            points = ground_vertices_df[mask]  # Get points inside the line anchor
+            points = gpd.GeoDataFrame(points, geometry=ground_vertices_geom[mask], crs=line_anchors.crs)
+
+            # Ignoring the z value, get the distance along the line, then interpolate the z value
+            line_2d = shapely.force_2d(line.geometry)
+
+            # TODO: If the line vertex z value is 0, set its value to the z value of the point directly below it.
+            # this way we can have lines with values set and unset at the same time and it will work properly
+            def interpolate_z(row):
+                p = row["geometry"]
+                dist = line_2d.project(p)
+                anchor_z = line.geometry.interpolate(dist).z
+                if anchor_z != 0:
+                    return anchor_z
+                else:
+                    return row["z"]
+
+            z_values = points.apply(interpolate_z, axis=1)
+
+            ground_vertices_df.loc[points.index, "z"] = z_values
+
+        print(f"Done! {time.time() - start}s")
+        return ground_vertices_df
+
+    def _create_roof_mesh(self, layers: dict, ground_vertices_df: pd.DataFrame) -> tuple:
+        """Create roof mesh triangulation."""
+        print("Triangulating Roofs... ", end="")
+        start = time.time()
+        self.feedback.setProgressText("Creating roof mesh...")
+        self.feedback.setProgress(30)
+        roof_triangulation_result = core.triangulate_roof(layers["roof"], self.only_selected_features, self.feedback)
+
+        if self.feedback.isCanceled() or roof_triangulation_result is None:
+            self.message = "Task canceled."
+            return None, None
+
+        roof_vertices_df, roof_triangles_df = roof_triangulation_result
+
+        if not roof_vertices_df.empty and not roof_triangles_df.empty:
+            roof_triangles_df["v1"] += len(ground_vertices_df)
+            roof_triangles_df["v2"] += len(ground_vertices_df)
+            roof_triangles_df["v3"] += len(ground_vertices_df)
+            roof_triangles_df["v4"] += len(ground_vertices_df)
+
+        print(f"Done! {time.time() - start}s")
+        return roof_vertices_df, roof_triangles_df
+
+    def _combine_mesh_data(self, ground_vertices_df: pd.DataFrame, ground_triangles_df: pd.DataFrame,
+                          roof_vertices_df: pd.DataFrame, roof_triangles_df: pd.DataFrame) -> tuple:
+        """Combine ground and roof mesh data."""
+        # To avoid changing the type of the column when concatenating,
+        # if not, the nan's change the datatype of the column to object
+        ground_triangles_df["roof_id"] = -1
+
+        vertices_df = pd.concat([ground_vertices_df, roof_vertices_df], ignore_index=True)
+        triangles_df = pd.concat([ground_triangles_df, roof_triangles_df], ignore_index=True)
+
+        vertices_df.index += 1
+        triangles_df.index += 1
+        triangles_df["v1"] += 1
+        triangles_df["v2"] += 1
+        triangles_df["v3"] += 1
+        triangles_df["v4"] += 1
+
+        triangles_df["v2"], triangles_df["v3"] = triangles_df["v3"], triangles_df["v2"]
+
+        return vertices_df, triangles_df
+
+    def _create_roofs_dataframe(self) -> pd.DataFrame:
+        """Create roofs DataFrame from database."""
+        print("Creating roofs DataFrame... ", end="")
+        start = time.time()
+
+        self.feedback.setProgressText("Getting roof data...")
+        rows = self.dao.get_rows("""
+            SELECT 
+                code, fid, slope, width, roughness, isconnected,
+                outlet_code, outlet_vol, street_vol, infiltr_vol
+            FROM roof
+        """)
+
+        roofs_df = pd.DataFrame(rows, columns=[
+            "code", "fid", "slope", "width", "roughness", "isconnected",
+            "outlet_code", "outlet_vol", "street_vol", "infiltr_vol"
+        ])
+        if not roofs_df.empty:
+            roofs_df["name"] = roofs_df["code"].combine_first(roofs_df["fid"])
+            roofs_df.index = roofs_df["fid"]  # type: ignore
+
+        print(f"Done! {time.time() - start}s")
+        return roofs_df
+
+    def _create_bridges_dataframe(self, triangles_df: pd.DataFrame, vertices_df: pd.DataFrame, bridge_layer) -> pd.DataFrame:
+        """Create bridges DataFrame."""
+        bridges_df: pd.DataFrame = pd.DataFrame()
+        if bridge_layer is not None:
+            print("Creating bridges DataFrame... ", end="")
+            start = time.time()
+            bridges_df = self._create_bridges_df(triangles_df, vertices_df, bridge_layer)
+            print(f"Done! {time.time() - start}s")
+        return bridges_df
+
+    def _finalize_mesh(self, triangles_df: pd.DataFrame, vertices_df: pd.DataFrame, 
+                      roofs_df: pd.DataFrame, bridges_df: pd.DataFrame) -> bool:
+        """Finalize mesh creation and processing."""
+        # Get losses data
+        losses_data = self._process_ground_losses()
+        
+        self.mesh = mesh_parser.Mesh(
+            polygons=triangles_df,
+            vertices=vertices_df,
+            roofs=roofs_df,
+            losses=losses_data,
+            boundary_conditions={},
+            bridges=bridges_df
+        )
+
+        # Create temp layer
+        self.feedback.setProgressText("Creating temp layer for visualization...")
+        start = time.time()
+        print("Creating temp layer... ", end="")
+        temp_layer = create_temp_mesh_layer(self.mesh, layer_name=self.temp_layer_name)
+        print(f"Done! {time.time() - start}s")
+
+        # Process raster-based data if needed
+        if hasattr(self, 'roughness_from_raster') and self.roughness_from_raster:
+            if not self._process_roughness_from_raster(temp_layer, triangles_df):
+                return False
+
+        if hasattr(self, 'losses_from_raster') and self.losses_from_raster:
+            if not self._process_losses_from_raster(temp_layer, triangles_df):
+                return False
+
+        if (hasattr(self, 'losses_from_raster') and self.losses_from_raster) or \
+           (hasattr(self, 'roughness_from_raster') and self.roughness_from_raster):
+            self.feedback.setProgressText("Refreshing temp layer...")
+            start = time.time()
+            print("Recreating temp layer... ", end="")
+            temp_layer = create_temp_mesh_layer(self.mesh, layer_name=self.temp_layer_name)
+            print(f"Done! {time.time() - start}s")
+
+        if not self.temporal_mesh:
+            if not self._save_mesh_to_gpkg():
+                return False
+
+        self.feedback.setProgress(80)
+        self.temp_layer = temp_layer
+        return True
+
+    def _process_roughness_from_raster(self, temp_layer, triangles_df: pd.DataFrame) -> bool:
+        """Process roughness values from raster layer."""
+        self.feedback.setProgressText("Getting ground roughness from raster...")
+        print("Getting ground roughness from raster... ", end="")
+        start = time.time()
+
+        rows = self.dao.get_rows("SELECT id, idval, manning FROM cat_landuses")
+        landuses_df = pd.DataFrame(
+            rows, columns=["id", "idval", "manning"]
+        ).set_index("id")
+
+        fids, landuses = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
+        roughness = landuses_df.loc[landuses, "manning"].values
+        triangles_df.loc[fids, "roughness"] = roughness
+
+        print(f"Done! {time.time() - start}s")
+        return True
+
+    def _process_losses_from_raster(self, temp_layer, triangles_df: pd.DataFrame) -> bool:
+        """Process losses values from raster layer."""
+        self.feedback.setProgressText("Getting ground losses from raster...")
+        print("Getting ground losses from raster... ", end="")
+        start = time.time()
+
+        fids, scs_cn = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
+        triangles_df.loc[fids, "scs_cn"] = scs_cn
+
+        print(f"Done! {time.time() - start}s")
+        return True
+
+    def _save_mesh_to_gpkg(self) -> bool:
+        """Save mesh data to GPKG file."""
+        self.feedback.setProgressText("Saving mesh to GPKG file...")
+        self.dao.execute_sql(f"""
+            DELETE FROM cat_file
+            WHERE name = '{self.mesh_name}'
+        """)
+
+        print("Dumping mesh data... ", end="")
+        start = time.time()
+        mesh_str, roof_str, losses_str, bridges_str = mesh_parser.dumps(self.mesh)
+        print(f"Done! {time.time() - start}s")
+
+        self.dao.execute_sql(f"""
+            INSERT INTO cat_file (name, iber2d, roof, losses, bridge)
+            VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}')
+        """)
+        return True
+
+    def _validate_inlets(self, layers: dict) -> bool:
+        """Validate inlets in triangles."""
+        if self.inlet_layer is not None:
+            # Check for triangles with more than one inlet
+            inlet_warning = validate_inlets_in_triangles(self.temp_layer, layers["inlet"])
+            if inlet_warning.hasFeatures():
+                project = QgsProject.instance()
+                group_name = "MESH INPUTS ERRORS & WARNINGS"
+                tools_qt.add_layer_to_toc(inlet_warning, group_name, create_groups=True)
+                project.layerTreeRoot().removeChildrenGroupWithoutLayers()
+                iface.layerTreeView().model().sourceModel().modelReset.emit()
+
+            # Refresh TOC
+            iface.layerTreeView().model().sourceModel().modelReset.emit()
+        return True
 
     def _create_line_anchors_gdf(self, line_anchors: gpd.GeoDataFrame, bridge_layer: QgsVectorLayer) -> gpd.GeoDataFrame:
         line_anchors = line_anchors.copy()
