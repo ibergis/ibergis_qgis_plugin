@@ -31,7 +31,6 @@ from qgis.utils import iface
 from . import tools_log, tools_os, tools_qgis
 from .. import global_vars
 from .ui.ui_manager import DialogTextUi
-from .tools_gpkgdao import DrGpkgDao
 
 translator = QTranslator()
 dlg_text = DialogTextUi()

@@ -1174,7 +1174,7 @@ def update_tmax(dialog):
     end_date_str = tools_qt.get_calendar_date(dialog, end_date)
 
     try:
-        from datetime import datetime, timedelta
+        from datetime import datetime
 
         # Parse time strings (assuming format like "HH:MM:SS" or "HH:MM")
         def parse_time(time_str: str) -> tuple[int, int, int]:

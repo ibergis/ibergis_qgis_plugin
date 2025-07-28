@@ -10,12 +10,11 @@ from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.core import QgsProcessingContext, QgsApplication
+from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QLabel, QTextEdit
 
 from ..dialog import DrAction
-from ...processing.check_project import DrCheckProjectAlgorithm
 from ...threads.project_check import DrProjectCheckTask
 from ...ui.ui_manager import DrProjectCheckUi
 

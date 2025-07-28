@@ -10,7 +10,7 @@ from qgis.core import (
     QgsProcessingParameterBoolean
 )
 from typing import Any, Optional
-from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt.QtCore import QVariant
 
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ...lib import tools_qt, tools_qgis

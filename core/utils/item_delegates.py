@@ -6,7 +6,7 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 
-from qgis.PyQt.QtWidgets import QStyledItemDelegate, QLineEdit, QDoubleSpinBox, QTableWidgetItem
+from qgis.PyQt.QtWidgets import QStyledItemDelegate, QDoubleSpinBox, QTableWidgetItem
 from qgis.PyQt.QtCore import Qt
 
 

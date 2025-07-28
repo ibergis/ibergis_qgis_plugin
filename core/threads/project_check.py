@@ -7,17 +7,14 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 
 
-from qgis.PyQt.QtCore import pyqtSignal, QVariant
-from qgis.PyQt.QtGui import QColor
-from qgis.core import QgsWkbTypes, QgsSpatialIndex, QgsField, QgsProject, QgsVectorLayer, QgsFeature, QgsProcessingContext
+from qgis.PyQt.QtCore import pyqtSignal
+from qgis.core import QgsProcessingContext
 
 
 from ..processing.check_project import DrCheckProjectAlgorithm
-from ..ui.ui_manager import DrProjectCheckUi
-from ..utils import tools_dr, Feedback
+from ..utils import Feedback
 from .task import DrTask
-from ... import global_vars
-from ...lib import tools_qgis, tools_log, tools_qt
+from ...lib import tools_qt
 from functools import partial
 
 

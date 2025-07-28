@@ -3,7 +3,7 @@ import os
 from functools import partial
 from time import time
 
-from qgis.core import Qgis, QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
+from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox, QTextEdit
 
@@ -12,7 +12,6 @@ from ...threads.createmesh import DrCreateMeshTask
 from ...threads.validatemesh import validations_dict
 from ...ui.ui_manager import DrCreateMeshUi
 from ...utils import Feedback, tools_dr
-from ...utils.meshing_process import create_anchor_layers
 from .... import global_vars
 from ....lib import tools_qt, tools_os, tools_qgis
 from qgis.utils import iface

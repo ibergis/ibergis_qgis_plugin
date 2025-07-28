@@ -10,7 +10,7 @@ import os
 
 from qgis.PyQt.QtWidgets import QTableView, QSizePolicy, QLineEdit, \
     QApplication, QShortcut, QMenu, QAction
-from qgis.PyQt.QtGui import QKeySequence, QIcon, QDoubleValidator, QCursor
+from qgis.PyQt.QtGui import QKeySequence, QIcon, QDoubleValidator
 from qgis.core import QgsFeature, QgsEditFormConfig, QgsProject, QgsMapLayer, QgsCoordinateTransform, QgsPointXY
 from qgis.PyQt.QtCore import Qt
 from qgis.utils import iface

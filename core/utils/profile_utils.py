@@ -14,19 +14,10 @@ from qgis.PyQt.QtCore import QTimer
 
 import pandas as pd
 
-from swmm_api import __version__ as swmm_api_version
-from swmm_api import read_inp_file
-from swmm_api import read_out_file
-from swmm_api import out2frame
-
 from swmm_api.input_file.macros.collection import nodes_dict, links_dict
 from swmm_api.input_file.macros.graph import get_path_subgraph, links_connected
 from swmm_api.input_file.sections import Outfall, Junction, Storage, Conduit, Weir, Orifice
 from swmm_api.output_file import OBJECTS, VARIABLES
-
-# import imageio.v2 as imageio
-import os
-import sys
 
 
 class COLS:

@@ -3,7 +3,6 @@ from qgis.core import (
     QgsProcessingContext,
     QgsProcessingFeedback,
     QgsProcessingParameterDistance,
-    QgsProject,
     QgsProcessingParameterVectorLayer,
     QgsProcessing,
     QgsVectorLayer

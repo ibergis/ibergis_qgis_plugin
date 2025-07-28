@@ -11,7 +11,6 @@ from qgis.PyQt.QtCore import QVariant
 from ..utils.feedback import Feedback
 from ..utils.meshing_process import layer_to_gdf
 from qgis import processing
-from ..utils import tools_dr
 
 from typing import Tuple, Optional
 import geopandas as gpd

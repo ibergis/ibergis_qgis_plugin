@@ -18,8 +18,7 @@ from qgis.core import (
     QgsWkbTypes,
     QgsFeatureSink,
     QgsProcessingParameterFeatureSink,
-    QgsFeature,
-    QgsLayerTreeLayer
+    QgsFeature
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis
