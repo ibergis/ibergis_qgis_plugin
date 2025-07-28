@@ -111,7 +111,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         # Validate intersection
         if self.validate_layers:
             self.validation_layer_intersect = validatemesh.validate_intersect_v2(
-                {"ground": self.ground_layer}, feedback
+                {"ground": self.ground_layer}, feedback, False
             )
             if self.validation_layer_intersect is None:
                 feedback.pushWarning("Intersection validation layer not found")
@@ -123,7 +123,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         # Validate vertex-edge
         if self.validate_layers:
             self.validation_layer_vert_edge = validatemesh.validate_vert_edge_v2(
-                {"ground": self.ground_layer, "roof": self.roof_layer}, feedback, True
+                {"ground": self.ground_layer}, feedback, False
             )
             if self.validation_layer_vert_edge is None:
                 feedback.pushWarning("Vertex-edge validation layer not found")

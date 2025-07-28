@@ -7,6 +7,12 @@ about=Disclaimer: This plugin is released using the open source GNU-GPL3 license
 version=0.3.0
 author=David Erill, Xavier Torret, Maria Guzman, Edgar Fusté, Jordi Blanch, Sergi Maspons, Pablo Marques, Marcos Sanz Ramos, Esteban Sañudo
 Changelog=Version 0.3.0
+    - Changed plugin name to "ibergis".
+    - Fixed boundary condition of type "INLET TOTAL DISCHARGE (SUB)CRITICAL".
+    - Fixed bridge mesh & values writing.
+    - Created "IberGIS" context menu.
+    - Created many processes to help create a mesh.
+    - Updated IberPlus executable (20250716).
 
 
 tags= urban drainage, flooding

@@ -113,10 +113,20 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
 
         if error_layers or warning_layers:
             group_name = "MESH INPUTS ERRORS & WARNINGS"
+            root = QgsProject.instance().layerTreeRoot()
+
             for layer in error_layers:
-                tools_qt.add_layer_to_toc(layer, group_name)
+                group = tools_qgis.find_toc_group(root, group_name)
+                if group is None:
+                    group = root.insertGroup(0, group_name)
+                QgsProject.instance().addMapLayer(layer, False)
+                group.insertLayer(0, layer)
             for layer in warning_layers:
-                tools_qt.add_layer_to_toc(layer, group_name)
+                group = tools_qgis.find_toc_group(root, group_name)
+                if group is None:
+                    group = root.insertGroup(0, group_name)
+                QgsProject.instance().addMapLayer(layer, False)
+                group.insertLayer(0, layer)
 
         return {}
 
