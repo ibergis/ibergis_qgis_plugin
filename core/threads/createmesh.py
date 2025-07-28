@@ -292,7 +292,8 @@ class DrCreateMeshTask(DrTask):
             self.feedback.setProgressText("Creating ground mesh...")
             self.feedback.setProgress(15)
             gt_feedback = QgsFeedback()
-            gt_progress = lambda x: self.feedback.setProgress(x / 100 * (30 - 15) + 15)
+            def gt_progress(x):
+                return self.feedback.setProgress(x / 100 * (30 - 15) + 15)
             gt_feedback.progressChanged.connect(gt_progress)
 
             ground_triangulation_result = triangulate_custom(

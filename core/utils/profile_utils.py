@@ -82,7 +82,8 @@ class ProfilePlotter:
         nodes_flood = None  # noqa: F841
         if out is not None:
             if depth_agg_func is None:
-                depth_agg_func = lambda s: s.mean()
+                def depth_agg_func(s):
+                    return s.mean()
             nodes_depth = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.DEPTH)).to_dict()  # This gives me the maximums. # noqa: F841
             nodes_depth_dic = out.get_part(OBJECTS.NODE, None, VARIABLES.NODE.DEPTH).to_dict()
             nodes_flooding = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.FLOODING)).to_dict()  # noqa: F841
