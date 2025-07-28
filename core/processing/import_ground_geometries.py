@@ -191,15 +191,8 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
 
         return {}
 
-    def _insert_data(self, source_layer: QgsVectorLayer, target_layer: QgsVectorLayer, field_map: dict, unique_fields: dict, feedback: Feedback, batch_size: int = 1000):
-        """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
-
-        num_features: int = source_layer.featureCount()
-        imported_features: int = 0
-        feature_index: int = 1
-        skiped_features: list[int] = list()
-
-        # get landuse types
+    def _get_landuse_types(self, feedback: Feedback) -> list[str]:
+        """Get landuse types from database."""
         landuse_types: list[str] = list()
         sql: str = "SELECT idval FROM cat_landuses;"
         landuse_types_sql: Optional[list] = self.dao.get_rows(sql)
@@ -209,7 +202,10 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
             for item in landuse_types_sql:
                 for subItem in item:
                     landuse_types.append(subItem)
-        # check landuse types on source layer
+        return landuse_types
+
+    def _validate_landuse_types(self, source_layer: QgsVectorLayer, field_map: dict, landuse_types: list[str], feedback: Feedback) -> bool:
+        """Check landuse types on source layer and report any unexistent ones."""
         unexistent_landuses: list[str] = list()
         field_map_name: str = 'landuse'
         if field_map['landuse'] is not None:
@@ -223,113 +219,134 @@ class ImportGroundGeometries(QgsProcessingAlgorithm):
         if len(unexistent_landuses) > 0:
             feedback.reportError(self.tr(f"Landuse types not found in database: {unexistent_landuses}."))
             return False
+        return True
+
+    def _build_unique_fields_dict(self, target_layer: QgsVectorLayer, unique_fields: dict, target_field_names: list[str]):
+        """Build unique fields dictionary from existing target layer features."""
+        for feature in target_layer.getFeatures():
+            for field in unique_fields.keys():
+                if field in target_field_names and str(feature[field]) != 'NULL':
+                    unique_fields[field].append(feature[field])
+
+    def _map_feature_attributes(self, feature: QgsFeature, target_layer: QgsVectorLayer, field_map: dict, target_field_names: list[str], unique_fields: dict, skiped_features: list[int]) -> tuple[QgsFeature, bool]:
+        """Map attributes from source feature to target feature. Returns (new_feature, should_skip)."""
+        repeated_params: bool = False
+        new_feature: QgsFeature = QgsFeature(target_layer.fields())
+
+        # Map attributes efficiently
+        attributes: list = [None] * len(target_field_names)
+        for tgt_field, src_field in field_map.items():
+            if src_field is None:
+                src_field = tgt_field
+            if tgt_field in target_field_names:
+                src_value = None
+                if isinstance(src_field, list):
+                    for field in src_field:
+                        src_value = feature[field]
+                        if src_value is not None:
+                            if tgt_field in unique_fields.keys():
+                                if feature[field] in unique_fields[field]:
+                                    src_value = None
+                                    skiped_features.append(feature.id())
+                            break
+                else:
+                    try:
+                        if tgt_field in unique_fields.keys():
+                            if feature[src_field] in unique_fields[tgt_field]:
+                                repeated_params = True
+                                skiped_features.append(feature.id())
+                                break
+                        src_value = feature[src_field]
+                    except KeyError:
+                        src_value = None
+                attributes[target_field_names.index(tgt_field)] = src_value
+
+        new_feature.setAttributes(attributes)
+        return new_feature, repeated_params
+
+    def _commit_feature_batch(self, features_to_add: list[QgsFeature], target_layer: QgsVectorLayer, feedback: Feedback) -> bool:
+        """Commit a batch of features to the target layer."""
+        try:
+            # disable ground triggers
+            if not self.enable_triggers(feedback, False):
+                return False
+            # add features
+            if not target_layer.isEditable():
+                target_layer.startEditing()
+            target_layer.addFeatures(features_to_add)
+            target_layer.commitChanges()
+            # update code
+            if not self.execute_after_import_fct(feedback):
+                return False
+            # enable ground triggers
+            if not self.enable_triggers(feedback, True):
+                return False
+            return True
+        except Exception as e:
+            feedback.reportError(self.tr(f"Error adding features: {e}"))
+            target_layer.rollBack()
+            return False
+
+    def _insert_data(self, source_layer: QgsVectorLayer, target_layer: QgsVectorLayer, field_map: dict, unique_fields: dict, feedback: Feedback, batch_size: int = 1000):
+        """Copies features from the source layer to the target layer with mapped fields, committing in batches."""
+
+        num_features: int = source_layer.featureCount()
+        imported_features: int = 0
+        feature_index: int = 1
+        skiped_features: list[int] = list()
+
+        # get landuse types
+        landuse_types: list[str] = self._get_landuse_types(feedback)
+
+        # validate landuse types
+        if not self._validate_landuse_types(source_layer, field_map, landuse_types, feedback):
+            return False
 
         feedback.setProgressText(self.tr(f"Importing {num_features} features from {source_layer.name()}..."))
 
         # Get the target field names in order
         target_field_names: list[str] = [field.name() for field in target_layer.fields()]
 
-        for feature in target_layer.getFeatures():
-            for field in unique_fields.keys():
-                if field in target_field_names and str(feature[field]) != 'NULL':
-                    unique_fields[field].append(feature[field])
+        # Build unique fields dictionary
+        self._build_unique_fields_dict(target_layer, unique_fields, target_field_names)
 
         features_to_add: list[QgsFeature] = list()
 
         for feature in source_layer.getFeatures():
-            repeated_params: bool = False
-            new_feature: QgsFeature = QgsFeature(target_layer.fields())
+            new_feature, repeated_params = self._map_feature_attributes(feature, target_layer, field_map, target_field_names, unique_fields, skiped_features)
 
-            # Map attributes efficiently
-            attributes: list = [None] * len(target_field_names)
-            for tgt_field, src_field in field_map.items():
-                if src_field is None:
-                    src_field = tgt_field
-                if tgt_field in target_field_names:
-                    src_value = None
-                    if isinstance(src_field, list):
-                        for field in src_field:
-                            src_value = feature[field]
-                            if src_value is not None:
-                                if tgt_field in unique_fields.keys():
-                                    if feature[field] in unique_fields[field]:
-                                        src_value = None
-                                        skiped_features.append(feature.id())
-                                break
-                    else:
-                        try:
-                            if tgt_field in unique_fields.keys():
-                                if feature[src_field] in unique_fields[tgt_field]:
-                                    repeated_params = True
-                                    skiped_features.append(feature.id())
-                                    break
-                            src_value = feature[src_field]
-                        except KeyError:
-                            src_value = None
-                    attributes[target_field_names.index(tgt_field)] = src_value
             feedback.setProgress(tools_dr.lerp_progress(int(feature_index * 100 / num_features), 16, 90))
             feature_index += 1
-            if (repeated_params):
+
+            if repeated_params:
                 continue
-            new_feature.setAttributes(attributes)
+
             if not feature.geometry().isGeosValid():
                 feedback.reportError(self.tr(f"Invalid geometry for feature ID {feature.id()}"))
                 skiped_features.append(feature.id())
                 continue
+
             new_feature.setGeometry(feature.geometry())  # Preserve geometry
             features_to_add.append(new_feature)
 
             # Commit in batches
             if len(features_to_add) >= batch_size:
-                try:
-                    # disable ground triggers
-                    if not self.enable_triggers(feedback, False):
-                        return
-                    # add features
-                    if not target_layer.isEditable():
-                        target_layer.startEditing()
-                    target_layer.addFeatures(features_to_add)
-                    target_layer.commitChanges()
-                    imported_features += len(features_to_add)
-                    # update code
-                    if not self.execute_after_import_fct(feedback):
-                        return False
-                    # enable ground triggers
-                    if not self.enable_triggers(feedback, True):
-                        return False
-                    feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}"))
-                    if len(skiped_features) > 0:
-                        feedback.setProgressText(self.tr(f"Skipped features: ({len(skiped_features)})"))
-                    features_to_add.clear()
-                except Exception as e:
-                    feedback.reportError(self.tr(f"Error adding features: {e}"))
-                    target_layer.rollBack()
+                if not self._commit_feature_batch(features_to_add, target_layer, feedback):
                     return False
-        # Commit any remaining features
-        if features_to_add:
-            try:
-                # disable ground triggers
-                if not self.enable_triggers(feedback, False):
-                    return
-                # add features
-                if not target_layer.isEditable():
-                    target_layer.startEditing()
-                target_layer.addFeatures(features_to_add)
-                target_layer.commitChanges()
                 imported_features += len(features_to_add)
-                # update code
-                if not self.execute_after_import_fct(feedback):
-                    return False
-                # enable ground triggers
-                if not self.enable_triggers(feedback, True):
-                    return False
                 feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}"))
                 if len(skiped_features) > 0:
                     feedback.setProgressText(self.tr(f"Skipped features: ({len(skiped_features)})"))
-            except Exception as e:
-                feedback.reportError(self.tr(f"Error adding features: {e}"))
-                target_layer.rollBack()
+                features_to_add.clear()
+
+        # Commit any remaining features
+        if features_to_add:
+            if not self._commit_feature_batch(features_to_add, target_layer, feedback):
                 return False
+            imported_features += len(features_to_add)
+            feedback.setProgressText(self.tr(f"Imported {imported_features}/{num_features} features into {target_layer.name()}"))
+            if len(skiped_features) > 0:
+                feedback.setProgressText(self.tr(f"Skipped features: ({len(skiped_features)})"))
         return True
 
     def postProcessAlgorithm(self, context, feedback: Feedback):
