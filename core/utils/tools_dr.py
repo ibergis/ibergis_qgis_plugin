@@ -561,10 +561,10 @@ def load_gpkg(gpkg_file) -> dict:
     layers = {}
     gpkg = ogr.Open(gpkg_file)
 
-    for l in gpkg:
-        layer = QgsVectorLayer(f"{gpkg_file}|layername={l.GetName()}", l.GetName(), 'ogr')
+    for lyr in gpkg:
+        layer = QgsVectorLayer(f"{gpkg_file}|layername={lyr.GetName()}", lyr.GetName(), 'ogr')
         if layer.isValid():
-            layers[l.GetName()] = layer
+            layers[lyr.GetName()] = layer
 
     return layers
 

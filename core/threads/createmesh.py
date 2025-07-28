@@ -153,10 +153,10 @@ class DrCreateMeshTask(DrTask):
                     used_landuses = [] if rows is None else [row[0] for row in rows]
 
                     missing_roughness = [
-                        l
-                        for l in used_landuses
-                        if l not in landuses_df["idval"].values
-                        or landuses_df[landuses_df["idval"] == l]["manning"]
+                        landuse
+                        for landuse in used_landuses
+                        if landuse not in landuses_df["idval"].values
+                        or landuses_df[landuses_df["idval"] == landuse]["manning"]
                         .isna()
                         .any()
                     ]
@@ -170,10 +170,10 @@ class DrCreateMeshTask(DrTask):
                     )
                     used_landuses = {int(x) for x in unique_values if x != 255}
                     missing_roughness = [
-                        str(l)
-                        for l in used_landuses
-                        if l not in landuses_df.index
-                        or np.isnan(landuses_df.loc[l, "manning"])
+                        str(landuse)
+                        for landuse in used_landuses
+                        if landuse not in landuses_df.index
+                        or np.isnan(landuses_df.loc[landuse, "manning"])
                     ]
 
                 print(f"Done! {time.time() - start}s")
@@ -292,8 +292,10 @@ class DrCreateMeshTask(DrTask):
             self.feedback.setProgressText("Creating ground mesh...")
             self.feedback.setProgress(15)
             gt_feedback = QgsFeedback()
+
             def gt_progress(x):
                 return self.feedback.setProgress(x / 100 * (30 - 15) + 15)
+
             gt_feedback.progressChanged.connect(gt_progress)
 
             ground_triangulation_result = triangulate_custom(

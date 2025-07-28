@@ -176,8 +176,10 @@ class DrBCScenarioManagerButton(DrAction):
         tools_dr.disable_tab_log(dlg)
         dlg.btn_cancel.clicked.connect(partial(tools_dr.close_dialog, dlg))
         dlg.btn_ok.clicked.connect(partial(self._accept_save_to_mesh, idval))
+
         def set_ok_enabled(x):
             dlg.btn_ok.setEnabled(bool(x))
+
         dlg.cmb_mesh.currentTextChanged.connect(set_ok_enabled)
 
         mesh_names = [row[0] for row in rows]
