@@ -408,7 +408,7 @@ class DrCreateMeshTask(DrTask):
                 print(f"Done! {time.time() - start}s")
 
             if not self.temporal_mesh:
-                print(f"Setting z-values from anchors... ", end="")
+                print("Setting z-values from anchors... ", end="")
                 start = time.time()
 
                 # Get z-values from point anchors
@@ -617,7 +617,7 @@ class DrCreateMeshTask(DrTask):
             print("No bridges found in the bridge layer.")
             return line_anchors
 
-        rows = self.dao.get_rows(f"""
+        rows = self.dao.get_rows("""
             SELECT bridge_code, distance
             FROM bridge_value
             ORDER BY distance

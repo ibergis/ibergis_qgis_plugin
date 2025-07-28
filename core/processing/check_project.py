@@ -174,7 +174,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             feedback.setProgress(tools_dr.lerp_progress(int(index + 1 / len(queries) * 100), 0, 70))
 
         # Hardcoded checks
-        feedback.setProgressText(f'Executing: hardcoded checks')
+        feedback.setProgressText('Executing: hardcoded checks')
         temporal_layer = self.check_roof_volumes(feedback)
         if temporal_layer is not None:
             if temporal_layer.featureCount() > 0:
@@ -233,7 +233,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             }
         }
 
-        feedback.setProgressText(f'Executing: mesh validations')
+        feedback.setProgressText('Executing: mesh validations')
         for index, validation in enumerate(validations):
             validation_config = validations[validation]
             method_name = validation_config['method']

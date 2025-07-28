@@ -190,7 +190,7 @@ class FixIntersections(QgsProcessingAlgorithm):
                     if sibling.name == intersection.name:
                         continue
                     cleaned_gdf = cleaned_gdf.drop(sibling.name)
-                print(f'Dropped duplicates')
+                print('Dropped duplicates')
                 continue
             # Calculate shared perimeter with each neighbor
             max_shared_length = 0
@@ -213,7 +213,7 @@ class FixIntersections(QgsProcessingAlgorithm):
                     if sibling.name == intersection.name:
                         continue
                     cleaned_gdf = cleaned_gdf.drop(sibling.name)
-                print(f'Dropped duplicates')
+                print('Dropped duplicates')
                 continue
 
             # Merge geometries

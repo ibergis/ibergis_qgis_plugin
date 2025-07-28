@@ -1053,16 +1053,16 @@ class DrBridgeButton(DrAction):
                     return False
 
             sql = "INSERT INTO bridge_value (bridge_code, distance"
-            sql += f", topelev" if row[1] != 'null' else ""
-            sql += f", lowelev" if row[2] != 'null' else ""
-            sql += f", openingval" if row[3] != 'null' else ""
-            sql += f") "
+            sql += ", topelev" if row[1] != 'null' else ""
+            sql += ", lowelev" if row[2] != 'null' else ""
+            sql += ", openingval" if row[3] != 'null' else ""
+            sql += ") "
             sql += f"VALUES ('{code}'"
             sql += f", {row[0]}" if row[0] != 'null' else ""
             sql += f", {row[1]}" if row[1] != 'null' else ""
             sql += f", {row[2]}" if row[2] != 'null' else ""
             sql += f", {row[3]}" if row[3] != 'null' else ""
-            sql += f")"
+            sql += ")"
 
             result = tools_db.execute_sql(sql, commit=False)
             if not result:
