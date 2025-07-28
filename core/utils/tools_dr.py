@@ -943,6 +943,192 @@ def set_style_mapzones():
                 lyr.triggerRepaint()
 
 
+def _get_field_id_from_fields(fields):
+    """Extract field_id from fields structure"""
+    field_id = ''
+    if 'fields' in fields:
+        field_id = 'fields'
+    elif fields.get('return_type') not in ('', None):
+        field_id = 'return_type'
+    return field_id
+
+
+def _should_skip_field(field):
+    """Check if field should be skipped"""
+    if field['layoutname'] is None or field['layoutorder'] is None:
+        return True
+    if field.get('hidden') in (True, "True"):
+        return True
+    return False
+
+
+def _create_field_label(field):
+    """Create label widget for field"""
+    if not field['label']:
+        return None
+    
+    lbl = QLabel()
+    lbl.setObjectName('lbl' + field['widgetname'])
+    lbl.setText(field['label'])
+    lbl.setMinimumSize(160, 0)
+    lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+    if 'tooltip' in field:
+        lbl.setToolTip(field['tooltip'])
+    return lbl
+
+
+def _create_text_widget(field, dialog, _json):
+    """Create text/linetext widget"""
+    widget = QLineEdit()
+    if 'isMandatory' in field:
+        widget.setProperty('ismandatory', field['isMandatory'])
+    else:
+        widget.setProperty('ismandatory', False)
+    if 'value' in field:
+        widget.setText(field['value'])
+        widget.setProperty('value', field['value'])
+    widgetcontrols = field.get('widgetcontrols')
+    if widgetcontrols and widgetcontrols.get('regexpControl') is not None:
+        pass
+    widget.editingFinished.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    if field['columnname'] in ['inp_options_start_time', 'inp_options_end_time']:
+        widget.editingFinished.connect(partial(update_tmax, dialog))
+    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    datatype = field.get('datatype')
+    if datatype == 'int':
+        widget.setValidator(QIntValidator())
+    elif datatype == 'float':
+        widget.setValidator(QDoubleValidator())
+    return widget
+
+
+def _create_combo_widget(field, dialog, _json, module):
+    """Create combo widget"""
+    widget = add_combo(field)
+    widget.currentIndexChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    signal = field.get('signal')
+    if signal:
+        widget.currentIndexChanged.connect(partial(getattr(module, signal), dialog))
+        getattr(module, signal)(dialog)
+    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    return widget
+
+
+def _create_check_widget(field, dialog, _json):
+    """Create checkbox widget"""
+    widget = QCheckBox()
+    if field['value'] is not None and field['value'].lower() == "true":
+        widget.setChecked(True)
+    else:
+        widget.setChecked(False)
+    widget.stateChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    return widget
+
+
+def _create_datetime_widget(field, dialog, _json):
+    """Create datetime widget"""
+    widget = QgsDateTimeEdit()
+    widget.setAllowNull(True)
+    widget.setCalendarPopup(True)
+    widget.setDisplayFormat('yyyy/MM/dd')
+    if global_vars.date_format in ("dd/MM/yyyy", "dd-MM-yyyy", "yyyy/MM/dd", "yyyy-MM-dd"):
+        widget.setDisplayFormat(global_vars.date_format)
+    widget.clear()
+    if field.get('value') not in ('', None, 'null'):
+        date = QDate.fromString(field['value'].replace('/', '-'), 'yyyy-MM-dd')
+        widget.setDate(date)
+    widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    if field['columnname'] in ['inp_options_start_date', 'inp_options_end_date']:
+        widget.editingFinished.connect(partial(update_tmax, dialog))
+    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    return widget
+
+
+def _create_spinbox_widget(field, dialog, _json):
+    """Create spinbox widget"""
+    widget = QDoubleSpinBox()
+    widgetcontrols = field.get('widgetcontrols')
+    if widgetcontrols:
+        spinboxDecimals = widgetcontrols.get('spinboxDecimals')
+        if spinboxDecimals is not None:
+            widget.setDecimals(spinboxDecimals)
+        maximumNumber = widgetcontrols.get('maximumNumber')
+        if maximumNumber is not None:
+            widget.setMaximum(maximumNumber)
+    if field.get('value') not in (None, ""):
+        value = float(str(field['value']))
+        widget.setValue(value)
+    widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    return widget
+
+
+def _create_button_widget(field, dialog, temp_layers_added):
+    """Create button widget"""
+    kwargs = {"dialog": dialog, "field": field, "temp_layers_added": temp_layers_added}
+    widget = add_button(**kwargs)
+    return set_widget_size(widget, field)
+
+
+def _create_widget_by_type(field, dialog, _json, temp_layers_added, module):
+    """Create widget based on field type"""
+    widget_type = field['widgettype']
+    
+    if widget_type == 'text' or widget_type == 'linetext':
+        return _create_text_widget(field, dialog, _json)
+    elif widget_type == 'combo':
+        return _create_combo_widget(field, dialog, _json, module)
+    elif widget_type == 'check':
+        return _create_check_widget(field, dialog, _json)
+    elif widget_type == 'datetime':
+        return _create_datetime_widget(field, dialog, _json)
+    elif widget_type == 'spinbox':
+        return _create_spinbox_widget(field, dialog, _json)
+    elif widget_type == 'button':
+        return _create_button_widget(field, dialog, temp_layers_added)
+    
+    return None
+
+
+def _configure_widget_editability(widget, field):
+    """Configure widget readonly/enabled state"""
+    iseditable = field.get('iseditable')
+    if type(widget) in (QLineEdit, QDoubleSpinBox):
+        if iseditable in (False, "False"):
+            widget.setReadOnly(True)
+            widget.setStyleSheet("QWidget {background: rgb(242, 242, 242);color: rgb(100, 100, 100)}")
+        if isinstance(widget, QLineEdit):
+            if 'placeholder' in field:
+                widget.setPlaceholderText(field['placeholder'])
+    elif type(widget) in (QComboBox, QCheckBox):
+        if iseditable in (False, "False"):
+            widget.setEnabled(False)
+    
+    widget.setObjectName(field['widgetname'])
+    if iseditable is not None:
+        widget.setEnabled(bool(iseditable))
+
+
+def _process_single_field(field, dialog, _json, temp_layers_added, module):
+    """Process a single field and create its widgets"""
+    check_parameters(field)
+
+    if _should_skip_field(field):
+        return
+
+    lbl = _create_field_label(field)
+    if lbl is None:
+        return
+
+    widget = _create_widget_by_type(field, dialog, _json, temp_layers_added, module)
+    if widget is None:
+        return
+
+    _configure_widget_editability(widget, field)
+    add_widget(dialog, field, lbl, widget)
+
+
 def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module=sys.modules[__name__]):
 
     try:
@@ -950,128 +1136,13 @@ def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module
     except Exception:
         fields = row
 
-    field_id = ''
-    if 'fields' in fields:
-        field_id = 'fields'
-    elif fields.get('return_type') not in ('', None):
-        field_id = 'return_type'
-
+    field_id = _get_field_id_from_fields(fields)
     if field_id == '':
         return
 
     if fields[field_id] is not None:
         for field in fields[field_id]:
-
-            check_parameters(field)
-
-            if field['layoutname'] is None or field['layoutorder'] is None:
-                continue
-
-            if field.get('hidden') in (True, "True"):
-                continue
-
-            if field['label']:
-                lbl = QLabel()
-                lbl.setObjectName('lbl' + field['widgetname'])
-                lbl.setText(field['label'])
-                lbl.setMinimumSize(160, 0)
-                lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-                if 'tooltip' in field:
-                    lbl.setToolTip(field['tooltip'])
-
-                widget = None
-                if field['widgettype'] == 'text' or field['widgettype'] == 'linetext':
-                    widget = QLineEdit()
-                    if 'isMandatory' in field:
-                        widget.setProperty('ismandatory', field['isMandatory'])
-                    else:
-                        widget.setProperty('ismandatory', False)
-                    if 'value' in field:
-                        widget.setText(field['value'])
-                        widget.setProperty('value', field['value'])
-                    widgetcontrols = field.get('widgetcontrols')
-                    if widgetcontrols and widgetcontrols.get('regexpControl') is not None:
-                        pass
-                    widget.editingFinished.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    if field['columnname'] in ['inp_options_start_time', 'inp_options_end_time']:
-                        widget.editingFinished.connect(partial(update_tmax, dialog))
-                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-                    datatype = field.get('datatype')
-                    if datatype == 'int':
-                        widget.setValidator(QIntValidator())
-                    elif datatype == 'float':
-                        widget.setValidator(QDoubleValidator())
-                elif field['widgettype'] == 'combo':
-                    widget = add_combo(field)
-                    widget.currentIndexChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    signal = field.get('signal')
-                    if signal:
-                        widget.currentIndexChanged.connect(partial(getattr(module, signal), dialog))
-                        getattr(module, signal)(dialog)
-                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-                elif field['widgettype'] == 'check':
-                    widget = QCheckBox()
-                    if field['value'] is not None and field['value'].lower() == "true":
-                        widget.setChecked(True)
-                    else:
-                        widget.setChecked(False)
-                    widget.stateChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                elif field['widgettype'] == 'datetime':
-                    widget = QgsDateTimeEdit()
-                    widget.setAllowNull(True)
-                    widget.setCalendarPopup(True)
-                    widget.setDisplayFormat('yyyy/MM/dd')
-                    if global_vars.date_format in ("dd/MM/yyyy", "dd-MM-yyyy", "yyyy/MM/dd", "yyyy-MM-dd"):
-                        widget.setDisplayFormat(global_vars.date_format)
-                    widget.clear()
-                    if field.get('value') not in ('', None, 'null'):
-                        date = QDate.fromString(field['value'].replace('/', '-'), 'yyyy-MM-dd')
-                        widget.setDate(date)
-                    widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    if field['columnname'] in ['inp_options_start_date', 'inp_options_end_date']:
-                        widget.editingFinished.connect(partial(update_tmax, dialog))
-                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-                elif field['widgettype'] == 'spinbox':
-                    widget = QDoubleSpinBox()
-                    widgetcontrols = field.get('widgetcontrols')
-                    if widgetcontrols:
-                        spinboxDecimals = widgetcontrols.get('spinboxDecimals')
-                        if spinboxDecimals is not None:
-                            widget.setDecimals(spinboxDecimals)
-                        maximumNumber = widgetcontrols.get('maximumNumber')
-                        if maximumNumber is not None:
-                            widget.setMaximum(maximumNumber)
-                    if field.get('value') not in (None, ""):
-                        value = float(str(field['value']))
-                        widget.setValue(value)
-                    widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-                elif field['widgettype'] == 'button':
-                    kwargs = {"dialog": dialog, "field": field, "temp_layers_added": temp_layers_added}
-                    widget = add_button(**kwargs)
-                    widget = set_widget_size(widget, field)
-
-                if widget is None:
-                    continue
-
-                # Set editable/readonly
-                iseditable = field.get('iseditable')
-                if type(widget) in (QLineEdit, QDoubleSpinBox):
-                    if iseditable in (False, "False"):
-                        widget.setReadOnly(True)
-                        widget.setStyleSheet("QWidget {background: rgb(242, 242, 242);color: rgb(100, 100, 100)}")
-                    if isinstance(widget, QLineEdit):
-                        if 'placeholder' in field:
-                            widget.setPlaceholderText(field['placeholder'])
-                elif type(widget) in (QComboBox, QCheckBox):
-                    if iseditable in (False, "False"):
-                        widget.setEnabled(False)
-                widget.setObjectName(field['widgetname'])
-                if iseditable is not None:
-                    widget.setEnabled(bool(iseditable))
-
-                add_widget(dialog, field, lbl, widget)
+            _process_single_field(field, dialog, _json, temp_layers_added, module)
 
 
 def check_parameters(field):
