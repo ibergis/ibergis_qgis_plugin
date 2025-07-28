@@ -40,6 +40,11 @@ class DrMeshValidationsAlgorithm(QgsProcessingAlgorithm):
     def createInstance(self) -> QgsProcessingAlgorithm:
         return DrMeshValidationsAlgorithm()
 
+    def shortHelpString(self):
+        return self.tr("""Checks ground and roof polygon layers for common data issues such as invalid geometries, missing values, and topological errors. 
+                       The operation is optimized for large datasets, and results are provided as error or warning layers to help you quickly identify and resolve problems. 
+                       Use this tool to validate your mesh input layers and improve data quality before further processing or analysis.""")
+
     def initAlgorithm(self, configuration: dict[str, Any] | None = None) -> None:
         ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
         roof_layer_param = tools_qgis.get_layer_by_tablename('roof')

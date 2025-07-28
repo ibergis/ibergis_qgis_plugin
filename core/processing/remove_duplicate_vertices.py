@@ -42,6 +42,11 @@ class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
     def createInstance(self) -> QgsProcessingAlgorithm:
         return DrRemoveDuplicateVertices()
 
+    def shortHelpString(self):
+        return self.tr("""Removes duplicate vertices from ground and roof polygon layers to ensure clean geometries for further processing. 
+                       The operation is optimized for large datasets and helps maintain data quality by eliminating unnecessary vertices. 
+                       Use this tool to quickly clean up your ground and roof layers before further analysis or export.""")
+
     def initAlgorithm(self, configuration: dict[str, Any] | None = None) -> None:
         ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
         roof_layer_param = tools_qgis.get_layer_by_tablename('roof')
