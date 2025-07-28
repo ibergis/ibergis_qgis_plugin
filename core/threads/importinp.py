@@ -525,7 +525,7 @@ class DrImportInpTask(DrTask):
     def _save_lids(self) -> None:
         from swmm_api.input_file.section_labels import LID_CONTROLS
 
-        lid_rows = get_rows("SELECT lidco_id FROM inp_lid", commit=self.force_commit)
+        lid_rows = get_rows("SELECT lidco_id FROM inp_lid", commit=self.force_commit)  # noqa
         lids_db: set[str] = set()
         if lid_rows:
             lids_db = {x[0] for x in lid_rows}
@@ -547,7 +547,7 @@ class DrImportInpTask(DrTask):
             lid_type: str = lid.lid_kind
             sql = "INSERT INTO inp_lid (lidco_id, lidco_type) VALUES (%s, %s)"
             params = (lid_name, lid_type)
-            execute_sql(sql, params, commit=self.force_commit)
+            execute_sql(sql, params, commit=self.force_commit)  # noqa
 
             # Insert lid_values
             sql = """
@@ -573,5 +573,5 @@ class DrImportInpTask(DrTask):
                     case _:
                         continue
                 params.append(lid_values)
-            toolsdb_execute_values(sql, params, template, commit=self.force_commit)
+            toolsdb_execute_values(sql, params, template, commit=self.force_commit)  # noqa
             self.results["lids"] += 1
