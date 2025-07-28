@@ -60,7 +60,7 @@ def show_message(text, message_level=1, duration=10, context_name=None, paramete
         :param logger_file: Whether it should log the message in a file or not (bool)
     """
 
-    global user_parameters
+    global user_parameters  # noqa: F824
 
     # Get optional parameter 'show_message_durations'
     dev_duration = user_parameters.get('show_message_durations')
@@ -100,7 +100,7 @@ def show_message_link(text, url, btn_text="Open", message_level=0, duration=10, 
         :param logger_file: Whether it should log the message in a file or not (bool)
     """
 
-    global user_parameters
+    global user_parameters  # noqa: F824
 
     # Get optional parameter 'show_message_durations'
     dev_duration = user_parameters.get('show_message_durations')
