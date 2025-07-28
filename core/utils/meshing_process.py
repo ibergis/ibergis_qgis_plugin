@@ -26,7 +26,7 @@ from typing import Optional, Iterable
 from pathlib import Path
 from ... import global_vars
 
-try:
+try:  # noqa: C901
     import platform
     if platform.system() == "Windows":
         from packages.gmsh import gmsh
