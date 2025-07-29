@@ -465,7 +465,8 @@ except ImportError:
 import shapely
 
 
-def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] = None, layer_name: str = "Mesh Temp Layer") -> QgsVectorLayer:
+def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] = None,
+                           layer_name: str = "Mesh Temp Layer", area_threshold: float = float('inf')) -> QgsVectorLayer:
     c1 = mesh.vertices.loc[mesh.polygons["v1"], ['x', 'y', 'z']]
     c2 = mesh.vertices.loc[mesh.polygons["v2"], ['x', 'y', 'z']]
     c3 = mesh.vertices.loc[mesh.polygons["v3"], ['x', 'y', 'z']]
@@ -489,6 +490,10 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
     optmized_df['is_ccw'] = det > 0
 
     optmized_df['area'] = 0.5 * abs(det)
+
+    if area_threshold != float('inf'):
+        # Filter by area threshold
+        optmized_df = optmized_df[optmized_df['area'] < area_threshold]
 
     def get_feature(row):
         geom = QgsTriangle(
