@@ -11,8 +11,6 @@ from qgis.PyQt.QtWidgets import QMenu, QAction
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsEditFormConfig
 from qgis.PyQt.QtCore import Qt
-from qgis.utils import iface
-from qgis.gui import QgsMapToolIdentifyFeature
 
 from ....lib import tools_qgis
 from .... import global_vars
