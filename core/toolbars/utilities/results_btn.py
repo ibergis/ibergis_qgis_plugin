@@ -153,6 +153,11 @@ class DrResultsButton(DrAction):
         bridge_layer.featureAdded.connect(self._on_bridge_feature_added)
 
     def load_raster_results(self):
+        """ Load raster results """
+
+        print("load_raster_results")
+        return
+
     # region private functions
     def _fill_results_menu(self):
         """ Fill results menu """
