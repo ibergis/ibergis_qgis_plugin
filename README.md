@@ -1,59 +1,98 @@
-## WELCOME TO IBERGIS PROJECT-QGIS PLUGIN
+# IberGIS - QGIS Plugin
 
-Water management has always been complex and expensive. It has always been difficult to plan new water supply networks or effective control existing ones without making further capital investments. Nonetheless all these situations have come to an end. Since 2011 when IBER...
+[![Python flake8](https://github.com/ibergis/ibergis_qgis_plugin/actions/workflows/pythonflake8.yml/badge.svg)](https://github.com/ibergis/ibergis_qgis_plugin/actions/workflows/pythonflake8.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![QGIS](https://img.shields.io/badge/QGIS-3.x-green.svg)](https://qgis.org)
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org)
 
+A comprehensive QGIS plugin for advanced water management and hydraulic modeling, providing seamless integration with EPA SWMM5 networks and Iber sophisticated mesh generation capabilities for flood modeling and urban drainage analysis.
 
-## TABLE OF CONTENTS
-Here after you will find all the information you need to getting started with Giswater<br>
+## ✨ Features
 
-	1- Requirements
-	2- Install
-	3- Test
-	4- Deployment
-	5- Wiki
-	6- FAQ's
-	7- Code repositories
-	8- Versioning
-	9- License
-	10- Thanks to
+- **Advanced Water Network Management**: Plan and control water supply networks efficiently
+- **Hydraulic Modeling Integration**: Native EPA SWMM5 support for urban drainage simulation
+- **Mesh Generation**: Automatic mesh generation for finite element analysis
+- **Flood Modeling**: Comprehensive flood analysis and visualization tools
+- **Multi-language Support**: Available in English, Spanish (CR), and Spanish (ES)
+- **Cross-platform**: Works on Windows and Linux systems
 
+## 📋 Requirements
 
-## REQUIREMENTS
-To work with Giswater you will need at least 1 program:
+### System Requirements
+- **QGIS 3.x**: Geographic Information System software
+- **Python 3.9+**: Required for plugin functionality
+- **matplotlib**: Python library for plotting (may need manual installation for non-standalone QGIS)
 
-QGIS: Geoprocessing software<br>
-<br>
-If you didn't install QGIS using the standalone installer, you may need to install the matplotlib python library manually.
+### Platform-Specific Requirements
 
-**Linux users**: You will need to install the Python packages listed in the `requirements.txt` file. These packages are bundled for Windows but must be installed separately on Linux systems.
+**Windows**: All required packages are bundled with the plugin.
+
+**Linux**: Install Python dependencies manually:
 ```bash
 pip install -r requirements.txt
 ```
 
-## INSTALL
+## 🚀 Installation
 
+### Method 1: QGIS Plugin Manager (Recommended)
+1. Open QGIS
+2. Navigate to `Plugins` → `Manage and Install Plugins`
+3. Search for "IberGIS"
+4. Click `Install Plugin`
 
-## TEST
+### Method 2: Manual Installation
+1. Download the latest release from the repository
+2. Extract the plugin to your QGIS plugins directory:
+   - **Windows**: `%APPDATA%\QGIS\QGIS3\profiles\default\python\plugins\`
+   - **Linux**: `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/`
+3. Restart QGIS
+4. Enable the plugin in `Plugins` → `Manage and Install Plugins`
 
+## 🧪 Testing
 
-## DEPLOYMENT
+### Sample Data
+The plugin includes comprehensive sample datasets located in the `resources/example/` directory:
+- **Sample GPKG**: Geospatial database with example geometries
+- **Full Project Example**: Complete results calculated from the sample GPKG
+- **SWMM Input Files**: Pre-configured `.inp` files for testing
+- **Mesh Examples**: Sample mesh data for validation
+- **QGIS Projects**: Ready-to-use project files
 
+### Running Tests
+1. Install flake8:
+   ```bash
+   pip install flake8
+   ```
+2. Run flake8 from the plugin root directory:
+   ```bash
+   flake8 .
+   ```
 
-## WIKI
-You can find more information on https://github.com/Giswater/giswater_dbmodel/wiki
+## 📚 Documentation
 
-## FAQ's
-You can find the Frequent Answers and Questions for project on https://github.com/Giswater/giswater_dbmodel/wiki/FAQs
+- **Wiki**: Comprehensive documentation available at [GitHub Wiki](https://drain-iber.github.io/testing/en/docs/)
+- **FAQ**: Common questions and troubleshooting at [GitHub FAQ](https://github.com/ibergis/ibergis_qgis_plugin/wiki/FAQs)
+- **API Reference**: Developer documentation for extending functionality
 
-## CODE REPOSITORY
+## 🔧 Development
 
-## VERSIONING
+### Project Structure
+```
+ibergis_qgis_plugin/
+├── core/               # Core functionality
+│   ├── ui/             # User interface components
+│   └── processing/     # Processing algorithms
+├── resources/          # Sample data and templates
+├── packages/           # Bundled dependencies
+└── dbmodel/            # Database schemas and functions
+```
 
-Major: New architecture with new great functionalities without forward compatibility.<br>
-Minor: Bug fix and new great functionalities (including refactors) with forward compatibility.<br>
-Built: Bug fix and new little functionalities with forward compatibility.<br>
+### Versioning
+- **Major**: New architecture with significant changes (breaking compatibility)
+- **Minor**: New features and bug fixes (backward compatible)
+- **Patch**: Bug fixes and minor improvements (backward compatible)
 
-## Third-Party Libraries
+## 📦 Third-Party Libraries
 
 IberGIS uses the following third-party libraries:
 
@@ -97,8 +136,20 @@ IberGIS uses the following third-party libraries:
   rioxarray is an extension of rasterio and xarray.
   The rioxarray license can be viewed in the [LICENSE](./packages/rioxarray/LICENSE) or in their [repository](https://github.com/corteva/rioxarray/blob/master/LICENSE).
 
-## LICENSE
+## 📄 License
+
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See LICENSE file for more information.
 
+## 🤝 Contributing
 
-## THANKS TO
+We welcome contributions! Please see our contributing guidelines and feel free to submit issues, feature requests, or pull requests.
+
+## 💬 Support
+
+- **Issues**: Report bugs and request features via GitHub Issues
+- **Documentation**: Check our [Wiki](https://github.com/Giswater/giswater_dbmodel/wiki) for detailed guides
+- **Community**: Join discussions in our project forums
+
+---
+
+**Made with ❤️ for the water management community**
