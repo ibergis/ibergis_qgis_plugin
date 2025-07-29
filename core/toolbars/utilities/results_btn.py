@@ -165,7 +165,7 @@ class DrResultsButton(DrAction):
         # Add results actions
         self.load_raster_results_action = QAction("Load raster results", self.menu)
         self.load_raster_results_action.triggered.connect(self.load_raster_results)
-        # self.load_raster_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '15.png')))
+        self.load_raster_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '17.png')))
 
         self.profile_action = QAction("Profile", self.menu)
         self.profile_action.triggered.connect(self.show_profile)
@@ -173,14 +173,15 @@ class DrResultsButton(DrAction):
 
         self.report_summary_action = QAction("Report Summary", self.menu)
         self.report_summary_action.triggered.connect(self.show_report_summary)
-        self.report_summary_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '17.png')))
+        self.report_summary_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '18.png')))
         # self.report_summary_action.setCheckable(True)
 
         self.time_series_graph_action = QAction("Time series graph", self.menu)
         self.time_series_graph_action.triggered.connect(self.show_time_series_graph)
-        self.time_series_graph_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '18.png')))
+        self.time_series_graph_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '19.png')))
         self.time_series_graph_action.setCheckable(True)
 
+        self.menu.addAction(self.load_raster_results_action)
         self.menu.addAction(self.profile_action)
         self.menu.addAction(self.report_summary_action)
         self.menu.addAction(self.time_series_graph_action)
