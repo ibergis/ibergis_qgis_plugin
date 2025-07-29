@@ -25,7 +25,9 @@ A comprehensive QGIS plugin for advanced water management and hydraulic modeling
 
 ### Platform-Specific Requirements
 
-**Windows**: All required packages are bundled with the plugin.
+**Windows**: All required packages are bundled with the plugin. If you have gmsh, pandamesh, geopandas, or triangle packages already installed in your QGIS Python instance, you may have to uninstall them first.
+- Open Python console on QGIS
+- Type `!pip uninstall gmsh pandamesh geopandas triangle`
 
 **Linux**: Install Python dependencies manually:
 ```bash
