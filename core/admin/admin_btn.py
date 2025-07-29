@@ -519,7 +519,7 @@ class DrAdminButton(DrGpkgBase):
         tools_qt.set_widget_text(self.dlg_readsql, self.filter_srid, '25831')
         self.txt_srid.setEnabled(False)
         self.tbl_srid = self.dlg_readsql.findChild(QTableView, 'tbl_srid')
-        self.tbl_srid.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tbl_srid.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.tbl_srid.clicked.connect(partial(self._set_selected_srid))
 
     def _set_selected_srid(self, index):

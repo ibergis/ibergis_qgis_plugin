@@ -111,7 +111,7 @@ class DrBCScenarioManagerButton(DrAction):
         widget.setColumnHidden(4, True)
 
         # Set widget & model properties
-        tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=set_edit_triggers,
+        tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=set_edit_triggers,
                                       sectionResizeMode=2, stretchLastSection=True)
 
         # Sort the table by feature id

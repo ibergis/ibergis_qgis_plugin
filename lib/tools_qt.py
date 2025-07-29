@@ -567,7 +567,7 @@ def enable_dialog(dialog, enable, ignore_widgets=['', None]):
                 widget.setEnabled(enable)
 
 
-def set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=QTableView.NoEditTriggers,
+def set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=QTableView.NoEditTriggers,
                          sectionResizeMode=3, stretchLastSection=True, sortingEnabled=True):
     """ Set QTableView configurations """
 
@@ -760,7 +760,7 @@ def set_selection_behavior(dialog):
     # Get objects of type: QTableView
     widget_list = dialog.findChildren(QTableView)
     for widget in widget_list:
-        widget.setSelectionBehavior(QAbstractItemView.SelectRows)
+        widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         widget.horizontalHeader().setSectionResizeMode(3)
         widget.horizontalHeader().setStretchLastSection(True)
 

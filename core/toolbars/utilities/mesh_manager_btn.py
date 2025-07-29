@@ -91,7 +91,7 @@ class DrMeshManagerButton(DrAction):
         widget.setSortingEnabled(True)
 
         # Set widget & model properties
-        tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=set_edit_triggers,
+        tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=set_edit_triggers,
                                       sectionResizeMode=2, stretchLastSection=False)
         widget.horizontalHeader().setSectionResizeMode(0, 1)
 

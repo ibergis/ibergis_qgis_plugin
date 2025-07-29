@@ -141,7 +141,7 @@ class DrNonVisual:
         widget.setSortingEnabled(True)
 
         # Set widget & model properties
-        tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=set_edit_triggers,
+        tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=set_edit_triggers,
                                       sectionResizeMode=2, stretchLastSection=True)
         # tools_dr.set_tablemodel_config(self.manager_dlg, widget, table_name)
 
