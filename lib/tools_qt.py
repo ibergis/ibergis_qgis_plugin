@@ -659,13 +659,13 @@ def check_expression_filter(expr_filter, log_info=False):
 
 
 def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableModel.EditStrategy.OnManualSubmit,
-               sort_order=Qt.AscendingOrder, db=global_vars.db_qsql_data):
+               sort_order=Qt.SortOrder.AscendingOrder, db=global_vars.db_qsql_data):
     """ Set a model with selected filter. Attach that model to selected table
     :param qtable: tableview where set the model (QTableView)
     :param table_name: database table name or view name (String)
     :param expr_filter: expression to filter the model (String)
     :param edit_strategy: (QSqlTableModel.OnFieldChange, QSqlTableModel.EditStrategy.OnManualSubmit, QSqlTableModel.OnRowChange)
-    :param sort_order: can be 0 or 1 (Qt.AscendingOrder or Qt.AscendingOrder)
+    :param sort_order: can be 0 or 1 (Qt.SortOrder.AscendingOrder or Qt.SortOrder.AscendingOrder)
     :return:
     """
 

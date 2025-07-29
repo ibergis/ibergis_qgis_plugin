@@ -225,7 +225,7 @@ class DrMenuLoad(QObject):
             # Obtain the actual top-level item
             top_level_item = self.tree_config_files.topLevelItem(index)
             # Sort
-            top_level_item.sortChildren(0, Qt.AscendingOrder)
+            top_level_item.sortChildren(0, Qt.SortOrder.AscendingOrder)
 
     def _set_config_value(self, item, column):
 
