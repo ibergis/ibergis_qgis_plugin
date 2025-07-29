@@ -69,7 +69,7 @@ class DrMeshManagerButton(DrAction):
         if tools_qgis.get_layer_by_layername("Mesh Temp Layer") and self.last_mesh:
             self.dlg_manager.lbl_active_mesh.setText(f"Active mesh: {self.last_mesh}")
 
-    def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.NoEditTriggers, expr=None):
+    def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.EditTrigger.NoEditTriggers, expr=None):
         """ Fills manager table """
 
         # Set model

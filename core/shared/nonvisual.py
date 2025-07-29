@@ -119,7 +119,7 @@ class DrNonVisual:
         if hasattr(self, function_name):
             getattr(self, function_name)(object_id)
 
-    def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.NoEditTriggers, expr=None):
+    def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.EditTrigger.NoEditTriggers, expr=None):
         """ Fills manager table """
 
         # Set model

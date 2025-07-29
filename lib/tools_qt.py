@@ -567,7 +567,7 @@ def enable_dialog(dialog, enable, ignore_widgets=['', None]):
                 widget.setEnabled(enable)
 
 
-def set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=QTableView.NoEditTriggers,
+def set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=QTableView.EditTrigger.NoEditTriggers,
                          sectionResizeMode=3, stretchLastSection=True, sortingEnabled=True):
     """ Set QTableView configurations """
 

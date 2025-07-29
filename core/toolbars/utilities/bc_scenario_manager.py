@@ -85,7 +85,7 @@ class DrBCScenarioManagerButton(DrAction):
 
         tools_dr.open_dialog(self.dlg_manager, dlg_name="bc_scenario_manager")
 
-    def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.NoEditTriggers, expr=None):
+    def _fill_manager_table(self, widget, table_name, set_edit_triggers=QTableView.EditTrigger.NoEditTriggers, expr=None):
         """ Fills manager table """
 
         # Set model
