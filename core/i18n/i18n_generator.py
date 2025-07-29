@@ -19,7 +19,7 @@ from ..utils import tools_dr
 from ...lib import tools_qt
 from ... import global_vars
 
-from PyQt5.QtWidgets import QApplication, QFileDialog
+from qgis.PyQt.QtWidgets import QApplication, QFileDialog
 
 
 class DrI18NGenerator:
@@ -38,7 +38,7 @@ class DrI18NGenerator:
         self._load_user_values()
 
         self._check_connection()
-        
+
         # Mysteriously without the partial the function check_connection is not called
         self.dlg_qm.btn_translate.clicked.connect(partial(self._check_translate_options))
         self.dlg_qm.btn_close.clicked.connect(partial(tools_dr.close_dialog, self.dlg_qm))
@@ -114,7 +114,7 @@ class DrI18NGenerator:
                 msg += tools_qt.tr("Python translation canceled\n")
 
         self._create_path_dic()
-        for type_dbfile in self.path_dic:     
+        for type_dbfile in self.path_dic:
             if tools_qt.is_checked(self.dlg_qm, self.path_dic[type_dbfile]['checkbox']):
                 status_all_db_msg, dbtable = self._create_all_db_files(self.path_dic[type_dbfile]["path"], type_dbfile)
                 if status_all_db_msg is True:
@@ -122,7 +122,7 @@ class DrI18NGenerator:
                 elif status_all_db_msg is False:
                     msg += f"{type_dbfile} {tools_qt.tr('translation failed in table')}: {dbtable}\n"
                 elif status_all_db_msg is None:
-                    msg += f"{type_dbfile} {tools_qt.tr('translation canceled')}\n"     
+                    msg += f"{type_dbfile} {tools_qt.tr('translation canceled')}\n"
 
         if msg != '':
             tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg)
@@ -297,13 +297,13 @@ class DrI18NGenerator:
                     return title
                 return title
         return title
-    
+
     # endregion
     # region Database files
-    
+
     def _create_all_db_files(self, cfg_path, file_type):
         """ Read the values of the database and update the i18n files """
-            
+
         file_name = f"{self.path_dic[file_type]["name"]}"
 
         # Check if file exist
@@ -327,10 +327,10 @@ class DrI18NGenerator:
                 if "json" in dbtable:
                     self._write_dbjson_values(dbtable_rows, cfg_path + file_name)
                 else:
-                    self._write_table_values(dbtable_rows, dbtable_columns, dbtable, cfg_path + file_name, file_type)            
+                    self._write_table_values(dbtable_rows, dbtable_columns, dbtable, cfg_path + file_name, file_type)
 
         return True, ""
-    
+
     # endregion
     # region Gen. any table files
 
@@ -348,14 +348,14 @@ class DrI18NGenerator:
 
         if table == 'dbconfig_form_fields':
             columns = ["source_code", "context", "formname", "formtype", "source", "lb_en_us", "tt_en_us", "pl_en_us", "ds_en_us"]
-            lang_colums = [f"lb_{self.lower_lang}", f"auto_lb_{self.lower_lang}", f"va_auto_lb_{self.lower_lang}", 
-                           f"tt_{self.lower_lang}", f"auto_tt_{self.lower_lang}", f"va_auto_tt_{self.lower_lang}", 
-                           f"pl_{self.lower_lang}", f"auto_pl_{self.lower_lang}", f"va_auto_pl_{self.lower_lang}", 
+            lang_colums = [f"lb_{self.lower_lang}", f"auto_lb_{self.lower_lang}", f"va_auto_lb_{self.lower_lang}",
+                           f"tt_{self.lower_lang}", f"auto_tt_{self.lower_lang}", f"va_auto_tt_{self.lower_lang}",
+                           f"pl_{self.lower_lang}", f"auto_pl_{self.lower_lang}", f"va_auto_pl_{self.lower_lang}",
                            f"ds_{self.lower_lang}", f"auto_ds_{self.lower_lang}", f"va_auto_ds_{self.lower_lang}"]
 
         if table == "dbtexts":
             columns = ["source_code", "source", "context", "al_en_us", "ds_en_us"]
-            lang_colums = [f"al_{self.lower_lang}", f"auto_al_{self.lower_lang}", f"va_auto_al_{self.lower_lang}", 
+            lang_colums = [f"al_{self.lower_lang}", f"auto_al_{self.lower_lang}", f"va_auto_al_{self.lower_lang}",
                            f"ds_{self.lower_lang}", f"auto_ds_{self.lower_lang}", f"va_auto_ds_{self.lower_lang}"]
 
         if table == 'dbconfig_form_fields_json':
@@ -441,7 +441,7 @@ class DrI18NGenerator:
                         for item_row, txt in data:
                             query += (f"UPDATE {context} SET idval = {txt[0]}, descript = {txt[1]} WHERE "
                                      f"rowid = {item_row['source']};\n")
-                            
+
             file.write(query)
         del file
 
@@ -466,7 +466,7 @@ class DrI18NGenerator:
         for key, related_rows_dicts in updates.items():  # related_rows_dicts are now lists of dicts
             # Unpack key
             source, context, original_text, *extra = key
-            
+
             # Correct column based on context
             if context == "config_report":
                 column = "filterparam"
@@ -534,7 +534,7 @@ class DrI18NGenerator:
                 values_by_context[context] = []
 
             # related_rows_dicts[0] is the first dict for this group
-            values_by_context[context].append((source, related_rows_dicts[0], new_text, column)) 
+            values_by_context[context].append((source, related_rows_dicts[0], new_text, column))
 
         # Now write to file
         with open(path, "a", encoding="utf-8") as file:
@@ -556,10 +556,10 @@ class DrI18NGenerator:
                     file.write(f"UPDATE {context} AS t\nSET {column} = v.text::json\nFROM (\n    VALUES\n    {values_str}\n) AS v(id, text)\nWHERE t.id = v.id;\n\n")
 
             if closing:
-                file.write("UPDATE config_param_system SET value = FALSE WHERE parameter = 'admin_config_control_trigger';\\n")  
+                file.write("UPDATE config_param_system SET value = FALSE WHERE parameter = 'admin_config_control_trigger';\\n")
 
     # endregion
- 
+
     # region Extra functions
 
     def _write_header(self, path, file_type):
@@ -617,7 +617,7 @@ class DrI18NGenerator:
 
         try:
             self.conn_i18n = sqlite3.connect(gpkg_path)
-            self.conn_i18n.row_factory = sqlite3.Row 
+            self.conn_i18n.row_factory = sqlite3.Row
             self.cursor_i18n = self.conn_i18n.cursor()
             status = True
         except sqlite3.DatabaseError as e:

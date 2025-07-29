@@ -16,7 +16,7 @@ from ..ui.ui_manager import DrSchemaI18NManagerUi
 from ..utils import tools_dr
 from ...lib import tools_qt
 from ... import global_vars
-from PyQt5.QtWidgets import QApplication
+from qgis.PyQt.QtWidgets import QApplication
 
 
 class DrSchemaI18NManager:
@@ -100,7 +100,7 @@ class DrSchemaI18NManager:
 
         try:
             self.conn_i18n = sqlite3.connect(gpkg_path)
-            self.conn_i18n.row_factory = sqlite3.Row 
+            self.conn_i18n.row_factory = sqlite3.Row
             self.cursor_i18n = self.conn_i18n.cursor()
             return True
         except sqlite3.DatabaseError as e:
@@ -112,7 +112,7 @@ class DrSchemaI18NManager:
 
         try:
             self.conn_org = sqlite3.connect(gpkg_path)
-            self.conn_org.row_factory = sqlite3.Row 
+            self.conn_org.row_factory = sqlite3.Row
             self.cursor_org = self.conn_org.cursor()
             return True
         except sqlite3.DatabaseError as e:
@@ -152,7 +152,7 @@ class DrSchemaI18NManager:
         tools_dr.set_config_parser('i18n_manager', 'qm_py_msg', f"{py_msg}", "user", "session", prefix=False)
         tools_dr.set_config_parser('i18n_manager', 'qm_py_dialogs', f"{py_dialogs}", "user", "session", prefix=False)
         tools_dr.set_config_parser('i18n_manager', 'qm_db_msg', f"{db_msg}", "user", "session", prefix=False)
-        
+
     def pass_schema_info(self, schema_info):
         self.project_type = schema_info['project_type']
         self.project_epsg = schema_info['project_epsg']
@@ -163,13 +163,13 @@ class DrSchemaI18NManager:
         self.py_messages = tools_qt.is_checked(self.dlg_qm, self.dlg_qm.chk_py_messages)
         self.py_dialogs = tools_qt.is_checked(self.dlg_qm, self.dlg_qm.chk_py_dialogs)
         self.db_tables = tools_qt.is_checked(self.dlg_qm, self.dlg_qm.chk_db_dialogs)
-        
+
         if self.db_tables:
             self._update_db_tables()
 
         if self.py_messages:
             self._update_py_messages()
-        
+
         if self.py_dialogs:
             self._update_py_dialogs()
 
@@ -198,15 +198,15 @@ class DrSchemaI18NManager:
                 else:
                     msg = "Incorrect languages, make sure to have the giswater project in english"
                     tools_qt.show_info_box(msg)
-                    break 
+                    break
 
-        self._vacuum_commit(self.conn_i18n, self.cursor_i18n)      
+        self._vacuum_commit(self.conn_i18n, self.cursor_i18n)
         self.dlg_qm.lbl_info.clear()
         tools_qt.show_info_box(text_error)
 
     def _update_tables(self, table_i18n):
         tables_org = self.dbtables_dic[self.project_type]['tables_org'][table_i18n]
-        
+
         text_error = ""
         for table_org in tables_org:
             if "json" in table_i18n:
@@ -221,7 +221,7 @@ class DrSchemaI18NManager:
         columns_select_i18n = ", ".join(columns_i18n)
         query_i18n = f"SELECT {columns_select_i18n} FROM {table_i18n};"
         rows_i18n_sqlite = self._get_rows(query_i18n, self.cursor_i18n)
-        
+
         processed_rows_i18n = []
         if rows_i18n_sqlite:
             for row_sqlite in rows_i18n_sqlite:
@@ -234,11 +234,11 @@ class DrSchemaI18NManager:
                     if row_dict[actual_column_name] is None:
                         row_dict[actual_column_name] = ''
                 processed_rows_i18n.append(row_dict)
-        
+
         columns_select_org = ", ".join(columns_org)
         query_org = f"SELECT {columns_select_org} FROM {table_org};"
         rows_org_sqlite = self._get_rows(query_org, self.cursor_org)
-        
+
         text_error = ""
         if rows_org_sqlite:
             for row_org_sqlite_item in rows_org_sqlite:
@@ -249,7 +249,7 @@ class DrSchemaI18NManager:
 
                 row_org_com_for_check = {col_i18n: row_org_dict.get(col_i18n) for col_i18n in columns_i18n if col_i18n in row_org_dict}
 
-                if processed_rows_i18n is None or row_org_com_for_check not in processed_rows_i18n: 
+                if processed_rows_i18n is None or row_org_com_for_check not in processed_rows_i18n:
                     texts = []
                     for name in names:
                         value = f"'{row_org_dict[name].replace("'", "''")}'" if row_org_dict[name] not in [None, ''] else 'NULL'
@@ -261,7 +261,7 @@ class DrSchemaI18NManager:
                                         {texts[0]}, {texts[1]}, {texts[2]}, {texts[3]}) 
                                         ON CONFLICT (context, source_code, source, formname, formtype) 
                                         DO UPDATE SET lb_en_us = {texts[0]}, tt_en_us = {texts[1]}, pl_en_us = {texts[2]}, ds_en_us = {texts[3]};\n"""
-                    
+
                     elif 'dbtexts' in table_i18n:
                         source = ""
                         if table_org == "config_csv":
@@ -277,7 +277,7 @@ class DrSchemaI18NManager:
                                         VALUES ('drain', '{table_org}', '{source}', {texts[0]}, {texts[1]}) 
                                         ON CONFLICT (source_code, context, source) 
                                         DO UPDATE SET al_en_us = {texts[0]}, ds_en_us = {texts[1]};\n"""
-                        
+
                     try:
                         self.cursor_i18n.execute(query)
                         self.conn_i18n.commit()
@@ -288,7 +288,7 @@ class DrSchemaI18NManager:
             return f'{table_i18n}: 1- Succesfully updated table. '
         else:
             return f"{text_error}\n"
-        
+
     def _get_rows_to_compare(self, table_i18n, table_org):
         if 'dbconfig_form_fields' in table_i18n:
             columns_i18n = ["formname", "formtype", "source", "lb_en_us", "tt_en_us", "pl_en_us", "ds_en_us"]
@@ -310,10 +310,10 @@ class DrSchemaI18NManager:
                 columns_org = ["srs_id", "srs_name", "definition"]
                 names = ["srs_name", "definition"]
         return columns_i18n, columns_org, names
-    
+
     # endregion
     # region Json
-    
+
     def _json_update(self, table_i18n, table_org):
         self._change_table_lyt(table_i18n)
         column = "widgetcontrols"
@@ -323,13 +323,13 @@ class DrSchemaI18NManager:
         query = ""
         print(rows)
         for row in rows:
-            
+
             safe_row_column = str(row[column]).replace("'", "''")
             if row[column] not in [None, "", "None"]:
-                datas = self.extract_and_update_strings(row[column])    
+                datas = self.extract_and_update_strings(row[column])
 
                 for i, data in enumerate(datas):
-                    
+
                     for key, text in data.items():
                         # Handle string or list of strings
                         if isinstance(text, list):
@@ -343,12 +343,12 @@ class DrSchemaI18NManager:
                         query_row = f""" INSERT INTO {table_i18n} (source_code, context, formname, formtype, source, hint, text, lb_en_us)
                         VALUES ('giswater', '{table_org}', '{row['formname']}', '{row['formtype']}', '{row['columnname']}', '{key}_{i}', '{safe_row_column}', '{safe_text}')
                         ON CONFLICT (source_code, context, formname, formtype, source, hint, text)
-                        DO UPDATE SET lb_en_us = '{safe_text}'; """ 
-                        
+                        DO UPDATE SET lb_en_us = '{safe_text}'; """
+
                         # Execute or collect query_row
                         query += query_row
         return query
-    
+
     # endregion
     # region Python
     def _update_py_dialogs(self):
@@ -359,7 +359,7 @@ class DrSchemaI18NManager:
         # Find the files to search for messages
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
         files = self._find_files(path, ".ui")
-        
+
         # Determine the key and find the messages
         messages = []
         primary_keys_final = []
@@ -439,7 +439,7 @@ class DrSchemaI18NManager:
                 text_error += f"Error updating: {message}.\n"
                 print(query)
                 print(e)
-        
+
         if len(text_error) > 1:
             tools_qt.show_info_box(text_error)
         else:
@@ -447,7 +447,7 @@ class DrSchemaI18NManager:
             tools_qt.show_info_box(msg)
 
         self.conn_i18n.commit()
-    
+
     def _update_py_messages(self):
         self.project_type = "python"
         self._change_table_lyt("pymessage")
@@ -456,7 +456,7 @@ class DrSchemaI18NManager:
         )
         print(path)
         files = self._find_files(path, ".py")
-        
+
         messages = []
         fields = ['message', 'msg', 'title']
         patterns = ['=', ' =', '= ', ' = ']
@@ -549,7 +549,7 @@ class DrSchemaI18NManager:
 
                 for num_line, raw_line in enumerate(f):
                     line = raw_line.strip()
-                    
+
                     if in_multiline:
                         full_text += line
                         if line.endswith(")"):
@@ -573,7 +573,7 @@ class DrSchemaI18NManager:
         except Exception as e:
             print(f"Error reading file {file}: {e}")
         return found_lines
-    
+
     def _msg_multines_end(self, found_lines, full_text, num_line):
         matches = re.findall(r"(['\"])(.*?)\1", full_text)
         if matches:
@@ -583,7 +583,7 @@ class DrSchemaI18NManager:
             print(f"Error: Could not extract message from line: {full_text}")
             found_lines.append((num_line, full_text.strip()))
         return found_lines
-    
+
     def _search_dialog_info(self, file, key_row, key_text, num_line):
         with open(file, "r", encoding="utf-8") as f:
             # Extract folder and file name (assuming the file path is used)
@@ -593,13 +593,13 @@ class DrSchemaI18NManager:
 
             # Read all lines into a list
             lines = f.readlines()
-            
+
             # Search for the key in the file, starting from the given line
             while num_line >= 0 and key_row not in lines[num_line]:
-                num_line -= 1  
-            
+                num_line -= 1
+
             if num_line < 0:
-                return None 
+                return None
 
             # Now extract the value between quotes using regex
             pattern = rf'{re.escape(key_text)}"(.*?)"'
@@ -609,7 +609,7 @@ class DrSchemaI18NManager:
                 source = match.group(1)
             else:
                 source = ""
-            
+
             return dialog_name, toolbar_name, source
 
     def _extra_messages_to_find():
@@ -687,7 +687,7 @@ class DrSchemaI18NManager:
 
         recurse(data)
         return results
-    
+
     def _verify_lang(self):
         return True
         query = "SELECT language from sys_version"
@@ -696,7 +696,7 @@ class DrSchemaI18NManager:
         if language_org != 'en_US':
             return False
         return True
-    
+
     def tables_dic(self):
         self.dbtables_dic = {
             "DB": {
