@@ -9,7 +9,6 @@ import csv
 import os
 from functools import partial
 import json
-from sip import isdeleted
 from time import time
 from datetime import timedelta
 
@@ -582,12 +581,12 @@ class DrToolBoxButton(DrAction):
 
     def _update_time_elapsed(self, text, dialog):
 
-        if isdeleted(dialog):
+        try:
+            lbl_time = dialog.findChild(QLabel, 'lbl_time')
+            lbl_time.setText(text)
+        except RuntimeError:
             self.timer.stop()
             return
-
-        lbl_time = dialog.findChild(QLabel, 'lbl_time')
-        lbl_time.setText(text)
 
     def _manage_btn_run(self, index):
         """

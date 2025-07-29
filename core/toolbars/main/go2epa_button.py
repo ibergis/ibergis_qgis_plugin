@@ -8,7 +8,6 @@ or (at your option) any later version.
 import os
 
 from functools import partial
-from sip import isdeleted
 from time import time
 from datetime import timedelta
 
@@ -254,11 +253,11 @@ class DrGo2IberButton(DrAction):
 
     def _update_time_elapsed(self, text, dialog):
 
-        if isdeleted(dialog):
+        try:
+            lbl_time = dialog.findChild(QLabel, 'lbl_time')
+            lbl_time.setText(text)
+        except RuntimeError:
             self.timer.stop()
             return
-
-        lbl_time = dialog.findChild(QLabel, 'lbl_time')
-        lbl_time.setText(text)
 
     # endregion

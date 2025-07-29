@@ -8,7 +8,6 @@ or (at your option) any later version.
 import os
 
 from functools import partial
-from sip import isdeleted
 from time import time
 from datetime import timedelta
 
@@ -197,9 +196,9 @@ class DrExecuteModelButton(DrAction):
 
     def _update_time_elapsed(self, text, dialog):
 
-        if isdeleted(dialog):
+        try:
+            lbl_timer = dialog.findChild(QLabel, 'lbl_timer')
+            lbl_timer.setText(text)
+        except RuntimeError:
             self.timer.stop()
             return
-
-        lbl_timer = dialog.findChild(QLabel, 'lbl_timer')
-        lbl_timer.setText(text)

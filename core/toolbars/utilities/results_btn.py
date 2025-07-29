@@ -14,7 +14,6 @@ from qgis.PyQt.QtCore import Qt
 
 from ....lib import tools_qgis
 from .... import global_vars
-from sip import isdeleted
 from ....core.toolbars.dialog import DrAction
 from ....core.toolbars.utilities.profile_btn import DrProfileButton
 
@@ -56,16 +55,19 @@ class DrResultsButton(DrAction):
         """ Show profile """
 
         # Return if theres the profile dialog open
-        if (self.profile_btn is not None and self.profile_btn.dlg_draw_profile is not None and
-                not isdeleted(self.profile_btn.dlg_draw_profile) and self.profile_btn.dlg_draw_profile.isVisible()):
-            # Bring the existing dialog to the front
-            self.profile_btn.dlg_draw_profile.setWindowState(
-                self.profile_btn.dlg_draw_profile.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
-            )
-            self.profile_btn.dlg_draw_profile.raise_()
-            self.profile_btn.dlg_draw_profile.show()
-            self.profile_btn.dlg_draw_profile.activateWindow()
-            return
+        if (self.profile_btn is not None and self.profile_btn.dlg_draw_profile is not None):
+            try:
+                if self.profile_btn.dlg_draw_profile.isVisible():
+                    # Bring the existing dialog to the front
+                    self.profile_btn.dlg_draw_profile.setWindowState(
+                        self.profile_btn.dlg_draw_profile.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
+                    )
+                    self.profile_btn.dlg_draw_profile.raise_()
+                    self.profile_btn.dlg_draw_profile.show()
+                    self.profile_btn.dlg_draw_profile.activateWindow()
+                    return
+            except RuntimeError:
+                pass
 
         # Get the profile button class
         if self.profile_btn is None:
@@ -78,14 +80,18 @@ class DrResultsButton(DrAction):
         print("show_report_summary")
         return
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
-            # Bring the existing dialog to the front
-            self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
-            self.dialog.raise_()
-            self.dialog.show()
-            self.dialog.activateWindow()
-            tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
-            return
+        if self.dialog is not None:
+            try:
+                if self.dialog.isVisible():
+                    # Bring the existing dialog to the front
+                    self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
+                    self.dialog.raise_()
+                    self.dialog.show()
+                    self.dialog.activateWindow()
+                    tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
+                    return
+            except RuntimeError:
+                pass
 
         # Show info message
         msg = "Draw a linestring to define the bridge and then use right click to finish the drawing."
@@ -117,14 +123,18 @@ class DrResultsButton(DrAction):
         print("show_time_series_graph")
         return
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
-            # Bring the existing dialog to the front
-            self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
-            self.dialog.raise_()
-            self.dialog.show()
-            self.dialog.activateWindow()
-            tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
-            return
+        if self.dialog is not None:
+            try:
+                if self.dialog.isVisible():
+                    # Bring the existing dialog to the front
+                    self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
+                    self.dialog.raise_()
+                    self.dialog.show()
+                    self.dialog.activateWindow()
+                    tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
+                    return
+            except RuntimeError:
+                pass
 
         # Show info message
         msg = "Draw a linestring to define the bridge and then use right click to finish the drawing."
