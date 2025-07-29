@@ -18,7 +18,7 @@ if 'nt' in sys.builtin_module_names:
     import ctypes
 from functools import partial
 
-from qgis.PyQt.QtCore import Qt, QStringListModel, QVariant, QDate, QSettings, QLocale, QRegExp
+from qgis.PyQt.QtCore import Qt, QStringListModel, QVariant, QDate, QSettings, QLocale, QRegularExpression
 from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QStandardItem, QIntValidator, \
     QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
@@ -3231,7 +3231,7 @@ def _set_reg_exp(widget, field):
     if 'widgetcontrols' in field and field['widgetcontrols']:
         if field['widgetcontrols'] and 'regexpControl' in field['widgetcontrols']:
             if field['widgetcontrols']['regexpControl'] is not None:
-                reg_exp = QRegExp(str(field['widgetcontrols']['regexpControl']))
+                reg_exp = QRegularExpression(str(field['widgetcontrols']['regexpControl']))
                 widget.setValidator(QRegExpValidator(reg_exp))
 
     return widget

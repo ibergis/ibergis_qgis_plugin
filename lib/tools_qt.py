@@ -16,7 +16,7 @@ from functools import partial
 from encodings.aliases import aliases
 from warnings import warn
 
-from qgis.PyQt.QtCore import QDate, QDateTime, QSortFilterProxyModel, QStringListModel, QTime, Qt, QRegExp, \
+from qgis.PyQt.QtCore import QDate, QDateTime, QSortFilterProxyModel, QStringListModel, QTime, Qt, QRegularExpression, \
     pyqtSignal, QPersistentModelIndex, QCoreApplication, QTranslator
 from qgis.PyQt.QtGui import QPixmap, QDoubleValidator, QTextCharFormat, QFont
 from qgis.PyQt.QtSql import QSqlTableModel
@@ -1070,14 +1070,14 @@ def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=
 def set_text_bold(widget, pattern):
     """ Set bold text when word match with pattern
     :param widget: QTextEdit
-    :param pattern: Text to find used as pattern for QRegExp (String)
+    :param pattern: Text to find used as pattern for QRegularExpression (String)
     :return:
     """
 
     cursor = widget.textCursor()
     format_ = QTextCharFormat()
     format_.setFontWeight(QFont.Bold)
-    regex = QRegExp(pattern)
+    regex = QRegularExpression(pattern)
     pos = 0
     index = regex.indexIn(widget.toPlainText(), pos)
     while index != -1:
