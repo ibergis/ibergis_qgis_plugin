@@ -658,13 +658,13 @@ def check_expression_filter(expr_filter, log_info=False):
     return True, expr
 
 
-def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableModel.OnManualSubmit,
+def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableModel.EditStrategy.OnManualSubmit,
                sort_order=Qt.AscendingOrder, db=global_vars.db_qsql_data):
     """ Set a model with selected filter. Attach that model to selected table
     :param qtable: tableview where set the model (QTableView)
     :param table_name: database table name or view name (String)
     :param expr_filter: expression to filter the model (String)
-    :param edit_strategy: (QSqlTableModel.OnFieldChange, QSqlTableModel.OnManualSubmit, QSqlTableModel.OnRowChange)
+    :param edit_strategy: (QSqlTableModel.OnFieldChange, QSqlTableModel.EditStrategy.OnManualSubmit, QSqlTableModel.OnRowChange)
     :param sort_order: can be 0 or 1 (Qt.AscendingOrder or Qt.AscendingOrder)
     :return:
     """
@@ -930,7 +930,7 @@ def delete_rows_tableview(qtable):
         # Get current editStrategy
         edit_strategy = qtable.model().editStrategy()
 
-        qtable.model().setEditStrategy(QSqlTableModel.OnManualSubmit)
+        qtable.model().setEditStrategy(QSqlTableModel.EditStrategy.OnManualSubmit)
         for model_index in qtable.selectionModel().selectedRows():
             index = QPersistentModelIndex(model_index)
             qtable.model().removeRow(index.row())
@@ -1279,7 +1279,7 @@ def set_table_model(dialog, table_object, table_name, expr_filter):
     # Set a model with selected filter expression
     model = QSqlTableModel(db=global_vars.db_qsql_data)
     model.setTable(table_name)
-    model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+    model.setEditStrategy(QSqlTableModel.EditStrategy.OnManualSubmit)
     model.select()
     if model.lastError().isValid():
         tools_qgis.show_warning(model.lastError().text())
