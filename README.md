@@ -1,11 +1,11 @@
 # IberGIS - QGIS Plugin
 
 [![Python flake8](https://github.com/ibergis/ibergis_qgis_plugin/actions/workflows/pythonflake8.yml/badge.svg)](https://github.com/ibergis/ibergis_qgis_plugin/actions/workflows/pythonflake8.yml)
+[![QGIS](https://img.shields.io/badge/QGIS-3.34+-green.svg?logo=qgis)](https://qgis.org)
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg?logo=python)](https://www.python.org)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![QGIS](https://img.shields.io/badge/QGIS-3.x-green.svg)](https://qgis.org)
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org)
 
-A comprehensive QGIS plugin for advanced water management and hydraulic modeling, providing seamless integration with EPA SWMM5 networks and Iber sophisticated mesh generation capabilities for flood modeling and urban drainage analysis.
+A comprehensive QGIS plugin for advanced water management and hydraulic modeling, providing seamless integration with **EPA SWMM** networks and **Iber** sophisticated mesh generation capabilities for flood modeling and urban drainage analysis.
 
 ## ✨ Features
 
