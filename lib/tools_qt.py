@@ -664,7 +664,7 @@ def fill_table(qtable, table_name, expr_filter=None, edit_strategy=QSqlTableMode
     :param qtable: tableview where set the model (QTableView)
     :param table_name: database table name or view name (String)
     :param expr_filter: expression to filter the model (String)
-    :param edit_strategy: (QSqlTableModel.EditStrategy.OnFieldChange, QSqlTableModel.EditStrategy.OnManualSubmit, QSqlTableModel.OnRowChange)
+    :param edit_strategy: (QSqlTableModel.EditStrategy.OnFieldChange, QSqlTableModel.EditStrategy.OnManualSubmit, QSqlTableModel.EditStrategy.OnRowChange)
     :param sort_order: can be 0 or 1 (Qt.SortOrder.AscendingOrder or Qt.SortOrder.AscendingOrder)
     :return:
     """
