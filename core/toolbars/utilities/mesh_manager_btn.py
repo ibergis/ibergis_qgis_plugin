@@ -75,7 +75,7 @@ class DrMeshManagerButton(DrAction):
         # Set model
         model = QSqlTableModel(db=global_vars.db_qsql_data)
         model.setTable(table_name)
-        model.setEditStrategy(QSqlTableModel.OnFieldChange)
+        model.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
         model.setSort(0, 0)
         model.select()
 
