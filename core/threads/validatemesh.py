@@ -145,7 +145,7 @@ def validate_intersect_v2(
     overlap = overlap.loc[overlap["name_1"] != overlap["name_2"]]
     overlap = overlap.explode()
     overlap = overlap.loc[
-        (overlap.geometry.geom_type == "Polygon") & (overlap.geometry.area > 0.0000001)
+        (overlap.geometry.geom_type == "Polygon")
     ]  # Ignore Line overlap
     if feedback.isCanceled():
         return
@@ -205,6 +205,9 @@ def validate_vert_edge_v2(
     gdfs = []
     for layer in layers:
         gdf = layer_to_gdf(layer, ["code"])
+        if gdf.code.isnull().any():
+            feedback.pushWarning("Invalid codes")
+            return
         gdf["layer"] = layer.name()
         gdfs.append(gdf)
 
@@ -327,6 +330,9 @@ def validate_vert_edge(
     gdfs = []
     for layer in layers:
         gdf = layer_to_gdf(layer, ["code"])
+        if gdf.code.isnull().any():
+            feedback.pushWarning("Invalid codes")
+            return
         gdf["layer"] = layer.name()
         gdfs.append(gdf)
 
@@ -516,6 +522,9 @@ def validate_distance(
         assert isinstance(geom, shapely.Polygon), f"{type(geom)}"
         new_verts = list(map(shapely.Point, get_polygon_vertices(geom)))
         vertices += new_verts
+        if str(row.cellsize) in (None, 'NULL', 'null', 'nan'):
+            feedback.pushWarning("Invalid cellsize")
+            return None
         cellsize += [row.cellsize] * len(new_verts)
 
     vertices_gdf = gpd.GeoDataFrame(geometry=vertices, data={"cellsize": cellsize})
@@ -791,6 +800,8 @@ def validate_input_layers(
                 return
 
             for layer in result_layers:
+                if layer is None:
+                    continue
                 if layer.hasFeatures():
                     if validation["type"] == "error":
                         error_layers.append(layer)
@@ -798,7 +809,7 @@ def validate_input_layers(
                         warning_layers.append(layer)
 
         if error_layers:
-            feedback.setProgressText(f"Errors ({len(error_layers)})")
+            feedback.pushWarning(f"Errors ({len(error_layers)})")
             return error_layers, warning_layers
     return error_layers, warning_layers
 

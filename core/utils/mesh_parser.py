@@ -356,6 +356,8 @@ def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None, bridges_fp=None):
     losses = None
     if losses_fp:
         first_line = True
+        cn_ids = []  # Polygon IDs
+        cn_values = []  # CN values
         for line in losses_fp:
             if first_line:
                 first_line = False
@@ -377,7 +379,12 @@ def load(mesh_fp: io.StringIO, roof_fp=None, losses_fp=None, bridges_fp=None):
                     continue
             else:
                 polygon_id, cn_value = line.split()
-                polygons_df.loc[int(polygon_id), "scs_cn"] = float(cn_value)
+                cn_ids.append(int(polygon_id))
+                cn_values.append(float(cn_value))
+
+        # Bulk update all CN values at once using vectorized operations
+        if cn_values:
+            polygons_df.loc[cn_ids, "scs_cn"] = cn_values
 
     mesh = Mesh(
         polygons=polygons_df,

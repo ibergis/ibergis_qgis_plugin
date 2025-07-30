@@ -11,7 +11,7 @@ from ...ui.ui_manager import DrMeshManagerUi, DrLineeditUi
 from .createmesh_btn import DrCreateMeshButton
 from ...threads.create_temp_layer import DrCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
-from ...utils import tools_dr, mesh_parser
+from ...utils import tools_dr
 from .... import global_vars
 from ....lib.tools_gpkgdao import DrGpkgDao
 from typing import Optional
@@ -149,12 +149,12 @@ class DrMeshManagerButton(DrAction):
         if not row:
             return
 
-        mesh = mesh_parser.loads(row["iber2d"], row["roof"], row["losses"])
         self.last_mesh = value
 
-        self.thread = DrCreateTempMeshLayerTask("Create Temp Mesh Layer", mesh)
+        self.thread = DrCreateTempMeshLayerTask("Create Temp Mesh Layer", None, row)
         self.thread.taskCompleted.connect(self._load_layer)
         QgsApplication.taskManager().addTask(self.thread)
+        QgsApplication.taskManager().triggerTask(self.thread)
 
     def _load_layer(self):
         """Add temp layer to TOC"""

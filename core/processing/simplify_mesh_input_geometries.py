@@ -48,6 +48,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
     ground_layer: Optional[QgsVectorLayer] = None
     validation_layer_intersect: Optional[QgsVectorLayer] = None
     validation_layer_vert_edge: Optional[QgsVectorLayer] = None
+    validation_layer_coverage: Optional[QgsVectorLayer] = None
 
     def initAlgorithm(self, config):
         """
@@ -119,6 +120,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         self.simplified_layer = None
         self.validation_layer_intersect = None
         self.validation_layer_vert_edge = None
+        self.validation_layer_coverage = None
 
         # reading geodata
         feedback.setProgressText(self.tr('Merging roof and ground layers...'))
@@ -160,9 +162,6 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
             self.simplified_layer: QgsVectorLayer = result['OUTPUT']
         except Exception as e:
             feedback.pushWarning(self.tr(f'Error simplifying geometries. {e}'))
-
-        if self.simplified_layer is None:
-            feedback.pushWarning(self.tr('Error simplifying geometries.'))
             self._validate_input_layers(feedback)
             return {}
 
@@ -244,18 +243,25 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
             # Add validation layer
             QgsProject.instance().addMapLayer(self.validation_layer_intersect, False)
             group.addLayer(self.validation_layer_intersect)
-            feedback.setProgressText(self.tr('Input layers validated'))
+            feedback.pushWarning(self.tr('Intersection errors found'))
         elif self.validation_layer_vert_edge is not None and self.validation_layer_vert_edge.featureCount() > 0:
             # Add validation layer
             QgsProject.instance().addMapLayer(self.validation_layer_vert_edge, False)
             group.addLayer(self.validation_layer_vert_edge)
-            feedback.setProgressText(self.tr('Input layers validated'))
+            feedback.pushWarning(self.tr('Vertex-edge errors found'))
+        elif self.validation_layer_coverage is not None and self.validation_layer_coverage.featureCount() > 0:
+            # Add validation layer
+            # QgsProject.instance().addMapLayer(self.validation_layer_coverage, False)
+            # group.addLayer(self.validation_layer_coverage)
+            # feedback.pushWarning(self.tr('Coverage errors found'))
+            feedback.pushWarning(self.tr('Coverage errors found. Merge "ground" and "roof" layers and use Validate Coverage processing to identify the errors.'))
 
         return {}
 
     def _validate_input_layers(self, feedback: Feedback):
         """ Validate input layers """
         feedback.setProgressText(self.tr('Validating input layers...'))
+
         # Validate intersection
         self.validation_layer_intersect = validatemesh.validate_intersect_v2(
             {
@@ -267,7 +273,6 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         )
         if self.validation_layer_intersect is None:
             feedback.pushWarning("Intersection validation layer not found")
-            self.validation_layer_intersect = None
 
         if self.validation_layer_intersect is not None and self.validation_layer_intersect.featureCount() > 0:
             return
@@ -283,7 +288,16 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         )
         if self.validation_layer_vert_edge is None:
             feedback.pushWarning("Vertex-edge validation layer not found")
-            self.validation_layer_vert_edge = None
+
+        if self.validation_layer_intersect is None and self.validation_layer_vert_edge is None:
+            # Validate coverage
+            result = processing.run("native:coveragevalidate", {'INPUT': self.file_source, 'GAP_WIDTH': 0, 'INVALID_EDGES': 'TEMPORARY_OUTPUT'})
+            self.validation_layer_coverage = result['OUTPUT']  # TODO: Process returns a string instead of a layer
+            if self.validation_layer_coverage is None and not result['IS_VALID']:
+                feedback.pushWarning("Invalid Coverage. Use Validate Coverage processing to identify the errors.")
+                return
+            elif result['IS_VALID']:
+                self.validation_layer_coverage = None
 
     def get_layer_type(self, layer: QgsVectorLayer) -> Optional[str]:
         for feature in layer.getFeatures():
