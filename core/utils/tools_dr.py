@@ -2424,7 +2424,7 @@ def manage_docker_options(option_name='position'):
         global_vars.session_vars['dialog_docker'].position = 2
 
 
-def set_tablemodel_config(dialog, widget, table_name, sort_order=0, isQStandardItemModel=False, schema_name=None):
+def set_tablemodel_config(dialog, widget, table_name, sort_order=Qt.SortOrder.AscendingOrder, isQStandardItemModel=False, schema_name=None):
     """ Configuration of tables. Set visibility and width of columns """
 
     widget = tools_qt.get_widget(dialog, widget)

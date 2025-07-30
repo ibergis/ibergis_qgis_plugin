@@ -22,7 +22,7 @@ from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTableWidget, QTa
 from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
-from qgis.PyQt.QtCore import QTime, QDate
+from qgis.PyQt.QtCore import QTime, QDate, Qt
 from ..ui.ui_manager import DrNonVisualManagerUi, DrNonVisualControlsUi, DrNonVisualCurveUi, DrNonVisualPatternUDUi, \
     DrNonVisualTimeseriesUi, DrNonVisualLidsUi, DrNonVisualRasterUi, DrNonVisualRasterImportUi
 from ..utils.matplotlib_widget import MplCanvas
@@ -126,7 +126,7 @@ class DrNonVisual:
         model = QSqlTableModel(db=global_vars.db_qsql_data)
         model.setTable(table_name)
         model.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
-        model.setSort(0, 0)
+        model.setSort(0, Qt.SortOrder.AscendingOrder)
         model.select()
 
         # Check for errors

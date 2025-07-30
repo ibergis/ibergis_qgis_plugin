@@ -3,7 +3,7 @@ from functools import partial
 from time import time
 
 from qgis.core import QgsApplication
-from qgis.PyQt.QtCore import QTimer
+from qgis.PyQt.QtCore import QTimer, Qt
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTextEdit
 from qgis.PyQt.QtSql import QSqlTableModel
 
@@ -92,7 +92,7 @@ class DrBCScenarioManagerButton(DrAction):
         model = QSqlTableModel(db=global_vars.db_qsql_data)
         model.setTable(table_name)
         model.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
-        model.setSort(0, 0)
+        model.setSort(0, Qt.SortOrder.AscendingOrder)
         model.select()
 
         # Check for errors
