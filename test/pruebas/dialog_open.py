@@ -44,7 +44,7 @@ if __name__ == '__main__':
         form.btn_test.move(190, 150)
 
     # Execute custom application
-    exitcode = app.exec_()
+    exitcode = app.exec()
 
     # Remove the provider and layer registries from memory
     app.exitQgis()

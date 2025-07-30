@@ -987,10 +987,10 @@ def show_details(detail_text, title=None, inf_text=None, msg_params=None, title_
     if inf_text:
         inf_text = tr(inf_text, list_params=inf_text_params)
         msg_box.setInformativeText(inf_text)
-    msg_box.setWindowFlags(Qt.WindowStaysOnTopHint)
-    msg_box.setStandardButtons(QMessageBox.Ok)
-    msg_box.setDefaultButton(QMessageBox.Ok)
-    msg_box.exec_()
+    msg_box.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
+    msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+    msg_box.setDefaultButton(QMessageBox.StandardButton.Ok)
+    msg_box.exec()
 
 
 def show_warning_open_file(text, inf_text, file_path, context_name=None, msg_params=None, inf_text_params=None):
@@ -1031,13 +1031,13 @@ def show_question(text, title=None, inf_text=None, context_name=None, parameter=
         if len(inf_text) > 500:
             inf_text = inf_text[:500] + "\n[...]"
         msg_box.setInformativeText(inf_text)
-    msg_box.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
-    msg_box.setDefaultButton(QMessageBox.Ok)
-    msg_box.setWindowFlags(Qt.WindowStaysOnTopHint)
-    ret = msg_box.exec_()
-    if ret == QMessageBox.Ok:
+    msg_box.setStandardButtons(QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Ok)
+    msg_box.setDefaultButton(QMessageBox.StandardButton.Ok)
+    msg_box.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
+    ret = msg_box.exec()
+    if ret == QMessageBox.StandardButton.Ok:
         return True
-    elif ret == QMessageBox.Discard:
+    elif ret == QMessageBox.StandardButton.Discard:
         return False
     return False
 
@@ -1056,7 +1056,7 @@ def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=
     if len(msg) > 750:
         msg = msg[:750] + "\n[...]"
     msg_box.setText(msg)
-    msg_box.setWindowFlags(Qt.WindowStaysOnTopHint)
+    msg_box.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
     if title:
         title = tr(title, context_name, list_params=title_params)
         msg_box.setWindowTitle(title)
@@ -1065,8 +1065,8 @@ def show_info_box(text, title=None, inf_text=None, context_name=None, parameter=
         if len(inf_text) > 500:
             inf_text = inf_text[:500] + "\n[...]"
         msg_box.setInformativeText(inf_text)
-    msg_box.setDefaultButton(QMessageBox.No)
-    msg_box.exec_()
+    msg_box.setDefaultButton(QMessageBox.StandardButton.No)
+    msg_box.exec()
 
 
 def set_text_bold(widget, pattern):
@@ -1205,7 +1205,7 @@ def show_exception_message(title=None, msg="", window_title="Information about e
         dlg_text.lbl_text.setText(title)
     msg = tr(msg, list_params=msg_params)
     set_widget_text(dlg_text, dlg_text.txt_infolog, msg)
-    dlg_text.setWindowFlags(Qt.WindowStaysOnTopHint)
+    dlg_text.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
     if pattern is None:
         pattern = "File\\sname:|Function\\sname:|Line\\snumber:|SQL:|SQL\\sfile:|Detail:|Context:|Description|Schema " \
                   "name|Message\\serror:"

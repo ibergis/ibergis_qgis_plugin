@@ -49,7 +49,7 @@ class DrResultsButton(DrAction):
         if not self.menu.isVisible():
             if button is not None:
                 # Show the menu below the button
-                self.menu.exec_(button.mapToGlobal(button.rect().bottomLeft()))
+                self.menu.exec(button.mapToGlobal(button.rect().bottomLeft()))
 
     def show_profile(self):
         """ Show profile """

@@ -46,7 +46,7 @@ if __name__ == '__main__':
     canvas.setLayers([layer])
 
     # Execute custom application
-    exitcode = app.exec_()
+    exitcode = app.exec()
 
     # Remove the provider and layer registries from memory
     app.exitQgis()

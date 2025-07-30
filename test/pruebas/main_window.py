@@ -30,7 +30,7 @@ if __name__ == '__main__':
     window.show()
 
     # Execute custom application
-    exitcode = app.exec_()
+    exitcode = app.exec()
 
     # Remove the provider and layer registries from memory
     app.exitQgis()

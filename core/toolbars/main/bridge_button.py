@@ -96,7 +96,7 @@ class DrBridgeButton(DrAction):
         if not self.menu.isVisible():
             if button is not None:
                 # Show the menu below the button
-                self.menu.exec_(button.mapToGlobal(button.rect().bottomLeft()))
+                self.menu.exec(button.mapToGlobal(button.rect().bottomLeft()))
 
     def manage_bridge(self, bridge: Optional[QgsFeature] = None, is_new: bool = False):
         """ Opens Bridge dialog. Called from 'Bridge add' button and 'Bridge edit' button. """
