@@ -11,7 +11,7 @@ import os
 import time
 import json
 
-from qgis.core import QgsMessageLog
+from qgis.core import QgsMessageLog, Qgis
 
 from .. import global_vars
 from . import tools_qt, tools_os
@@ -168,7 +168,7 @@ def log_debug(text=None, context_name=None, parameter=None, logger_file=True, st
               msg_params=None):
     """ Write debug message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name, msg_params=msg_params)
+    msg = _qgis_log_message(text, Qgis.MessageLevel.Info, context_name, parameter, tab_name, msg_params=msg_params)
     if global_vars.logger and logger_file:
         global_vars.logger.debug(msg, stack_level_increase=stack_level_increase)
 
@@ -177,7 +177,7 @@ def log_info(text=None, context_name=None, parameter=None, logger_file=True, sta
              msg_params=None):
     """ Write information message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 0, context_name, parameter, tab_name, msg_params=msg_params)
+    msg = _qgis_log_message(text, Qgis.MessageLevel.Info, context_name, parameter, tab_name, msg_params=msg_params)
     if global_vars.logger and logger_file:
         global_vars.logger.info(msg, stack_level_increase=stack_level_increase)
 
@@ -186,7 +186,7 @@ def log_warning(text=None, context_name=None, parameter=None, logger_file=True, 
                 msg_params=None):
     """ Write warning message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 1, context_name, parameter, tab_name, msg_params=msg_params)
+    msg = _qgis_log_message(text, Qgis.MessageLevel.Warning, context_name, parameter, tab_name, msg_params=msg_params)
     if global_vars.logger and logger_file:
         global_vars.logger.warning(msg, stack_level_increase=stack_level_increase)
 
@@ -195,13 +195,13 @@ def log_error(text=None, context_name=None, parameter=None, logger_file=True, st
               msg_params=None):
     """ Write error message into QGIS Log Messages Panel """
 
-    msg = _qgis_log_message(text, 2, context_name, parameter, tab_name, msg_params=msg_params)
+    msg = _qgis_log_message(text, Qgis.MessageLevel.Critical, context_name, parameter, tab_name, msg_params=msg_params)
     if global_vars.logger and logger_file:
         global_vars.logger.error(msg, stack_level_increase=stack_level_increase)
 
 
-def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message_level=0, logger_file=True,
-           stack_level_increase=0, header_params=None, msg_params=None):
+def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message_level=Qgis.MessageLevel.Info,
+           logger_file=True, stack_level_increase=0, header_params=None, msg_params=None):
     """ Write information message into QGIS Log Messages Panel (tab Drain DB) """
 
     if type(text) is dict:
@@ -229,7 +229,7 @@ def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message
         global_vars.logger.info(text, stack_level_increase=stack_level_increase)
 
 
-def _qgis_log_message(text=None, message_level=0, context_name=None, parameter=None, tab_name=None, msg_params=None):
+def _qgis_log_message(text=None, message_level=Qgis.MessageLevel.Info, context_name=None, parameter=None, tab_name=None, msg_params=None):
     """
     Write message into QGIS Log Messages Panel with selected message level
         :param message_level: {INFO = 0, WARNING = 1, CRITICAL = 2, SUCCESS = 3, NONE = 4}
