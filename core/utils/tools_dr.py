@@ -257,10 +257,10 @@ def open_dialog(dlg, dlg_name=None, stay_on_top=False, title=None, hide_config_w
         dlg.setWindowTitle(title)
 
     # Manage stay on top, maximize/minimize button and information button
-    flags = Qt.WindowCloseButtonHint | Qt.WindowMinMaxButtonsHint | Qt.Window
+    flags = Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMinMaxButtonsHint | Qt.WindowType.Window
 
     if stay_on_top:
-        flags |= Qt.WindowStaysOnTopHint
+        flags |= Qt.WindowType.WindowStaysOnTopHint
 
     dlg.setWindowFlags(flags)
 
