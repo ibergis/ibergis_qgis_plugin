@@ -1041,12 +1041,13 @@ def _create_spinbox_widget(field, dialog, _json):
     widget = QDoubleSpinBox()
     widgetcontrols = field.get('widgetcontrols')
     if widgetcontrols:
-        spinboxDecimals = widgetcontrols.get('spinboxDecimals')
-        if spinboxDecimals is not None:
-            widget.setDecimals(spinboxDecimals)
-        maximumNumber = widgetcontrols.get('maximumNumber')
-        if maximumNumber is not None:
-            widget.setMaximum(maximumNumber)
+        widgetcontrols = json.loads(widgetcontrols)
+        spinboxDecimals = widgetcontrols.get('spinboxDecimals') if "spinboxDecimals" in widgetcontrols else 2
+        widget.setDecimals(spinboxDecimals)
+        maximumNumber = widgetcontrols.get('maximumNumber') if "maximumNumber" in widgetcontrols else 9999
+        widget.setMaximum(maximumNumber)
+        minimumNumber = widgetcontrols.get('minimumNumber') if "minimumNumber" in widgetcontrols else -9999
+        widget.setMinimum(minimumNumber)
     if field.get('value') not in (None, ""):
         value = float(str(field['value']))
         widget.setValue(value)
@@ -1117,7 +1118,7 @@ def _process_single_field(field, dialog, _json, temp_layers_added, module):
         return
 
     _configure_widget_editability(widget, field)
-    add_widget(dialog, field, lbl, widget)
+    add_widget(dialog, field, lbl, widget, _json)
 
 
 def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module=sys.modules[__name__]):
@@ -1157,7 +1158,7 @@ def check_parameters(field):
         tools_qgis.show_warning(msg)
 
 
-def add_widget(dialog, field, lbl, widget):
+def add_widget(dialog, field, lbl, widget, _json):
     """ Insert widget into layout """
 
     layout = dialog.findChild(QGridLayout, field['layoutname'])
@@ -1175,6 +1176,12 @@ def add_widget(dialog, field, lbl, widget):
         layout.addItem(widget, row, col)
     else:
         layout.addWidget(widget, row, col)
+        if field.get('widgetcontrols'):
+            # Add include widget
+            widgetcontrols = json.loads(field.get('widgetcontrols'))
+            if widgetcontrols.get('include_widget') is not None:
+                include_widget = _create_include_widget(widget, dialog, field, _json)
+                layout.addWidget(include_widget, row, col + 1)
     if lbl is not None:
         layout.setColumnStretch(col, 1)
 
@@ -3382,4 +3389,29 @@ def _manage_tableview(**kwargs):
     tools_qt.set_tableview_config(widget)
     return widget
 
+
+def _create_include_widget(widget, dialog, field, _json):
+    include_widget = QComboBox()
+    include_widget.setObjectName(widget.objectName() + '_include')
+    include_widget.addItem('Exclude value', '0')
+    include_widget.addItem('Include value', '1')
+
+    # Set current index
+    sql = f"SELECT value FROM config_param_user WHERE parameter = '{include_widget.objectName()}'"
+    result = global_vars.gpkg_dao_data.get_row(sql)
+    if result:
+        include_widget.setCurrentIndex(int(result[0]))
+    else:
+        if field['widgetcontrols'] and 'include_widget' in field['widgetcontrols']:
+            widgetcontrols = json.loads(field['widgetcontrols'])
+            if widgetcontrols.get('include_widget'):
+                include_widget.setCurrentIndex(1)
+            else:
+                include_widget.setCurrentIndex(0)
+        else:
+            include_widget.setCurrentIndex(1)
+
+    include_widget.currentIndexChanged.connect(partial(get_dialog_changed_values, dialog, None, include_widget, field, _json))
+    include_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    return include_widget
 # endregion

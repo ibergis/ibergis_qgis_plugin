@@ -31,7 +31,7 @@ from typing import Optional
 from datetime import datetime
 from swmm_api import read_inp_file
 from ... import global_vars
-import os
+import os, numpy as np
 
 
 class ImportRasterResults(QgsProcessingAlgorithm):
@@ -189,15 +189,63 @@ class ImportRasterResults(QgsProcessingAlgorithm):
     def configLayer(self, layer: QgsRasterLayer, feedback: Feedback):
         """ Configure style and temporal configuration to layer """
 
+        min_value = 0
+        max_value = 2
+        include_min_value = False
+        longest_qgis_step = 0.0000000000000001
+
+        # Get min and max values
+        if 'Depth' in layer.name():
+            layer_name = 'depth'
+        elif 'Velocity' in layer.name():
+            layer_name = 'velocity'
+        else:
+            feedback.pushWarning(self.tr('Error configuring the layer. Wrong name.'))
+            return
+
+        sql = f"SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'result_symbology_%_{layer_name}%'"
+        result = global_vars.gpkg_dao_data.get_rows(sql)
+        if result:
+            for row in result:
+                parameter, value = row
+                if parameter == f'result_symbology_max_{layer_name}':
+                    max_value = float(value)
+                elif parameter == f'result_symbology_min_{layer_name}':
+                    min_value = float(value)
+                elif parameter == f'result_symbology_min_{layer_name}_include':
+                    include_min_value = True if value == '1' else False
+        else:
+            feedback.pushWarning(self.tr('Error getting min and max values. Using default values...'))
+            return
+
+        if min_value is None or max_value is None or include_min_value is None:
+            feedback.pushWarning(self.tr('Error getting min and max values. Using default values...'))
+            min_value = 0
+            max_value = 2
+            include_min_value = False
+        elif min_value > max_value:
+            feedback.pushWarning(self.tr('Inconsistent min and max values. Using default values...'))
+            min_value = 0
+            max_value = 2
+            include_min_value = False
+
+        if not include_min_value:
+            min_value += longest_qgis_step
+
         # Set main colors
-        main_colors: dict = {0: QColor(0, 0, 255), 0.5: QColor(0, 255, 255), 1: QColor(0, 255, 0), 1.5: QColor(255, 255, 0), 2: QColor(255, 0, 0)}
+        if layer_name == 'depth':
+            # Blue gradient
+            main_colors: dict = self._generate_color_map([QColor(173, 216, 230), QColor(100, 149, 237), QColor(70, 130, 180), QColor(25, 25, 112), QColor(0, 0, 128)], min_value, max_value)
+        elif layer_name == 'velocity':
+            # Multi-color gradient
+            main_colors: dict = self._generate_color_map([QColor(0, 0, 255), QColor(0, 255, 255), QColor(0, 255, 0), QColor(255, 255, 0), QColor(255, 0, 0)], min_value, max_value)
 
         # Create color ramp
-        color_items = self.createColorRamp(main_colors, 0, 2)
+        color_items = self.createColorRamp(main_colors, min_value, max_value, longest_qgis_step=longest_qgis_step)
 
         # Create shader
         shader = QgsRasterShader()
-        color_ramp = QgsColorRampShader(0, 2)
+        color_ramp = QgsColorRampShader(min_value, max_value)
         color_ramp.setColorRampItemList(color_items)
         color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
         shader.setRasterShaderFunction(color_ramp)
@@ -231,7 +279,12 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         temporal.setFixedRangePerBand(ranges)
 
-    def createColorRamp(self, main_colors: dict, min_val: float, max_val: float, num_steps: int = 20, min_invisible: bool = True):
+    def _generate_color_map(self, colors: list[QColor], min_val: float, max_val: float) -> dict:
+        """ Generates a color map from a list of colors and a minimum and maximum value """
+        steps = np.linspace(min_val, max_val, num=len(colors))
+        return {step: color for step, color in zip(steps, colors)}
+
+    def createColorRamp(self, main_colors: dict, min_val: float, max_val: float, num_steps: int = 20, min_invisible: bool = True, longest_qgis_step: float = 0.0000000000000001):
         """ Creates a color ramp from main colors
                 Parameters:
                     main_colors --> Main color references to make the gradient
@@ -239,6 +292,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                     max_val --> Maximum value
                     num_steps --> Number of ramp values. The more values, more precise color
                     min_invisible --> Boolean to set the minimum value(-9999) invisible
+                    longest_qgis_step --> Longest step of QGIS
         """
 
         # Calculate value difference
@@ -278,6 +332,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         if min_invisible:
             # Set minimum value(-9999) invisible
             color_items.insert(0, QgsColorRampShader.ColorRampItem(-9999.0, QColor(0, 0, 0, 0), "-9999.0"))
+            color_items.insert(1, QgsColorRampShader.ColorRampItem(min_val - longest_qgis_step, QColor(0, 0, 0, 0), f"{min_val - longest_qgis_step}"))
             # Set maximum value(9999) like the last color
             color_items.append(QgsColorRampShader.ColorRampItem(9999.0, last_color, "9999.0"))
 

@@ -96,63 +96,12 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             return {}
 
         # Create outlayer values map
-        self.outlayer_values = {
-            # TODO get values from config
-            'manning': {
-                'min': 0,
-                'max': 1,
-                'include_min': True,
-                'include_max': True
-            },
-            'roughness': {
-                'min': 0,
-                'max': 1,
-                'include_min': True,
-                'include_max': True
-            },
-            'cellsize': {
-                'min': 0,
-                'max': 1000,
-                'include_min': True,
-                'include_max': True
-            },
-            'mfactor': {
-                'min': 0,
-                'max': 1,
-                'include_min': True,
-                'include_max': True
-            },
-            'sfactor': {
-                'min': 0,
-                'max': 1,
-                'include_min': True,
-                'include_max': True
-            },
-            'ufactor': {
-                'min': 0,
-                'max': 1,
-                'include_min': True,
-                'include_max': True
-            },
-            'slope': {
-                'min': 0,
-                'max': 20,
-                'include_min': True,
-                'include_max': True
-            },
-            'outlet_vol': {
-                'min': 0,
-                'max': 100,
-                'include_min': True,
-                'include_max': True
-            },
-            'street_vol': {
-                'min': 0,
-                'max': 100,
-                'include_min': True,
-                'include_max': True
-            }
-        }
+        self.outlayer_values = self._get_outlayer_values()
+        if not self.outlayer_values:
+            msg = 'ERROR: Error getting outlayer values'
+            feedback.pushWarning(self.tr(msg))
+            self.bool_error_on_execution = True
+            return {}
 
         # Execute checkproject queries
         for index, query in enumerate(queries):
@@ -422,30 +371,8 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             for column in columns:
                 if column not in columns_dict.keys():
                     columns_dict[column] = 0
-                if query['query_type'] == 'MANDATORY NULL':
-                    # Check if feature field is None
-                    if feature[column] in (None, 'NULL', 'null'):
-                        invalid_columns.append(column)
-                        columns_dict[column] += 1
-                elif query['query_type'] == 'OUTLAYER':
-                    value = feature[column]
-                    min_val = self.outlayer_values[column]['min']
-                    max_val = self.outlayer_values[column]['max']
-                    include_min = self.outlayer_values[column]['include_min']
-                    include_max = self.outlayer_values[column]['include_max']
-
-                    if value is None or value == 'NULL' or value == 'null':
-                        invalid_columns.append(column)
-                        columns_dict[column] += 1
-                        continue
-
-                    # Check if value is outside bounds considering inclusion flags
-                    is_below_min = value < min_val if include_min else value <= min_val
-                    is_above_max = value > max_val if include_max else value >= max_val
-
-                    if is_below_min or is_above_max:
-                        invalid_columns.append(column)
-                        columns_dict[column] += 1
+                invalid_columns.append(column)
+                columns_dict[column] += 1
 
             if query['create_layer'] and len(invalid_columns) > 0:
                 # Create new feature
@@ -609,14 +536,14 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         for col in columns:
             # Add column conditions to check query WHERE clause
             if query['query_type'] == 'OUTLAYER':
-                max_operator = ">=" if self.outlayer_values[col]["include_max"] else ">"
-                min_operator = "<=" if self.outlayer_values[col]["include_min"] else "<"
+                max_operator = ">" if self.outlayer_values[col]["include_max"] else ">="
+                min_operator = "<" if self.outlayer_values[col]["include_min"] else "<="
                 max_val = self.outlayer_values[col]["max"]
                 min_val = self.outlayer_values[col]["min"]
                 if columns_select is None:
-                    columns_select = f'({col} {max_operator} {max_val} OR {col} {min_operator} {min_val})'
+                    columns_select = f'({col} {min_operator} {min_val} OR {col} {max_operator} {max_val})'
                 else:
-                    columns_select += f' OR ({col} {max_operator} {max_val} OR {col} {min_operator} {min_val})'
+                    columns_select += f' OR ({col} {min_operator} {min_val} OR {col} {max_operator} {max_val})'
             else:
                 if columns_select is None:
                     columns_select = col + ' ISNULL'
@@ -634,14 +561,18 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         table_name = query['table_name']
         if table_name:
+            if query['geometry_type'] is None:
+                geom = ''
+            else:
+                geom = ', AsWKT(CastAutomagic(geom)) as geom_wkt'
             if condition_select is not None:
                 # Build check query with WHERE clause and additional conditions
-                check_query = f"SELECT *, AsWKT(CastAutomagic(geom)) as geom_wkt FROM {table_name} WHERE ({columns_select}) "
+                check_query = f"SELECT *{geom} FROM {table_name} WHERE ({columns_select}) "
                 check_query_nogeom = f"SELECT * FROM {table_name} WHERE ({columns_select}) "
                 check_query += condition_select
             else:
                 # Build check query with WHERE clause
-                check_query = f"SELECT *, AsWKT(CastAutomagic(geom)) as geom_wkt FROM {table_name} WHERE {columns_select} "
+                check_query = f"SELECT *{geom} FROM {table_name} WHERE {columns_select} "
                 check_query_nogeom = f"SELECT * FROM {table_name} WHERE {columns_select} "
 
         return check_query, check_query_nogeom, columns_checked
@@ -993,6 +924,36 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             temporal_layer.commitChanges()
 
         return temporal_layer
+
+    def _get_outlayer_values(self):
+        """ Get outlayer values from config_param_user """
+        outlayer_values = {}
+        outlayer_names = ['manning', 'roughness', 'cellsize', 'mfactor', 'sfactor', 'ufactor', 'slope', 'outlet_vol', 'street_vol']
+        sql = "SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'outlayer_%'"
+        result = self.dao_data.get_rows(sql)
+        for row in result:
+            parameter, value = row
+            split_parameter = parameter.split('_')
+            name = None
+            for name in outlayer_names:
+                if name in parameter:
+                    name = name
+                    break
+            if name is None:
+                return None
+            param = split_parameter[-1]
+            if param == 'include':
+                param = f"{split_parameter[-1]}_{split_parameter[-2]}"
+                if value == '1':
+                    value = True
+                else:
+                    value = False
+            else:
+                value = float(value)
+            if name not in outlayer_values.keys():
+                outlayer_values[name] = {}
+            outlayer_values[name][param] = value
+        return outlayer_values
 
     def helpUrl(self):
         return "https://github.com/drain-iber"

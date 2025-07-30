@@ -647,6 +647,36 @@ VALUES(151, 'culvert_type', 'CIRCULAR', 'CIRCULAR', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(152, 'culvert_type', 'RECTANGULAR', 'RECTANGULAR', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(153, 'dlg_options_layout', 'lyt_ibergis_1_1', 'Result options', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(154, 'dlg_options_layout', 'lyt_ibergis_1_2', 'Check project - manning', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(155, 'dlg_options_layout', 'lyt_ibergis_2_1', 'Check project - roughness', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(156, 'dlg_options_layout', 'lyt_ibergis_2_2', 'Check project - cellsize', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(157, 'dlg_options_layout', 'lyt_ibergis_3_1', 'Check project - mfactor', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(158, 'dlg_options_layout', 'lyt_ibergis_3_2', 'Check project - sfactor', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(159, 'dlg_options_layout', 'lyt_ibergis_4_1', 'Check project - ufactor', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(160, 'dlg_options_layout', 'lyt_ibergis_4_2', 'Check project - slope', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(161, 'dlg_options_layout', 'lyt_ibergis_5_1', 'Check project - outlet_vol', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(162, 'dlg_options_layout', 'lyt_ibergis_5_2', 'Check project - street_vol', NULL, NULL);
 
 
 INSERT INTO config_form_fields
@@ -1853,3 +1883,89 @@ VALUES('pinlet', 'form_feature', 'tabdata', 'a_param', NULL, NULL, 'integer', 't
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('pinlet', 'form_feature', 'tabdata', 'b_param', NULL, NULL, 'integer', 'text', 'b_param', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- raster results values
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_max_depth', 'lyt_ibergis_1_1', 1, 'real', 'spinbox', 'Max value for depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_min_depth', 'lyt_ibergis_1_1', 2, 'real', 'spinbox', 'Min value for depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_max_velocity', 'lyt_ibergis_1_1', 3, 'real', 'spinbox', 'Max value for velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_min_velocity', 'lyt_ibergis_1_1', 4, 'real', 'spinbox', 'Min value for velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+
+-- manning
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_manning_max', 'lyt_ibergis_1_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for manning on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_manning_min', 'lyt_ibergis_1_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for manning on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+
+-- roughness
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_roughness_max', 'lyt_ibergis_2_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for roughness on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_roughness_min', 'lyt_ibergis_2_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for roughness on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+
+-- cellsize
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_cellsize_max', 'lyt_ibergis_2_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1000', 'Maximum value for cellsize on check project', '{"spinboxDecimals": 2, "maximumNumber": 10000, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_cellsize_min', 'lyt_ibergis_2_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for cellsize on check project', '{"spinboxDecimals": 2, "maximumNumber": 10000, "minimumNumber": 0, "include_widget": true}');
+
+-- mfactor
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_mfactor_max', 'lyt_ibergis_3_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for mfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_mfactor_min', 'lyt_ibergis_3_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for mfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+
+-- sfactor
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_sfactor_max', 'lyt_ibergis_3_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for sfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_sfactor_min', 'lyt_ibergis_3_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for sfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+
+-- ufactor
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_ufactor_max', 'lyt_ibergis_4_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for ufactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_ufactor_min', 'lyt_ibergis_4_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for ufactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+
+-- slope
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_slope_max', 'lyt_ibergis_4_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '20', 'Maximum value for slope on check project', '{"spinboxDecimals": 2, "maximumNumber": 500, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_slope_min', 'lyt_ibergis_4_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for slope on check project', '{"spinboxDecimals": 2, "maximumNumber": 500, "minimumNumber": 0, "include_widget": true}');
+
+-- outlet_vol
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_outlet_vol_max', 'lyt_ibergis_5_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '100', 'Maximum value for outlet_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_outlet_vol_min', 'lyt_ibergis_5_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for outlet_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
+
+-- street_vol
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_street_vol_max', 'lyt_ibergis_5_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '100', 'Maximum value for street_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_street_vol_min', 'lyt_ibergis_5_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for street_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');

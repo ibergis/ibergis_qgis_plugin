@@ -41,7 +41,7 @@ CREATE TABLE config_form_fields (
 	addparam JSON NULL CHECK (typeof(addparam) = 'text' OR addparam IS NULL),
 	vdefault TEXT NULL CHECK (typeof(vdefault) = 'text' OR vdefault IS NULL),
 	descript TEXT NULL CHECK (typeof(descript) = 'text' OR descript IS NULL),
-	widgetcontrols TEXT NULL CHECK (typeof(widgetcontrols) = 'text' OR widgetcontrols IS NULL),
+	widgetcontrols JSON NULL CHECK (typeof(widgetcontrols) = 'text' OR widgetcontrols IS NULL),
     PRIMARY KEY (formname, formtype, tabname, columnname)
 );
 

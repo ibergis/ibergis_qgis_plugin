@@ -8,6 +8,7 @@ import json
 from ctypes import Union
 from datetime import datetime
 
+
 # -*- coding: utf-8 -*-
 from ... import global_vars
 from ...lib import tools_db
@@ -33,7 +34,7 @@ def getconfig(p_input: dict) -> dict:
                         'CASE WHEN hidden = 1 THEN True ELSE False END AS hidden',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
-                        'vdefault AS value', 'tooltip', 'addparam'
+                        'vdefault AS value', 'tooltip', 'addparam', 'widgetcontrols'
                         ]
         v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM config_form_fields " \
