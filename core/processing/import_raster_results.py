@@ -31,7 +31,8 @@ from typing import Optional
 from datetime import datetime
 from swmm_api import read_inp_file
 from ... import global_vars
-import os, numpy as np
+import os
+import numpy as np
 
 
 class ImportRasterResults(QgsProcessingAlgorithm):

@@ -26,7 +26,6 @@ class DrOptions:
         self.tabs_to_show = tabs_to_show
         if self.tabs_to_show is None:
             self.tabs_to_show = ["tab_inp_swmm", "tab_rpt_swmm", "tab_main", "tab_rpt_iber", "tab_plugins", "tab_ibergis"]
-        con_name = "dlg_options"
         self.tab_aliases = {"tab_inp_swmm": tools_qt.tr("SWMM OPTIONS"), "tab_rpt_swmm": tools_qt.tr("SWMM RESULTS"),
                             "tab_main": tools_qt.tr("IBER OPTIONS"), "tab_rpt_iber": tools_qt.tr("IBER RESULTS"),
                             "tab_plugins": tools_qt.tr("IBER PLUGINS"), "tab_ibergis": tools_qt.tr("IBERGIS OPTIONS")

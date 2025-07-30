@@ -716,9 +716,9 @@ class DrAdminButton(DrGpkgBase):
                 if row[2] is not None:
                     widgetcontrols = json.loads(row[2])
                     if "include_widget" in widgetcontrols and widgetcontrols.get('include_widget'):
-                        tools_db.execute_sql_placeholder(sql_insert, (row[0]+'_include', '1'))
+                        tools_db.execute_sql_placeholder(sql_insert, (row[0] + '_include', '1'))
                     elif "include_widget" in widgetcontrols and not widgetcontrols.get('include_widget'):
-                        tools_db.execute_sql_placeholder(sql_insert, (row[0]+'_include', '0'))
+                        tools_db.execute_sql_placeholder(sql_insert, (row[0] + '_include', '0'))
             except Exception:
                 msg = "Error executing SQL: {0}\nDatabase error: {1}"
                 msg_params = (sql_insert, global_vars.gpkg_dao_data.last_error,)
