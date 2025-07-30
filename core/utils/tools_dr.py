@@ -23,7 +23,7 @@ from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QSt
     QDoubleValidator, QRegularExpressionValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, QToolButton, \
-    QWidget, QMenu
+    QWidget, QMenu, QHeaderView
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
@@ -2455,7 +2455,7 @@ def set_tablemodel_config(dialog, widget, table_name, sort_order=Qt.SortOrder.As
             if style:
                 stretch = style.get('stretch')
                 if stretch is not None:
-                    stretch = 1 if stretch else 0
+                    stretch = QHeaderView.ResizeMode.Stretch if stretch else QHeaderView.ResizeMode.Interactive
                     widget.horizontalHeader().setSectionResizeMode(row['columnindex'], stretch)
             width = row['width']
             if width is None:

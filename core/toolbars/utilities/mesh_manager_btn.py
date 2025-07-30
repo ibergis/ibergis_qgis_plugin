@@ -2,7 +2,7 @@ from functools import partial
 from pathlib import Path
 
 from qgis.core import QgsApplication
-from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog
+from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog, QHeaderView
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.PyQt.QtCore import Qt
 from qgis.utils import iface
@@ -93,8 +93,8 @@ class DrMeshManagerButton(DrAction):
 
         # Set widget & model properties
         tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=set_edit_triggers,
-                                      sectionResizeMode=2, stretchLastSection=False)
-        widget.horizontalHeader().setSectionResizeMode(0, 1)
+                                      sectionResizeMode=QHeaderView.ResizeMode.Fixed, stretchLastSection=False)
+        widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
 
         # Sort the table by name
         model.sort(0, 0)

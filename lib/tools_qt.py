@@ -23,7 +23,7 @@ from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.PyQt.QtWidgets import QAction, QLineEdit, QComboBox, QWidget, QDoubleSpinBox, QCheckBox, QLabel, QTextEdit, \
     QDateEdit, QAbstractItemView, QCompleter, QDateTimeEdit, QTableView, QSpinBox, QTimeEdit, QPushButton, \
     QPlainTextEdit, QRadioButton, QSizePolicy, QSpacerItem, QFileDialog, QGroupBox, QMessageBox, QTabWidget, QToolBox, \
-    QToolButton, QTextBrowser
+    QToolButton, QTextBrowser, QHeaderView
 from qgis.core import QgsExpression, QgsProject
 from qgis.gui import QgsDateTimeEdit
 from qgis.utils import iface
@@ -567,8 +567,10 @@ def enable_dialog(dialog, enable, ignore_widgets=['', None]):
                 widget.setEnabled(enable)
 
 
-def set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=QTableView.EditTrigger.NoEditTriggers,
-                         sectionResizeMode=3, stretchLastSection=True, sortingEnabled=True):
+def set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows,
+                         edit_triggers=QTableView.EditTrigger.NoEditTriggers,
+                         sectionResizeMode=QHeaderView.ResizeMode.ResizeToContents,
+                         stretchLastSection=True, sortingEnabled=True):
     """ Set QTableView configurations """
 
     widget.setSelectionBehavior(selection)
@@ -761,7 +763,7 @@ def set_selection_behavior(dialog):
     widget_list = dialog.findChildren(QTableView)
     for widget in widget_list:
         widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        widget.horizontalHeader().setSectionResizeMode(3)
+        widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         widget.horizontalHeader().setStretchLastSection(True)
 
 

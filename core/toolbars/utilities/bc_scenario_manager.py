@@ -4,7 +4,7 @@ from time import time
 
 from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer, Qt
-from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTextEdit
+from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTextEdit, QHeaderView
 from qgis.PyQt.QtSql import QSqlTableModel
 
 from ..dialog import DrAction
@@ -112,7 +112,7 @@ class DrBCScenarioManagerButton(DrAction):
 
         # Set widget & model properties
         tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=set_edit_triggers,
-                                      sectionResizeMode=2, stretchLastSection=True)
+                                      sectionResizeMode=QHeaderView.ResizeMode.Fixed, stretchLastSection=True)
 
         # Sort the table by feature id
         model.sort(1, 0)

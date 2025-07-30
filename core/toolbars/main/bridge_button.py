@@ -9,7 +9,7 @@ from functools import partial
 import os
 
 from qgis.PyQt.QtWidgets import QTableView, QSizePolicy, QLineEdit, \
-    QApplication, QShortcut, QMenu, QAction
+    QApplication, QShortcut, QMenu, QAction, QHeaderView
 from qgis.PyQt.QtGui import QKeySequence, QIcon, QDoubleValidator
 from qgis.core import QgsFeature, QgsEditFormConfig, QgsProject, QgsMapLayer, QgsCoordinateTransform, QgsPointXY
 from qgis.PyQt.QtCore import Qt
@@ -133,7 +133,7 @@ class DrBridgeButton(DrAction):
             self.dialog.txt_length.setText(str(round(bridge.geometry().length(), 3)))
 
         # Set scale-to-fit and fill table
-        tools_qt.set_tableview_config(self.dialog.tbl_bridge_value, sectionResizeMode=1, edit_triggers=QTableView.DoubleClicked)
+        tools_qt.set_tableview_config(self.dialog.tbl_bridge_value, sectionResizeMode=QHeaderView.ResizeMode.Stretch, edit_triggers=QTableView.EditTrigger.DoubleClicked)
         # Fill table
         self._fill_table(self.dialog.tbl_bridge_value, bridge, is_new)
 

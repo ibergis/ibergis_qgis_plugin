@@ -18,7 +18,7 @@ except ImportError:
     scipy_imported = False
 
 from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QTableWidget, QTableWidgetItem, QSizePolicy, QLineEdit, \
-    QGridLayout, QComboBox, QApplication, QShortcut, QTextEdit
+    QGridLayout, QComboBox, QApplication, QShortcut, QTextEdit, QHeaderView
 from qgis.PyQt.QtGui import QKeySequence
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.core import Qgis
@@ -142,7 +142,7 @@ class DrNonVisual:
 
         # Set widget & model properties
         tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectionBehavior.SelectRows, edit_triggers=set_edit_triggers,
-                                      sectionResizeMode=2, stretchLastSection=True)
+                                      sectionResizeMode=QHeaderView.ResizeMode.Fixed, stretchLastSection=True)
         # tools_dr.set_tablemodel_config(self.manager_dlg, widget, table_name)
 
         # Sort the table by feature id
@@ -314,7 +314,7 @@ class DrNonVisual:
         self._manage_curve_type(self.dialog, curve_type_headers, tbl_curve_value, 0)
         self._manage_curve_plot(self.dialog, tbl_curve_value, plot_widget, None, None)
         # Set scale-to-fit
-        tools_qt.set_tableview_config(tbl_curve_value, sectionResizeMode=1, edit_triggers=QTableView.DoubleClicked)
+        tools_qt.set_tableview_config(tbl_curve_value, sectionResizeMode=QHeaderView.ResizeMode.Stretch, edit_triggers=QTableView.EditTrigger.DoubleClicked)
 
         # Open dialog
         tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_curve')
@@ -794,7 +794,7 @@ class DrNonVisual:
     def _scale_to_fit_pattern_tableviews(self, dialog):
         tables = [dialog.tbl_monthly, dialog.tbl_daily, dialog.tbl_hourly, dialog.tbl_weekend]
         for table in tables:
-            table.horizontalHeader().setSectionResizeMode(1)
+            table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
             table.horizontalHeader().setMinimumSectionSize(50)
 
     def _populate_ud_patterns_widgets(self, pattern, duplicate=False):
@@ -1182,7 +1182,7 @@ class DrNonVisual:
             self._load_timeseries_widgets(self.dialog)
 
         # Set scale-to-fit
-        tools_qt.set_tableview_config(tbl_timeseries_value, sectionResizeMode=1, edit_triggers=QTableView.DoubleClicked)
+        tools_qt.set_tableview_config(tbl_timeseries_value, sectionResizeMode=QHeaderView.ResizeMode.Stretch, edit_triggers=QTableView.EditTrigger.DoubleClicked)
 
         is_new = (timser_id is None) or duplicate
 
@@ -1971,7 +1971,7 @@ class DrNonVisual:
             self._load_raster_widgets(self.dialog)
 
         # Set scale-to-fit
-        tools_qt.set_tableview_config(tbl_raster_value, sectionResizeMode=1, edit_triggers=QTableView.DoubleClicked)
+        tools_qt.set_tableview_config(tbl_raster_value, sectionResizeMode=QHeaderView.ResizeMode.Stretch, edit_triggers=QTableView.EditTrigger.DoubleClicked)
 
         is_new = (raster_id is None) or duplicate
 

@@ -391,7 +391,7 @@ class DrToolBoxButton(DrAction):
                 layout.addWidget(widget, 1, order)
 
             # Set scale-to-fit
-            tools_qt.set_tableview_config(self.dlg_reports.tbl_reports, sectionResizeMode=0)
+            tools_qt.set_tableview_config(self.dlg_reports.tbl_reports, sectionResizeMode=QHeaderView.ResizeMode.Interactive)
 
         # Update tbl in case filters have default value
         self._update_tbl_reports()
