@@ -146,7 +146,7 @@ class DrNonVisual:
         # tools_dr.set_tablemodel_config(self.manager_dlg, widget, table_name)
 
         # Sort the table by feature id
-        model.sort(1, 0)
+        model.sort(1, Qt.SortOrder.AscendingOrder)
 
     def _filter_table(self, dialog, text):
         """ Filters manager table by id """

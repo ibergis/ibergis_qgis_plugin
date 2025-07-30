@@ -97,7 +97,7 @@ class DrMeshManagerButton(DrAction):
         widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
 
         # Sort the table by name
-        model.sort(0, 0)
+        model.sort(0, Qt.SortOrder.AscendingOrder)
 
     def _reload_manager_table(self):
         try:

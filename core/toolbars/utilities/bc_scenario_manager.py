@@ -115,7 +115,7 @@ class DrBCScenarioManagerButton(DrAction):
                                       sectionResizeMode=QHeaderView.ResizeMode.Fixed, stretchLastSection=True)
 
         # Sort the table by feature id
-        model.sort(1, 0)
+        model.sort(1, Qt.SortOrder.AscendingOrder)
 
     def _reload_manager_table(self):
         try:
