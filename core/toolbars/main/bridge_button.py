@@ -166,7 +166,7 @@ class DrBridgeButton(DrAction):
     def add_profile_widget(self, dialog):
         """ Add profile widget """
         plot_widget = MplCanvas(dialog, width=8, height=3, dpi=100)
-        plot_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        plot_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         plot_widget.setMinimumSize(200, 150)
         plot_widget.setMaximumHeight(300)
         dialog.lyt_plot.addWidget(plot_widget, 0, 0)

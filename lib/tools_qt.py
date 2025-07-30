@@ -633,13 +633,13 @@ def set_calendar_empty(widget):
 
 def add_horizontal_spacer():
 
-    widget = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+    widget = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
     return widget
 
 
 def add_verticalspacer():
 
-    widget = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+    widget = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
     return widget
 
 

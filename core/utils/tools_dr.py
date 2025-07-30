@@ -962,7 +962,7 @@ def _create_field_label(field):
     lbl.setObjectName('lbl' + field['widgetname'])
     lbl.setText(field['label'])
     lbl.setMinimumSize(160, 0)
-    lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+    lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
     if 'tooltip' in field:
         lbl.setToolTip(field['tooltip'])
     return lbl
@@ -984,7 +984,7 @@ def _create_text_widget(field, dialog, _json):
     widget.editingFinished.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
     if field['columnname'] in ['inp_options_start_time', 'inp_options_end_time']:
         widget.editingFinished.connect(partial(update_tmax, dialog))
-    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     datatype = field.get('datatype')
     if datatype == 'int':
         widget.setValidator(QIntValidator())
@@ -1001,7 +1001,7 @@ def _create_combo_widget(field, dialog, _json, module):
     if signal:
         widget.currentIndexChanged.connect(partial(getattr(module, signal), dialog))
         getattr(module, signal)(dialog)
-    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     return widget
 
 
@@ -1013,7 +1013,7 @@ def _create_check_widget(field, dialog, _json):
     else:
         widget.setChecked(False)
     widget.stateChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-    widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    widget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
     return widget
 
 
@@ -1032,7 +1032,7 @@ def _create_datetime_widget(field, dialog, _json):
     widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
     if field['columnname'] in ['inp_options_start_date', 'inp_options_end_date']:
         widget.editingFinished.connect(partial(update_tmax, dialog))
-    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     return widget
 
 
@@ -1051,7 +1051,7 @@ def _create_spinbox_widget(field, dialog, _json):
         value = float(str(field['value']))
         widget.setValue(value)
     widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     return widget
 
 
@@ -1574,7 +1574,7 @@ def add_hyperlink(field):
     if 'value' in field:
         widget.setText(field['value'])
         widget.setProperty('value', field['value'])
-    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     widget.resize(widget.sizeHint().width(), widget.sizeHint().height())
     func_name = None
     real_name = widget.objectName()

@@ -2248,7 +2248,7 @@ class DrNonVisual:
     def _create_plot_widget(self, dialog):
 
         plot_widget = MplCanvas(dialog, width=5, height=4, dpi=100)
-        plot_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        plot_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding)
         plot_widget.setMinimumSize(100, 100)
         dialog.lyt_plot.addWidget(plot_widget, 0, 0)
 

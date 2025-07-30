@@ -28,7 +28,7 @@ class DrDialog(QDialog):
         # Create message bar
         try:
             self._messageBar = QgsMessageBar()
-            self.messageBar().setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+            self.messageBar().setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
             for idx in range(self.layout().count(), 0, -1):
                 item = self.layout().itemAt(idx - 1)
                 row, column, rowSpan, columnSpan = self.layout().getItemPosition(idx - 1)

@@ -30,7 +30,7 @@ class DrMainWindow(QMainWindow):
         # Create message bar
         try:
             self._messageBar = QgsMessageBar()
-            self.messageBar().setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+            self.messageBar().setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
             for idx in range(self.centralWidget().layout().count(), 0, -1):
                 item = self.centralWidget().layout().itemAt(idx - 1)
                 row, column, rowSpan, columnSpan = self.centralWidget().layout().getItemPosition(idx - 1)

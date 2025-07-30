@@ -112,7 +112,7 @@ class DrOptions:
                     groupBox.setLayout(gridlayout)
 
             # Add Vertical Spacer widget
-            vertical_spacer1 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+            vertical_spacer1 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
             layout.addItem(vertical_spacer1)
 
             tab_widget.setLayout(layout)
