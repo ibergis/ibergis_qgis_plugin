@@ -217,14 +217,11 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                     include_min_value = True if value == '1' else False
         else:
             feedback.pushWarning(self.tr('Error getting min and max values. Using default values...'))
-            return
-
-        if min_value is None or max_value is None or include_min_value is None:
-            feedback.pushWarning(self.tr('Error getting min and max values. Using default values...'))
             min_value = 0
             max_value = 2
             include_min_value = False
-        elif min_value > max_value:
+
+        if min_value > max_value:
             feedback.pushWarning(self.tr('Inconsistent min and max values. Using default values...'))
             min_value = 0
             max_value = 2

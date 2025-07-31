@@ -93,6 +93,7 @@ class DrExecuteModel(DrTask):
         msg = "Task '{0}' execute function '{1}'"
         msg_params = ("Execute model", "_execute_model(self)",)
         tools_log.log_info(msg, msg_params=msg_params)
+        self._delete_raster_results(check_netcdf=False)
         status = self._execute_model()
 
         # self._close_dao()
@@ -197,12 +198,12 @@ class DrExecuteModel(DrTask):
                 self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
         self.progress_changed.emit(None, self.PROGRESS_END, None, False)
 
-    def _delete_raster_results(self):
+    def _delete_raster_results(self, check_netcdf: bool = True):
         """Delete raster results folder"""
 
         netcdf_path: str = f'{self.folder_path}{os.sep}DrainResults{os.sep}rasters.nc'
         raster_files: str = f'{self.folder_path}{os.sep}RasterResults'
-        if os.path.exists(netcdf_path) and os.path.exists(raster_files):
+        if os.path.exists(raster_files) and (not check_netcdf or os.path.exists(netcdf_path)):
             shutil.rmtree(raster_files)
 
     def _import_results_progress_changed(self, process, progress, text, new_line):
@@ -557,6 +558,8 @@ class DrExecuteModel(DrTask):
             sql = "SELECT code, outlet_type, outlet_node, xcoord, ycoord, top_elev, width, " \
                     "length, depth, method, weir_cd, orifice_cd, a_param, b_param, efficiency FROM vi_inlet ORDER BY code;"
             rows = self.dao.get_rows(sql)
+            if not rows:
+                rows = []
 
             # File headers
             headers = ['gully_id', 'outlet_type', 'node_id', 'xcoord', 'ycoord', 'zcoord', 'width', 'length',
