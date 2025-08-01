@@ -46,7 +46,7 @@ class DrMeshManagerButton(DrAction):
         btn_cancel = self.dlg_manager.btn_cancel
 
         # Populate
-        self._fill_manager_table(tbl_mesh_mng, 'v_ui_file')  # , expr="file_name = 'Iber2D.dat'")
+        self._fill_manager_table(tbl_mesh_mng, 'v_ui_file')
 
         self._set_active_mesh_label()
 

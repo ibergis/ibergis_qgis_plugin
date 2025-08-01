@@ -975,7 +975,7 @@ CREATE TABLE arc (
 
 
 CREATE VIEW if not exists v_ui_file AS
-    SELECT name, ROUND(LENGTH(iber2d || COALESCE(roof, '') || losses) / 1024.0, 3) AS kilobytes FROM cat_file ORDER BY name ASC;
+    SELECT name FROM cat_file ORDER BY name ASC;
 
 
 CREATE VIEW vi_roof2junction as
