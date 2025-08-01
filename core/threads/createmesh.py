@@ -396,7 +396,7 @@ class DrCreateMeshTask(DrTask):
         # Initialize raster flags
         self.roughness_from_raster = False
         self.losses_from_raster = False
-        
+
         # Triangles
         ground_triangles_df = pd.DataFrame(triangles, columns=["v1", "v2", "v3"], dtype=np.uint32)
         ground_triangles_df["v4"] = ground_triangles_df["v1"]
@@ -407,6 +407,9 @@ class DrCreateMeshTask(DrTask):
 
         # Get ground roughness
         ground_triangles_df = self._process_ground_roughness(ground_triangles_df)
+
+        # Modify roughness for small triangles (area < 0.5)
+        ground_triangles_df = self._apply_small_triangle_roughness_modification(ground_triangles_df, vertices)
 
         # Vertices
         ground_vertices_df = pd.DataFrame(vertices, columns=["x", "y"])
@@ -448,6 +451,48 @@ class DrCreateMeshTask(DrTask):
             self.roughness_from_raster = True
 
         ground_triangles_df = ground_triangles_df.drop(columns=["landuse", "custom_roughness"])
+        return ground_triangles_df
+
+    def _apply_small_triangle_roughness_modification(self, ground_triangles_df: pd.DataFrame, vertices) -> pd.DataFrame:
+        """Apply 10x roughness multiplier for triangles with area < 0.5."""
+        print("Applying roughness modification for small triangles... ", end="")
+        start = time.time()
+
+        # Get vertex coordinates for each triangle
+        vertices_array = vertices  # vertices is already a numpy array with shape (n, 2)
+
+        # Get coordinates for each triangle vertex
+        v1_coords = vertices_array[ground_triangles_df["v1"]]  # Shape: (n_triangles, 2)
+        v2_coords = vertices_array[ground_triangles_df["v2"]]  # Shape: (n_triangles, 2)
+        v3_coords = vertices_array[ground_triangles_df["v3"]]  # Shape: (n_triangles, 2)
+
+        # Calculate triangle areas using cross product (determinant method)
+        # Area = 0.5 * |det([[x2-x1, y2-y1], [x3-x1, y3-y1]])|
+        v1x, v1y = v1_coords[:, 0], v1_coords[:, 1]
+        v2x, v2y = v2_coords[:, 0], v2_coords[:, 1]
+        v3x, v3y = v3_coords[:, 0], v3_coords[:, 1]
+
+        # Vectors from v1 to v2 and v1 to v3
+        edge1_x = v2x - v1x
+        edge1_y = v2y - v1y
+        edge2_x = v3x - v1x
+        edge2_y = v3y - v1y
+
+        # Cross product determinant
+        det = edge1_x * edge2_y - edge1_y * edge2_x
+        areas = 0.5 * np.abs(det)
+
+        # Apply 10x roughness multiplier for triangles with area < 0.5
+        small_triangles_mask = areas < 0.5
+        n_small_triangles = np.sum(small_triangles_mask)
+
+        if n_small_triangles > 0:
+            ground_triangles_df.loc[small_triangles_mask, "roughness"] = (
+                ground_triangles_df.loc[small_triangles_mask, "roughness"].astype(float) * 10
+            )
+            print(f"Modified {n_small_triangles} small triangles. ", end="")
+
+        print(f"Done! {time.time() - start}s")
         return ground_triangles_df
 
     def _process_ground_losses(self) -> dict:
@@ -634,12 +679,12 @@ class DrCreateMeshTask(DrTask):
             print(f"Done! {time.time() - start}s")
         return bridges_df
 
-    def _finalize_mesh(self, triangles_df: pd.DataFrame, vertices_df: pd.DataFrame, 
+    def _finalize_mesh(self, triangles_df: pd.DataFrame, vertices_df: pd.DataFrame,
                       roofs_df: pd.DataFrame, bridges_df: pd.DataFrame) -> bool:
         """Finalize mesh creation and processing."""
         # Get losses data
         losses_data = self._process_ground_losses()
-        
+
         self.mesh = mesh_parser.Mesh(
             polygons=triangles_df,
             vertices=vertices_df,
