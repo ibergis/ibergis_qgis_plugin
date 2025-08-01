@@ -482,8 +482,8 @@ class DrCreateMeshTask(DrTask):
         det = edge1_x * edge2_y - edge1_y * edge2_x
         areas = 0.5 * np.abs(det)
 
-        # Apply 10x roughness multiplier for triangles with area < 0.5
-        small_triangles_mask = areas < 0.5
+        # Apply 10x roughness multiplier for triangles with area < 1
+        small_triangles_mask = areas < 1
         n_small_triangles = np.sum(small_triangles_mask)
 
         if n_small_triangles > 0:
