@@ -31,6 +31,7 @@ from typing import Optional
 from datetime import datetime
 from ... import global_vars
 import os
+import numpy as np
 from ...lib.tools_gpkgdao import DrGpkgDao
 
 
@@ -108,7 +109,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         # Get INP Config
         feedback.setProgressText(self.tr("Getting temporal values."))
         feedback.setProgress(11)
-        sql = f"SELECT parameter, value FROM config_param_user WHERE parameter IN ('inp_options_start_date', 'inp_options_start_time', 'inp_options_end_date', 'inp_options_end_time', 'inp_options_report_step')"
+        sql = "SELECT parameter, value FROM config_param_user WHERE parameter IN ('inp_options_start_date', 'inp_options_start_time', 'inp_options_end_date', 'inp_options_end_time', 'inp_options_report_step')"
         result = self.dao.get_rows(sql)
         if result:
             for row in result:

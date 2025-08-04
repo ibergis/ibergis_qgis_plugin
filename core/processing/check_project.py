@@ -1022,8 +1022,6 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             try:
                 min_value = outlayer_values[name].get('min', self.default_outlayer_values[name]['min'])
                 max_value = outlayer_values[name].get('max', self.default_outlayer_values[name]['max'])
-                include_min_value = outlayer_values[name].get('include_min', self.default_outlayer_values[name]['include_min'])
-                include_max_value = outlayer_values[name].get('include_max', self.default_outlayer_values[name]['include_max'])
                 if min_value > max_value:
                     outlayer_values[name]['min'] = self.default_outlayer_values[name]['min']
                     outlayer_values[name]['max'] = self.default_outlayer_values[name]['max']

@@ -313,7 +313,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                     feedback.pushWarning(self.tr(f"Field {field} not found in roof or outlet."))
                     return None
                 fields = [field.name() for field in nearest_layer.fields()]
-                if not field in fields or str(feature[field]) == 'NULL' or feature[field] is None:
+                if field not in fields or str(feature[field]) == 'NULL' or feature[field] is None:
                     if field == 'code':
                         return None
                     elif field in ['elev', 'elev_min']:
