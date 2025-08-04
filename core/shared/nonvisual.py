@@ -143,7 +143,7 @@ class DrNonVisual:
 
         # Set widget & model properties
         tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=set_edit_triggers,
-                                      sectionResizeMode=2, stretchLastSection=True)
+                                      sectionResizeMode=0, stretchLastSection=True)
         # tools_dr.set_tablemodel_config(self.manager_dlg, widget, table_name)
 
         # Sort the table by feature id
@@ -285,7 +285,9 @@ class DrNonVisual:
         cmb_curve_type = self.dialog.cmb_curve_type
 
         paste_shortcut = QShortcut(QKeySequence.Paste, tbl_curve_value)
-        paste_shortcut.activated.connect(partial(self._paste_curve_values, tbl_curve_value))
+        paste_shortcut.activated.connect(partial(self._paste_values, tbl_curve_value))
+        copy_shortcut = QShortcut(QKeySequence.Copy, tbl_curve_value)
+        copy_shortcut.activated.connect(partial(self._copy_values, tbl_curve_value))
 
         # Create & fill cmb_curve_type
         curve_type_headers, curve_type_list = self._create_curve_type_lists()
@@ -319,22 +321,6 @@ class DrNonVisual:
 
         # Open dialog
         tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_curve')
-
-    def _paste_curve_values(self, tbl_curve_value):
-        selected = tbl_curve_value.selectedRanges()
-        if not selected:
-            return
-
-        text = QApplication.clipboard().text()
-        rows = text.split("\n")
-
-        for r, row in enumerate(rows):
-            columns = row.split("\t")
-            for c, value in enumerate(columns):
-                item = QTableWidgetItem(value)
-                row_pos = selected[0].topRow() + r
-                col_pos = selected[0].leftColumn() + c
-                tbl_curve_value.setItem(row_pos, col_pos, item)
 
     def _create_curve_type_lists(self):
         """ Creates a list & dict to manage curve_values table headers """
@@ -412,7 +398,7 @@ class DrNonVisual:
     def _manage_curve_type(self, dialog, curve_type_headers, table, index):
         """ Manage curve values table headers """
 
-        curve_type = tools_qt.get_text(dialog, 'cmb_curve_type', return_string_null=False)
+        curve_type = tools_qt.get_combo_value(dialog, 'cmb_curve_type')
         if curve_type and curve_type_headers:
             headers = curve_type_headers.get(curve_type)
             table.setHorizontalHeaderLabels(headers)
@@ -755,7 +741,9 @@ class DrNonVisual:
 
         for table in [self.dialog.tbl_monthly, self.dialog.tbl_daily, self.dialog.tbl_hourly, self.dialog.tbl_weekend]:
             paste_shortcut = QShortcut(QKeySequence.Paste, table)
-            paste_shortcut.activated.connect(partial(self._paste_patterns_values, table))
+            paste_shortcut.activated.connect(partial(self._paste_values, table))
+            copy_shortcut = QShortcut(QKeySequence.Copy, table)
+            copy_shortcut.activated.connect(partial(self._copy_values, table))
 
         sql = "SELECT id, idval FROM edit_typevalue WHERE typevalue = 'inp_typevalue_pattern'"
         rows = tools_db.get_rows(sql)
@@ -777,20 +765,6 @@ class DrNonVisual:
         # Connect OK button to insert all inp_pattern and inp_pattern_value data to database
         is_new = (pattern is None) or duplicate
         self.dialog.btn_accept.clicked.connect(partial(self._accept_pattern_ud, self.dialog, is_new))
-
-    def _paste_patterns_values(self, tbl_pattern_value):
-        selected = tbl_pattern_value.selectedRanges()
-        if not selected:
-            return
-
-        text = QApplication.clipboard().text()
-        rows = text.split("\n")
-        columns = rows[0].split("\t")
-        for c, value in enumerate(columns):
-            item = QTableWidgetItem(value)
-            row_pos = selected[0].topRow()
-            col_pos = selected[0].leftColumn() + c
-            tbl_pattern_value.setItem(row_pos, col_pos, item)
 
     def _scale_to_fit_pattern_tableviews(self, dialog):
         tables = [dialog.tbl_monthly, dialog.tbl_daily, dialog.tbl_hourly, dialog.tbl_weekend]
@@ -820,7 +794,7 @@ class DrNonVisual:
         if not duplicate:
             tools_qt.set_widget_enabled(self.dialog, txt_name, False)
             tools_qt.set_widget_text(self.dialog, txt_name, pattern_name)
-        tools_qt.set_widget_text(self.dialog, cmb_pattern_type, pattern_type)
+        tools_qt.set_combo_value(cmb_pattern_type, pattern_type, 0, add_new=False)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
 
         # Populate table pattern_values
@@ -1171,7 +1145,9 @@ class DrNonVisual:
         tbl_timeseries_value = self.dialog.tbl_timeseries_value
 
         paste_shortcut = QShortcut(QKeySequence.Paste, tbl_timeseries_value)
-        paste_shortcut.activated.connect(partial(self._paste_timeseries_values, tbl_timeseries_value))
+        paste_shortcut.activated.connect(partial(self._paste_values, tbl_timeseries_value))
+        copy_shortcut = QShortcut(QKeySequence.Copy, tbl_timeseries_value)
+        copy_shortcut.activated.connect(partial(self._copy_values, tbl_timeseries_value))
 
         # Populate combobox
         timeser_type_headers = self._populate_timeser_combos(cmb_times_type, cmb_timeser_type)
@@ -1199,25 +1175,6 @@ class DrNonVisual:
 
         # Open dialog
         tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_timeseries')
-
-    def _paste_timeseries_values(self, tbl_timeseries_value):
-        selected = tbl_timeseries_value.selectedRanges()
-        if not selected:
-            return
-
-        text = QApplication.clipboard().text()
-        rows = text.split("\n")
-
-        times_type = tools_qt.get_combo_value(self.dialog, self.dialog.cmb_times_type)
-        for r, row in enumerate(rows):
-            columns = row.split("\t")
-            for c, value in enumerate(columns):
-                item = QTableWidgetItem(value)
-                row_pos = selected[0].topRow() + r
-                col_pos = selected[0].leftColumn() + c
-                if times_type == 'RELATIVE':
-                    col_pos += 1
-                tbl_timeseries_value.setItem(row_pos, col_pos, item)
 
     def _populate_timeser_combos(self, cmb_times_type, cmb_timeser_type):
         """ Populates timeseries dialog combos """
@@ -1264,8 +1221,8 @@ class DrNonVisual:
         if not duplicate:
             tools_qt.set_widget_text(self.dialog, txt_idval, idval)
             tools_qt.set_widget_enabled(self.dialog, txt_idval, False)
-        tools_qt.set_widget_text(self.dialog, cmb_timeser_type, timeser_type)
-        tools_qt.set_widget_text(self.dialog, cmb_times_type, times_type)
+        tools_qt.set_combo_value(self.dialog.cmb_timeser_type, timeser_type, 0, add_new=False)
+        tools_qt.set_combo_value(self.dialog.cmb_times_type, times_type, 0, add_new=False)
         tools_qt.set_widget_text(self.dialog, txt_descript, descript)
         tools_qt.set_widget_text(self.dialog, txt_fname, fname)
 
@@ -1312,6 +1269,7 @@ class DrNonVisual:
                 headers = ['Date\n(M/D/Y)', 'Time\n(H:M)', 'Value']
             tbl_timeseries_value.setHorizontalHeaderLabels(headers)
 
+        text = tools_qt.get_combo_value(dialog, dialog.cmb_timeser_type)
         if text in ('BC ELEVATION', 'BC FLOW'):
             tools_qt.set_combo_value(cmb_times_type, 'RELATIVE', 0, False)
             tools_qt.set_widget_enabled(dialog, cmb_times_type, False)
@@ -1320,6 +1278,7 @@ class DrNonVisual:
 
     def _manage_times_type(self, tbl_timeseries_value, text):
         """ Manage timeseries table columns depending on times_type """
+        text = tools_qt.get_combo_value(self.dialog, self.dialog.cmb_times_type)
 
         if text == 'RELATIVE':
             tbl_timeseries_value.setColumnHidden(0, True)
@@ -1974,7 +1933,9 @@ class DrNonVisual:
 
         # Activate paste shortcut
         paste_shortcut = QShortcut(QKeySequence.Paste, tbl_raster_value)
-        paste_shortcut.activated.connect(partial(self._paste_raster_values, tbl_raster_value))
+        paste_shortcut.activated.connect(partial(self._paste_values, tbl_raster_value))
+        copy_shortcut = QShortcut(QKeySequence.Copy, tbl_raster_value)
+        copy_shortcut.activated.connect(partial(self._copy_values, tbl_raster_value))
 
         # Populate combobox
         raster_type_headers = self._populate_raster_combo(cmb_raster_type)
@@ -1999,25 +1960,6 @@ class DrNonVisual:
 
         # Open dialog
         tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_raster')
-
-    def _paste_raster_values(self, tbl_raster_value):
-        """ Paste values from clipboard to table """
-
-        selected = tbl_raster_value.selectedRanges()
-        if not selected:
-            return
-
-        text = QApplication.clipboard().text()
-        rows = text.split("\n")
-
-        for r, row in enumerate(rows):
-            columns = row.split("\t")
-            for c, value in enumerate(columns):
-                item = QTableWidgetItem(value)
-                row_pos = selected[0].topRow() + r
-                col_pos = selected[0].leftColumn() + c
-                tbl_raster_value.setItem(row_pos, col_pos, item)
-
 
     def _populate_raster_combo(self, cmb_raster_type):
         """ Populates raster dialog combos """
@@ -2050,7 +1992,7 @@ class DrNonVisual:
         # Populate text & combobox widgets
         if not duplicate:
             tools_qt.set_widget_text(self.dialog, txt_name, raster_name)
-            tools_qt.set_widget_enabled(self.dialog, txt_name, False)
+            tools_qt.set_combo_value(cmb_raster_type, raster_type, 0, add_new=False)
 
         tools_qt.set_combo_value(cmb_raster_type, raster_type, 0)
 
@@ -2481,5 +2423,45 @@ class DrNonVisual:
 
         # Store current time system for next change
         self._previous_time_system = time_system
+
+    def _copy_values(self, table):
+        selected = table.selectedRanges()
+        if not selected:
+            return
+
+        # Get the first selected range
+        selection = selected[0]
+
+        # Extract data from selected cells
+        rows_data = []
+        for row in range(selection.topRow(), selection.bottomRow() + 1):
+            columns_data = []
+            for col in range(selection.leftColumn(), selection.rightColumn() + 1):
+                item = table.item(row, col)
+                text = item.text() if item is not None else ""
+                columns_data.append(text)
+            rows_data.append("\t".join(columns_data))
+
+        # Join rows with newlines
+        clipboard_text = "\n".join(rows_data)
+        QApplication.clipboard().setText(clipboard_text)
+        tools_qgis.show_info("Values copied to clipboard", dialog=self.dialog)
+
+    def _paste_values(self, table):
+        selected = table.selectedRanges()
+        if not selected:
+            return
+
+        text = QApplication.clipboard().text()
+        rows = text.split("\n")
+
+        for r, row in enumerate(rows):
+            columns = row.split("\t")
+            for c, value in enumerate(columns):
+                item = QTableWidgetItem(value)
+                row_pos = selected[0].topRow() + r
+                col_pos = selected[0].leftColumn() + c
+                table.setItem(row_pos, col_pos, item)
+        tools_qgis.show_info("Values pasted from clipboard", dialog=self.dialog)
 
     # endregion
