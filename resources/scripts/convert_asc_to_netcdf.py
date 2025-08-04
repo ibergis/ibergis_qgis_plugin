@@ -78,14 +78,15 @@ def convert_asc_to_netcdf(input_folder: str, output_file: str, progress_changed:
         x_start = transform[2] - transform[0] / 2
         y_start = transform[5] - transform[4] / 2
 
-        x_coords = x_start + np.arange(width) * transform[0]
-        y_coords = y_start + np.arange(height) * transform[4]
+        x_coords = np.array(x_start + np.arange(width) * transform[0], dtype=np.float64)
+        y_coords = np.array(y_start + np.arange(height) * transform[4], dtype=np.float64)
+        time_coords = np.array([t for t, _ in files], dtype=np.float64)
 
         da = xr.DataArray(
-            stacked,
+            stacked.astype(np.float32),  # Ensure data is float32
             dims=["time", "y", "x"],
             coords={
-                "time": [t for t, _ in files],
+                "time": time_coords,
                 "y": y_coords,
                 "x": x_coords
             },
