@@ -96,6 +96,62 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             return {}
 
         # Create outlayer values map
+        self.default_outlayer_values = {
+            'manning': {
+                'min': 0,
+                'max': 1,
+                'include_min': True,
+                'include_max': True
+            },
+            'roughness': {
+                'min': 0,
+                'max': 1,
+                'include_min': True,
+                'include_max': True
+            },
+            'cellsize': {
+                'min': 0,
+                'max': 1000,
+                'include_min': True,
+                'include_max': True
+            },
+            'mfactor': {
+                'min': 0,
+                'max': 1,
+                'include_min': True,
+                'include_max': True
+            },
+            'sfactor': {
+                'min': 0,
+                'max': 1,
+                'include_min': True,
+                'include_max': True
+            },
+            'ufactor': {
+                'min': 0,
+                'max': 1,
+                'include_min': True,
+                'include_max': True
+            },
+            'slope': {
+                'min': 0,
+                'max': 20,
+                'include_min': True,
+                'include_max': True
+            },
+            'outlet_vol': {
+                'min': 0,
+                'max': 100,
+                'include_min': True,
+                'include_max': True
+            },
+            'street_vol': {
+                'min': 0,
+                'max': 100,
+                'include_min': True,
+                'include_max': True
+            }
+        }
         self.outlayer_values = self._get_outlayer_values()
         if not self.outlayer_values:
             msg = 'ERROR: Error getting outlayer values'
@@ -346,9 +402,16 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                     feedback.pushWarning(self.tr(msg, list_params=msg_params))
                     return
             elif query['query_type'] == 'OUTLAYER':
-                msg = 'INFO ({0}): {1}'
-                msg_params = (query['table_name'], info_message.format(self.outlayer_values[columns[0]]['min'], self.outlayer_values[columns[0]]['max'], f'{columns}'))
-                self.info_messages.append(self.tr(msg, list_params=msg_params))
+                for column in columns:
+                    if column in self.outlayer_values.keys():
+                        msg = 'INFO ({0}): {1}'
+                        msg_params = (query['table_name'], info_message.format(self.outlayer_values[column]['min'], self.outlayer_values[column]['max'], f'{column}'))
+                        self.info_messages.append(self.tr(msg, list_params=msg_params))
+                    else:
+                        msg = 'ERROR-{0} ({1}) ({2}): Error getting outlayer values for column "{3}" on table "{4}"'
+                        msg_params = (query['error_code'], query['table_name'], query['query_type'], column, query['table_name'])
+                        feedback.pushWarning(self.tr(msg, list_params=msg_params))
+                        return
             return
 
         if query['create_layer']:
@@ -928,14 +991,13 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
     def _get_outlayer_values(self):
         """ Get outlayer values from config_param_user """
         outlayer_values = {}
-        outlayer_names = ['manning', 'roughness', 'cellsize', 'mfactor', 'sfactor', 'ufactor', 'slope', 'outlet_vol', 'street_vol']
         sql = "SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'outlayer_%'"
         result = self.dao_data.get_rows(sql)
         for row in result:
             parameter, value = row
             split_parameter = parameter.split('_')
             name = None
-            for name in outlayer_names:
+            for name in self.default_outlayer_values.keys():
                 if name in parameter:
                     name = name
                     break
@@ -953,6 +1015,21 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             if name not in outlayer_values.keys():
                 outlayer_values[name] = {}
             outlayer_values[name][param] = value
+        # Validate values and set default values if needed
+        for name in self.default_outlayer_values.keys():
+            if name not in self.default_outlayer_values.keys():
+                outlayer_values[name] = self.default_outlayer_values[name]
+            try:
+                min_value = outlayer_values[name].get('min', self.default_outlayer_values[name]['min'])
+                max_value = outlayer_values[name].get('max', self.default_outlayer_values[name]['max'])
+                include_min_value = outlayer_values[name].get('include_min', self.default_outlayer_values[name]['include_min'])
+                include_max_value = outlayer_values[name].get('include_max', self.default_outlayer_values[name]['include_max'])
+                if min_value > max_value:
+                    outlayer_values[name]['min'] = self.default_outlayer_values[name]['min']
+                    outlayer_values[name]['max'] = self.default_outlayer_values[name]['max']
+            except Exception:
+                print(f"Error getting values for {name}. Using default values...")
+                outlayer_values[name] = self.default_outlayer_values[name]
         return outlayer_values
 
     def helpUrl(self):

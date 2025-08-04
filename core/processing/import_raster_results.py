@@ -233,7 +233,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         # Set main colors
         if layer_name == 'depth':
             # Blue gradient
-            main_colors: dict = self._generate_color_map([QColor(173, 216, 230), QColor(100, 149, 237), QColor(70, 130, 180), QColor(25, 25, 112), QColor(0, 0, 128)], min_value, max_value)
+            main_colors: dict = self._generate_color_map([QColor(205, 233, 249), QColor(137, 201, 246), QColor(74, 166, 232), QColor(30, 118, 193), QColor(8, 56, 130)], min_value, max_value)
         elif layer_name == 'velocity':
             # Multi-color gradient
             main_colors: dict = self._generate_color_map([QColor(0, 0, 255), QColor(0, 255, 255), QColor(0, 255, 0), QColor(255, 255, 0), QColor(255, 0, 0)], min_value, max_value)
