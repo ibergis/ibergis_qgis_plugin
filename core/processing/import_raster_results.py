@@ -24,15 +24,14 @@ from qgis.core import (
     QgsInterval,
     QgsTemporalNavigationObject
 )
-from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QTimeZone
+from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QTimeZone, QTime, QDate
 from qgis.PyQt.QtGui import QColor, QAction
 from ...core.utils import Feedback
 from typing import Optional
 from datetime import datetime
-from swmm_api import read_inp_file
 from ... import global_vars
 import os
-import numpy as np
+from ...lib.tools_gpkgdao import DrGpkgDao
 
 
 class ImportRasterResults(QgsProcessingAlgorithm):
@@ -54,7 +53,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
     step_time: Optional[datetime] = None
 
     iface = global_vars.iface
-
+    dao: Optional[DrGpkgDao] = None
     folder_results_path: Optional[str] = None
 
     def initAlgorithm(self, config):
@@ -83,6 +82,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         self.iface = global_vars.iface
         self.layers = []
+        self.dao = global_vars.gpkg_dao_data.clone()
 
         # reading geodata
         feedback.setProgressText(self.tr('Reading folder...'))
@@ -91,7 +91,6 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.folder_results_path = self.parameterAsFile(parameters, self.FOLDER_RESULTS, context)
         group_name: str = self.parameterAsString(parameters, self.CUSTOM_NAME, context)
         file_netcdf: str = f'{self.folder_results_path}{os.sep}DrainResults{os.sep}rasters.nc'
-        file_inp: str = f'{self.folder_results_path}{os.sep}Iber_SWMM.inp'
 
         # Check if folder is valid and if NetCDF and INP files exist
         if self.folder_results_path is not None and os.path.exists(self.folder_results_path) and os.path.isdir(self.folder_results_path):
@@ -101,29 +100,31 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                 feedback.pushWarning(self.tr("NetCDF file not found."))
                 self.folder_results_path = None
                 return {}
-            if os.path.exists(file_inp) and os.path.isfile(file_inp):
-                feedback.setProgressText(self.tr("INP file found."))
-            else:
-                feedback.pushWarning(self.tr("INP file not found."))
-                self.folder_results_path = None
-                return {}
         else:
             feedback.pushWarning(self.tr("This folder is not valid."))
             return {}
         feedback.setProgress(10)
 
         # Get INP Config
-        feedback.setProgressText(self.tr("Getting INP config."))
+        feedback.setProgressText(self.tr("Getting temporal values."))
         feedback.setProgress(11)
-        model = read_inp_file(file_inp)
-        options = model["OPTIONS"]
-        self.start_date = options["START_DATE"]
-        self.start_time = options["START_TIME"]
-        self.end_date = options["END_DATE"]
-        self.end_time = options["END_TIME"]
-        self.step_time = options["REPORT_STEP"]
+        sql = f"SELECT parameter, value FROM config_param_user WHERE parameter IN ('inp_options_start_date', 'inp_options_start_time', 'inp_options_end_date', 'inp_options_end_time', 'inp_options_report_step')"
+        result = self.dao.get_rows(sql)
+        if result:
+            for row in result:
+                parameter, value = row
+                if parameter == 'inp_options_start_date':
+                    self.start_date = QDate.fromString(value, 'yyyy-MM-dd')
+                elif parameter == 'inp_options_start_time':
+                    self.start_time = QTime.fromString(value, 'hh:mm:ss')
+                elif parameter == 'inp_options_end_date':
+                    self.end_date = QDate.fromString(value, 'yyyy-MM-dd')
+                elif parameter == 'inp_options_end_time':
+                    self.end_time = QTime.fromString(value, 'hh:mm:ss')
+                elif parameter == 'inp_options_report_step':
+                    self.step_time = QTime.fromString(value, 'hh:mm:ss')
         if self.start_date is None or self.start_time is None or self.step_time is None or self.end_date is None or self.end_time is None:
-            feedback.pushWarning(self.tr("Error getting INP config."))
+            feedback.pushWarning(self.tr("Error getting temporal values."))
             return {}
 
         feedback.setProgressText(self.tr("Importing layers..."))
@@ -165,6 +166,8 @@ class ImportRasterResults(QgsProcessingAlgorithm):
     def postProcessAlgorithm(self, context: QgsProcessingContext, feedback: Feedback):
         if self.folder_results_path is None:
             return {}
+
+        self.dao.close_db()
 
         # Add layers
         try:
@@ -265,7 +268,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         interval_seconds: Optional[int] = None
         if self.step_time is not None:
-            interval_seconds = (self.step_time.hour * 60 + self.step_time.minute) * 60 + self.step_time.second
+            interval_seconds = (self.step_time.hour() * 60 + self.step_time.minute()) * 60 + self.step_time.second()
 
         # Create a time range per band
         ranges: dict = {}
@@ -363,7 +366,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         # Set frame duration using QgsInterval for 1 second
         if self.step_time is None:
             return
-        frame_duration = QgsInterval((self.step_time.hour * 60 + self.step_time.minute) * 60 + self.step_time.second)
+        frame_duration = QgsInterval((self.step_time.hour() * 60 + self.step_time.minute()) * 60 + self.step_time.second())
         temporal_controller.setFrameDuration(frame_duration)
         temporal_controller.setFramesPerSecond(1.0)
 

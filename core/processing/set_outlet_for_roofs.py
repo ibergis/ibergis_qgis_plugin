@@ -124,7 +124,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         feedback.setProgress(10)
 
         # Get roof layer with minimum elevation for each feature
-        self.roof_elev_layer = self.fromPolygonToPointElevation(self.file_roofs, file_elev_raster)
+        self.roof_elev_layer = self.getRoofElevationFromRaster(self.file_roofs, file_elev_raster)
 
         if self.roof_elev_layer is None:
             feedback.pushWarning(self.tr("Error getting minimum roof elevation"))
@@ -161,9 +161,12 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
 
         return {}
 
-    def fromPolygonToPointElevation(self, roof_layer: QgsVectorLayer, raster_layer: QgsRasterLayer) -> Optional[QgsVectorLayer]:
+    def getRoofElevationFromRaster(self, roof_layer: QgsVectorLayer, raster_layer: QgsRasterLayer) -> Optional[QgsVectorLayer]:
         """ Return roof_layer with the minimum elvation for each roof """
-        roof_point_layer: Optional[QgsVectorLayer] = None
+        roof_elev_layer: Optional[QgsVectorLayer] = None
+
+        if raster_layer is None:
+            return roof_layer
 
         try:
             if not self.bool_selected_features:
@@ -181,11 +184,11 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                     'RASTER_BAND': 1, 'COLUMN_PREFIX': 'elev_', 'STATISTICS': [5], 'OUTPUT': 'memory:'
                 })
             if result:
-                roof_point_layer = result['OUTPUT']
+                roof_elev_layer = result['OUTPUT']
         except Exception:
-            roof_point_layer = None
+            roof_elev_layer = None
 
-        return roof_point_layer
+        return roof_elev_layer
 
     def postProcessAlgorithm(self, context, feedback: Feedback, batch_size: int = 5000):
         """ Update features and create temporal layers """
@@ -257,7 +260,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                         new_feature = QgsFeature(temporal_features_layer.fields())
                         new_feature.setGeometry(feature.geometry())
                         attrs = feature.attributes()
-                        extra_value = "SKIPPED"
+                        extra_value = "BELOW"
                         attrs.append(extra_value)
                         new_feature.setAttributes(attrs)
                         temporal_features_layer.addFeature(new_feature)
@@ -301,16 +304,21 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         for index, feature in enumerate(nearest_layer.getFeatures()):
             feedback.setProgress(tools_dr.lerp_progress(int(((index + 1) / nearest_layer.featureCount()) * 100), min_progress, max_progress))
             valid_attributes = True
+            has_elevation_data = True
             if feedback.isCanceled():
                 return None
             # Check if fields are None
             for field in necessary_fields:
-                if field not in feature.attributeMap().keys():
+                if field != 'elev_min' and field not in feature.attributeMap().keys():
                     feedback.pushWarning(self.tr(f"Field {field} not found in roof or outlet."))
                     return None
-                if str(feature[field]) == 'NULL' or feature[field] is None:
+                fields = [field.name() for field in nearest_layer.fields()]
+                if not field in fields or str(feature[field]) == 'NULL' or feature[field] is None:
                     if field == 'code':
                         return None
+                    elif field in ['elev', 'elev_min']:
+                        # Mark as having no elevation data but continue processing
+                        has_elevation_data = False
                     else:
                         if feature['code'] in skipped_near_features:
                             valid_attributes = False
@@ -326,12 +334,20 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                 continue
 
             roof_code: str = feature['code']
-            outlet_values = {'code': feature['code_2'], 'elev': feature['elev'], 'distance': feature['distance']}
+            outlet_values = {
+                'code': feature['code_2'],
+                'elev': feature['elev'] if has_elevation_data else None,
+                'distance': feature['distance']
+            }
 
             if roof_code in nearest_outlets_list.keys():
                 nearest_outlets_list[roof_code]['outlets'].append(outlet_values)
             else:
-                nearest_outlets_list[roof_code] = {'elev': feature['elev_min'], 'outlets': [outlet_values]}
+                nearest_outlets_list[roof_code] = {
+                    'elev': feature['elev_min'] if has_elevation_data else None,
+                    'outlets': [outlet_values],
+                    'has_elevation_data': has_elevation_data
+                }
             if roof_code in skipped_near_features and roof_code in nearest_outlets_list:
                 if nearest_outlets_list[roof_code] is not None:
                     self.skipped_roofs.remove(str(feature['code']))
@@ -345,26 +361,36 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
             if len(values['outlets']) == 1:
                 nearest_outlets[roof_code] = values['outlets'][0]['code']
             else:
-                # Sort outlets by distance and take the valid elevation one
+                # Sort outlets by distance
                 values['outlets'].sort(key=lambda x: x['distance'])
-                min_outlet = None
-                for outlet in values['outlets']:
-                    if outlet['elev'] >= values['elev'] and self.bool_force_belows:
-                        if min_outlet is None or min_outlet['elev'] > outlet['elev']:
-                            min_outlet = outlet
-                        continue
-                    elif outlet['elev'] >= values['elev'] and not self.bool_force_belows:
-                        continue
-                    else:
-                        nearest_outlets[roof_code] = outlet['code']
-                        break
-                if roof_code not in nearest_outlets.keys():
-                    # Set outlet as None or set the minimum one. Depends on checkbox parameter "bool_force_belows"
-                    if self.bool_force_belows and min_outlet is not None:
-                        nearest_outlets[roof_code] = min_outlet['code']
-                        self.below_roofs.append(roof_code)
-                    else:
-                        nearest_outlets[roof_code] = None
+
+                # If no elevation data available, just pick the nearest outlet
+                if not values.get('has_elevation_data', True):
+                    nearest_outlets[roof_code] = values['outlets'][0]['code']
+                else:
+                    # Apply elevation constraints when elevation data is available
+                    min_outlet = None
+                    for outlet in values['outlets']:
+                        if outlet['elev'] is None:
+                            # If this specific outlet has no elevation data, pick it as nearest
+                            nearest_outlets[roof_code] = outlet['code']
+                            break
+                        elif outlet['elev'] >= values['elev'] and self.bool_force_belows:
+                            if min_outlet is None or min_outlet['elev'] > outlet['elev']:
+                                min_outlet = outlet
+                            continue
+                        elif outlet['elev'] >= values['elev'] and not self.bool_force_belows:
+                            continue
+                        else:
+                            nearest_outlets[roof_code] = outlet['code']
+                            break
+                    if roof_code not in nearest_outlets.keys():
+                        # Set outlet as None or set the minimum one. Depends on checkbox parameter "bool_force_belows"
+                        if self.bool_force_belows and min_outlet is not None:
+                            nearest_outlets[roof_code] = min_outlet['code']
+                            self.below_roofs.append(roof_code)
+                        else:
+                            nearest_outlets[roof_code] = None
         if len(nearest_outlets.keys()) == 0:
             return {'result': 'blank'}
         return nearest_outlets
@@ -374,14 +400,10 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
 
         error_message = ''
         roof_layer = parameters[self.FILE_ROOFS]
-        elev_raster_layer = parameters[self.FILE_ELEV_RASTER]
         outlet_layer = parameters[self.FILE_OUTLETS]
 
         if roof_layer is None:
             error_message += self.tr('Roof layer not found in this schema.\n\n')
-
-        if elev_raster_layer is None:
-            error_message += self.tr('Missing raster layer\n')
 
         if outlet_layer is None:
             error_message += self.tr('Outlet layer not found in this schema.\n\n')

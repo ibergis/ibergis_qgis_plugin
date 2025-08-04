@@ -1234,7 +1234,6 @@ def update_tmax(dialog):
     end_time = dialog.findChild(QLineEdit, 'inp_options_end_time')
     start_date = dialog.findChild(QgsDateTimeEdit, 'inp_options_start_date')
     end_date = dialog.findChild(QgsDateTimeEdit, 'inp_options_end_date')
-    tmax = dialog.findChild(QLineEdit, 'options_tmax')
 
     # Get widget values
     start_time_text = tools_qt.get_text(dialog, start_time, return_string_null=False)
@@ -1290,10 +1289,9 @@ def update_tmax(dialog):
                 seconds = int(time_diff.total_seconds())
 
                 # Update the tmax field
-                if tmax:
-                    tools_qt.set_widget_text(dialog, 'options_tmax', str(seconds))
-                    # Manually emit editingFinished signal to trigger any connected functions
-                    tmax.editingFinished.emit()
+                tools_qt.set_widget_text(dialog, 'options_tmax', str(seconds))
+                sql = f"UPDATE config_param_user SET value = '{seconds}' WHERE parameter = 'options_tmax'"
+                tools_db.execute_sql(sql)
 
     except Exception as e:
         msg = f"Error calculating time difference: {e}"

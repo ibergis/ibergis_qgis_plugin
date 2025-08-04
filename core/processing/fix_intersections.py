@@ -118,13 +118,25 @@ class FixIntersections(QgsProcessingAlgorithm):
         feedback.setProgressText(self.tr('Spliting multipolygons into single polygons...'))
         feedback.setProgress(20)
 
-        tmp_gpkg = os.path.join(tempfile.gettempdir(), "splited_layer.gpkg")
-        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT': merged_layer, 'OUTPUT': tmp_gpkg})['OUTPUT']
+        tmp_gpkg = tempfile.mktemp(suffix=".gpkg", prefix="splited_layer_")
+        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT':merged_layer,'OUTPUT':tmp_gpkg})['OUTPUT']
         if splited_layer is None:
             feedback.pushWarning(self.tr('Error splitting multipolygons into single polygons.'))
+            # Clean up temporary file
+            if os.path.exists(tmp_gpkg):
+                try:
+                    os.remove(tmp_gpkg)
+                except OSError:
+                    pass
             return {}
 
         if feedback.isCanceled():
+            # Clean up temporary file
+            if os.path.exists(tmp_gpkg):
+                try:
+                    os.remove(tmp_gpkg)
+                except OSError:
+                    pass
             return {}
 
         feedback.setProgressText(self.tr('Cleaning intersections...'))
@@ -138,6 +150,12 @@ class FixIntersections(QgsProcessingAlgorithm):
             'GRASS_OUTPUT_TYPE_PARAMETER': 0, 'GRASS_VECTOR_DSCO': '', 'GRASS_VECTOR_LCO': '', 'GRASS_VECTOR_EXPORT_NOCAT': False})
         if cleaned_layer_result is None:
             feedback.pushWarning(self.tr('Error cleaning intersections.'))
+            # Clean up temporary file
+            if os.path.exists(tmp_gpkg):
+                try:
+                    os.remove(tmp_gpkg)
+                except OSError:
+                    pass
             return {}
         cleaned_layer = QgsVectorLayer(cleaned_layer_result['output'], 'cleaned_layer', 'ogr')
 
@@ -291,6 +309,14 @@ class FixIntersections(QgsProcessingAlgorithm):
         ground_sink.addFeatures(ground_features)
 
         feedback.setProgress(100)
+
+        # Clean up temporary file
+        if os.path.exists(tmp_gpkg):
+            try:
+                os.remove(tmp_gpkg)
+            except OSError:
+                pass  # Ignore errors if file cannot be removed
+
         outputs = {
             self.FIXED_ROOF_LAYER: roof_dest_id,
             self.FIXED_GROUND_LAYER: ground_dest_id
