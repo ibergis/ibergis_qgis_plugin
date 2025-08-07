@@ -483,7 +483,9 @@ class DrLoadProject(QObject):
         """ Update config.gpkg language from selected locale """
 
         locale = tools_qgis.get_locale()
-        print(locale)
+
+        if locale == "en_US":
+            return
 
         sql_dir = os.path.normpath(os.path.join(global_vars.plugin_dir, 'dbmodel'))
         i18n_dml_path = os.path.join(sql_dir, "i18n", locale, "dml.sql")
