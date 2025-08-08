@@ -705,7 +705,7 @@ class DrCreateMeshTask(DrTask):
         print("Getting ground losses from raster... ", end="")
         start = time.time()
 
-        fids, scs_cn = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
+        fids, scs_cn = core.execute_ground_zonal_statistics(temp_layer, self.losses_layer)
         triangles_df.loc[fids, "scs_cn"] = scs_cn
 
         print(f"Done! {time.time() - start}s")
