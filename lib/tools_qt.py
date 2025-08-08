@@ -1328,7 +1328,7 @@ def _add_translator(log_info=False):
 
     # Get locale of QGIS application
     locale = tools_qgis.get_locale()
-    if locale == "en_US":
+    if locale.startswith("en_"):
         return
     
     locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'drain_{locale}.qm')
