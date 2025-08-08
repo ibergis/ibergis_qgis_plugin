@@ -68,7 +68,7 @@ class DrSchemaI18NManager:
         self._close_db_org()
         # Connection with origin db
         path_i18n = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}drain_i18n.gpkg"
-        path_sample = f"{self.plugin_dir}{os.sep}config{os.sep}config.gpkg"
+        path_sample = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}drain_sample.gpkg"
         status_i18n = self._init_db_i18n(path_i18n)
         status_org = self._init_db_org(path_sample)
 

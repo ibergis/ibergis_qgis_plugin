@@ -484,7 +484,7 @@ class DrLoadProject(QObject):
 
         locale = tools_qgis.get_locale()
 
-        if locale.startswith("en_"):
+        if locale == "en_US" and global_vars.user_level['level'] in global_vars.user_level['showadminadvanced']:
             return
 
         sql_dir = os.path.normpath(os.path.join(global_vars.plugin_dir, 'dbmodel'))
