@@ -34,6 +34,7 @@ from ... import global_vars
 import os
 import numpy as np
 from ...lib.tools_gpkgdao import DrGpkgDao
+from swmm_api import read_inp_file
 
 
 class ImportRasterResults(QgsProcessingAlgorithm):
@@ -58,6 +59,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
     dao: Optional[DrGpkgDao] = None
     folder_results_path: Optional[str] = None
     layer_names: list[str] = []
+    from_inp: bool = True
 
     def initAlgorithm(self, config):
         """
@@ -87,6 +89,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.layers = []
         self.dao = global_vars.gpkg_dao_data.clone()
         self.layer_names: list[str] = []
+        self.from_inp: bool = True
 
         # reading geodata
         feedback.setProgressText(self.tr('Reading folder...'))
@@ -95,6 +98,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.folder_results_path = self.parameterAsFile(parameters, self.FOLDER_RESULTS, context)
         group_name: str = self.parameterAsString(parameters, self.CUSTOM_NAME, context)
         folder_netcdf: str = f'{self.folder_results_path}{os.sep}IberGisResults'
+        inp_file: str = f'{self.folder_results_path}{os.sep}Iber_SWMM.inp'
 
         # Check if folder is valid and if NetCDF and INP files exist
         if self.folder_results_path is not None and os.path.exists(self.folder_results_path) and os.path.isdir(self.folder_results_path):
@@ -104,6 +108,11 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                 feedback.pushWarning(self.tr("NetCDF folder not found."))
                 self.folder_results_path = None
                 return {}
+            if os.path.exists(inp_file) and os.path.isfile(inp_file):
+                feedback.setProgressText(self.tr("INP file found."))
+            else:
+                feedback.pushWarning(self.tr("INP file not found. Using geopackage temporal values."))
+                self.from_inp = False
         else:
             feedback.pushWarning(self.tr("This folder is not valid."))
             return {}
@@ -112,21 +121,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         # Get INP Config
         feedback.setProgressText(self.tr("Getting temporal values."))
         feedback.setProgress(11)
-        sql = "SELECT parameter, value FROM config_param_user WHERE parameter IN ('inp_options_start_date', 'inp_options_start_time', 'inp_options_end_date', 'inp_options_end_time', 'inp_options_report_step')"
-        result = self.dao.get_rows(sql)
-        if result:
-            for row in result:
-                parameter, value = row
-                if parameter == 'inp_options_start_date':
-                    self.start_date = QDate.fromString(value, 'yyyy-MM-dd')
-                elif parameter == 'inp_options_start_time':
-                    self.start_time = QTime.fromString(value, 'hh:mm:ss')
-                elif parameter == 'inp_options_end_date':
-                    self.end_date = QDate.fromString(value, 'yyyy-MM-dd')
-                elif parameter == 'inp_options_end_time':
-                    self.end_time = QTime.fromString(value, 'hh:mm:ss')
-                elif parameter == 'inp_options_report_step':
-                    self.step_time = QTime.fromString(value, 'hh:mm:ss')
+        self._get_temporal_values(self.from_inp, inp_file)
         if self.start_date is None or self.start_time is None or self.step_time is None or self.end_date is None or self.end_time is None:
             feedback.pushWarning(self.tr("Error getting temporal values."))
             return {}
@@ -176,11 +171,40 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         return {"Result": True}
 
+    def _get_temporal_values(self, from_inp: bool = True, inp_file: Optional[str] = None):
+        """ Get temporal values from INP file or geopackage """
+
+        if from_inp:
+            inp_data = read_inp_file(inp_file)
+            options = inp_data['OPTIONS']
+            self.start_date = QDate.fromString(options['START_DATE'].strftime("%Y-%m-%d"), 'yyyy-MM-dd')
+            self.start_time = QTime.fromString(options['START_TIME'].strftime("%H:%M:%S"), 'hh:mm:ss')
+            self.end_date = QDate.fromString(options['END_DATE'].strftime("%Y-%m-%d"), 'yyyy-MM-dd')
+            self.end_time = QTime.fromString(options['END_TIME'].strftime("%H:%M:%S"), 'hh:mm:ss')
+            self.step_time = QTime.fromString(options['REPORT_STEP'].strftime("%H:%M:%S"), 'hh:mm:ss')
+            return
+
+        sql = "SELECT parameter, value FROM config_param_user WHERE parameter IN ('inp_options_start_date', 'inp_options_start_time', 'inp_options_end_date', 'inp_options_end_time', 'inp_options_report_step')"
+        result = self.dao.get_rows(sql)
+        if result:
+            for row in result:
+                parameter, value = row
+                if parameter == 'inp_options_start_date':
+                    self.start_date = QDate.fromString(value, 'yyyy-MM-dd')
+                elif parameter == 'inp_options_start_time':
+                    self.start_time = QTime.fromString(value, 'hh:mm:ss')
+                elif parameter == 'inp_options_end_date':
+                    self.end_date = QDate.fromString(value, 'yyyy-MM-dd')
+                elif parameter == 'inp_options_end_time':
+                    self.end_time = QTime.fromString(value, 'hh:mm:ss')
+                elif parameter == 'inp_options_report_step':
+                    self.step_time = QTime.fromString(value, 'hh:mm:ss')
+
     def postProcessAlgorithm(self, context: QgsProcessingContext, feedback: Feedback):
+        self.dao.close_db()
+
         if self.folder_results_path is None:
             return {}
-
-        self.dao.close_db()
 
         # Add layers
         try:
