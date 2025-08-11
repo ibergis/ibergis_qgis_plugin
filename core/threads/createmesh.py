@@ -151,7 +151,7 @@ class DrCreateMeshTask(DrTask):
         if not self.temporal_mesh:
             # Remove previous temp layers
             project = QgsProject.instance()
-            layer_ids = (x.id() for x in project.mapLayersByName("Mesh Temp Layer"))
+            layer_ids = [x.id() for x in project.mapLayersByName("Mesh Temp Layer")]
             project.removeMapLayers(layer_ids)
             group_name = "MESH INPUTS ERRORS & WARNINGS"
             temp_group = tools_qgis.find_toc_group(project.layerTreeRoot(), group_name)
@@ -191,7 +191,7 @@ class DrCreateMeshTask(DrTask):
                 return False
 
         # Validate landuses roughness values
-        if self.roughness_layer is not None:
+        if self.roughness_layer is not None and self.roughness_layer == "ground_layer":
             print("Validating landuses... ", end="")
             start = time.time()
 
@@ -199,37 +199,20 @@ class DrCreateMeshTask(DrTask):
             landuses_df = pd.DataFrame(
                 rows, columns=["id", "idval", "manning"]
             ).set_index("id")
-            missing_roughness = []
 
-            if self.roughness_layer == "ground_layer":
-                rows = self.dao.get_rows(
-                    "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
-                )
-                used_landuses = [] if rows is None else [row[0] for row in rows]
+            rows = self.dao.get_rows(
+                "SELECT DISTINCT landuse FROM ground WHERE landuse IS NOT NULL AND custom_roughness IS NULL"
+            )
+            used_landuses = [] if rows is None else [row[0] for row in rows]
 
-                missing_roughness = [
-                    landuse
-                    for landuse in used_landuses
-                    if landuse not in landuses_df["idval"].values
-                    or landuses_df[landuses_df["idval"] == landuse]["manning"]
-                    .isna()
-                    .any()
-                ]
-            else:
-                rows = self.roughness_layer.height()
-                cols = self.roughness_layer.width()
-                provider = self.roughness_layer.dataProvider()
-                bl = provider.block(1, provider.extent(), cols, rows)
-                unique_values = set(
-                    [bl.value(r, c) for r in range(rows) for c in range(cols)]
-                )
-                used_landuses = {int(x) for x in unique_values if x != 255}
-                missing_roughness = [
-                    str(landuse)
-                    for landuse in used_landuses
-                    if landuse not in landuses_df.index
-                    or np.isnan(landuses_df.loc[landuse, "manning"])
-                ]
+            missing_roughness = [
+                landuse
+                for landuse in used_landuses
+                if landuse not in landuses_df["idval"].values
+                or landuses_df[landuses_df["idval"] == landuse]["manning"]
+                .isna()
+                .any()
+            ]
 
             print(f"Done! {time.time() - start}s")
 
@@ -692,8 +675,7 @@ class DrCreateMeshTask(DrTask):
             rows, columns=["id", "idval", "manning"]
         ).set_index("id")
 
-        fids, landuses = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
-        roughness = landuses_df.loc[landuses, "manning"].values
+        fids, roughness = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
         triangles_df.loc[fids, "roughness"] = roughness
 
         print(f"Done! {time.time() - start}s")
