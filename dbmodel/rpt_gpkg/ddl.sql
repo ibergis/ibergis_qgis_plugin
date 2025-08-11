@@ -9,7 +9,7 @@ This version of Giswater is provided by Giswater Association
 CREATE TABLE rpt_arc (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	shape text unique check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
@@ -26,7 +26,7 @@ CREATE TABLE rpt_arc (
 CREATE TABLE rpt_arcflow_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	shape text unique check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
@@ -55,7 +55,7 @@ CREATE TABLE rpt_arcflow_sum (
 CREATE TABLE rpt_condsurcharge_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	shape text unique check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
@@ -74,7 +74,7 @@ CREATE TABLE rpt_condsurcharge_sum (
 CREATE TABLE rpt_flowclass_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	shape text unique check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
@@ -97,7 +97,7 @@ CREATE TABLE rpt_flowclass_sum (
 CREATE TABLE rpt_flowrouting_cont (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	shape text unique check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
@@ -123,7 +123,7 @@ CREATE TABLE rpt_flowrouting_cont (
 CREATE TABLE rpt_node (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
@@ -140,7 +140,7 @@ CREATE TABLE rpt_node (
 CREATE TABLE rpt_nodedepth_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
@@ -158,7 +158,7 @@ CREATE TABLE rpt_nodedepth_sum (
 CREATE TABLE rpt_nodeflooding_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
@@ -175,7 +175,7 @@ CREATE TABLE rpt_nodeflooding_sum (
 CREATE TABLE rpt_nodeinflow_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
@@ -195,7 +195,7 @@ CREATE TABLE rpt_nodeinflow_sum (
 CREATE TABLE rpt_nodesurcharge_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
@@ -210,7 +210,7 @@ CREATE TABLE rpt_nodesurcharge_sum (
 CREATE TABLE rpt_outfallflow_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
@@ -225,7 +225,7 @@ CREATE TABLE rpt_outfallflow_sum (
 CREATE TABLE rpt_pumping_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
     percent real check (typeof("percent") = 'real' or "percent" = null),
     num_startup integer check (typeof(num_startup) = 'integer' or num_startup = null),
     min_flow real check (typeof(min_flow) = 'real' or min_flow = null),
@@ -242,7 +242,7 @@ CREATE TABLE rpt_pumping_sum (
 CREATE TABLE rpt_storagevol_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
-	epa_type text unique check (typeof(epa_type) = 'text' or epa_type = null),
+	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
 	ymax real check (typeof(ymax)='real' or ymax=null),
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),

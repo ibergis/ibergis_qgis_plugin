@@ -26,6 +26,8 @@ from .utilities.execute_model_btn import DrExecuteModelButton
 from .utilities.profile_btn import DrProfileButton
 from .utilities.mesh_manager_btn import DrMeshManagerButton
 from .utilities.results_btn import DrResultsButton
+from .utilities.report_summary_btn import DrReportSummaryButton
+from .utilities.results_folder_selector_btn import DrResultsFolderSelectorButton
 
 # ToC
 # from .toc.add_child_layer_button import DrAddChildLayerButton

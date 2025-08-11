@@ -11,14 +11,14 @@ from functools import partial
 
 from qgis.PyQt.QtCore import QDate, QDateTime
 from qgis.PyQt.QtWidgets import QListWidgetItem, QAction, QButtonGroup
-from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression
+from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression, QgsProject
 from qgis.gui import QgsMapToolEmitPoint
 
 from ..dialog import DrAction
 from ...ui.ui_manager import DrProfileUi, DrProfilesListUi
 from ...utils import tools_dr
 from ...utils.snap_manager import DrSnapManager
-from ....lib import tools_qt, tools_qgis, tools_os
+from ....lib import tools_qt, tools_qgis
 
 try:
     import matplotlib.pyplot as plt
@@ -129,7 +129,6 @@ class DrProfileButton(DrAction):
         self.dlg_draw_profile.btn_save_profile.clicked.connect(self._save_profile)
         self.dlg_draw_profile.btn_load_profile.clicked.connect(self._open_profile)
         self.dlg_draw_profile.btn_clear_profile.clicked.connect(self._clear_profile)
-        self.dlg_draw_profile.btn_results_path.clicked.connect(self._select_results_path)
         self.dlg_draw_profile.rb_instant.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.rb_period.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.dlg_closed.connect(partial(tools_dr.save_settings, self.dlg_draw_profile))
@@ -150,9 +149,6 @@ class DrProfileButton(DrAction):
         self.dlg_draw_profile.rb_depth.setChecked(True)
         self._manage_timestamp_widgets()
 
-        # Set last parameters
-        tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder,
-                                 tools_dr.get_config_parser('btn_profile', 'results_folder', "user", "session"))
         # Restore datetime values
         dtm_instant_val = tools_dr.get_config_parser('btn_profile', 'dtm_instant', "user", "session")
         dtm_start_val = tools_dr.get_config_parser('btn_profile', 'dtm_start', "user", "session")
@@ -199,12 +195,6 @@ class DrProfileButton(DrAction):
             self.dlg_draw_profile.lbl_period_sep.setEnabled(True)
             self.dlg_draw_profile.dtm_instant.setEnabled(False)
 
-    def _select_results_path(self):
-        """ Open folder dialog and set path to textbox """
-        path = tools_os.open_folder_path()
-        if path:
-            tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_results_folder', str(path))
-
     def _get_profile(self):
 
         # Clear main variables
@@ -214,9 +204,6 @@ class DrProfileButton(DrAction):
         self.links = []
         self.none_values = []
 
-        # Save profile values
-        results_folder = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder)
-        tools_dr.set_config_parser('btn_profile', 'results_folder', f'{results_folder}')
         # Save datetime values
         dtm_instant_val = self.dlg_draw_profile.dtm_instant.dateTime().toString('yyyy-MM-dd HH:mm:ss')
         dtm_start_val = self.dlg_draw_profile.dtm_start.dateTime().toString('yyyy-MM-dd HH:mm:ss')
@@ -508,7 +495,18 @@ class DrProfileButton(DrAction):
         from ...utils.profile_utils import ProfilePlotter
 
         # Get parameters
-        results_folder = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder)
+        results_folder = tools_qgis.get_project_variable('project_results_folder')
+        if results_folder is None:
+            tools_qgis.show_warning("No results folder selected")
+            return
+        results_folder = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{results_folder}")
+        if not os.path.exists(results_folder) or not os.path.isdir(results_folder):
+            tools_qgis.show_warning("Invalid results folder")
+            return
+        if not os.path.exists(os.path.join(results_folder, 'Iber_SWMM.inp')) or \
+                not os.path.exists(os.path.join(results_folder, 'Iber_SWMM.out')):
+            tools_qgis.show_warning("No Iber_SWMM.inp or Iber_SWMM.out file found")
+            return
         timestamp: str = self.dlg_draw_profile.dtm_instant.dateTime().toString('yyyy-MM-dd HH:mm:ss')
         custom_start: str = self.dlg_draw_profile.dtm_start.dateTime().toString('yyyy-MM-dd HH:mm:ss')
         custom_end: str = self.dlg_draw_profile.dtm_end.dateTime().toString('yyyy-MM-dd HH:mm:ss')

@@ -22,7 +22,8 @@ from qgis.core import (
     QgsRasterShader,
     QgsSingleBandPseudoColorRenderer,
     QgsInterval,
-    QgsTemporalNavigationObject
+    QgsTemporalNavigationObject,
+    QgsMapLayerStyle
 )
 from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QTimeZone, QTime, QDate
 from qgis.PyQt.QtGui import QColor, QAction
@@ -56,6 +57,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
     iface = global_vars.iface
     dao: Optional[DrGpkgDao] = None
     folder_results_path: Optional[str] = None
+    layer_names: list[str] = []
 
     def initAlgorithm(self, config):
         """
@@ -84,6 +86,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.iface = global_vars.iface
         self.layers = []
         self.dao = global_vars.gpkg_dao_data.clone()
+        self.layer_names: list[str] = []
 
         # reading geodata
         feedback.setProgressText(self.tr('Reading folder...'))
@@ -91,14 +94,14 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         self.folder_results_path = self.parameterAsFile(parameters, self.FOLDER_RESULTS, context)
         group_name: str = self.parameterAsString(parameters, self.CUSTOM_NAME, context)
-        file_netcdf: str = f'{self.folder_results_path}{os.sep}DrainResults{os.sep}rasters.nc'
+        folder_netcdf: str = f'{self.folder_results_path}{os.sep}IberGisResults'
 
         # Check if folder is valid and if NetCDF and INP files exist
         if self.folder_results_path is not None and os.path.exists(self.folder_results_path) and os.path.isdir(self.folder_results_path):
-            if os.path.exists(file_netcdf) and os.path.exists(file_netcdf) and os.path.isfile(file_netcdf):
-                feedback.setProgressText(self.tr("NetCDF file found."))
+            if os.path.exists(folder_netcdf) and os.path.isdir(folder_netcdf):
+                feedback.setProgressText(self.tr("NetCDF folder found."))
             else:
-                feedback.pushWarning(self.tr("NetCDF file not found."))
+                feedback.pushWarning(self.tr("NetCDF folder not found."))
                 self.folder_results_path = None
                 return {}
         else:
@@ -132,7 +135,10 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         feedback.setProgress(15)
 
         # Set layer names
-        layer_names: list[str] = ["Depth", "Velocity"]
+        self.layer_names: list[str] = ["Depth", "Velocity", "Rain_Depth"]
+        #                                   "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
+        #                                   "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008",
+        #                                   "Water_Elevation", "Water_Permanence"]
 
         project: QgsProject = QgsProject.instance()
 
@@ -146,9 +152,15 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.layers_group = root.insertGroup(0, display_group_name)
 
         try:
-            for layer_name in layer_names:
+            for layer_name in self.layer_names:
+                # Get netcdf file
+                netcdf_file: str = f'{folder_netcdf}{os.sep}{layer_name}.nc'
+                if not os.path.exists(netcdf_file) or not os.path.isfile(netcdf_file):
+                    feedback.pushWarning(self.tr(f'Skipping {layer_name} layer. File not found.'))
+                    continue
+
                 # Get layer from netcdf
-                layer_uri: str = f'NETCDF:"{file_netcdf}":{layer_name}'
+                layer_uri: str = f'NETCDF:"{netcdf_file}":{layer_name}'
 
                 # Create raster layer
                 raster_layer: QgsRasterLayer = QgsRasterLayer(layer_uri, f'{group_name} - {layer_name}')
@@ -200,13 +212,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         longest_qgis_step = 0.0000000000000001
 
         # Get min and max values
-        if 'Depth' in layer.name():
-            layer_name = 'depth'
-        elif 'Velocity' in layer.name():
-            layer_name = 'velocity'
-        else:
-            feedback.pushWarning(self.tr('Error configuring the layer. Wrong name.'))
-            return
+        layer_name = layer.name().split('-')[1].strip().lower()
 
         sql = f"SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'result_symbology_%_{layer_name}%'"
         result = global_vars.gpkg_dao_data.get_rows(sql)
@@ -238,7 +244,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         if layer_name == 'depth':
             # Blue gradient
             main_colors: dict = self._generate_color_map([QColor(205, 233, 249), QColor(137, 201, 246), QColor(74, 166, 232), QColor(30, 118, 193), QColor(8, 56, 130)], min_value, max_value)
-        elif layer_name == 'velocity':
+        else:
             # Multi-color gradient
             main_colors: dict = self._generate_color_map([QColor(0, 0, 255), QColor(0, 255, 255), QColor(0, 255, 0), QColor(255, 255, 0), QColor(255, 0, 0)], min_value, max_value)
 
@@ -247,18 +253,47 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         # Create shader
         shader = QgsRasterShader()
-        color_ramp = QgsColorRampShader(min_value, max_value)
+        color_ramp = QgsColorRampShader()
+        color_ramp.setMinimumValue(min_value)
+        color_ramp.setMaximumValue(max_value)
         color_ramp.setColorRampItemList(color_items)
         color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
         shader.setRasterShaderFunction(color_ramp)
 
         # Create render
         provider = layer.dataProvider()
-        renderer = QgsSingleBandPseudoColorRenderer(provider, 0, shader)
+
+        # Ensure NoData is correctly defined
+        try:
+            for band_index in range(1, layer.bandCount() + 1):
+                provider.setNoDataValue(band_index, -9999.0)
+        except Exception:
+            pass
+
+        # Use 1-based band index and persist explicit classification range
+        renderer = QgsSingleBandPseudoColorRenderer(provider, 1, shader)
+        try:
+            renderer.setClassificationMin(min_value)
+            renderer.setClassificationMax(max_value)
+        except Exception:
+            pass
 
         # Apply render
         layer.setRenderer(renderer)
         layer.triggerRepaint()
+
+        # Persist style into project
+        try:
+            style = QgsMapLayerStyle()
+            style.readFromLayer(layer)
+            style_name = f"Auto-{layer.name()}"
+            sm = layer.styleManager()
+            if style_name in sm.styles():
+                sm.removeStyle(style_name)
+            sm.addStyle(style_name, style)
+            sm.setCurrentStyle(style_name)
+        except Exception:
+            pass
 
         # Config temporal
         temporal: QgsRasterLayerTemporalProperties = layer.temporalProperties()
@@ -328,13 +363,13 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                 color = QColor(0, 0, 0)  # Default color
 
             last_color = color  # Store the last calculated color
-            # Store color into color list
-            color_items.append(QgsColorRampShader.ColorRampItem(val, color, f"{val}".replace('.', ',')))
+            # Store color into color list, enforce dot decimal to avoid NaN on reload
+            color_items.append(QgsColorRampShader.ColorRampItem(val, color, f"{val:.6g}"))
 
         if min_invisible:
             # Set minimum value(-9999) invisible
-            color_items.insert(0, QgsColorRampShader.ColorRampItem(-9999.0, QColor(0, 0, 0, 0), "-9999.0"))
-            color_items.insert(1, QgsColorRampShader.ColorRampItem(min_val - longest_qgis_step, QColor(0, 0, 0, 0), f"{min_val - longest_qgis_step}"))
+            color_items.insert(0, QgsColorRampShader.ColorRampItem(-9999.0, QColor(0, 0, 0, 0), "-9999"))
+            color_items.insert(1, QgsColorRampShader.ColorRampItem(min_val - longest_qgis_step, QColor(0, 0, 0, 0), f"{(min_val - longest_qgis_step):.10g}"))
             # Set maximum value(9999) like the last color
             color_items.append(QgsColorRampShader.ColorRampItem(9999.0, last_color, "9999.0"))
 

@@ -253,6 +253,19 @@ class DrProfilesListUi(DrDialog, FORM_CLASS):
     pass
 
 
+FORM_CLASS = _get_ui_class('report_summary.ui', 'utilities')
+
+
+class DrReportSummaryUi(DrDialog, FORM_CLASS):
+    pass
+
+
+FORM_CLASS = _get_ui_class('results_folder_selector.ui', 'utilities')
+
+
+class DrResultsFolderSelectorUi(DrDialog, FORM_CLASS):
+    pass
+
 # endregion
 
 
