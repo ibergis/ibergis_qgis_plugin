@@ -670,11 +670,6 @@ class DrCreateMeshTask(DrTask):
         print("Getting ground roughness from raster... ", end="")
         start = time.time()
 
-        rows = self.dao.get_rows("SELECT id, idval, manning FROM cat_landuses")
-        landuses_df = pd.DataFrame(
-            rows, columns=["id", "idval", "manning"]
-        ).set_index("id")
-
         fids, roughness = core.execute_ground_zonal_statistics(temp_layer, self.roughness_layer)
         triangles_df.loc[fids, "roughness"] = roughness
 
