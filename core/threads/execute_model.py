@@ -862,17 +862,17 @@ class DrExecuteModel(DrTask):
 
     def _create_inlet_file(self, selected_mesh: Optional[QgsMeshLayer] = None, pinlet_layer: Optional[QgsVectorLayer] = None):
         file_name = Path(self.folder_path) / "Iber_SWMM_inlet_info.dat"
+        ordered_keys = ['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
 
         # Convert pinlets into inlets
         converted_inlets: Optional[List[QgsFeature]] = self._convert_pinlets_into_inlets(selected_mesh, pinlet_layer)
 
         if self.do_write_inlets:
             # Get existing inlets from current project
-            sql = "SELECT code, outlet_type, outlet_node, xcoord, ycoord, top_elev, width, " \
-                    "length, depth, method, weir_cd, orifice_cd, a_param, b_param, efficiency FROM vi_inlet ORDER BY code;"
-            rows = self.dao.get_rows(sql)
-            if not rows:
-                rows = []
+            inlet_layer = QgsVectorLayer(global_vars.gpkg_dao_data.db_filepath + "|layername=inlet", "inlet", "ogr")
+            if not inlet_layer:
+                return
+            inlets = list(inlet_layer.getFeatures())
 
             # File headers
             headers = ['gully_id', 'outlet_type', 'node_id', 'xcoord', 'ycoord', 'zcoord', 'width', 'length',
@@ -889,16 +889,18 @@ class DrExecuteModel(DrTask):
                 # Write column headers
                 header_str = f"{' '.join(headers)}\n"
                 dat_file.write(header_str)
-                for row in rows:
+                for inlet in inlets:
                     values = []
-                    for value in row:
-                        value_str = str(transform_dict.get(value, value))
+                    for value in ordered_keys:
+                        value_str = str(transform_dict.get(str(inlet[value]), inlet[value]))
                         values.append(value_str)
+                    values.insert(0, str(inlet['code']))
+                    values.insert(3, str(inlet.geometry().asPoint().x()))
+                    values.insert(4, str(inlet.geometry().asPoint().y()))
                     values_str = f"{' '.join(values)}\n"
                     dat_file.write(values_str)
             if converted_inlets:
                 # Write converted inlets
-                ordered_keys = ['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
                 for feature in converted_inlets:
                     values = []
                     for value in ordered_keys:
