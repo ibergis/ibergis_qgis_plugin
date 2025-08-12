@@ -674,8 +674,7 @@ UPDATE roof SET slope = 1.5, width = 30, outlet_vol =100, street_vol=0, infiltr_
 UPDATE roof SET isconnected=1;
 
 -- inlet
-UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', weir_cd = 1.6 , orifice_cd = 0.7, efficiency = 90 , width = 1, length = 0.2 where fid < 99;
-UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', a_param = 0.496 , b_param = 0.712, efficiency = 90 , width = 1, length = 0.2 where fid > 98;
+UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', weir_cd = 1.6 , orifice_cd = 0.7, efficiency = 90 , width = 1, length = 0.2;
 UPDATE inlet SET outlet_type = 'SINK', method = 'W_O', a_param = 0.496 , b_param = 0.712, efficiency = 90 , width = 1, length = 0.2 where fid = 44;
 
 -- ground

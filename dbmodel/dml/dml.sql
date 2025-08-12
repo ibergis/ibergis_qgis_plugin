@@ -148,7 +148,8 @@ VALUES
 (41, 'OUTLAYER', 'inp_inflow', '{mfactor, sfactor, ufactor}', NULL, 0, NULL, 6, 12, 3, 141),
 (42, 'OUTLAYER', 'roof', '{slope}', NULL, 0, NULL, 6, 12, 2, 142),
 (43, 'OUTLAYER', 'roof', '{roughness, outlet_vol, street_vol}', NULL, 0, NULL, 6, 12, 3, 143),
-(44, 'MANDATORY NULL', 'inp_storage', '{a1, a2, a0}', 'AND storage_type == "FUNCTIONAL"', 0, NULL, 2, 11, 3, 144);
+(44, 'MANDATORY NULL', 'inp_storage', '{a1, a2, a0}', 'AND storage_type == "FUNCTIONAL"', 0, NULL, 2, 11, 3, 144),
+(45, 'MANDATORY NULL', 'inlet', '{weir_cd, orifice_cd}', 'AND method == "W_O"', 0, NULL, 2, 11, 3, 145);
 
 
 INSERT INTO sys_message (id, "text") VALUES
