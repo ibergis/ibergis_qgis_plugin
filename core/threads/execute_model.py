@@ -30,8 +30,17 @@ from ..admin.admin_btn import DrRptGpkgCreate
 from ..processing.import_raster_results import ImportRasterResults
 from ...resources.scripts.convert_asc_to_netcdf import convert_asc_to_netcdf
 from typing import Optional, List
+from dataclasses import dataclass
 from ..utils.meshing_process import create_temp_mesh_layer
 from swmm_api import read_rpt_file
+
+
+@dataclass(frozen=True)
+class RptTopicConfig:
+    topic: str
+    swmm_attr: str
+    table_name: str
+    field_map: dict[str, Optional[str]]
 
 
 class DrExecuteModel(DrTask):
@@ -218,288 +227,241 @@ class DrExecuteModel(DrTask):
             self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
             return
 
-        report_values_map = {
-            'Node Depth': {
-                'swmm': {
-                    'name': 'node_depth_summary',
-                    'fields': []
+        configs: list[RptTopicConfig] = [
+            RptTopicConfig(
+                topic='Node Depth',
+                swmm_attr='node_depth_summary',
+                table_name='rpt_nodedepth_sum',
+                field_map={
+                    'epa_type': 'Type',
+                    'ymax': None,
+                    'elev': None,
+                    'y0': None,
+                    'ysur': None,
+                    'swnod_type': None,
+                    'aver_depth': 'Average_Depth_Meters',
+                    'max_depth': 'Maximum_Depth_Meters',
+                    'max_hgl': 'Maximum_HGL_Meters',
+                    'time_days': 'Time of Max_Occurrence_days hr:min',
+                    'time_hour': 'Time of Max_Occurrence_days hr:min',
                 },
-                'ibergis': {
-                    'name': 'rpt_nodedepth_sum',
-                    'fields': []
-                }
-            },
-            'Node Inflow': {
-                'swmm': {
-                    'name': 'node_inflow_summary',
-                    'fields': []
+            ),
+            RptTopicConfig(
+                topic='Node Inflow',
+                swmm_attr='node_inflow_summary',
+                table_name='rpt_nodeinflow_sum',
+                field_map={
+                    'epa_type': 'Type',
+                    'ymax': None,
+                    'elev': None,
+                    'y0': None,
+                    'ysur': None,
+                    'swnod_type': None,
+                    'max_latinf': 'Maximum_Lateral_Inflow_CMS',
+                    'max_totinf': 'Maximum_Total_Inflow_CMS',
+                    'time_days': 'Time of Max_Occurrence_days hr:min',
+                    'time_hour': 'Time of Max_Occurrence_days hr:min',
+                    'latinf_vol': 'Lateral_Inflow_Volume_10^6 ltr',
+                    'totinf_vol': 'Total_Inflow_Volume_10^6 ltr',
+                    'flow_balance_error': 'Flow_Balance_Error_Percent',
+                    'other_info': None,
                 },
-                'ibergis': {
-                    'name': 'rpt_nodeinflow_sum',
-                    'fields': []
-                }
-            },
-            'Node Surcharge': {
-                'swmm': {
-                    'name': 'node_surcharge_summary',
-                    'fields': []
+            ),
+            RptTopicConfig(
+                topic='Node Surcharge',
+                swmm_attr='node_surcharge_summary',
+                table_name='rpt_nodesurcharge_sum',
+                field_map={
+                    'epa_type': 'Type',
+                    'ymax': None,
+                    'elev': None,
+                    'y0': None,
+                    'ysur': None,
+                    'swnod_type': None,
+                    'hour_surch': 'Hours_Surcharged',
+                    'max_height': 'Max. Height_Above Crown_Meters',
+                    'min_depth': 'Min. Depth_Below Rim_Meters',
                 },
-                'ibergis': {
-                    'name': 'rpt_nodesurcharge_sum',
-                    'fields': []
-                }
-            },
-            'Node Flooding': {
-                'swmm': {
-                    'name': 'node_flooding_summary',
-                    'fields': []
+            ),
+            RptTopicConfig(
+                topic='Node Flooding',
+                swmm_attr='node_flooding_summary',
+                table_name='rpt_nodeflooding_sum',
+                field_map={
+                    'epa_type': None,
+                    'ymax': None,
+                    'elev': None,
+                    'y0': None,
+                    'ysur': None,
+                    'hour_flood': 'Hours_Flooded',
+                    'max_rate': 'Maximum_Rate_CMS',
+                    'time_days': 'Time of Max_Occurrence_days hr:min',
+                    'time_hour': 'Time of Max_Occurrence_days hr:min',
+                    'tot_flood': 'Total_Flood_Volume_10^6 ltr',
+                    'max_ponded': 'Maximum_Ponded_Depth_Meters',
                 },
-                'ibergis': {
-                    'name': 'rpt_nodeflooding_sum',
-                    'fields': []
-                }
-            },
-            'Storage Volume': {
-                'swmm': {
-                    'name': 'storage_volume_summary',
-                    'fields': []
+            ),
+            RptTopicConfig(
+                topic='Storage Volume',
+                swmm_attr='storage_volume_summary',
+                table_name='rpt_storagevol_sum',
+                field_map={
+                    'epa_type': None,
+                    'ymax': None,
+                    'elev': None,
+                    'y0': None,
+                    'ysur': None,
+                    'aver_vol': 'Average_Volume_1000 m3',
+                    'avg_full': 'Avg_Pcnt_Full',
+                    'ei_loss': None,
+                    'max_vol': 'Maximum_Volume_1000 m3',
+                    'max_full': 'Max_Pcnt_Full',
+                    'time_days': 'Time of Max_Occurrence_days hr:min',
+                    'time_hour': 'Time of Max_Occurrence_days hr:min',
+                    'max_out': 'Maximum_Outflow_CMS',
                 },
-                'ibergis': {
-                    'name': 'rpt_storagevol_sum',
-                    'fields': []
-                }
-            },
-            'Outfall Loading': {
-                'swmm': {
-                    'name': 'outfall_loading_summary',
-                    'fields': []
+            ),
+            RptTopicConfig(
+                topic='Outfall Loading',
+                swmm_attr='outfall_loading_summary',
+                table_name='rpt_outfallflow_sum',
+                field_map={
+                    'epa_type': None,
+                    'ymax': None,
+                    'elev': None,
+                    'y0': None,
+                    'ysur': None,
+                    'flow_freq': 'Flow_Freq_Pcnt',
+                    'avg_flow': 'Avg_Flow_CMS',
+                    'max_flow': 'Max_Flow_CMS',
+                    'total_vol': 'Total_Volume_10^6 ltr',
                 },
-                'ibergis': {
-                    'name': 'rpt_outfallflow_sum',
-                    'fields': []
-                }
-            },
-            'Link Flow': {
-                'swmm': {
-                    'name': 'link_flow_summary',
-                    'fields': []
+            ),
+            RptTopicConfig(
+                topic='Link Flow',
+                swmm_attr='link_flow_summary',
+                table_name='rpt_arcflow_sum',
+                field_map={
+                    'epa_type': 'Type',
+                    'shape': None,
+                    'geom1': None,
+                    'geom2': None,
+                    'geom3': None,
+                    'geom4': None,
+                    'flow': None,
+                    'arc_type': None,
+                    'max_flow': 'Maximum_|Flow|_CMS',
+                    'time_days': 'Time of Max_Occurrence_days hr:min',
+                    'time_hour': 'Time of Max_Occurrence_days hr:min',
+                    'max_veloc': 'Maximum_|Veloc|_m/sec',
+                    'mfull_flow': 'Max/_Full_Flow',
+                    'mfull_dept': 'Max/_Full_Depth',
+                    'max_shear': None,
+                    'max_hr': None,
+                    'max_slope': None,
+                    'day_max': None,
+                    'time_max': None,
+                    'min_shear': None,
+                    'day_min': None,
+                    'time_min': None,
                 },
-                'ibergis': {
-                    'name': 'rpt_arcflow_sum',
-                    'fields': []
-                }
-            },
-            'Flow Classification': {
-                'swmm': {
-                    'name': 'flow_classification_summary',
-                    'fields': []
+            ),
+            RptTopicConfig(
+                topic='Flow Classification',
+                swmm_attr='flow_classification_summary',
+                table_name='rpt_flowclass_sum',
+                field_map={
+                    'epa_type': None,
+                    'shape': None,
+                    'geom1': None,
+                    'geom2': None,
+                    'geom3': None,
+                    'geom4': None,
+                    'flow': None,
+                    'length': 'Adjusted_/Actual_Length',
+                    'dry': 'Dry',
+                    'up_dry': 'Up_Dry',
+                    'down_dry': 'Down_Dry',
+                    'sub_crit': 'Sub_Crit',
+                    'sub_crit_1': 'Sup_Crit',
+                    'up_crit': 'Up_Crit',
+                    'down_crit': 'Down_Crit',
+                    'froud_numb': None,
+                    'flow_chang': None,
                 },
-                'ibergis': {
-                    'name': 'rpt_flowclass_sum',
-                    'fields': []
-                }
-            },
-            'Conduit Surcharge': {
-                'swmm': {
-                    'name': 'conduit_surcharge_summary',
-                    'fields': []
+            ),
+            RptTopicConfig(
+                topic='Conduit Surcharge',
+                swmm_attr='conduit_surcharge_summary',
+                table_name='rpt_condsurcharge_sum',
+                field_map={
+                    'epa_type': None,
+                    'shape': None,
+                    'geom1': None,
+                    'geom2': None,
+                    'geom3': None,
+                    'geom4': None,
+                    'flow': None,
+                    'both_ends': 'HoursFull_Both_Ends',
+                    'upstream': 'Hours Full_Upstream',
+                    'dnstream': 'HoursFull_Dnstream',
+                    'hour_nflow': 'Hours_Above Full_Normal Flow',
+                    'hour_limit': 'Hours_Capacity_Limited',
                 },
-                'ibergis': {
-                    'name': 'rpt_condsurcharge_sum',
-                    'fields': []
-                }
-            },
-            'Pumping': {
-                'swmm': {
-                    'name': 'pumping_summary',
-                    'fields': []
+            ),
+            RptTopicConfig(
+                topic='Pumping',
+                swmm_attr='pumping_summary',
+                table_name='rpt_pumping_sum',
+                field_map={
+                    'epa_type': None,
+                    'percent': 'Percent_Utilized',
+                    'num_startup': 'Number of_Start-Ups',
+                    'min_flow': 'Min_Flow_CMS',
+                    'avg_flow': 'Avg_Flow_CMS',
+                    'max_flow': 'Max_Flow_CMS',
+                    'vol_ltr': 'Total_Volume_10^6 ltr',
+                    'powus_kwh': 'Power_Usage_Kw-hr',
+                    'timoff_min': '% Time Off_Pump Curve_Low',
+                    'timoff_max': '% Time Off_Pump Curve_High',
                 },
-                'ibergis': {
-                    'name': 'rpt_pumping_sum',
-                    'fields': []
-                }
-            }
-        }
-        mapper = {
-            'Node Depth': {
-                'epa_type': 'Type',
-                'ymax': None,
-                'elev': None,
-                'y0': None,
-                'ysur': None,
-                'swnod_type': None,
-                'aver_depth': 'Average_Depth_Meters',
-                'max_depth': 'Maximum_Depth_Meters',
-                'max_hgl': 'Maximum_HGL_Meters',
-                'time_days': 'Time of Max_Occurrence_days hr:min',
-                'time_hour': 'Time of Max_Occurrence_days hr:min',
-            },
-            'Node Inflow': {
-                'epa_type': 'Type',
-                'ymax': None,
-                'elev': None,
-                'y0': None,
-                'ysur': None,
-                'swnod_type': None,
-                'max_latinf': 'Maximum_Lateral_Inflow_CMS',
-                'max_totinf': 'Maximum_Total_Inflow_CMS',
-                'time_days': 'Time of Max_Occurrence_days hr:min',
-                'time_hour': 'Time of Max_Occurrence_days hr:min',
-                'latinf_vol': 'Lateral_Inflow_Volume_10^6 ltr',
-                'totinf_vol': 'Total_Inflow_Volume_10^6 ltr',
-                'flow_balance_error': 'Flow_Balance_Error_Percent',
-                'other_info': None,
-            },
-            'Node Surcharge': {
-                'epa_type': 'Type',
-                'ymax': None,
-                'elev': None,
-                'y0': None,
-                'ysur': None,
-                'swnod_type': None,
-                'hour_surch': 'Hours_Surcharged',
-                'max_height': 'Max. Height_Above Crown_Meters',
-                'min_depth': 'Min. Depth_Below Rim_Meters',
-            },
-            'Node Flooding': {
-                'epa_type': None,
-                'ymax': None,
-                'elev': None,
-                'y0': None,
-                'ysur': None,
-                'hour_flood': 'Hours_Flooded',
-                'max_rate': 'Maximum_Rate_CMS',
-                'time_days': 'Time of Max_Occurrence_days hr:min',
-                'time_hour': 'Time of Max_Occurrence_days hr:min',
-                'tot_flood': 'Total_Flood_Volume_10^6 ltr',
-                'max_ponded': 'Maximum_Ponded_Depth_Meters',
-            },
-            'Storage Volume': {
-                'epa_type': None,
-                'ymax': None,
-                'elev': None,
-                'y0': None,
-                'ysur': None,
-                'aver_vol': 'Average_Volume_1000 m3',
-                'avg_full': 'Avg_Pcnt_Full',
-                'ei_loss': None,
-                'max_vol': 'Maximum_Volume_1000 m3',
-                'max_full': 'Max_Pcnt_Full',
-                'time_days': 'Time of Max_Occurrence_days hr:min',
-                'time_hour': 'Time of Max_Occurrence_days hr:min',
-                'max_out': 'Maximum_Outflow_CMS',
-            },
-            'Outfall Loading': {
-                'epa_type': None,
-                'ymax': None,
-                'elev': None,
-                'y0': None,
-                'ysur': None,
-                'flow_freq': 'Flow_Freq_Pcnt',
-                'avg_flow': 'Avg_Flow_CMS',
-                'max_flow': 'Max_Flow_CMS',
-                'total_vol': 'Total_Volume_10^6 ltr',
-            },
-            'Link Flow': {
-                'epa_type': 'Type',
-                'shape': None,
-                'geom1': None,
-                'geom2': None,
-                'geom3': None,
-                'geom4': None,
-                'flow': None,
-                'arc_type': None,
-                'max_flow': 'Maximum_|Flow|_CMS',
-                'time_days': 'Time of Max_Occurrence_days hr:min',
-                'time_hour': 'Time of Max_Occurrence_days hr:min',
-                'max_veloc': 'Maximum_|Veloc|_m/sec',
-                'mfull_flow': 'Max/_Full_Flow',
-                'mfull_dept': 'Max/_Full_Depth',
-                'max_shear': None,
-                'max_hr': None,
-                'max_slope': None,
-                'day_max': None,
-                'time_max': None,
-                'min_shear': None,
-                'day_min': None,
-                'time_min': None,
-            },
-            'Flow Classification': {
-                'epa_type': None,
-                'shape': None,
-                'geom1': None,
-                'geom2': None,
-                'geom3': None,
-                'geom4': None,
-                'flow': None,
-                'length': 'Adjusted_/Actual_Length',
-                'dry': 'Dry',
-                'up_dry': 'Up_Dry',
-                'down_dry': 'Down_Dry',
-                'sub_crit': 'Sub_Crit',
-                'sub_crit_1': 'Sup_Crit',
-                'up_crit': 'Up_Crit',
-                'down_crit': 'Down_Crit',
-                'froud_numb': None,
-                'flow_chang': None,
-            },
-            'Conduit Surcharge': {
-                'epa_type': None,
-                'shape': None,
-                'geom1': None,
-                'geom2': None,
-                'geom3': None,
-                'geom4': None,
-                'flow': None,
-                'both_ends': 'HoursFull_Both_Ends',
-                'upstream': 'Hours Full_Upstream',
-                'dnstream': 'HoursFull_Dnstream',
-                'hour_nflow': 'Hours_Above Full_Normal Flow',
-                'hour_limit': 'Hours_Capacity_Limited',
-            },
-            'Pumping': {
-                'epa_type': None,
-                'percent': 'Percent_Utilized',
-                'num_startup': 'Number of_Start-Ups',
-                'min_flow': 'Min_Flow_CMS',
-                'avg_flow': 'Avg_Flow_CMS',
-                'max_flow': 'Max_Flow_CMS',
-                'vol_ltr': 'Total_Volume_10^6 ltr',
-                'powus_kwh': 'Power_Usage_Kw-hr',
-                'timoff_min': '% Time Off_Pump Curve_Low',
-                'timoff_max': '% Time Off_Pump Curve_High',
-            }
-        }
+            ),
+        ]
 
         msg = "Filling rpt gpkg"
         self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
 
-        for topic, value in mapper.items():
-            swmm_df = getattr(report_values, report_values_map[topic]['swmm']['name'])
-            table_name = report_values_map[topic]['ibergis']['name']
-            for index, row in swmm_df.iterrows():
-                start_sql = f"INSERT INTO {table_name} (code, "
-                end_sql = f") VALUES ('{index}', "
-                for field, swmm_field in value.items():
-                    if swmm_field is None or str(row[swmm_field]) == 'nan':
-                        continue
-                    if field == 'time_days':
-                        start_sql += "time_days, "
-                        end_sql += f"'{str(row[swmm_field]).split(' ')[0]}', "
-                        continue
-                    elif field == 'time_hour':
-                        start_sql += "time_hour, "
-                        end_sql += f"'{str(row[swmm_field]).split(' ')[-1]}', "
-                        continue
-                    start_sql += f"{field}, "
-                    end_sql += f"{row[swmm_field]}, " if isinstance(row[swmm_field], (int, float)) else f"'{row[swmm_field]}', "
-                start_sql = start_sql[:-2]
-                end_sql = end_sql[:-2]
-                sql = f"{start_sql}{end_sql})"
-                result = dao.execute_sql(sql)
-                if not result:
-                    msg = f"Error filling rpt gpkg for {topic}: \n {sql}"
-                    self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+        for cfg in configs:
+            swmm_df = getattr(report_values, cfg.swmm_attr)
+            table_name = cfg.table_name
+            try:
+                for index, row in swmm_df.iterrows():
+                    start_sql = f"INSERT INTO {table_name} (code, "
+                    end_sql = f") VALUES ('{index}', "
+                    for field, swmm_field in cfg.field_map.items():
+                        if swmm_field is None or str(row[swmm_field]) == 'nan':
+                            continue
+                        if field == 'time_days':
+                            start_sql += "time_days, "
+                            end_sql += f"'{str(row[swmm_field]).split(' ')[0]}', "
+                            continue
+                        elif field == 'time_hour':
+                            start_sql += "time_hour, "
+                            end_sql += f"'{str(row[swmm_field]).split(' ')[-1]}', "
+                            continue
+                        start_sql += f"{field}, "
+                        end_sql += f"{row[swmm_field]}, " if isinstance(row[swmm_field], (int, float)) else f"'{row[swmm_field]}', "
+                    start_sql = start_sql[:-2]
+                    end_sql = end_sql[:-2]
+                    sql = f"{start_sql}{end_sql})"
+                    result = dao.execute_sql(sql)
+                    if not result:
+                        msg = f"Error filling rpt gpkg for {cfg.topic}: \n {sql}"
+                        self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+            except Exception as e:
+                print(f"Error filling rpt gpkg for {cfg.topic}: \n {e}")
+                msg = f"Error filling rpt gpkg for {cfg.topic}: \n {e}"
+                self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
         dao.close_db()
 
         msg = "Filled rpt gpkg"
@@ -862,17 +824,17 @@ class DrExecuteModel(DrTask):
 
     def _create_inlet_file(self, selected_mesh: Optional[QgsMeshLayer] = None, pinlet_layer: Optional[QgsVectorLayer] = None):
         file_name = Path(self.folder_path) / "Iber_SWMM_inlet_info.dat"
+        ordered_keys = ['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
 
         # Convert pinlets into inlets
         converted_inlets: Optional[List[QgsFeature]] = self._convert_pinlets_into_inlets(selected_mesh, pinlet_layer)
 
         if self.do_write_inlets:
             # Get existing inlets from current project
-            sql = "SELECT code, outlet_type, outlet_node, xcoord, ycoord, top_elev, width, " \
-                    "length, depth, method, weir_cd, orifice_cd, a_param, b_param, efficiency FROM vi_inlet ORDER BY code;"
-            rows = self.dao.get_rows(sql)
-            if not rows:
-                rows = []
+            inlet_layer = QgsVectorLayer(global_vars.gpkg_dao_data.db_filepath + "|layername=inlet", "inlet", "ogr")
+            if not inlet_layer:
+                return
+            inlets = list(inlet_layer.getFeatures())
 
             # File headers
             headers = ['gully_id', 'outlet_type', 'node_id', 'xcoord', 'ycoord', 'zcoord', 'width', 'length',
@@ -889,16 +851,18 @@ class DrExecuteModel(DrTask):
                 # Write column headers
                 header_str = f"{' '.join(headers)}\n"
                 dat_file.write(header_str)
-                for row in rows:
+                for inlet in inlets:
                     values = []
-                    for value in row:
-                        value_str = str(transform_dict.get(value, value))
+                    for value in ordered_keys:
+                        value_str = str(transform_dict.get(str(inlet[value]), inlet[value]))
                         values.append(value_str)
+                    values.insert(0, str(inlet['code']))
+                    values.insert(3, str(inlet.geometry().asPoint().x()))
+                    values.insert(4, str(inlet.geometry().asPoint().y()))
                     values_str = f"{' '.join(values)}\n"
                     dat_file.write(values_str)
             if converted_inlets:
                 # Write converted inlets
-                ordered_keys = ['outlet_type', 'outlet_node', 'top_elev', 'width', 'length', 'depth', 'method', 'weir_cd', 'orifice_cd', 'a_param', 'b_param', 'efficiency']
                 for feature in converted_inlets:
                     values = []
                     for value in ordered_keys:

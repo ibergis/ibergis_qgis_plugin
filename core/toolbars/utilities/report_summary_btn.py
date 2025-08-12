@@ -6,6 +6,8 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
+from dataclasses import dataclass
+from typing import Optional
 
 from qgis.PyQt.QtWidgets import QTableWidgetItem
 
@@ -19,6 +21,13 @@ from qgis.PyQt.QtWidgets import QTableView
 from swmm_api import read_rpt_file
 
 
+@dataclass(frozen=True)
+class RptSummaryConfig:
+    topic: str
+    table_name: str
+    field_labels: dict[str, Optional[str]]
+
+
 class DrReportSummaryButton(DrAction):
     """ Button 18: Report Summary """
 
@@ -29,25 +38,11 @@ class DrReportSummaryButton(DrAction):
         self.report_values = {}
         self.folder_path = None
         self.dao = DrGpkgDao()
-        self.topic_id = {
-            0: 'Node Depth',
-            1: 'Node Inflow',
-            2: 'Node Surcharge',
-            3: 'Node Flooding',
-            4: 'Storage Volume',
-            5: 'Outfall Loading',
-            6: 'Link Flow',
-            7: 'Flow Classification',
-            8: 'Conduit Surcharge',
-            9: 'Pumping',
-        }
-        self.field_mapper = {
-            'Node Depth': {
-                'tablename': {
-                    'swmm': 'node_depth_summary',
-                    'ibergis': 'rpt_nodedepth_sum'
-                },
-                'fields': {
+        self.configs: list[RptSummaryConfig] = [
+            RptSummaryConfig(
+                topic='Node Depth',
+                table_name='rpt_nodedepth_sum',
+                field_labels={
                     'epa_type': 'Type',
                     'ymax': None,
                     'elev': None,
@@ -59,14 +54,12 @@ class DrReportSummaryButton(DrAction):
                     'max_hgl': 'Maximum HGL Meters',
                     'time_days': 'Day of Maximum Depth',
                     'time_hour': 'Hour of Maximum Depth',
-                }
-            },
-            'Node Inflow': {
-                'tablename': {
-                    'swmm': 'node_inflow_summary',
-                    'ibergis': 'rpt_nodeinflow_sum'
                 },
-                'fields': {
+            ),
+            RptSummaryConfig(
+                topic='Node Inflow',
+                table_name='rpt_nodeinflow_sum',
+                field_labels={
                     'epa_type': 'Type',
                     'ymax': None,
                     'elev': None,
@@ -81,14 +74,12 @@ class DrReportSummaryButton(DrAction):
                     'totinf_vol': 'Total Inflow Volume 10^6 ltr',
                     'flow_balance_error': 'Flow Balance Error %',
                     'other_info': None,
-                }
-            },
-            'Node Surcharge': {
-                'tablename': {
-                    'swmm': 'node_surcharge_summary',
-                    'ibergis': 'rpt_nodesurcharge_sum'
                 },
-                'fields': {
+            ),
+            RptSummaryConfig(
+                topic='Node Surcharge',
+                table_name='rpt_nodesurcharge_sum',
+                field_labels={
                     'epa_type': 'Type',
                     'ymax': None,
                     'elev': None,
@@ -98,14 +89,12 @@ class DrReportSummaryButton(DrAction):
                     'hour_surch': 'Hours Surcharged',
                     'max_height': 'Max Height Above Crown Meters',
                     'min_depth': 'Min Depth Below Rim Meters',
-                }
-            },
-            'Node Flooding': {
-                'tablename': {
-                    'swmm': 'node_flooding_summary',
-                    'ibergis': 'rpt_nodeflooding_sum'
                 },
-                'fields': {
+            ),
+            RptSummaryConfig(
+                topic='Node Flooding',
+                table_name='rpt_nodeflooding_sum',
+                field_labels={
                     'epa_type': None,
                     'ymax': None,
                     'elev': None,
@@ -117,14 +106,12 @@ class DrReportSummaryButton(DrAction):
                     'time_hour': 'Hour of Maximum Flooding',
                     'tot_flood': 'Total Flood Volume 10^6 ltr',
                     'max_ponded': 'Maximum Ponded Depth Meters',
-                }
-            },
-            'Storage Volume': {
-                'tablename': {
-                    'swmm': 'storage_volume_summary',
-                    'ibergis': 'rpt_storagevol_sum'
                 },
-                'fields': {
+            ),
+            RptSummaryConfig(
+                topic='Storage Volume',
+                table_name='rpt_storagevol_sum',
+                field_labels={
                     'epa_type': None,
                     'ymax': None,
                     'elev': None,
@@ -138,14 +125,12 @@ class DrReportSummaryButton(DrAction):
                     'time_days': 'Day of Maximum Volume',
                     'time_hour': 'Hour of Maximum Volume',
                     'max_out': 'Maximum Outflow CMS',
-                }
-            },
-            'Outfall Loading': {
-                'tablename': {
-                    'swmm': 'outfall_loading_summary',
-                    'ibergis': 'rpt_outfallflow_sum'
                 },
-                'fields': {
+            ),
+            RptSummaryConfig(
+                topic='Outfall Loading',
+                table_name='rpt_outfallflow_sum',
+                field_labels={
                     'epa_type': None,
                     'ymax': None,
                     'elev': None,
@@ -155,14 +140,12 @@ class DrReportSummaryButton(DrAction):
                     'avg_flow': 'Average Flow CMS',
                     'max_flow': 'Maximum Flow CMS',
                     'total_vol': 'Total Volume 10^6 ltr',
-                }
-            },
-            'Link Flow': {
-                'tablename': {
-                    'swmm': 'link_flow_summary',
-                    'ibergis': 'rpt_arcflow_sum'
                 },
-                'fields': {
+            ),
+            RptSummaryConfig(
+                topic='Link Flow',
+                table_name='rpt_arcflow_sum',
+                field_labels={
                     'epa_type': 'Type',
                     'shape': None,
                     'geom1': None,
@@ -185,14 +168,12 @@ class DrReportSummaryButton(DrAction):
                     'min_shear': None,
                     'day_min': None,
                     'time_min': None,
-                }
-            },
-            'Flow Classification': {
-                'tablename': {
-                    'swmm': 'flow_classification_summary',
-                    'ibergis': 'rpt_flowclass_sum'
                 },
-                'fields': {
+            ),
+            RptSummaryConfig(
+                topic='Flow Classification',
+                table_name='rpt_flowclass_sum',
+                field_labels={
                     'epa_type': None,
                     'shape': None,
                     'geom1': None,
@@ -210,14 +191,12 @@ class DrReportSummaryButton(DrAction):
                     'down_crit': 'Dnstrm Critical',
                     'froud_numb': None,
                     'flow_chang': None,
-                }
-            },
-            'Conduit Surcharge': {
-                'tablename': {
-                    'swmm': 'conduit_surcharge_summary',
-                    'ibergis': 'rpt_condsurcharge_sum'
                 },
-                'fields': {
+            ),
+            RptSummaryConfig(
+                topic='Conduit Surcharge',
+                table_name='rpt_condsurcharge_sum',
+                field_labels={
                     'epa_type': None,
                     'shape': None,
                     'geom1': None,
@@ -230,14 +209,12 @@ class DrReportSummaryButton(DrAction):
                     'dnstream': 'Hours Downstream Full',
                     'hour_nflow': 'Hours Above Normal Flow',
                     'hour_limit': 'Hours Capacity Limited',
-                }
-            },
-            'Pumping': {
-                'tablename': {
-                    'swmm': 'pumping_summary',
-                    'ibergis': 'rpt_pumping_sum'
                 },
-                'fields': {
+            ),
+            RptSummaryConfig(
+                topic='Pumping',
+                table_name='rpt_pumping_sum',
+                field_labels={
                     'epa_type': None,
                     'percent': 'Percent Utilized',
                     'num_startup': 'Number of Start-Ups',
@@ -248,9 +225,9 @@ class DrReportSummaryButton(DrAction):
                     'powus_kwh': 'Power Usage Kw-hr',
                     'timoff_min': '% Time Below Pump Curve',
                     'timoff_max': '% Time Above Pump Curve',
-                }
-            }
-        }
+                },
+            ),
+        ]
 
     def clicked_event(self):
 
@@ -308,12 +285,12 @@ class DrReportSummaryButton(DrAction):
 
         # Populate combo
         cmb_topic = self.dlg_report_summary.cmb_topic
-        for id, topic in self.topic_id.items():
-            cmb_topic.addItem(topic, str(id))
+        for idx, cfg in enumerate(self.configs):
+            cmb_topic.addItem(cfg.topic, str(idx))
 
         # Set tableview config
         tbl_summary = self.dlg_report_summary.tbl_summary
-        tools_qt.set_tableview_config(tbl_summary, edit_triggers=QTableView.DoubleClicked)
+        tools_qt.set_tableview_config(tbl_summary, edit_triggers=QTableView.NoEditTriggers)
 
         # Fill tableview
         self._fill_tableview()
@@ -322,25 +299,29 @@ class DrReportSummaryButton(DrAction):
         """ Fill tableview """
 
         topic_id = tools_qt.get_combo_value(self.dlg_report_summary, self.dlg_report_summary.cmb_topic)
-        if not topic_id or int(topic_id) not in self.topic_id.keys():
+        if topic_id is None:
             tools_qgis.show_warning("Invalid topic")
             return
-        topic = self.topic_id[int(topic_id)]
+        idx = int(topic_id)
+        if idx < 0 or idx >= len(self.configs):
+            tools_qgis.show_warning("Invalid topic")
+            return
+        cfg = self.configs[idx]
 
         # Get tableview
         tbl_summary = self.dlg_report_summary.tbl_summary
         tbl_summary.clear()
 
-        sql = f"SELECT * FROM {self.field_mapper[topic]['tablename']['ibergis']}"
+        sql = f"SELECT * FROM {cfg.table_name}"
         rows = self.dao.get_rows(sql)
         if not rows:
             tools_qgis.show_warning("No data found")
             return
 
-        # Get valid fields (only those that are not None in the field_mapper)
+        # Get valid fields (only those that are not None in the config)
         valid_fields = []
         for field in rows[0].keys():
-            if field in self.field_mapper[topic]['fields'].keys() and self.field_mapper[topic]['fields'][field] is not None:
+            if field in cfg.field_labels.keys() and cfg.field_labels[field] is not None:
                 valid_fields.append(field)
 
         # Set table dimensions
@@ -349,7 +330,7 @@ class DrReportSummaryButton(DrAction):
 
         # Set headers
         for col_idx, field in enumerate(valid_fields):
-            header_label = self.field_mapper[topic]['fields'][field]
+            header_label = cfg.field_labels[field]
             tbl_summary.setHorizontalHeaderItem(col_idx, QTableWidgetItem(header_label))
         tbl_summary.setHorizontalHeaderItem(0, QTableWidgetItem('Code'))
 
