@@ -759,6 +759,9 @@ class DrExecuteModel(DrTask):
 
             if roof_content:
                 self._write_to_file(f'{self.folder_path}{os.sep}Iber_SWMM_roof.dat', roof_content)
+            else:
+                roof_content = 'Number of roofs\n0\Roofs properties\n\nRoof elements'
+                self._write_to_file(f'{self.folder_path}{os.sep}Iber_SWMM_roof.dat', roof_content)
             self.progress_changed.emit(tools_qt.tr(title), tools_dr.lerp_progress(40, self.PROGRESS_INIT, self.PROGRESS_MESH_FILES), '', False)
 
             if not losses_content:

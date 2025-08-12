@@ -303,8 +303,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         if len(self.skipped_inlets) > 0 or len(self.below_inlets) > 0:
             # Create a temporal layer with skipped features and load it on QGIS
-            # TODO: get srid from project
-            temporal_features_layer: QgsVectorLayer = QgsVectorLayer("Point?crs=EPSG:25831", "inlet_features", "memory")
+            srid = QgsProject.instance().crs().authid()
+            temporal_features_layer: QgsVectorLayer = QgsVectorLayer(f"Point?crs={srid}", "inlet_features", "memory")
             temporal_features_layer.dataProvider().addAttributes(self.file_inlets.fields())
             temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
             temporal_features_layer.updateFields()
@@ -350,7 +350,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         if len(self.skipped_pinlets) > 0 or len(self.below_pinlets) > 0:
             # Create a temporal layer with skipped features and load it on QGIS
-            temporal_features_layer: QgsVectorLayer = QgsVectorLayer("MultiPolygon?crs=EPSG:25831", "pinlet_features", "memory")
+            srid = QgsProject.instance().crs().authid()
+            temporal_features_layer: QgsVectorLayer = QgsVectorLayer(f"MultiPolygon?crs={srid}", "pinlet_features", "memory")
             temporal_features_layer.dataProvider().addAttributes(self.file_pinlets.fields())
             temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
             temporal_features_layer.updateFields()
