@@ -213,6 +213,12 @@ class DrResultsButton(DrAction):
         self.set_results_folder_action.triggered.connect(self.set_results_folder)
         self.set_results_folder_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '20.png')))
 
+        if abs_path is None or not os.path.exists(abs_path) or not os.path.isdir(abs_path):
+            self.load_raster_results_action.setDisabled(True)
+            self.profile_action.setDisabled(True)
+            self.report_summary_action.setDisabled(True)
+            self.time_series_graph_action.setDisabled(True)
+
         self.menu.addAction(self.load_raster_results_action)
         self.menu.addAction(self.profile_action)
         self.menu.addAction(self.report_summary_action)
