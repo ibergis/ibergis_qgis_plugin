@@ -50,10 +50,6 @@ class DrResultsButton(DrAction):
             toolbar.addAction(self.action)
 
     def clicked_event(self):
-        # Get the widget for this action (the button)
-        # convert_asc_to_netcdf('C:\\Users\\Usuario\\Documents\\_IBERGIS\\errors\\ERROR FROM RASTER TO NETCDF\\RasterResults',
-        #                       'C:\\Users\\Usuario\\Documents\\_IBERGIS\\errors\\ERROR FROM RASTER TO NETCDF\\test1.nc',
-        #                       None) TODO: Remove this when netcdf creation works properly
         button = self.toolbar.widgetForAction(self.action) if self.toolbar is not None else None
         if not self.menu.isVisible():
             if button is not None:
@@ -204,7 +200,16 @@ class DrResultsButton(DrAction):
         self.time_series_graph_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '19.png')))
         self.time_series_graph_action.setCheckable(True)
 
-        self.set_results_folder_action = QAction("Set results folder", self.menu)
+        rel_path = tools_qgis.get_project_variable('project_results_folder')
+        abs_path = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{rel_path}")
+        if abs_path is None or not os.path.exists(abs_path) or not os.path.isdir(abs_path):
+            tools_qgis.set_project_variable('project_results_folder', None)
+            abs_path = None
+        if abs_path is not None:
+            folder_name = f" - {os.path.basename(abs_path)}"
+        else:
+            folder_name = ""
+        self.set_results_folder_action = QAction(f"Set results folder{folder_name}", self.menu)
         self.set_results_folder_action.triggered.connect(self.set_results_folder)
         self.set_results_folder_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '20.png')))
 
