@@ -97,7 +97,7 @@ class DrExecuteModelButton(DrAction):
                 return False
 
         mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
-        if mesh_id is None or mesh_id == '':
+        if mesh_id is None or mesh_id == '' or mesh_id == -1:
             msg = "No mesh selected. Please select a mesh."
             tools_qgis.show_warning(msg, dialog=self.execute_dlg)
             return False
