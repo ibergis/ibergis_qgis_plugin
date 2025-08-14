@@ -9,6 +9,8 @@ author=David Erill, Xavier Torret, Maria Guzman, Edgar Fusté, Jordi Blanch, Ser
 Changelog=Version 0.4.0
     - Added support for linux.
     - Added CI linting tests on repository.
+    - Added results button
+    - Improve raster results management
 
 tags= urban drainage, flooding
 hasProcessingProvider=yes
