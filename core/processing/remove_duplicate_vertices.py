@@ -3,7 +3,6 @@ from qgis.core import (
     QgsProcessingContext,
     QgsProcessingFeedback,
     QgsProcessingParameterDistance,
-    QgsProject,
     QgsProcessingParameterVectorLayer,
     QgsProcessing,
     QgsVectorLayer
@@ -15,7 +14,6 @@ from qgis import processing
 
 from ...lib import tools_qt, tools_qgis
 from ..utils import tools_dr
-from ... import global_vars
 
 
 class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
@@ -41,6 +39,11 @@ class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
 
     def createInstance(self) -> QgsProcessingAlgorithm:
         return DrRemoveDuplicateVertices()
+
+    def shortHelpString(self):
+        return self.tr("""Removes duplicate vertices from ground and roof polygon layers to ensure clean geometries for further processing. 
+                       The operation is optimized for large datasets and helps maintain data quality by eliminating unnecessary vertices. 
+                       Use this tool to quickly clean up your ground and roof layers before further analysis or export.""")
 
     def initAlgorithm(self, configuration: dict[str, Any] | None = None) -> None:
         ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
@@ -90,7 +93,6 @@ class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
 
         for layer in [self.ground_layer, self.roof_layer]:
             feedback.setProgressText(f"Processing layer: {layer.name()}")
-            db_path = global_vars.gpkg_dao_data.db_filepath.replace('\\', '/')
 
             # Set progress range
             min_progress: int = 0
@@ -153,7 +155,7 @@ class DrRemoveDuplicateVertices(QgsProcessingAlgorithm):
                     if changes:
                         layer.dataProvider().changeGeometryValues(changes)
 
-                    feedback.setProgress(tools_dr.lerp_progress(int(i / total_features * 100), min_progress+5, max_progress))
+                    feedback.setProgress(tools_dr.lerp_progress(int(i / total_features * 100), min_progress + 5, max_progress))
 
                 # Commit changes
                 layer.commitChanges()

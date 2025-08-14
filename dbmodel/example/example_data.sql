@@ -674,10 +674,8 @@ UPDATE roof SET slope = 1.5, width = 30, outlet_vol =100, street_vol=0, infiltr_
 UPDATE roof SET isconnected=1;
 
 -- inlet
-UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', weir_cd = 1.6 , orifice_cd = 0.7, efficiency = 90 , width = 1, length = 0.2 where fid < 99;
-UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', a_param = 0.496 , b_param = 0.712, efficiency = 90 , width = 1, length = 0.2 where fid > 98;
+UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', weir_cd = 1.6 , orifice_cd = 0.7, efficiency = 90 , width = 1, length = 0.2;
 UPDATE inlet SET outlet_type = 'SINK', method = 'W_O', a_param = 0.496 , b_param = 0.712, efficiency = 90 , width = 1, length = 0.2 where fid = 44;
-UPDATE inlet SET code = 1000+fid;
 
 -- ground
 update ground set landuse = 'OPEN SPACE', custom_roughness = 0.02, scs_cn = 65;
@@ -724,9 +722,6 @@ UPDATE inp_conduit SET shape='CIRCULAR', curve_transect=null WHERE code IN ('C31
 UPDATE inp_dwf SET pattern1 = 'DAILY_PATTERN', pattern2='MONTHLY_PATTERN', pattern3='HOURLY_PATTERN', pattern4='WEEKEND_PATTERN';
 UPDATE inp_inflow  SET type = 'FLOW', pattern ='WEEKEND_PATTERN';
 UPDATE config_param_user SET value=1 where parameter= 'options_rain_class';
-UPDATE config_param_user SET isconflictive = 'YES' where value ='inp_report_input';
-UPDATE config_param_user SET isconflictive = '1' where value  = 'result_results_raster';
-UPDATE config_param_user SET isconflictive = '5' where value  = 'result_results_raster_cell';
 
 
 -- -------------------

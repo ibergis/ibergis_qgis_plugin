@@ -21,7 +21,7 @@ from ...shared.options import DrOptions
 from ...utils import tools_dr, Feedback
 from ...ui.ui_manager import DrExecuteModelUi
 from .... import global_vars
-from ....lib import tools_qt, tools_db, tools_os
+from ....lib import tools_qt, tools_db, tools_os, tools_qgis
 from ..dialog import DrAction
 
 
@@ -84,7 +84,7 @@ class DrExecuteModelButton(DrAction):
         if not os.path.exists(self.export_path):
             try:
                 os.mkdir(self.export_path)
-            except:
+            except Exception:
                 msg = "The specified folder doesn't exist and it couldn't be created. Make sure the specified folder exists."
                 tools_qt.show_info_box(msg)
                 return False
@@ -95,6 +95,12 @@ class DrExecuteModelButton(DrAction):
             answer = tools_qt.show_question(msg, title, force_action=True)
             if not answer:
                 return False
+
+        mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
+        if mesh_id is None or mesh_id == '' or mesh_id == -1:
+            msg = "No mesh selected. Please select a mesh."
+            tools_qgis.show_warning(msg, dialog=self.execute_dlg)
+            return False
 
         # TODO: ask for import
         do_import = True

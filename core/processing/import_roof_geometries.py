@@ -194,7 +194,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         self.addParameter(infiltr_vol)
         self.addParameter(annotation)
 
-
     def processAlgorithm(self, parameters, context, feedback: Feedback):
         """
         main process algorithm of this tool
@@ -330,7 +329,7 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
                         except KeyError:
                             src_value = None
                     attributes[target_field_names.index(tgt_field)] = src_value
-            feedback.setProgress(tools_dr.lerp_progress(int(feature_index*100/num_features), 16, 90))
+            feedback.setProgress(tools_dr.lerp_progress(int(feature_index * 100 / num_features), 16, 90))
             feature_index += 1
             if (repeated_params):
                 continue

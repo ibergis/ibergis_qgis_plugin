@@ -336,9 +336,9 @@ class CreateSubModel(QgsProcessingAlgorithm):
                 subcatch_layers_dict['SUBCATCHMENTS'],
                 needed_subc_attrs,
                 with_id=True,
-                feedback = feedback
+                feedback=feedback
             )
-            subc_df = subc_df_dict[needed_subc_attrs+['id']]
+            subc_df = subc_df_dict[needed_subc_attrs + ['id']]
 
         # raingages
         raingages_layer_dict = {'RAINGAGES': file_raingages}
@@ -352,9 +352,9 @@ class CreateSubModel(QgsProcessingAlgorithm):
                 raingages_layer_dict['RAINGAGES'],
                 needed_rg_attrs,
                 with_id=True,
-                feedback = feedback
+                feedback=feedback
             )
-            rg_df = rg_df_dict[needed_rg_attrs+['id']]
+            rg_df = rg_df_dict[needed_rg_attrs + ['id']]
 
         feedback.setProgressText(self.tr('Identifying start node...'))
         feedback.setProgress(6)
@@ -367,7 +367,7 @@ class CreateSubModel(QgsProcessingAlgorithm):
                 vlayer,
                 needed_nodes_attrs,
                 with_id=True,
-                feedback = feedback
+                feedback=feedback
             ) for layer_name, vlayer in nodes_layers_dict.items()}
             # get startpoint...
             start_point = ''
@@ -386,14 +386,14 @@ class CreateSubModel(QgsProcessingAlgorithm):
                             start_point_elvation = p_f.selectedFeatures()[0].attribute('Elevation')
                             start_point_geometry = p_f.selectedFeatures()[0].geometry()
                     else:
-                        raise QgsProcessingException('There is more than one point selected in total (in different layers): ' + str(start_point_file) + ', '+str(p_f.name()) + '. Only one selected point is allowed for this tool!')
+                        raise QgsProcessingException('There is more than one point selected in total (in different layers): ' + str(start_point_file) + ', ' + str(p_f.name()) + '. Only one selected point is allowed for this tool!')
                 if s_f_c > 1:
                     raise QgsProcessingException('There is more than one point selected in layer ' + str(p_f.name()) + '. Only one selected point is allowed for this tool!')
             if start_point == '':
                 raise QgsProcessingException('No selected Node. Please select one node in the node layers')
             # merge node layers as pd.df
             all_nodes_df = pd.concat([i for i in nodes_df_dict.values()])
-            all_nodes_df = all_nodes_df[needed_nodes_attrs+['id']]
+            all_nodes_df = all_nodes_df[needed_nodes_attrs + ['id']]
             all_nodes_df = all_nodes_df.reset_index()
 
         feedback.setProgressText(self.tr('done \n'))
@@ -411,10 +411,10 @@ class CreateSubModel(QgsProcessingAlgorithm):
                 vlayer,
                 needed_link_attrs,
                 with_id=True,
-                feedback = feedback
+                feedback=feedback
             ) for layer_name, vlayer in link_layers_dict.items()}
             all_links_df = pd.concat([i for i in links_df_dict.values()])
-            all_links_df = all_links_df[needed_link_attrs+['id']]
+            all_links_df = all_links_df[needed_link_attrs + ['id']]
             all_links_df = all_links_df.reset_index()
 
             # initialize lists and Markerfor routing
@@ -456,13 +456,13 @@ class CreateSubModel(QgsProcessingAlgorithm):
             links_not_above = all_links_df.loc[~np.isin(all_links_df['Name'].to_list(), links_route), :]
 
             # required nodes for 'not_above'
-            nodes_route_2 = list(links_not_above['FromNode'])+list(links_not_above['ToNode'])
+            nodes_route_2 = list(links_not_above['FromNode']) + list(links_not_above['ToNode'])
             nodes_route_2 = list(np.unique(nodes_route_2))
 
             # check for "splitting" nodes
             splitting_nodes = [str(f) for f in nodes_route_2 if f in nodes_route]
             if len(splitting_nodes) > 0:
-                feedback.pushWarning("Warning: the network is splitting at :"+", ".join(splitting_nodes)+"\n")
+                feedback.pushWarning("Warning: the network is splitting at :" + ", ".join(splitting_nodes) + "\n")
             if above_or_below == 1:  # below
                 links_route = list(links_not_above['Name'])
                 nodes_route = nodes_route_2
@@ -475,7 +475,7 @@ class CreateSubModel(QgsProcessingAlgorithm):
             pass
         else:
             missing_nodes = [str(k) for k, v in nodes_exist_dict.items() if not v]
-            raise QgsProcessingException('Missing nodes for submodel: '+', '.join(missing_nodes)+'. Please check if all required layers were selected')
+            raise QgsProcessingException('Missing nodes for submodel: ' + ', '.join(missing_nodes) + '. Please check if all required layers were selected')
         feedback.setProgressText(self.tr('done \n'))
         feedback.setProgress(50)
 
@@ -491,7 +491,7 @@ class CreateSubModel(QgsProcessingAlgorithm):
                     if feedback.isCanceled():
                         break
                     set1 = features_for_selection[:200]
-                    sel = sel+[set1]
+                    sel = sel + [set1]
                     features_for_selection = features_for_selection[200:]
                 vector_layer.removeSelection()
                 for selSet in sel:
@@ -507,7 +507,7 @@ class CreateSubModel(QgsProcessingAlgorithm):
             sel = []
             while len(features_for_selection) != 0:
                 set1 = features_for_selection[:200]
-                sel = sel+[set1]
+                sel = sel + [set1]
                 features_for_selection = features_for_selection[200:]
             vector_layer.removeSelection()
             for selSet in sel:
@@ -520,12 +520,12 @@ class CreateSubModel(QgsProcessingAlgorithm):
             else:
                 feedback.setProgressText(self.tr('Creating outfall node...'))
                 # get crs for outfall file from original outfall file or take the first crs from a node layer in the dict
-                layer_name = str(result_prefix)+'_SWMM_outfalls'
-                fname = os.path.join(folder_save, layer_name+'.'+'gpkg')
+                layer_name = str(result_prefix) + '_SWMM_outfalls'
+                fname = os.path.join(folder_save, layer_name + '.' + 'gpkg')
                 if os.path.isfile(fname):
                     raise QgsProcessingException(
-                        'File '+fname+' already exists. Submodel features will '
-                        +'only be selected. Please choose another folder or prefix.'
+                        'File ' + fname + ' already exists. Submodel features will '
+                        + 'only be selected. Please choose another folder or prefix.'
                 )
                 if file_outfalls is not None:
                     crs_result = file_outfalls.crs().authid()
@@ -566,7 +566,7 @@ class CreateSubModel(QgsProcessingAlgorithm):
                     folder_save,
                     pluginPath,
                     context,
-                    layer_color = 'red'
+                    layer_color='red'
                 )
                 feedback.setProgressText(self.tr('done \n'))
                 feedback.setProgress(55)
@@ -580,7 +580,7 @@ class CreateSubModel(QgsProcessingAlgorithm):
             sel = []
             while len(features_for_selection) != 0:
                 set1 = features_for_selection[:200]
-                sel = sel+[set1]
+                sel = sel + [set1]
                 features_for_selection = features_for_selection[200:]
             file_subcatchments.removeSelection()
             for selSet in sel:
@@ -600,7 +600,7 @@ class CreateSubModel(QgsProcessingAlgorithm):
                 sel = []
                 while len(features_for_selection) != 0:
                     set1 = features_for_selection[:200]
-                    sel = sel+[set1]
+                    sel = sel + [set1]
                     features_for_selection = features_for_selection[200:]
                 file_raingages.removeSelection()
                 for selSet in sel:
@@ -616,12 +616,12 @@ class CreateSubModel(QgsProcessingAlgorithm):
         dict_all_layers.update(raingages_layer_dict)
 
         # add layers to canvas
-        #print(crs_dict)
+        # print(crs_dict)
         feedback.setProgressText(self.tr('Adding layerst to canvas...'))
         for k, v in dict_all_layers.items():
             if v.selectedFeatureCount() > 0:
                 vector_layer = v
-                layer_name = str(result_prefix)+'_SWMM_'+k.lower()
+                layer_name = str(result_prefix) + '_SWMM_' + k.lower()
                 geodata_crs = crs_dict[k]
                 geodata_driver_name = drivers_dict[k]
                 geodata_driver_extension = def_ogr_driver_dict[geodata_driver_name]
@@ -633,10 +633,10 @@ class CreateSubModel(QgsProcessingAlgorithm):
                 options.onlySelectedFeatures = True
                 transform_context = QgsProject.instance().transformContext()
                 fname = os.path.join(
-                    folder_save, layer_name+'.'+geodata_driver_extension
+                    folder_save, layer_name + '.' + geodata_driver_extension
                 )
                 if os.path.isfile(fname):
-                    raise QgsProcessingException('File '+fname
+                    raise QgsProcessingException('File ' + fname
                     + ' already exists. Submodel features will only be '
                     + 'selected. Please choose another folder or prefix.')
                 QgsVectorFileWriter.writeAsVectorFormatV3(
@@ -653,13 +653,13 @@ class CreateSubModel(QgsProcessingAlgorithm):
                     folder_save,
                     pluginPath,
                     context,
-                    layer_color = 'red'
+                    layer_color='red'
                 )
         feedback.setProgress(95)
         feedback.setProgressText(self.tr('done \n'))
         feedback.setProgressText(
             self.tr(
-                'Layers saved to '+
+                'Layers saved to ' +
                 str(folder_save)
             )
         )

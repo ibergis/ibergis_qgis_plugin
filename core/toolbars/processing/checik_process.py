@@ -85,12 +85,12 @@ def triangulate_custom(instance, parameters, context, feedback, inputs):
 
     for i, count in zip(indices, counts):
         if count == 1:
-            assert vertices.loc[i, "moved"] == False
+            assert not vertices.loc[i, "moved"]
             if not vertices.loc[i, "anchor"]:
                 entry = join.loc[i]
                 other_i = entry["index_right"]
 
-                assert vertices.loc[other_i, "moved"] == False
+                assert not vertices.loc[other_i, "moved"]
 
                 vertices.loc[i, "geometry"] = vertices.loc[other_i].geometry
                 vertices.loc[i, "moved"] = True

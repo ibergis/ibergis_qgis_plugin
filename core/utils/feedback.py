@@ -26,7 +26,7 @@ class Feedback(QgsFeedback):
 
     def setProgress(self, progress: int):
         if None not in (self.start_progress, self.end_progress, self.max_progress) and progress == 100 and self.progress_state < 40:
-            lerp_num = lerp_progress(int(self.progress_state/self.max_progress*100), self.start_progress, self.end_progress)
+            lerp_num = lerp_progress(int(self.progress_state / self.max_progress * 100), self.start_progress, self.end_progress)
             self.progress_changed.emit(None, lerp_num, None, False)
             self.progress_state += 1
         elif None in (self.start_progress, self.end_progress, self.max_progress):

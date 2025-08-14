@@ -449,8 +449,8 @@ class DrToolBoxButton(DrAction):
                     skipped = 0
                     while self.add_columns.get(i) is not None and self.add_columns.get(i)[0] not in skipped_dict:
                         if self.add_columns.get(i)[1] not in ('', 'null', None):
-                            dict_keys[i-skipped] = self.add_columns.get(i)[1]
-                            self.dlg_reports.tbl_reports.setHorizontalHeaderItem(i-skipped, QTableWidgetItem(f"{self.add_columns.get(i)[0]}"))
+                            dict_keys[i - skipped] = self.add_columns.get(i)[1]
+                            self.dlg_reports.tbl_reports.setHorizontalHeaderItem(i - skipped, QTableWidgetItem(f"{self.add_columns.get(i)[0]}"))
                         else:
                             skipped += 1
                             if self.add_columns.get(i)[0] not in skipped_dict:

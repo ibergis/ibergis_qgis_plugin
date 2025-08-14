@@ -18,12 +18,11 @@ from qgis.core import (
     QgsWkbTypes,
     QgsFeatureSink,
     QgsProcessingParameterFeatureSink,
-    QgsFeature,
-    QgsLayerTreeLayer
+    QgsFeature
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis
-from ...core.utils import  Feedback, tools_dr
+from ...core.utils import Feedback, tools_dr
 from ...core.threads import validatemesh
 from ... import global_vars
 from typing import Optional
@@ -41,9 +40,9 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
     SIMPLIFIED_ROOF_LAYER = 'SIMPLIFIED_ROOF_LAYER'
     SIMPLIFIED_GROUND_LAYER = 'SIMPLIFIED_GROUND_LAYER'
 
-    preserve_boundary : bool = False
-    tolerance : float = 1.0
-    simplified_layer : QgsVectorLayer = None
+    preserve_boundary: bool = False
+    tolerance: float = 1.0
+    simplified_layer: QgsVectorLayer = None
     file_source: Optional[QgsVectorLayer] = None
     roof_layer: Optional[QgsVectorLayer] = None
     ground_layer: Optional[QgsVectorLayer] = None
@@ -137,11 +136,11 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         # Merge roof and ground layers
         input_layer = processing.run("native:mergevectorlayers",
                                      {
-                                         'LAYERS':[
+                                         'LAYERS': [
                                              self.ground_layer,
                                              self.roof_layer
                                             ],
-                                         'CRS':QgsCoordinateReferenceSystem('EPSG:'+str(global_vars.data_epsg)),'OUTPUT':'memory:'})
+                                         'CRS': QgsCoordinateReferenceSystem('EPSG:' + str(global_vars.data_epsg)), 'OUTPUT': 'memory:'})
         self.file_source = input_layer['OUTPUT']
 
         if self.file_source is None:
@@ -150,17 +149,17 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
 
         feedback.setProgress(12)
 
-        self.preserve_boundary : bool = self.parameterAsBoolean(parameters, self.PRESERVE_BOUNDARY, context)
-        self.tolerance : float = self.parameterAsDouble(parameters, self.TOLERANCE, context)
+        self.preserve_boundary: bool = self.parameterAsBoolean(parameters, self.PRESERVE_BOUNDARY, context)
+        self.tolerance: float = self.parameterAsDouble(parameters, self.TOLERANCE, context)
 
         feedback.setProgressText(self.tr('Simplifying geometries...'))
 
         # Simplify geometries
         try:
-            result = processing.run("native:coveragesimplify",{
+            result = processing.run("native:coveragesimplify", {
                     'INPUT': self.file_source,
-                    'TOLERANCE': self.tolerance,'PRESERVE_BOUNDARY': self.preserve_boundary, 'OUTPUT':'memory:'})
-            self.simplified_layer : QgsVectorLayer = result['OUTPUT']
+                    'TOLERANCE': self.tolerance, 'PRESERVE_BOUNDARY': self.preserve_boundary, 'OUTPUT': 'memory:'})
+            self.simplified_layer: QgsVectorLayer = result['OUTPUT']
         except Exception as e:
             feedback.pushWarning(self.tr(f'Error simplifying geometries. {e}'))
             self._validate_input_layers(feedback)
@@ -216,7 +215,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
                 new_feature.setGeometry(feature.geometry())
                 ground_sink.addFeature(new_feature, QgsFeatureSink.FastInsert)
 
-            feedback.setProgress(tools_dr.lerp_progress(i/total*100, 50, 99))
+            feedback.setProgress(tools_dr.lerp_progress(i / total * 100, 50, 99))
 
         feedback.setProgress(100)
         outputs = {
@@ -299,7 +298,6 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
                 return
             elif result['IS_VALID']:
                 self.validation_layer_coverage = None
-
 
     def get_layer_type(self, layer: QgsVectorLayer) -> Optional[str]:
         for feature in layer.getFeatures():

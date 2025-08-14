@@ -29,8 +29,6 @@ def add_object(**kwargs):
     """
     dialog = kwargs['dialog']
     button = kwargs['widget']
-    index_tab = dialog.tab_main.currentIndex()
-    tab_name = dialog.tab_main.widget(index_tab).objectName()
     func_params = kwargs['func_params']
     complet_result = kwargs['complet_result']
     feature_type = complet_result['body']['feature']['featureType']
@@ -98,11 +96,6 @@ def delete_object(**kwargs):
         at lines:   widget.clicked.connect(partial(getattr(module, function_name), **kwargs))
     """
     dialog = kwargs['dialog']
-    try:
-        index_tab = dialog.tab_main.currentIndex()
-        tab_name = dialog.tab_main.widget(index_tab).objectName()
-    except:
-        tab_name = 'main'
     func_params = kwargs['func_params']
     complet_result = kwargs['complet_result']
 
@@ -215,14 +208,11 @@ def filter_table(**kwargs):
         field_id = str(complet_result['body']['feature']['idName'])
     feature_id = complet_result['body']['feature']['id']
     filter_fields = f'"{field_id}":{{"value":"{feature_id}","filterSign":"="}}, '
-    colname = None
-    if func_params:
-        colname = func_params.get('columnfind')
     filter_fields = get_filter_qtableview(dialog, widget_list, complet_result, filter_fields)
     try:
         index_tab = dialog.tab_main.currentIndex()
         tab_name = dialog.tab_main.widget(index_tab).objectName()
-    except:
+    except Exception:
         tab_name = 'main'
     complet_list = _get_list(complet_result, '', tab_name, filter_fields, widgetname, 'form_feature', linkedobject, feature_id, id_name=field_id)
     if complet_list is False:
@@ -250,9 +240,9 @@ def set_layer_index(**kwargs):
     layers_name_list = kwargs['tableName']
     if not layers_name_list:
         return
-    if type(layers_name_list) == str:
+    if isinstance(layers_name_list, str):
         tools_qgis.set_layer_index(layers_name_list)
-    if type(layers_name_list) == list:
+    if isinstance(layers_name_list, list):
         for layer_name in layers_name_list:
             tools_qgis.set_layer_index(layer_name)
 
@@ -302,12 +292,8 @@ def refresh_attribute_table(**kwargs):
             tools_log.log_info(msg)
             continue
 
-        # Get sys variale
-        qgis_project_infotype = global_vars.project_vars['info_type']
-
         feature = '"tableName":"' + str(layer_name) + '", "id":"", "isLayer":true'
-        extras = f'"infoType":"{qgis_project_infotype}"'
-        body = tools_dr.create_body(feature=feature, extras=extras)
+        body = tools_dr.create_body(feature=feature)
         result = tools_dr.execute_procedure('gw_fct_getinfofromid', body)
         if not result:
             continue
@@ -373,10 +359,10 @@ def refresh_canvas(**kwargs):
         layers_name_list = kwargs['tableName']
         if not layers_name_list:
             return
-        if type(layers_name_list) == str:
+        if isinstance(layers_name_list, str):
             layer = tools_qgis.get_layer_by_tablename(layers_name_list)
             layer.triggerRepaint()
-        elif type(layers_name_list) == list:
+        elif isinstance(layers_name_list, list):
             for layer_name in layers_name_list:
                 tools_qgis.set_layer_index(layer_name)
     except Exception:
@@ -505,7 +491,7 @@ def fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields):
     try:
         index_tab = dialog.tab_main.currentIndex()
         tab_name = dialog.tab_main.widget(index_tab).objectName()
-    except:
+    except Exception:
         tab_name = 'main'
         no_tabs = True
     complet_list = _get_list(complet_result, '', tab_name, filter_fields, widgetname, 'form_feature', linkedobject)
@@ -513,10 +499,12 @@ def fill_tbl(complet_result, dialog, widgetname, linkedobject, filter_fields):
     if complet_list is False:
         return False, False
     for field in complet_list['body']['data']['fields']:
-        if 'hidden' in field and field['hidden']: continue
+        if 'hidden' in field and field['hidden']:
+            continue
 
         widget = dialog.findChild(QTableView, field['widgetname'])
-        if widget is None: continue
+        if widget is None:
+            continue
         widget = tools_dr.add_tableview_header(widget, field)
         widget = tools_dr.fill_tableview_rows(widget, field)
         widget = tools_dr.set_tablemodel_config(dialog, widget, field['widgetname'], 1, True)
@@ -551,11 +539,11 @@ def get_filter_qtableview(dialog, widget_list, complet_result, filter_fields='')
             if widget.property('widgetcontrols') is not None and 'columnId' in widget.property('widgetcontrols'):
                 if widget.property('widgetcontrols')['columnId'] is not None:
                     column_id = widget.property('widgetcontrols')['columnId']
-            if type(widget) == QComboBox:
+            if isinstance(widget, QComboBox):
                 value = tools_qt.get_combo_value(dialog, widget, column_id)
                 if value == -1:
                     value = None
-            elif type(widget) is QgsDateTimeEdit:
+            elif isinstance(widget, QgsDateTimeEdit):
                 value = tools_qt.get_calendar_date(dialog, widget, date_format='yyyy-MM-dd')
             else:
                 value = tools_qt.get_text(dialog, widget, False, False)
@@ -598,7 +586,7 @@ def _reload_table(**kwargs):
         index_tab = dialog.tab_main.currentIndex()
         tab_name = dialog.tab_main.widget(index_tab).objectName()
         list_tables = dialog.tab_main.widget(index_tab).findChildren(QTableView)
-    except:
+    except Exception:
         no_tabs = True
         tab_name = 'main'
         list_tables = dialog.findChildren(QTableView)
@@ -656,7 +644,7 @@ def get_selector(**kwargs):
     Function connected -> global_vars.signal_manager.refresh_selectors.connect(tools_dr.refresh_selectors)
     """
 
-    tab_name = kwargs.get('tab')
+    return
 
 
 def show_message(**kwargs):

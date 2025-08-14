@@ -207,6 +207,8 @@ def log_db(text=None, color="black", bold='', header="SERVER EXECUTION", message
     if type(text) is dict:
         text = json.dumps(text)
         text = tools_qt.tr(text, list_params=msg_params)
+    elif type(text) is str:
+        text = tools_qt.tr(text, list_params=msg_params)
 
     if header:
         header = tools_qt.tr(header, list_params=header_params)

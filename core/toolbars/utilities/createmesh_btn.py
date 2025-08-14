@@ -1,8 +1,9 @@
 import datetime
+import os
 from functools import partial
 from time import time
 
-from qgis.core import Qgis, QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
+from qgis.core import QgsApplication, QgsMapLayer, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import QListWidgetItem, QComboBox, QTextEdit
 
@@ -11,9 +12,8 @@ from ...threads.createmesh import DrCreateMeshTask
 from ...threads.validatemesh import validations_dict
 from ...ui.ui_manager import DrCreateMeshUi
 from ...utils import Feedback, tools_dr
-from ...utils.meshing_process import create_anchor_layers
 from .... import global_vars
-from ....lib import tools_qt, tools_os
+from ....lib import tools_qt, tools_os, tools_qgis
 from qgis.utils import iface
 
 
@@ -28,22 +28,21 @@ class DrCreateMeshButton(DrAction):
     def clicked_event(self):
         self.dao = global_vars.gpkg_dao_data.clone()
         self.dlg_mesh = DrCreateMeshUi()
-        dlg = self.dlg_mesh
+        tools_dr.load_settings(self.dlg_mesh)
         self.validations = validations_dict()
 
         self.ground_layer = self._get_layer(self.dao, "ground")
         self.roof_layer = self._get_layer(self.dao, "roof")
 
         # Set widgets
-        tools_dr.load_settings(dlg)
-        tools_dr.disable_tab_log(dlg)
-        tools_qt.double_validator(dlg.txt_tolerance)
-        tools_qt.double_validator(dlg.txt_slope)
-        tools_qt.double_validator(dlg.txt_start)
-        tools_qt.double_validator(dlg.txt_extent)
+        tools_dr.disable_tab_log(self.dlg_mesh)
+        tools_qt.double_validator(self.dlg_mesh.txt_tolerance)
+        tools_qt.double_validator(self.dlg_mesh.txt_slope)
+        tools_qt.double_validator(self.dlg_mesh.txt_start)
+        tools_qt.double_validator(self.dlg_mesh.txt_extent)
 
         # Hide grb_cleanup
-        dlg.grb_cleanup_data.setVisible(False)
+        self.dlg_mesh.grb_cleanup_data.setVisible(False)
 
         # Fill raster layers combos
         project = QgsProject.instance()
@@ -55,42 +54,42 @@ class DrCreateMeshButton(DrAction):
         ]
         # DEM
         rows = [[None, "Fill elevation with zeroes"], *raster_layers]
-        tools_qt.fill_combo_values(dlg.cmb_dem_layer, rows, add_empty=False)
+        tools_qt.fill_combo_values(self.dlg_mesh.cmb_dem_layer, rows, add_empty=False)
         # Roughness
         rows = [
             [None, "Fill roughness with zeroes"],
             ["ground_layer", "Ground"],
             *raster_layers,
         ]
-        tools_qt.fill_combo_values(dlg.cmb_roughness_layer, rows, add_empty=False)
+        tools_qt.fill_combo_values(self.dlg_mesh.cmb_roughness_layer, rows, add_empty=False)
         # Roughness
         rows = [
             [None, "Fill losses with zeroes"],
             ["ground_layer", "Column scs_cn from ground layer"],
             *raster_layers,
         ]
-        tools_qt.fill_combo_values(dlg.cmb_losses_layer, rows, add_empty=False)
+        tools_qt.fill_combo_values(self.dlg_mesh.cmb_losses_layer, rows, add_empty=False)
 
         # Load user's last values
         self._load_widget_values()
 
         # Set initial signals
-        dlg.chk_validation.clicked.connect(dlg.btn_config.setEnabled)
-        dlg.btn_config.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 1))
-        dlg.btn_back.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 0))
-        dlg.btn_select_all.clicked.connect(self._listval_select_all)
-        dlg.btn_clear_selection.clicked.connect(self._listval_clear_selection)
-        dlg.btn_toggle_selection.clicked.connect(self._listval_toggle_selection)
-        dlg.btn_valid_ok.clicked.connect(partial(dlg.stackedWidget.setCurrentIndex, 0))
-        dlg.chk_clean_geometries.stateChanged.connect(dlg.txt_tolerance.setEnabled)
-        dlg.chk_transition.stateChanged.connect(dlg.txt_slope.setEnabled)
-        dlg.chk_transition.stateChanged.connect(dlg.txt_start.setEnabled)
-        dlg.chk_transition.stateChanged.connect(dlg.txt_extent.setEnabled)
+        self.dlg_mesh.chk_validation.clicked.connect(self.dlg_mesh.btn_config.setEnabled)
+        self.dlg_mesh.btn_config.clicked.connect(partial(self.dlg_mesh.stackedWidget.setCurrentIndex, 1))
+        self.dlg_mesh.btn_back.clicked.connect(partial(self.dlg_mesh.stackedWidget.setCurrentIndex, 0))
+        self.dlg_mesh.btn_select_all.clicked.connect(self._listval_select_all)
+        self.dlg_mesh.btn_clear_selection.clicked.connect(self._listval_clear_selection)
+        self.dlg_mesh.btn_toggle_selection.clicked.connect(self._listval_toggle_selection)
+        self.dlg_mesh.btn_valid_ok.clicked.connect(partial(self.dlg_mesh.stackedWidget.setCurrentIndex, 0))
+        self.dlg_mesh.chk_clean_geometries.stateChanged.connect(self.dlg_mesh.txt_tolerance.setEnabled)
+        self.dlg_mesh.chk_transition.stateChanged.connect(self.dlg_mesh.txt_slope.setEnabled)
+        self.dlg_mesh.chk_transition.stateChanged.connect(self.dlg_mesh.txt_start.setEnabled)
+        self.dlg_mesh.chk_transition.stateChanged.connect(self.dlg_mesh.txt_extent.setEnabled)
         # Dialog buttons
-        dlg.btn_ok.clicked.connect(self._execute_process)
-        dlg.btn_cancel.clicked.connect(dlg.reject)
-        dlg.rejected.connect(self._save_widget_values)
-        dlg.rejected.connect(partial(tools_dr.close_dialog, dlg))
+        self.dlg_mesh.btn_ok.clicked.connect(self._execute_process)
+        self.dlg_mesh.btn_cancel.clicked.connect(self.dlg_mesh.reject)
+        self.dlg_mesh.rejected.connect(self._save_widget_values)
+        self.dlg_mesh.rejected.connect(partial(tools_dr.close_dialog, self.dlg_mesh))
 
         # Create List Items
         flags = Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
@@ -111,12 +110,12 @@ class DrCreateMeshButton(DrAction):
             font = item.font()
             font.setBold(True)
             item.setFont(font)
-            dlg.list_validations.addItem(item)
+            self.dlg_mesh.list_validations.addItem(item)
             for validation in self.validations.values():
                 if validation["layer"] == category:
-                    dlg.list_validations.addItem(validation["list_item"])
+                    self.dlg_mesh.list_validations.addItem(validation["list_item"])
 
-        tools_dr.open_dialog(dlg, dlg_name="create_mesh")
+        tools_dr.open_dialog(self.dlg_mesh, dlg_name="create_mesh")
 
     def _execute_process(self):
         dlg = self.dlg_mesh
@@ -226,17 +225,20 @@ class DrCreateMeshButton(DrAction):
         layers = {}
         for layer in ["ground", "roof"]:
             layer_path = f"{path}{layer}"
+            layer_path = os.path.abspath(layer_path)
             lyrs = []
             for lyr in QgsProject.instance().mapLayers().values():
-                if lyr.source() == layer_path:
+                if os.path.normpath(lyr.source()) == os.path.normpath(layer_path):
                     print(f"Layer: {lyr.name()} - {lyr.source()}")
                     lyrs.append(lyr)
 
             if len(lyrs) == 0:
-                self.message = f"Layer '{layer}' not found in the QGIS project."
+                msg = f"Layer '{layer}' not found in the QGIS project."
+                tools_qgis.show_warning(msg, dialog=dlg)
                 return False
             elif len(lyrs) > 1:
-                self.message = f"Layer '{layer}' found multiple times in the QGIS project."
+                msg = f"Layer '{layer}' found multiple times in the QGIS project."
+                tools_qgis.show_warning(msg, dialog=dlg)
                 return False
             else:
                 layers[layer] = lyrs[0]

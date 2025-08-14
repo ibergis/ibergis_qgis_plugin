@@ -26,8 +26,12 @@ from typing import Optional, Iterable
 from pathlib import Path
 from ... import global_vars
 
-try:
-    from packages.gmsh import gmsh
+try:  # noqa: C901
+    import platform
+    if platform.system() == "Windows":
+        from packages.gmsh import gmsh
+    else:
+        import gmsh
     import pandamesh.common
     import pandamesh.gmsh_geometry
 
@@ -251,7 +255,6 @@ try:
 
         return layer
 
-
     # 2D algorithms: https://gmsh.info/doc/texinfo/gmsh.html#Mesh-options
     ALGORITHMS = {
         "MeshAdapt": 1,
@@ -432,7 +435,7 @@ try:
             # List of triangles in the polygon
             tri = element_tags[np.where(element_types == _TRIANGLE)[0][0]]
             for field in extra_fields:
-                extra_data[field][start : start + len(tri)] = feature[field]
+                extra_data[field][start: start + len(tri)] = feature[field]
             start += len(tri)
 
         if feedback is not None:
@@ -462,7 +465,8 @@ except ImportError:
 import shapely
 
 
-def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] = None, layer_name: str = "Mesh Temp Layer") -> QgsVectorLayer:
+def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] = None,
+                           layer_name: str = "Mesh Temp Layer", area_threshold: float = float('inf')) -> QgsVectorLayer:
     c1 = mesh.vertices.loc[mesh.polygons["v1"], ['x', 'y', 'z']]
     c2 = mesh.vertices.loc[mesh.polygons["v2"], ['x', 'y', 'z']]
     c3 = mesh.vertices.loc[mesh.polygons["v3"], ['x', 'y', 'z']]
@@ -486,6 +490,10 @@ def create_temp_mesh_layer(mesh: mesh_parser.Mesh, feedback: Optional[Feedback] 
     optmized_df['is_ccw'] = det > 0
 
     optmized_df['area'] = 0.5 * abs(det)
+
+    if area_threshold != float('inf'):
+        # Filter by area threshold
+        optmized_df = optmized_df[optmized_df['area'] < area_threshold]
 
     def get_feature(row):
         geom = QgsTriangle(

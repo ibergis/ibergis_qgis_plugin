@@ -11,7 +11,6 @@ from qgis.PyQt.QtCore import QVariant
 from ..utils.feedback import Feedback
 from ..utils.meshing_process import layer_to_gdf
 from qgis import processing
-from ..utils import tools_dr
 
 from typing import Tuple, Optional
 import geopandas as gpd
@@ -115,6 +114,7 @@ def validate_intersect(
     feedback.setProgress(100)
     return output_layer
 
+
 def validate_intersect_v2(
     layers_dict: dict, feedback: Feedback, include_roof: bool = True
 ) -> Optional[QgsVectorLayer]:
@@ -173,18 +173,19 @@ def validate_intersect_v2(
 
 
 def get_polygon_vertices(geom: shapely.Polygon) -> list:
-    assert type(geom) == shapely.Polygon
+    assert isinstance(geom, shapely.Polygon)
     rings = [geom.exterior.coords]
     rings += [interior.coords for interior in geom.interiors]
     return list(itertools.chain(*rings))
 
 
 def get_multipolygon_vertices(geom: shapely.MultiPolygon) -> list:
-    assert type(geom) == shapely.MultiPolygon
+    assert isinstance(geom, shapely.MultiPolygon)
     verts = []
     for poly in geom.geoms:
         verts += get_polygon_vertices(poly)
     return verts
+
 
 def validate_vert_edge_v2(
     layers_dict: dict, feedback: Feedback, include_roof: bool = False
@@ -310,6 +311,7 @@ def validate_vert_edge_v2(
     feedback.setProgressText(f"Validated vertex-edge for {list(layer.name() for layer in layers_dict.values())}")
     feedback.setProgress(100)
     return output_layer
+
 
 def validate_vert_edge(
     layers_dict: dict, feedback: Feedback, include_roof: bool = False
@@ -517,7 +519,7 @@ def validate_distance(
         if feedback.isCanceled():
             return
         geom = row.geometry
-        assert type(geom) == shapely.Polygon, f"{type(geom)}"
+        assert isinstance(geom, shapely.Polygon), f"{type(geom)}"
         new_verts = list(map(shapely.Point, get_polygon_vertices(geom)))
         vertices += new_verts
         if str(row.cellsize) in (None, 'NULL', 'null', 'nan'):
@@ -627,7 +629,7 @@ def validate_null_geometry(
 
 
 def validate_dem_coverage(layers_dict: dict, feedback: Feedback) -> QgsVectorLayer:
-    if layers_dict["dem"] == None:
+    if layers_dict["dem"] is None:
         return QgsVectorLayer("Polygon", "Empty", "memory")
 
     dem: QgsRasterLayer = layers_dict["dem"]

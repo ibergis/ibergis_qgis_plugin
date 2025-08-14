@@ -44,12 +44,12 @@ class DrLoadProject(QObject):
         # Get variables from qgis project
         self._get_project_variables()
 
-        # Check if loaded project is valid for Drain
-        if not self._check_project(show_warning):
-            return
-
         # Set database connection to Geopackage file
         if not self._check_database_connection():
+            return
+
+        # Check if loaded project is valid for Drain
+        if not self._check_project(show_warning):
             return
 
         # TODO: Get SRID from table node
@@ -58,9 +58,6 @@ class DrLoadProject(QObject):
 
         # Removes all deprecated variables defined at drain.config
         # tools_dr.remove_deprecated_config_vars()
-
-        project_role = global_vars.project_vars.get('project_role')
-        global_vars.project_vars['project_role'] = None
 
         # Check if user has config files 'init' and 'session' and its parameters
         tools_dr.user_params_to_userconfig()
@@ -131,11 +128,6 @@ class DrLoadProject(QObject):
         """ Manage QGIS project variables """
 
         global_vars.project_vars = {}
-        global_vars.project_vars['info_type'] = tools_qgis.get_project_variable('gwInfoType')
-        global_vars.project_vars['add_schema'] = tools_qgis.get_project_variable('gwAddSchema')
-        global_vars.project_vars['main_schema'] = tools_qgis.get_project_variable('gwMainSchema')
-        global_vars.project_vars['project_role'] = tools_qgis.get_project_variable('gwProjectRole')
-        global_vars.project_vars['project_type'] = tools_qgis.get_project_variable('gwProjectType')
         global_vars.project_vars['project_gpkg_path'] = tools_qgis.get_project_variable('project_gpkg_path')
 
     def _get_user_variables(self):
@@ -149,7 +141,30 @@ class DrLoadProject(QObject):
         global_vars.date_format = tools_dr.get_config_parser('system', 'date_format', "user", "init", False)
 
     def _check_project(self, show_warning):
-        """ TODO: Check if loaded project is valid for Drain """
+        """ Check if loaded project is valid for Drain """
+
+        # Check if table 'ground' and 'roof' are loaded
+        layer_ground = tools_qgis.get_layer_by_tablename("ground")
+        layer_roof = tools_qgis.get_layer_by_tablename("roof")
+        if (layer_ground, layer_roof) == (None, None):  # If no ibergis layers are present
+            return False
+
+        # Check missing layers
+        missing_layers = {}
+        if layer_ground is None:
+            missing_layers['ground'] = True
+        if layer_roof is None:
+            missing_layers['roof'] = True
+
+        # Show message if layers are missing
+        if missing_layers:
+            if show_warning:
+                title = "IberGIS plugin cannot be loaded"
+                msg = f"QGIS project seems to be a IberGIS project, but layer(s) {0} are missing"
+                msg_params = ([k for k, v in missing_layers.items()],)
+                tools_qgis.show_warning(msg, 20, title=title, msg_params=msg_params)
+            return False
+
         return True
 
     def _check_database_connection(self):
@@ -356,7 +371,7 @@ class DrLoadProject(QObject):
             return
 
         list_actions = list_actions.replace(' ', '').split(',')
-        if type(list_actions) != list:
+        if not isinstance(list_actions, list):
             list_actions = [list_actions]
 
         toolbar_name = tools_qt.tr(f'toolbar_{toolbar_id}_name')
@@ -454,7 +469,7 @@ class DrLoadProject(QObject):
                             if subwidget.objectName() == 'mUpdateExpressionText':  # This is the expression text field
                                 try:
                                     subwidget.fieldChanged.disconnect()
-                                except:
+                                except Exception:
                                     pass
                                 # When you type something in the expression text field, the button "Update all" is
                                 # enabled. This will disable it again.
@@ -464,17 +479,18 @@ class DrLoadProject(QObject):
             except IndexError:
                 pass
 
-
     def _translate_config(self):
         """ Update config.gpkg language from selected locale """
 
         locale = tools_qgis.get_locale()
-        print(locale)
+
+        if locale == "en_US" and global_vars.user_level['level'] in global_vars.user_level['showadminadvanced']:
+            return
 
         sql_dir = os.path.normpath(os.path.join(global_vars.plugin_dir, 'dbmodel'))
         i18n_dml_path = os.path.join(sql_dir, "i18n", locale, "dml.sql")
         if not os.path.exists(i18n_dml_path):
-            i18n_dml_path = os.path.join(sql_dir, "i18n", "en_US", "dml.sql") # Default to en_US
+            i18n_dml_path = os.path.join(sql_dir, "i18n", "en_US", "dml.sql")  # Default to en_US
 
         config_gpkg_path = os.path.join(global_vars.plugin_dir, 'config', 'config.gpkg')
 

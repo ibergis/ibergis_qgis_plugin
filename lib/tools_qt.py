@@ -16,8 +16,8 @@ from functools import partial
 from encodings.aliases import aliases
 from warnings import warn
 
-from qgis.PyQt.QtCore import QDate, QDateTime, QSortFilterProxyModel, QStringListModel, QTime, Qt, QRegExp, pyqtSignal,\
-    QPersistentModelIndex, QCoreApplication, QTranslator
+from qgis.PyQt.QtCore import QDate, QDateTime, QSortFilterProxyModel, QStringListModel, QTime, Qt, QRegExp, \
+    pyqtSignal, QPersistentModelIndex, QCoreApplication, QTranslator
 from qgis.PyQt.QtGui import QPixmap, QDoubleValidator, QTextCharFormat, QFont
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.PyQt.QtWidgets import QAction, QLineEdit, QComboBox, QWidget, QDoubleSpinBox, QCheckBox, QLabel, QTextEdit, \
@@ -31,7 +31,6 @@ from qgis.utils import iface
 from . import tools_log, tools_os, tools_qgis
 from .. import global_vars
 from .ui.ui_manager import DialogTextUi
-from .tools_gpkgdao import DrGpkgDao
 
 translator = QTranslator()
 dlg_text = DialogTextUi()
@@ -1329,8 +1328,11 @@ def _add_translator(log_info=False):
 
     # Get locale of QGIS application
     locale = tools_qgis.get_locale()
-    print(locale)
-    locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_{locale}.qm')
+    if locale == "en_US" and global_vars.user_level['level'] in global_vars.user_level['showadminadvanced']:
+        return
+    
+    locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'drain_{locale}.qm')
+
     if not os.path.exists(locale_path):
         msg = "Locale not found: {0}"
         msg_params = (locale_path,)

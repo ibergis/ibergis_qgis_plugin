@@ -4,6 +4,7 @@ The program is free software: you can redistribute it and/or modify it under the
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
 """
+import json
 import time
 import datetime
 import getpass
@@ -27,6 +28,7 @@ from ..utils import tools_dr
 from ..threads.project_gpkg_schema_create import DrGpkgCreateSchemaTask
 from ... import global_vars
 from ...lib import tools_qt, tools_qgis, tools_log, tools_gpkgdao, tools_db
+
 
 class DrGpkgBase:
     """Base class for geopackage operations"""
@@ -349,7 +351,6 @@ class DrAdminButton(DrGpkgBase):
         # Set signals
         self._set_signals_create_project()
 
-
     def load_base(self, dict_folders):
         """"""
 
@@ -595,15 +596,17 @@ class DrAdminButton(DrGpkgBase):
     def _select_path(self):
         """ Select file path"""
 
-        path = tools_qt.get_text(self.dlg_readsql, 'data_file')
+        path = tools_qt.get_text(self.dlg_readsql, 'data_path')
         if path is None or path == '':
             path = self.plugin_dir
 
         if not os.path.exists(path):
-            folder_path = os.path.dirname(__file__)
+            path = os.path.dirname(__file__)
 
         message = tools_qt.tr("Select GPKG path")
-        file_path = QFileDialog.getExistingDirectory(None, message)
+        file_path = QFileDialog.getExistingDirectory(None, message, path)
+        if file_path is None or file_path == '':
+            return
         self.dlg_readsql.data_path.setText(file_path)
 
     def _select_file_gpkg(self):
@@ -696,7 +699,7 @@ class DrAdminButton(DrGpkgBase):
     def populate_config_params(self):
         """Populate table config_param_user"""
 
-        sql_select = "SELECT columnname, vdefault FROM config_form_fields WHERE formtype = 'form_options'"
+        sql_select = "SELECT columnname, vdefault, widgetcontrols FROM config_form_fields WHERE formtype = 'form_options'"
         rows = tools_db.get_rows(sql_select)
         print(f"rows-{rows}")
 
@@ -708,6 +711,14 @@ class DrAdminButton(DrGpkgBase):
             sql_insert = "INSERT INTO config_param_user (parameter, value) VALUES (?,?)"
             try:
                 tools_db.execute_sql_placeholder(sql_insert, data)
+
+                # Add include widget for outlayer and raster symbology
+                if row[2] is not None:
+                    widgetcontrols = json.loads(row[2])
+                    if "include_widget" in widgetcontrols and widgetcontrols.get('include_widget'):
+                        tools_db.execute_sql_placeholder(sql_insert, (row[0] + '_include', '1'))
+                    elif "include_widget" in widgetcontrols and not widgetcontrols.get('include_widget'):
+                        tools_db.execute_sql_placeholder(sql_insert, (row[0] + '_include', '0'))
             except Exception:
                 msg = "Error executing SQL: {0}\nDatabase error: {1}"
                 msg_params = (sql_insert, global_vars.gpkg_dao_data.last_error,)

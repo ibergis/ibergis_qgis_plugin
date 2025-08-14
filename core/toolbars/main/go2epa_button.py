@@ -198,7 +198,7 @@ class DrGo2IberButton(DrAction):
         self.dlg_go2epa.txt_infolog.clear()
         status = self._check_fields()
         if status is False:
-            return                
+            return 
 
         # Get widgets values
         self.export_file_path = tools_qt.get_text(self.dlg_go2epa, 'txt_file_path')
@@ -209,7 +209,7 @@ class DrGo2IberButton(DrAction):
                 if not response:
                     return
                 os.remove(self.export_file_path)
-            except:
+            except Exception:
                 if os.path.isdir(self.export_file_path):
                     msg = "The specified path is a directory. Please, set a valid file name"
                     tools_qt.show_info_box(msg)

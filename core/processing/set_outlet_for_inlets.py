@@ -161,7 +161,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                         'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
                     })['OUTPUT']
                 self.nearest_valid_inlet_outlets = self.getNearestValidOutlets(nearest_inlet_outlets, feedback, True)
-            except:
+            except Exception:
                 self.nearest_valid_inlet_outlets = None
         if self.file_pinlets:
             try:
@@ -180,7 +180,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                         'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
                     })['OUTPUT']
                 self.nearest_valid_pinlet_outlets = self.getNearestValidOutlets(nearest_pinlet_outlets, feedback, False)
-            except:
+            except Exception:
                 self.nearest_valid_pinlet_outlets = None
         if feedback.isCanceled():
             return {}
@@ -247,7 +247,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                             self.file_inlets.commitChanges()
                             current_updated_inlets = 0
                             feedback.setProgressText(self.tr(f"Inlets updated with batch of {batch_size}[{updated_inlets}/{len(self.nearest_valid_inlet_outlets)}]"))
-                            feedback.setProgress(tools_dr.lerp_progress(int(((inlet_progress_index+1)/(len(self.nearest_valid_inlet_outlets.keys())/batch_size))*100), 80, 89))
+                            feedback.setProgress(tools_dr.lerp_progress(int(((inlet_progress_index + 1) / (len(self.nearest_valid_inlet_outlets.keys()) / batch_size)) * 100), 80, 89))
                             inlet_progress_index += 1
                             QApplication.processEvents()
                 except Exception as e:
@@ -260,7 +260,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             self.below_inlets = list(dict.fromkeys(self.below_inlets))
             feedback.setProgressText(self.tr(f"Inlets skipped: ({len(self.skipped_inlets)})"))
             feedback.setProgressText(self.tr(f"Inlets setted below: ({len(self.below_inlets)})"))
-            feedback.setProgressText(self.tr(f"Inlets updated[{len(self.nearest_valid_inlet_outlets)-len(self.skipped_inlets)}/{len(self.nearest_valid_inlet_outlets)}]"))
+            feedback.setProgressText(self.tr(f"Inlets updated[{len(self.nearest_valid_inlet_outlets) - len(self.skipped_inlets)}/{len(self.nearest_valid_inlet_outlets)}]"))
             feedback.setProgressText(self.tr("Outlets assigned for inlets."))
 
         if self.nearest_valid_pinlet_outlets is not None:
@@ -285,7 +285,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                             self.file_pinlets.commitChanges()
                             current_updated_pinlets = 0
                             feedback.setProgressText(self.tr(f"Pinlets updated with batch of {batch_size}[{updated_pinlets}/{len(self.nearest_valid_pinlet_outlets)}]"))
-                            feedback.setProgress(tools_dr.lerp_progress(int((((pinlet_progress_index+1)/(len(self.nearest_valid_pinlet_outlets.keys())/batch_size))*100)), 89, 98))
+                            feedback.setProgress(tools_dr.lerp_progress(int((((pinlet_progress_index + 1) / (len(self.nearest_valid_pinlet_outlets.keys()) / batch_size)) * 100)), 89, 98))
                             pinlet_progress_index += 1
                             QApplication.processEvents()
                 except Exception as e:
@@ -298,13 +298,13 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             self.below_pinlets = list(dict.fromkeys(self.below_pinlets))
             feedback.setProgressText(self.tr(f"Pinlets skipped: ({len(self.skipped_pinlets)})"))
             feedback.setProgressText(self.tr(f"Pinlets setted below: ({len(self.below_pinlets)})"))
-            feedback.setProgressText(self.tr(f"Pinlets updated[{len(self.nearest_valid_pinlet_outlets)-len(self.skipped_pinlets)}/{len(self.nearest_valid_pinlet_outlets)}]"))
+            feedback.setProgressText(self.tr(f"Pinlets updated[{len(self.nearest_valid_pinlet_outlets) - len(self.skipped_pinlets)}/{len(self.nearest_valid_pinlet_outlets)}]"))
             feedback.setProgressText(self.tr("Outlets assigned for pinlets."))
 
         if len(self.skipped_inlets) > 0 or len(self.below_inlets) > 0:
             # Create a temporal layer with skipped features and load it on QGIS
-            # TODO: get srid from project
-            temporal_features_layer: QgsVectorLayer = QgsVectorLayer("Point?crs=EPSG:25831", "inlet_features", "memory")
+            srid = QgsProject.instance().crs().authid()
+            temporal_features_layer: QgsVectorLayer = QgsVectorLayer(f"Point?crs={srid}", "inlet_features", "memory")
             temporal_features_layer.dataProvider().addAttributes(self.file_inlets.fields())
             temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
             temporal_features_layer.updateFields()
@@ -350,7 +350,8 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         if len(self.skipped_pinlets) > 0 or len(self.below_pinlets) > 0:
             # Create a temporal layer with skipped features and load it on QGIS
-            temporal_features_layer: QgsVectorLayer = QgsVectorLayer("MultiPolygon?crs=EPSG:25831", "pinlet_features", "memory")
+            srid = QgsProject.instance().crs().authid()
+            temporal_features_layer: QgsVectorLayer = QgsVectorLayer(f"MultiPolygon?crs={srid}", "pinlet_features", "memory")
             temporal_features_layer.dataProvider().addAttributes(self.file_pinlets.fields())
             temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
             temporal_features_layer.updateFields()
@@ -417,7 +418,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         necessary_fields: List[str] = ['code', 'code_2', 'elev', 'top_elev', 'distance']
         skipped_near_features: list[str] = []
         for index, feature in enumerate(nearest_layer.getFeatures()):
-            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/nearest_layer.featureCount())*100), min_progress, int(max_progress/2)))
+            feedback.setProgress(tools_dr.lerp_progress(int(((index + 1) / nearest_layer.featureCount()) * 100), min_progress, int(max_progress / 2)))
             valid_attributes = True
             if feedback.isCanceled():
                 return None
@@ -465,7 +466,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
 
         # Get nearest valid outlet for each inlet/pinlet
         for index, (inlet_code, values) in enumerate(nearest_outlets_list.items()):
-            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/len(nearest_outlets_list.keys()))*100), int(max_progress/2), max_progress))
+            feedback.setProgress(tools_dr.lerp_progress(int(((index + 1) / len(nearest_outlets_list.keys())) * 100), int(max_progress / 2), max_progress))
             if feedback.isCanceled():
                 return None
             if len(values['outlets']) == 1:
@@ -486,7 +487,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
                         break
                 if inlet_code not in nearest_outlets.keys():
                     # Set outlet as None or set the minimum one. Depends on checkbox parameter "bool_set_nones"
-                    if self.bool_force_belows and min_outlet != None:
+                    if self.bool_force_belows and min_outlet is not None:
                         nearest_outlets[inlet_code] = min_outlet['code']
                         if isInlet:
                             self.below_inlets.append(inlet_code)

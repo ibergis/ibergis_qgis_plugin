@@ -74,7 +74,7 @@ class GenerateDefaultFolder(QgsProcessingAlgorithm):
             QgsProcessingParameterEnum(
                 self.SWMM_VERSION,
                 self.tr("Default data for SWMM version..."),
-                ['Test data set for SWMM 5.1','Test data set for SWMM 5.2', 'Empty layers'],
+                ['Test data set for SWMM 5.1', 'Test data set for SWMM 5.2', 'Empty layers'],
                 defaultValue=1
             )
         )
@@ -113,27 +113,27 @@ class GenerateDefaultFolder(QgsProcessingAlgorithm):
 
         # add documentation
         try:
-            doc_file = os.path.join(pluginPath,'documentation','g_s_i_documentation_v_0_38.pdf')
+            doc_file = os.path.join(pluginPath, 'documentation', 'g_s_i_documentation_v_0_38.pdf')
             shutil.copy(doc_file, data_save_folder)
-            feedback.setProgressText(self.tr('documentation file saved to folder '+data_save_folder))
+            feedback.setProgressText(self.tr('documentation file saved to folder ' + data_save_folder))
             feedback.setProgress(1)
         except Exception:
             feedback.pushWarning(
                 'Could not add documentation file to chosen folder. '
-                +'You can find the link to the documentation at the github page of the plugin: https://github.com/Jannik-Schilling/generate_swmm_inp'
+                + 'You can find the link to the documentation at the github page of the plugin: https://github.com/Jannik-Schilling/generate_swmm_inp'
             )
 
-        data_path = os.path.join(pluginPath,'test_data','swmm_data')
-        if swmm_version_num == 0: #5.1
-            read_file = os.path.join(data_path,'Test_5_1.inp')
+        data_path = os.path.join(pluginPath, 'test_data', 'swmm_data')
+        if swmm_version_num == 0:  # 5.1
+            read_file = os.path.join(data_path, 'Test_5_1.inp')
             create_empty = False
             version_prefix = '5_1'
-        if swmm_version_num == 1: #5.2
-            read_file = os.path.join(data_path,'Test_5_2.inp')
+        if swmm_version_num == 1:  # 5.2
+            read_file = os.path.join(data_path, 'Test_5_2.inp')
             create_empty = False
             version_prefix = '5_2'
-        if swmm_version_num == 2: #empty
-            read_file = os.path.join(data_path,'Test_empty.inp')
+        if swmm_version_num == 2:  # empty
+            read_file = os.path.join(data_path, 'Test_empty.inp')
             create_empty = True
             version_prefix = 'empty'
             

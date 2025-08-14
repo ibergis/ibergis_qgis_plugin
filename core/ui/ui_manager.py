@@ -149,6 +149,7 @@ FROM_CLASS = _get_ui_class('nonvisual_import_raster.ui', 'main')
 class DrNonVisualRasterImportUi(DrDialog, FROM_CLASS):
     pass
 
+
 FROM_CLASS = _get_ui_class('bridge.ui', 'main')
 
 
@@ -251,6 +252,19 @@ FORM_CLASS = _get_ui_class(f'{UINAME}.ui', 'utilities')
 class DrProfilesListUi(DrDialog, FORM_CLASS):
     pass
 
+
+FORM_CLASS = _get_ui_class('report_summary.ui', 'utilities')
+
+
+class DrReportSummaryUi(DrDialog, FORM_CLASS):
+    pass
+
+
+FORM_CLASS = _get_ui_class('results_folder_selector.ui', 'utilities')
+
+
+class DrResultsFolderSelectorUi(DrDialog, FORM_CLASS):
+    pass
 
 # endregion
 

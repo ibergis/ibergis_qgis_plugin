@@ -14,19 +14,11 @@ from qgis.PyQt.QtCore import QTimer
 
 import pandas as pd
 
-from swmm_api import __version__ as swmm_api_version
-from swmm_api import read_inp_file
-from swmm_api import read_out_file
-from swmm_api import out2frame
-
 from swmm_api.input_file.macros.collection import nodes_dict, links_dict
 from swmm_api.input_file.macros.graph import get_path_subgraph, links_connected
 from swmm_api.input_file.sections import Outfall, Junction, Storage, Conduit, Weir, Orifice
 from swmm_api.output_file import OBJECTS, VARIABLES
 
-# import imageio.v2 as imageio
-import os
-import sys
 
 class COLS:
     INVERT_ELEV = 'SOK'
@@ -37,8 +29,9 @@ class COLS:
     GROUND_ELEV = 'GOK'  # rim elevation
     STATION = 'x'
     WATER = 'water'
-    FLOODING ='flooding'
+    FLOODING = 'flooding'
     LABEL = 'label'
+
 
 class ProfilePlotter:
     def __init__(self, inp=None, out=None, c_inv="black", c_ground_line="brown", ground_line_style="dashed", c_crown="black", c_ground="brown", c_water="blue", c_pipe="grey", lw=1, mh_width=0.5, offset_ymax=0.5, offsets=0, zero_node=None, depth_agg_func=None):
@@ -85,14 +78,15 @@ class ProfilePlotter:
         in_off = 0
         out_off = 0
         # ---------------
-        nodes_depth = None
-        nodes_flood = None
+        nodes_depth = None  # noqa: F841
+        nodes_flood = None  # noqa: F841
         if out is not None:
             if depth_agg_func is None:
-                depth_agg_func = lambda s: s.mean()
-            nodes_depth = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.DEPTH)).to_dict() # This gives me the maximums.
+                def depth_agg_func(s):
+                    return s.mean()
+            nodes_depth = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.DEPTH)).to_dict()  # This gives me the maximums. # noqa: F841
             nodes_depth_dic = out.get_part(OBJECTS.NODE, None, VARIABLES.NODE.DEPTH).to_dict()
-            nodes_flooding = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.FLOODING)).to_dict()
+            nodes_flooding = depth_agg_func(out.get_part(OBJECTS.NODE, sub_list, VARIABLES.NODE.FLOODING)).to_dict()  # noqa: F841
             nodes_flooding_dic = out.get_part(OBJECTS.NODE, None, VARIABLES.NODE.FLOODING).to_dict()
         # ---------------
         stations_ = list(self.iter_over_inp_(sub_list, sub_graph))
@@ -131,7 +125,7 @@ class ProfilePlotter:
                 else:
                     profile_height = 0
 
-                #sok_ = sok
+                # sok_ = sok
                 if isinstance(prior_conduit, Weir):
                     pass
                 elif isinstance(prior_conduit, Orifice):
@@ -145,7 +139,6 @@ class ProfilePlotter:
             else:
                 in_off = sok
 
-
             buk_in = profile_height + in_off
                 # _update_res(x - stations[zero_node], sok, in_off, out_off, buk, gok, water, node)
 
@@ -156,7 +149,7 @@ class ProfilePlotter:
                 else:
                     profile_height = 0
 
-                #sok_ = sok
+                # sok_ = sok
                 if isinstance(following_conduit, Weir):
                     out_off = following_conduit.height_crest
                 elif isinstance(following_conduit, Orifice):
@@ -172,10 +165,8 @@ class ProfilePlotter:
 
             _update_res(x - stations[zero_node], in_off, out_off, sok, buk_in, buk_off, gok, water, flooding, node)
 
-
             # print(res)
         return res  # Returns the dictionary with the longitudinal data
-
 
     def iter_over_inp_(self, sub_list, sub_graph):
         links = links_dict(self.inp)
@@ -193,18 +184,15 @@ class ProfilePlotter:
                 if isinstance(following_link, Conduit):
                     x += following_link.length
 
-
     def iter_over_inp(self, start_node, end_node):
         sub_list, sub_graph = get_path_subgraph(self.inp, start=start_node, end=end_node)
         return self.iter_over_inp_(sub_list, sub_graph)
-
 
     def get_node_station(self, start_node, end_node, zero_node=None):
         stations = dict(self.iter_over_inp(start_node, end_node))
         if zero_node:
             return self.set_zero_node(stations, zero_node)
         return stations
-
 
     def set_zero_node(self, stations, zero_node):
         return {node: stations[node] - stations[zero_node] for node in stations}
@@ -229,7 +217,6 @@ class ProfilePlotter:
         y_int = y1a + frac * (y2a - y1a)
         return x_int, y_int
 
-
     def plot_longitudinal(self, start_node, end_node, timestamp, ax=None, add_node_labels=False):
         res = self.get_longitudinal_data(start_node, end_node, timestamp)
 
@@ -253,7 +240,7 @@ class ProfilePlotter:
             x1 = res[COLS.STATION][i]
             x2 = res[COLS.STATION][i + 1]
 
-            diameter = res[COLS.CROWN_ELEV_OFF][i]-res[COLS.OUT_OFFSET][i]
+            diameter = res[COLS.CROWN_ELEV_OFF][i] - res[COLS.OUT_OFFSET][i]
 
             # Bottom of the conduit
             y1_down = res[COLS.OUT_OFFSET][i]
@@ -267,7 +254,7 @@ class ProfilePlotter:
 
             # Water elevation (clipped to the conduit)
             water_elev_up = res[COLS.WATER][i]
-            water_elev_down = res[COLS.WATER][i+1]
+            water_elev_down = res[COLS.WATER][i + 1]
             if water_elev_up <= y1_down:
                 water_elev_up = y1_down
             if water_elev_down <= y2_down:
@@ -280,16 +267,14 @@ class ProfilePlotter:
             y1_w = water_elev_up
             y2_w = water_elev_down
 
-
             # Water line
             ax.plot([x1, x2], [y1_w, y2_w], c=self.c_water, lw=self.lw)
 
             # Energy line
-            if res[COLS.WATER][i] >= y1_top or res[COLS.WATER][i+1] >= y2_top:
+            if res[COLS.WATER][i] >= y1_top or res[COLS.WATER][i + 1] >= y2_top:
                 y1_energy = res[COLS.WATER][i]
-                y2_energy = res[COLS.WATER][i+1]
+                y2_energy = res[COLS.WATER][i + 1]
                 ax.plot([x1, x2], [y1_energy, y2_energy], c=self.c_water, lw=self.lw)
-
 
                 # Do they cross?
                 cross = (y1_energy - y1_top) * (y2_energy - y2_top) < 0
@@ -302,17 +287,17 @@ class ProfilePlotter:
 
                     # Left subsegment
                     if y1_energy > y1_top:
-                        ax.fill_between([x1, x_int], [y1_down, y_int-diameter], [y1_top, y_int], color=self.c_water, alpha=1, zorder =10)
+                        ax.fill_between([x1, x_int], [y1_down, y_int - diameter], [y1_top, y_int], color=self.c_water, alpha=1, zorder=10)
                     else:
-                        ax.fill_between([x1, x_int], [y1_down, y_int-diameter], [y1_energy, y_int], color=self.c_water, alpha=1, zorder =10)
-                        #Review
+                        ax.fill_between([x1, x_int], [y1_down, y_int - diameter], [y1_energy, y_int], color=self.c_water, alpha=1, zorder=10)
+                        # Review
 
                     # Right subsegment
                     if y2_energy < y2_top:
-                        ax.fill_between([x_int, x2], [y_int-diameter, y2_energy], [y_int, y2_energy], color=self.c_water, alpha=1, zorder =10)
+                        ax.fill_between([x_int, x2], [y_int - diameter, y2_energy], [y_int, y2_energy], color=self.c_water, alpha=1, zorder=10)
                     else:
-                        ax.fill_between([x_int, x2], [y_int, y2_down], [y_int, y2_top], color=self.c_water, alpha=1, zorder =10)
-                        #Review
+                        ax.fill_between([x_int, x2], [y_int, y2_down], [y_int, y2_top], color=self.c_water, alpha=1, zorder=10)
+                        # Review
 
             # Fill between the water level and the bottom of the pipe
             ax.fill_between([x1, x2], [y1_down, y2_down], [y1_top, y2_top], color=self.c_pipe, alpha=1)
@@ -333,11 +318,11 @@ class ProfilePlotter:
             altura_total = ground_elev - invert_elev
 
             if node_type != "OUTFALL":
-                rect = plt.Rectangle((x - self.mh_width/2, invert_elev), self.mh_width, altura_total,
+                rect = plt.Rectangle((x - self.mh_width / 2, invert_elev), self.mh_width, altura_total,
                                      edgecolor='black', facecolor=self.c_pipe, lw=self.lw, alpha=1, zorder=14)
                 ax.add_patch(rect)
 
-                rect_water = plt.Rectangle((x - self.mh_width/2, invert_elev), self.mh_width, water_elev - invert_elev,
+                rect_water = plt.Rectangle((x - self.mh_width / 2, invert_elev), self.mh_width, water_elev - invert_elev,
                                            edgecolor='black', facecolor=self.c_water, alpha=1, zorder=14)
                 ax.add_patch(rect_water)
 
@@ -345,13 +330,12 @@ class ProfilePlotter:
                 ax.text(x, ground_elev + 0.1, f"{io_flooding:.2f}",  # Ajusta el +0.1 según la escala de tu eje y
                         ha='center', va='bottom', fontsize=8, rotation=0, color='red', zorder=15)
 
-
         ax.fill_between(res[COLS.STATION], bottom, res[COLS.GROUND_ELEV], color=self.c_ground, alpha=0.7, zorder=0)
 
         ax.grid(True, zorder=-10)
 
         ax.set_xlim(res[COLS.STATION][0], res[COLS.STATION][-1])
-        ax.set_ylim(bottom=bottom, top = (max(res[COLS.GROUND_ELEV]) + self.offset_ymax))
+        ax.set_ylim(bottom=bottom, top=(max(res[COLS.GROUND_ELEV]) + self.offset_ymax))
 
         secax = ax.secondary_xaxis('top')
         secax.set_xticks(res[COLS.STATION], minor=False)
@@ -372,7 +356,7 @@ class ProfilePlotter:
         plt.subplots_adjust(bottom=0.3)
         self.plot_longitudinal(start_node, end_node, timestamp_range[0], ax=ax)
         slider_ax = fig.add_axes((0.15, 0.1, 0.7, 0.03))
-        slider = Slider(slider_ax, 'Timestep', 0, len(timestamp_range)-1, valinit=0, valstep=1)
+        slider = Slider(slider_ax, 'Timestep', 0, len(timestamp_range) - 1, valinit=0, valstep=1)
 
         play_ax = fig.add_axes((0.45, 0.02, 0.1, 0.05))
         play_button = Button(play_ax, 'Play')

@@ -1,32 +1,16 @@
 [general]
-name=ibergis
+name=IberGIS
 qgisMinimumVersion=3.36
 qgisMaximumVersion=3.99
-description=Plugin to manage ibergis project
+description=Plugin to manage IberGIS project
 about=Disclaimer: This plugin is released using the open source GNU-GPL3 license. Although a reasonable effort has been made to assure that the results obtained are correct,  some of the capabilities provided by Giswater are experimental, therefore the development team and the Giswater Association are not responsible and assume no liability whatsoever for any results or any use made of the results obtained from the program, nor for any damages or litigation that result from the use of these programs for any purpose.
-version=0.3.2
+version=0.4.0
 author=David Erill, Xavier Torret, Maria Guzman, Edgar Fusté, Jordi Blanch, Sergi Maspons, Pablo Marques, Marcos Sanz Ramos, Esteban Sañudo
-Changelog=Version 0.3.2
-    - Fix process to set outlets to roofs
-    - Fix process to import raster results
-    - Fix nonvisual combos and copy/paste management
-    - Fix Tmax update
-    - Fix convert asc to netcdf script
-    - Fix process to fix intersections
-    Version 0.3.1
-    - Fix validations for simplify process
-    - Fix mesh validations
-    - Improve mesh load performance
-    - Remove rpt tables from tables_nogeom
-
-    Version 0.3.0
-    - Changed plugin name to "ibergis".
-    - Fixed boundary condition of type "INLET TOTAL DISCHARGE (SUB)CRITICAL".
-    - Fixed bridge mesh & values writing.
-    - Created "IberGIS" context menu.
-    - Created many processes to help create a mesh.
-    - Updated IberPlus executable (20250716).
-
+Changelog=Version 0.4.0
+    - Added support for linux.
+    - Added CI linting tests on repository.
+    - Added results button
+    - Improve raster results management
 
 tags= urban drainage, flooding
 hasProcessingProvider=yes

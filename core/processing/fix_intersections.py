@@ -21,12 +21,13 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis
-from ...core.utils import  Feedback, tools_dr
+from ...core.utils import Feedback, tools_dr
 from typing import Optional
 import processing
 import geopandas as gpd
 import os
 import tempfile
+
 
 class FixIntersections(QgsProcessingAlgorithm):
     """
@@ -103,11 +104,11 @@ class FixIntersections(QgsProcessingAlgorithm):
 
         # Merge layers
         merged_layer = processing.run("native:mergevectorlayers",
-                                      {'LAYERS':[
+                                      {'LAYERS': [
                                           self.ground_layer,
                                           self.roof_layer
                                           ],
-                                          'CRS':QgsProject.instance().crs(),'OUTPUT':'TEMPORARY_OUTPUT'})['OUTPUT']
+                                          'CRS': QgsProject.instance().crs(), 'OUTPUT': 'TEMPORARY_OUTPUT'})['OUTPUT']
         if merged_layer is None:
             feedback.pushWarning(self.tr('Error merging layers.'))
             return {}
@@ -118,7 +119,7 @@ class FixIntersections(QgsProcessingAlgorithm):
         feedback.setProgress(20)
 
         tmp_gpkg = tempfile.mktemp(suffix=".gpkg", prefix="splited_layer_")
-        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT':merged_layer,'OUTPUT':tmp_gpkg})['OUTPUT']
+        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT': merged_layer, 'OUTPUT': tmp_gpkg})['OUTPUT']
         if splited_layer is None:
             feedback.pushWarning(self.tr('Error splitting multipolygons into single polygons.'))
             # Clean up temporary file
@@ -144,9 +145,9 @@ class FixIntersections(QgsProcessingAlgorithm):
         # Clean intersections
         cleaned_layer_result = processing.run("grass:v.clean", {
             'input': tmp_gpkg,
-            'type':[0,1,2,3,4,5,6],'tool':[0],'threshold':'','-b':False,'-c':False,'output':'TEMPORARY_OUTPUT',
-            'error':'TEMPORARY_OUTPUT','GRASS_REGION_PARAMETER':None,'GRASS_SNAP_TOLERANCE_PARAMETER':-1,'GRASS_MIN_AREA_PARAMETER':0.0001,
-            'GRASS_OUTPUT_TYPE_PARAMETER':0,'GRASS_VECTOR_DSCO':'','GRASS_VECTOR_LCO':'','GRASS_VECTOR_EXPORT_NOCAT':False})
+            'type': [0, 1, 2, 3, 4, 5, 6], 'tool': [0], 'threshold': '', '-b': False, '-c': False, 'output': 'TEMPORARY_OUTPUT',
+            'error': 'TEMPORARY_OUTPUT', 'GRASS_REGION_PARAMETER': None, 'GRASS_SNAP_TOLERANCE_PARAMETER': -1, 'GRASS_MIN_AREA_PARAMETER': 0.0001,
+            'GRASS_OUTPUT_TYPE_PARAMETER': 0, 'GRASS_VECTOR_DSCO': '', 'GRASS_VECTOR_LCO': '', 'GRASS_VECTOR_EXPORT_NOCAT': False})
         if cleaned_layer_result is None:
             feedback.pushWarning(self.tr('Error cleaning intersections.'))
             # Clean up temporary file
@@ -164,85 +165,7 @@ class FixIntersections(QgsProcessingAlgorithm):
         feedback.setProgressText(self.tr('Merging features...'))
         feedback.setProgress(35)
 
-        # Build spatial index for cleaned_layer
-        if cleaned_layer.featureCount() == 0:
-            feedback.pushWarning(self.tr('No features in cleaned layer.'))
-            return {}
-
-        # Convert QGIS layers to GeoDataFrames
-        cleaned_gdf = self.qgis_layer_to_gdf(cleaned_layer)
-
-        # Build spatial index for fast neighbor search
-        cleaned_gdf['area'] = cleaned_gdf.geometry.area
-        mask = cleaned_gdf.geometry.duplicated(keep='first')
-        duplicated_geometries = cleaned_gdf[cleaned_gdf.geometry.duplicated(keep=False) & ~mask]
-
-        processing_features = 1
-
-        for idx, intersection in duplicated_geometries.iterrows():
-            feedback.setProgress(tools_dr.lerp_progress(processing_features/len(duplicated_geometries)*100, 35, 90))
-            processing_features += 1
-
-            # Get all duplicated features
-            duplicated_siblings = cleaned_gdf[cleaned_gdf.geometry.geom_equals_exact(intersection.geometry, 0)]
-
-            if feedback.isCanceled():
-                return {}
-
-            # Find neighbors (touching polygons, not itself)
-            unique_layers = duplicated_siblings['layer'].unique()
-            if len(unique_layers) == 1:
-                neighbors = cleaned_gdf[
-                (cleaned_gdf.geometry.touches(intersection.geometry)) &
-                (cleaned_gdf.index != intersection.name) & (intersection.layer == cleaned_gdf.layer)
-                ]
-            else:
-                neighbors = cleaned_gdf[
-                (cleaned_gdf.geometry.touches(intersection.geometry)) &
-                (cleaned_gdf.index != intersection.name)
-                ]
-            if neighbors.empty:
-                # Drop duplicates
-                for _, sibling in duplicated_siblings.iterrows():
-                    if sibling.name == intersection.name:
-                        continue
-                    cleaned_gdf = cleaned_gdf.drop(sibling.name)
-                print(f'Dropped duplicates')
-                continue
-            # Calculate shared perimeter with each neighbor
-            max_shared_length = 0
-            best_neighbor = None
-            for n_idx, n_row in neighbors.iterrows():
-                if feedback.isCanceled():
-                    return {}
-                if n_row.geometry in duplicated_geometries.geometry:
-                    continue
-                shared = intersection.geometry.boundary.intersection(n_row.geometry.boundary)
-                shared_length = shared.length
-                if shared_length > max_shared_length:
-                    max_shared_length = shared_length
-                    best_neighbor = n_row
-
-            if best_neighbor is None:
-                feedback.pushWarning(self.tr('No neighbor with shared perimeter found for polygon {0}').format(intersection.code))
-                # Drop duplicates
-                for _, sibling in duplicated_siblings.iterrows():
-                    if sibling.name == intersection.name:
-                        continue
-                    cleaned_gdf = cleaned_gdf.drop(sibling.name)
-                print(f'Dropped duplicates')
-                continue
-
-            # Merge geometries
-            merged_geom = best_neighbor.geometry.union(intersection.geometry)
-            # Update geometry in cleaned_gdf
-            cleaned_gdf.at[best_neighbor.name, 'geometry'] = merged_geom
-
-            # Drop duplicates
-            for _, sibling in duplicated_siblings.iterrows():
-                cleaned_gdf = cleaned_gdf.drop(sibling.name)
-
-        print('Updated features: ', processing_features, '/', len(duplicated_geometries))
+        cleaned_gdf = self._merge_intersections(cleaned_layer, feedback)
 
         cleaned_layer = self.gdf_to_qgis_layer(cleaned_gdf, QgsProject.instance().crs(), cleaned_layer.fields(), 'cleaned_layer')
 
@@ -286,15 +209,15 @@ class FixIntersections(QgsProcessingAlgorithm):
             for field in layer.fields():
                 if field.name() == 'fid':
                     if layer == self.roof_layer:
-                        new_feature[field.name()] = len(roof_features)+1
+                        new_feature[field.name()] = len(roof_features) + 1
                     elif layer == self.ground_layer:
-                        new_feature[field.name()] = len(ground_features)+1
+                        new_feature[field.name()] = len(ground_features) + 1
                     continue
                 if field.name() == 'code':
                     if layer == self.roof_layer:
-                        new_feature[field.name()] = f'RF{len(roof_features)+1}'
+                        new_feature[field.name()] = f'RF{len(roof_features) + 1}'
                     elif layer == self.ground_layer:
-                        new_feature[field.name()] = f'GR{len(ground_features)+1}'
+                        new_feature[field.name()] = f'GR{len(ground_features) + 1}'
                     continue
                 new_feature[field.name()] = feature[field.name()]
             new_feature.setGeometry(feature.geometry())
@@ -355,6 +278,89 @@ class FixIntersections(QgsProcessingAlgorithm):
             layer.dataProvider().addFeature(feat)
         layer.updateExtents()
         return layer
+
+    def _merge_intersections(self, cleaned_layer: QgsVectorLayer, feedback: Feedback) -> gpd.GeoDataFrame:
+        # Build spatial index for cleaned_layer
+        if cleaned_layer.featureCount() == 0:
+            feedback.pushWarning(self.tr('No features in cleaned layer.'))
+            return {}
+
+        # Convert QGIS layers to GeoDataFrames
+        cleaned_gdf = self.qgis_layer_to_gdf(cleaned_layer)
+
+        # Build spatial index for fast neighbor search
+        cleaned_gdf['area'] = cleaned_gdf.geometry.area
+        mask = cleaned_gdf.geometry.duplicated(keep='first')
+        duplicated_geometries = cleaned_gdf[cleaned_gdf.geometry.duplicated(keep=False) & ~mask]
+
+        processing_features = 1
+
+        for _, intersection in duplicated_geometries.iterrows():
+            feedback.setProgress(tools_dr.lerp_progress(processing_features / len(duplicated_geometries) * 100, 35, 90))
+            processing_features += 1
+
+            # Get all duplicated features
+            duplicated_siblings = cleaned_gdf[cleaned_gdf.geometry.geom_equals_exact(intersection.geometry, 0)]
+
+            if feedback.isCanceled():
+                return {}
+
+            # Find neighbors (touching polygons, not itself)
+            unique_layers = duplicated_siblings['layer'].unique()
+            if len(unique_layers) == 1:
+                neighbors = cleaned_gdf[
+                (cleaned_gdf.geometry.touches(intersection.geometry)) &
+                (cleaned_gdf.index != intersection.name) & (intersection.layer == cleaned_gdf.layer)
+                ]
+            else:
+                neighbors = cleaned_gdf[
+                (cleaned_gdf.geometry.touches(intersection.geometry)) &
+                (cleaned_gdf.index != intersection.name)
+                ]
+            if neighbors.empty:
+                # Drop duplicates
+                for _, sibling in duplicated_siblings.iterrows():
+                    if sibling.name == intersection.name:
+                        continue
+                    cleaned_gdf = cleaned_gdf.drop(sibling.name)
+                print('Dropped duplicates')
+                continue
+            # Calculate shared perimeter with each neighbor
+            max_shared_length = 0
+            best_neighbor = None
+            for n_idx, n_row in neighbors.iterrows():
+                if feedback.isCanceled():
+                    return {}
+                if n_row.geometry in duplicated_geometries.geometry:
+                    continue
+                shared = intersection.geometry.boundary.intersection(n_row.geometry.boundary)
+                shared_length = shared.length
+                if shared_length > max_shared_length:
+                    max_shared_length = shared_length
+                    best_neighbor = n_row
+
+            if best_neighbor is None:
+                feedback.pushWarning(self.tr('No neighbor with shared perimeter found for polygon {0}').format(intersection.code))
+                # Drop duplicates
+                for _, sibling in duplicated_siblings.iterrows():
+                    if sibling.name == intersection.name:
+                        continue
+                    cleaned_gdf = cleaned_gdf.drop(sibling.name)
+                print('Dropped duplicates')
+                continue
+
+            # Merge geometries
+            merged_geom = best_neighbor.geometry.union(intersection.geometry)
+            # Update geometry in cleaned_gdf
+            cleaned_gdf.at[best_neighbor.name, 'geometry'] = merged_geom
+
+            # Drop duplicates
+            for _, sibling in duplicated_siblings.iterrows():
+                cleaned_gdf = cleaned_gdf.drop(sibling.name)
+
+        print('Updated features: ', processing_features, '/', len(duplicated_geometries))
+
+        return cleaned_gdf
 
     def shortHelpString(self):
         return self.tr("""Fixes the intersections of the ground and roof polygon layers, and outputs both layers with the fixed intersections.""")

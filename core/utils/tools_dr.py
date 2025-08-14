@@ -23,7 +23,7 @@ from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QSt
     QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, QToolButton, \
-    QWidget, QDockWidget, QMenu
+    QWidget, QMenu
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
@@ -355,13 +355,9 @@ def disconnect_signal(section, signal_name=None, pop=True):
 def create_body(form='', feature='', filter_fields='', extras=None):
     """ Create and return parameters as body to functions"""
 
-    info_types = {'full': 1}
-    info_type = info_types.get(global_vars.project_vars['info_type'])
     lang = QSettings().value('locale/globalLocale', QLocale().name())
 
     client = f'{{"client":{{"device":4, "lang":"{lang}"'
-    if info_type is not None:
-        client += f', "infoType":{info_type}'
     if global_vars.project_epsg is not None:
         client += f', "epsg":{global_vars.project_epsg}'
     client += '}, '
@@ -422,7 +418,7 @@ def add_layer_database(tablename=None, the_geom="the_geom", field_id="id", group
     if the_geom:
         try:
             uri.setSrid(f"{global_vars.data_epsg}")
-        except:
+        except Exception:
             pass
     create_groups = get_config_parser("system", "force_create_qgis_group_layer", "user", "init", prefix=False)
     create_groups = tools_os.set_boolean(create_groups, default=False)
@@ -436,12 +432,14 @@ def add_layer_database(tablename=None, the_geom="the_geom", field_id="id", group
                      f"user={global_vars.dao_db_credentials['user']} password={global_vars.dao_db_credentials['password']} " \
                      f"port={global_vars.dao_db_credentials['port']} mode=2 schema={global_vars.dao_db_credentials['schema']} " \
                      f"column={the_geom} table={tablename}"
-        if alias: tablename = alias
+        if alias:
+            tablename = alias
         layer = QgsRasterLayer(connString, tablename)
         tools_qt.add_layer_to_toc(layer, group, sub_group, create_groups=create_groups)
 
     else:
-        if alias: tablename = alias
+        if alias:
+            tablename = alias
         layer = QgsVectorLayer(uri.uri(), f'{tablename}', 'postgres')
         tools_qt.add_layer_to_toc(layer, group, sub_group, create_groups=create_groups, sub_sub_group=sub_sub_group)
 
@@ -469,8 +467,7 @@ def add_layer_database(tablename=None, the_geom="the_geom", field_id="id", group
         # Set layer config
         if tablename:
             feature = '"tableName":"' + str(tablename_og) + '", "isLayer":true'
-            extras = '"infoType":"' + str(global_vars.project_vars['info_type']) + '"'
-            body = create_body(feature=feature, extras=extras)
+            body = create_body(feature=feature)
             json_result = execute_procedure('gw_fct_getinfofromid', body)
             config_layer_attributes(json_result, layer, alias)
 
@@ -555,10 +552,10 @@ def load_gpkg(gpkg_file) -> dict:
     layers = {}
     gpkg = ogr.Open(gpkg_file)
 
-    for l in gpkg:
-        layer = QgsVectorLayer(f"{gpkg_file}|layername={l.GetName()}", l.GetName(), 'ogr')
+    for lyr in gpkg:
+        layer = QgsVectorLayer(f"{gpkg_file}|layername={lyr.GetName()}", lyr.GetName(), 'ogr')
         if layer.isValid():
-            layers[l.GetName()] = layer
+            layers[lyr.GetName()] = layer
 
     return layers
 
@@ -588,7 +585,7 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
 
         # widgetcontrols
         widgetcontrols = field.get('widgetcontrols')
-        if type(widgetcontrols) == str:
+        if isinstance(widgetcontrols, str):
             widgetcontrols = json.loads(widgetcontrols)
 
         if widgetcontrols:
@@ -862,7 +859,7 @@ def set_tabs_enabled(dialog):
     qtabwidget = dialog.findChild(QTabWidget, 'mainTab')
     for x in range(0, qtabwidget.count() - 1):
         qtabwidget.widget(x).setEnabled(False)
-    qtabwidget.setTabEnabled(qtabwidget.count()-1, True)
+    qtabwidget.setTabEnabled(qtabwidget.count() - 1, True)
 
     btn_accept = dialog.findChild(QPushButton, 'btn_accept')
     if btn_accept:
@@ -937,135 +934,207 @@ def set_style_mapzones():
                 lyr.triggerRepaint()
 
 
-def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module=sys.modules[__name__]):
-
-    try:
-        fields = row[pos]
-    except:
-        fields = row
-
+def _get_field_id_from_fields(fields):
+    """Extract field_id from fields structure"""
     field_id = ''
     if 'fields' in fields:
         field_id = 'fields'
     elif fields.get('return_type') not in ('', None):
         field_id = 'return_type'
+    return field_id
 
+
+def _should_skip_field(field):
+    """Check if field should be skipped"""
+    if field['layoutname'] is None or field['layoutorder'] is None:
+        return True
+    if field.get('hidden') in (True, "True"):
+        return True
+    return False
+
+
+def _create_field_label(field):
+    """Create label widget for field"""
+    if not field['label']:
+        return None
+
+    lbl = QLabel()
+    lbl.setObjectName('lbl' + field['widgetname'])
+    lbl.setText(field['label'])
+    lbl.setMinimumSize(160, 0)
+    lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+    if 'tooltip' in field:
+        lbl.setToolTip(field['tooltip'])
+    return lbl
+
+
+def _create_text_widget(field, dialog, _json):
+    """Create text/linetext widget"""
+    widget = QLineEdit()
+    if 'isMandatory' in field:
+        widget.setProperty('ismandatory', field['isMandatory'])
+    else:
+        widget.setProperty('ismandatory', False)
+    if 'value' in field:
+        widget.setText(field['value'])
+        widget.setProperty('value', field['value'])
+    widgetcontrols = field.get('widgetcontrols')
+    if widgetcontrols and widgetcontrols.get('regexpControl') is not None:
+        pass
+    widget.editingFinished.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    if field['columnname'] in ['inp_options_start_time', 'inp_options_end_time']:
+        widget.editingFinished.connect(partial(update_tmax, dialog))
+    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    datatype = field.get('datatype')
+    if datatype == 'int':
+        widget.setValidator(QIntValidator())
+    elif datatype == 'float':
+        widget.setValidator(QDoubleValidator())
+    return widget
+
+
+def _create_combo_widget(field, dialog, _json, module):
+    """Create combo widget"""
+    widget = add_combo(field)
+    widget.currentIndexChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    signal = field.get('signal')
+    if signal:
+        widget.currentIndexChanged.connect(partial(getattr(module, signal), dialog))
+        getattr(module, signal)(dialog)
+    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    return widget
+
+
+def _create_check_widget(field, dialog, _json):
+    """Create checkbox widget"""
+    widget = QCheckBox()
+    if field['value'] is not None and field['value'].lower() == "true":
+        widget.setChecked(True)
+    else:
+        widget.setChecked(False)
+    widget.stateChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    return widget
+
+
+def _create_datetime_widget(field, dialog, _json):
+    """Create datetime widget"""
+    widget = QgsDateTimeEdit()
+    widget.setAllowNull(True)
+    widget.setCalendarPopup(True)
+    widget.setDisplayFormat('yyyy/MM/dd')
+    if global_vars.date_format in ("dd/MM/yyyy", "dd-MM-yyyy", "yyyy/MM/dd", "yyyy-MM-dd"):
+        widget.setDisplayFormat(global_vars.date_format)
+    widget.clear()
+    if field.get('value') not in ('', None, 'null'):
+        date = QDate.fromString(field['value'].replace('/', '-'), 'yyyy-MM-dd')
+        widget.setDate(date)
+    widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    if field['columnname'] in ['inp_options_start_date', 'inp_options_end_date']:
+        widget.editingFinished.connect(partial(update_tmax, dialog))
+    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    return widget
+
+
+def _create_spinbox_widget(field, dialog, _json):
+    """Create spinbox widget"""
+    widget = QDoubleSpinBox()
+    widgetcontrols = field.get('widgetcontrols')
+    if widgetcontrols:
+        widgetcontrols = json.loads(widgetcontrols)
+        spinboxDecimals = widgetcontrols.get('spinboxDecimals') if "spinboxDecimals" in widgetcontrols else 2
+        widget.setDecimals(spinboxDecimals)
+        maximumNumber = widgetcontrols.get('maximumNumber') if "maximumNumber" in widgetcontrols else 9999
+        widget.setMaximum(maximumNumber)
+        minimumNumber = widgetcontrols.get('minimumNumber') if "minimumNumber" in widgetcontrols else -9999
+        widget.setMinimum(minimumNumber)
+    if field.get('value') not in (None, ""):
+        value = float(str(field['value']))
+        widget.setValue(value)
+    widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    return widget
+
+
+def _create_button_widget(field, dialog, temp_layers_added):
+    """Create button widget"""
+    kwargs = {"dialog": dialog, "field": field, "temp_layers_added": temp_layers_added}
+    widget = add_button(**kwargs)
+    return set_widget_size(widget, field)
+
+
+def _create_widget_by_type(field, dialog, _json, temp_layers_added, module):
+    """Create widget based on field type"""
+    widget_type = field['widgettype']
+
+    if widget_type == 'text' or widget_type == 'linetext':
+        return _create_text_widget(field, dialog, _json)
+    elif widget_type == 'combo':
+        return _create_combo_widget(field, dialog, _json, module)
+    elif widget_type == 'check':
+        return _create_check_widget(field, dialog, _json)
+    elif widget_type == 'datetime':
+        return _create_datetime_widget(field, dialog, _json)
+    elif widget_type == 'spinbox':
+        return _create_spinbox_widget(field, dialog, _json)
+    elif widget_type == 'button':
+        return _create_button_widget(field, dialog, temp_layers_added)
+
+    return None
+
+
+def _configure_widget_editability(widget, field):
+    """Configure widget readonly/enabled state"""
+    iseditable = field.get('iseditable')
+    if type(widget) in (QLineEdit, QDoubleSpinBox):
+        if iseditable in (False, "False"):
+            widget.setReadOnly(True)
+            widget.setStyleSheet("QWidget {background: rgb(242, 242, 242);color: rgb(100, 100, 100)}")
+        if isinstance(widget, QLineEdit):
+            if 'placeholder' in field:
+                widget.setPlaceholderText(field['placeholder'])
+    elif type(widget) in (QComboBox, QCheckBox):
+        if iseditable in (False, "False"):
+            widget.setEnabled(False)
+
+    widget.setObjectName(field['widgetname'])
+    if iseditable is not None:
+        widget.setEnabled(bool(iseditable))
+
+
+def _process_single_field(field, dialog, _json, temp_layers_added, module):
+    """Process a single field and create its widgets"""
+    check_parameters(field)
+
+    if _should_skip_field(field):
+        return
+
+    lbl = _create_field_label(field)
+    if lbl is None:
+        return
+
+    widget = _create_widget_by_type(field, dialog, _json, temp_layers_added, module)
+    if widget is None:
+        return
+
+    _configure_widget_editability(widget, field)
+    add_widget(dialog, field, lbl, widget, _json)
+
+
+def build_dialog_options(dialog, row, pos, _json, temp_layers_added=None, module=sys.modules[__name__]):
+
+    try:
+        fields = row[pos]
+    except Exception:
+        fields = row
+
+    field_id = _get_field_id_from_fields(fields)
     if field_id == '':
         return
 
     if fields[field_id] is not None:
         for field in fields[field_id]:
-
-            check_parameters(field)
-
-            if field['layoutname'] is None or field['layoutorder'] is None:
-                continue
-
-            if field.get('hidden') in (True, "True"):
-                continue
-
-            if field['label']:
-                lbl = QLabel()
-                lbl.setObjectName('lbl' + field['widgetname'])
-                lbl.setText(field['label'])
-                lbl.setMinimumSize(160, 0)
-                lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-                if 'tooltip' in field:
-                    lbl.setToolTip(field['tooltip'])
-
-                widget = None
-                if field['widgettype'] == 'text' or field['widgettype'] == 'linetext':
-                    widget = QLineEdit()
-                    if 'isMandatory' in field:
-                        widget.setProperty('ismandatory', field['isMandatory'])
-                    else:
-                        widget.setProperty('ismandatory', False)
-                    if 'value' in field:
-                        widget.setText(field['value'])
-                        widget.setProperty('value', field['value'])
-                    widgetcontrols = field.get('widgetcontrols')
-                    if widgetcontrols and widgetcontrols.get('regexpControl') is not None:
-                        pass
-                    widget.editingFinished.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    if field['columnname'] in ['inp_options_start_time', 'inp_options_end_time']:
-                        widget.editingFinished.connect(partial(update_tmax, dialog))
-                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-                    datatype = field.get('datatype')
-                    if datatype == 'int':
-                        widget.setValidator(QIntValidator())
-                    elif datatype == 'float':
-                        widget.setValidator(QDoubleValidator())
-                elif field['widgettype'] == 'combo':
-                    widget = add_combo(field)
-                    widget.currentIndexChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    signal = field.get('signal')
-                    if signal:
-                        widget.currentIndexChanged.connect(partial(getattr(module, signal), dialog))
-                        getattr(module, signal)(dialog)
-                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-                elif field['widgettype'] == 'check':
-                    widget = QCheckBox()
-                    if field['value'] is not None and field['value'].lower() == "true":
-                        widget.setChecked(True)
-                    else:
-                        widget.setChecked(False)
-                    widget.stateChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                elif field['widgettype'] == 'datetime':
-                    widget = QgsDateTimeEdit()
-                    widget.setAllowNull(True)
-                    widget.setCalendarPopup(True)
-                    widget.setDisplayFormat('yyyy/MM/dd')
-                    if global_vars.date_format in ("dd/MM/yyyy", "dd-MM-yyyy", "yyyy/MM/dd", "yyyy-MM-dd"):
-                        widget.setDisplayFormat(global_vars.date_format)
-                    widget.clear()
-                    if field.get('value') not in ('', None, 'null'):
-                        date = QDate.fromString(field['value'].replace('/', '-'), 'yyyy-MM-dd')
-                        widget.setDate(date)
-                    widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    if field['columnname'] in ['inp_options_start_date', 'inp_options_end_date']:
-                        widget.editingFinished.connect(partial(update_tmax, dialog))
-                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-                elif field['widgettype'] == 'spinbox':
-                    widget = QDoubleSpinBox()
-                    widgetcontrols = field.get('widgetcontrols')
-                    if widgetcontrols:
-                        spinboxDecimals = widgetcontrols.get('spinboxDecimals')
-                        if spinboxDecimals is not None:
-                            widget.setDecimals(spinboxDecimals)
-                        maximumNumber = widgetcontrols.get('maximumNumber')
-                        if maximumNumber is not None:
-                            widget.setMaximum(maximumNumber)
-                    if field.get('value') not in (None, ""):
-                        value = float(str(field['value']))
-                        widget.setValue(value)
-                    widget.valueChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
-                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-                elif field['widgettype'] == 'button':
-                    kwargs = {"dialog": dialog, "field": field, "temp_layers_added": temp_layers_added}
-                    widget = add_button(**kwargs)
-                    widget = set_widget_size(widget, field)
-
-                if widget is None:
-                    continue
-
-                # Set editable/readonly
-                iseditable = field.get('iseditable')
-                if type(widget) in (QLineEdit, QDoubleSpinBox):
-                    if iseditable in (False, "False"):
-                        widget.setReadOnly(True)
-                        widget.setStyleSheet("QWidget {background: rgb(242, 242, 242);color: rgb(100, 100, 100)}")
-                    if type(widget) == QLineEdit:
-                        if 'placeholder' in field:
-                            widget.setPlaceholderText(field['placeholder'])
-                elif type(widget) in (QComboBox, QCheckBox):
-                    if iseditable in (False, "False"):
-                        widget.setEnabled(False)
-                widget.setObjectName(field['widgetname'])
-                if iseditable is not None:
-                    widget.setEnabled(bool(iseditable))
-
-                add_widget(dialog, field, lbl, widget)
+            _process_single_field(field, dialog, _json, temp_layers_added, module)
 
 
 def check_parameters(field):
@@ -1089,7 +1158,7 @@ def check_parameters(field):
         tools_qgis.show_warning(msg)
 
 
-def add_widget(dialog, field, lbl, widget):
+def add_widget(dialog, field, lbl, widget, _json):
     """ Insert widget into layout """
 
     layout = dialog.findChild(QGridLayout, field['layoutname'])
@@ -1107,6 +1176,12 @@ def add_widget(dialog, field, lbl, widget):
         layout.addItem(widget, row, col)
     else:
         layout.addWidget(widget, row, col)
+        if field.get('widgetcontrols'):
+            # Add include widget
+            widgetcontrols = json.loads(field.get('widgetcontrols'))
+            if widgetcontrols.get('include_widget') is not None:
+                include_widget = _create_include_widget(widget, dialog, field, _json)
+                layout.addWidget(include_widget, row, col + 1)
     if lbl is not None:
         layout.setColumnStretch(col, 1)
 
@@ -1167,7 +1242,7 @@ def update_tmax(dialog):
     end_date_str = tools_qt.get_calendar_date(dialog, end_date)
 
     try:
-        from datetime import datetime, timedelta
+        from datetime import datetime
 
         # Parse time strings (assuming format like "HH:MM:SS" or "HH:MM")
         def parse_time(time_str: str) -> tuple[int, int, int]:
@@ -1315,7 +1390,6 @@ def add_button(**kwargs):
 def add_spinbox(**kwargs):
 
     field = kwargs['field']
-    module = tools_backend_calls
     widget = None
     if field['widgettype'] == 'spinbox':
         widget = QSpinBox()
@@ -1522,13 +1596,11 @@ def add_hyperlink(field):
                     return widget
             else:
                 msg = "Parameter {0} is null for widget hyperlink"
-                msg_params = ("widgetfunction",)
                 tools_qgis.show_message(msg, 2, parameter=real_name)
         else:
             tools_log.log_info(field['widgetfunction'])
     else:
         msg = "Parameter {0} not found for widget type hyperlink"
-        msg_params = ("widgetfunction",)
         tools_qgis.show_message(msg, 2, parameter=real_name)
 
     if func_name is not None:
@@ -1752,7 +1824,8 @@ def add_combo(field, dialog=None, complet_result=None):
                 return widget
             functions = [widgetfunction]
         for f in functions:
-            if 'isFilter' in f and f['isFilter']: continue
+            if 'isFilter' in f and f['isFilter']:
+                continue
             columnname = field['columnname']
             parameters = f['parameters']
 
@@ -2116,7 +2189,7 @@ def manage_json_return(json_result, sql, rubber_band=None, i=None):
                     fill_layer_temp(v_layer, json_result['body']['data'], key, counter, sort_val=i)
 
                     # Increase iterator
-                    i = i+1
+                    i = i + 1
 
                     # Get values for set layer style
                     opacity = 100
@@ -2183,8 +2256,6 @@ def get_config_value(parameter='', columns='value', table='config_param_user', s
     sql = f"SELECT {columns} FROM {table} WHERE parameter = '{parameter}' "
     if sql_added:
         sql += sql_added
-    if table == 'config_param_user':
-        sql += " AND cur_user = current_user"
     sql += ";"
     row = tools_db.get_row(sql, log_info=log_info)
     return row
@@ -2293,7 +2364,6 @@ def docker_dialog(dialog):
 def init_docker(docker_param='qgis_info_docker'):
     """ Get user config parameter @docker_param """
 
-    global_vars.session_vars['info_docker'] = True
     # Show info or form in docker?
     row = get_config_value(docker_param)
     if not row:
@@ -2307,7 +2377,6 @@ def init_docker(docker_param='qgis_info_docker'):
         if global_vars.session_vars['dialog_docker']:
             if global_vars.session_vars['docker_type']:
                 if global_vars.session_vars['docker_type'] != 'qgis_info_docker':
-                    global_vars.session_vars['info_docker'] = False
                     return None
 
     if value == 'true':
@@ -2458,7 +2527,8 @@ def add_tableview_header(widget, field):
 
 def fill_tableview_rows(widget, field):
 
-    if field is None or field['value'] is None: return widget
+    if field is None or field['value'] is None:
+        return widget
     model = widget.model()
 
     for item in field['value']:
@@ -2482,7 +2552,7 @@ def set_completer_widget(tablename, widget, field_id, add_id=False):
 
     if not widget:
         return
-    if type(tablename) == list and type(field_id) == list:
+    if isinstance(tablename, list) and isinstance(field_id, list):
         return set_multi_completer_widget(tablename, widget, field_id, add_id=add_id)
     if add_id:
         field_id += '_id'
@@ -2650,12 +2720,12 @@ def manage_current_selections_docker(result, open=False):
             elif user_value['value']:
                 title += f"{user_value['value']} | "
 
-        if global_vars.session_vars['current_selections'] is None:
-            global_vars.session_vars['current_selections'] = QDockWidget(title[:-3])
-        else:
-            global_vars.session_vars['current_selections'].setWindowTitle(title[:-3])
-        if open:
-            global_vars.iface.addDockWidget(Qt.LeftDockWidgetArea, global_vars.session_vars['current_selections'])
+        # if global_vars.session_vars['current_selections'] is None:
+        #     global_vars.session_vars['current_selections'] = QDockWidget(title[:-3])
+        # else:
+        #     global_vars.session_vars['current_selections'].setWindowTitle(title[:-3])
+        # if open:
+        #     global_vars.iface.addDockWidget(Qt.LeftDockWidgetArea, global_vars.session_vars['current_selections'])
 
 
 def manage_user_config_folder(user_folder_dir):
@@ -2841,6 +2911,7 @@ def open_help_link(context, uiname, tabname=None):
     file_path = "https://drain-iber.github.io/testing/en/docs/drain/for-users/user-manual/index.html"
     tools_os.open_file(file_path)
 
+
 def open_dlg_help():
     """ Opens the help page for the last focused dialog """
 
@@ -2936,13 +3007,13 @@ def set_filter_listeners(complet_result, dialog, widget_list, columnname, widget
     # QTableView and we gain in performance
     last_widget = None
     for widget in widget_list:
-        if widget.property('isfilter') is not True: continue
+        if widget.property('isfilter') is not True:
+            continue
         module = tools_backend_calls
         functions = None
         if widget.property('widgetfunction') is not None and isinstance(widget.property('widgetfunction'), list):
             functions = []
             for function in widget.property('widgetfunction'):
-                func_names = []
                 widgetfunction = function['functionName']
                 if 'isFilter' in function:
                     if function['isFilter']:
@@ -2951,7 +3022,8 @@ def set_filter_listeners(complet_result, dialog, widget_list, columnname, widget
         if widget.property('widgetfunction') is not None and 'functionName' in widget.property('widgetfunction'):
             widgetfunction = widget.property('widgetfunction')['functionName']
             functions = [widget.property('widgetfunction')]
-        if widgetfunction is False: continue
+        if widgetfunction is False:
+            continue
 
         linkedobject = ""
         if widget.property('linkedobject') is not None:
@@ -3099,11 +3171,13 @@ def set_widgets(dialog, complet_result, field, tablename, class_info):
 
     return label, widget
 
+
 def create_drain_menu(project_loaded=False):
     """ Create the Drain menu """
     if global_vars.load_project_menu is None:
         global_vars.load_project_menu = DrMenuLoad()
     global_vars.load_project_menu.read_menu(project_loaded)
+
 
 def unset_drain_menu():
     """ Unset Drain menu (when plugin is disabled or reloaded) """
@@ -3201,9 +3275,6 @@ def _manage_check(**kwargs):
             widget = getattr(self, f"_manage_{field['widgettype']}")(**kwargs)
         """
 
-    dialog = kwargs['dialog']
-    field = kwargs['field']
-    class_info = kwargs['class']
     widget = add_checkbox(**kwargs)
     # widget.stateChanged.connect(partial(get_values, dialog, widget, class_info.my_json))
     return widget
@@ -3292,9 +3363,6 @@ def _manage_doubleSpinbox(**kwargs):
         widget = getattr(self, f"_manage_{field['widgettype']}")(**kwargs)
     """
 
-    dialog = kwargs['dialog']
-    field = kwargs['field']
-    info = kwargs['info']
     widget = add_spinbox(**kwargs)
     return widget
 
@@ -3319,4 +3387,29 @@ def _manage_tableview(**kwargs):
     tools_qt.set_tableview_config(widget)
     return widget
 
+
+def _create_include_widget(widget, dialog, field, _json):
+    include_widget = QComboBox()
+    include_widget.setObjectName(widget.objectName() + '_include')
+    include_widget.addItem('Exclude value', '0')
+    include_widget.addItem('Include value', '1')
+
+    # Set current index
+    sql = f"SELECT value FROM config_param_user WHERE parameter = '{include_widget.objectName()}'"
+    result = global_vars.gpkg_dao_data.get_row(sql)
+    if result:
+        include_widget.setCurrentIndex(int(result[0]))
+    else:
+        if field['widgetcontrols'] and 'include_widget' in field['widgetcontrols']:
+            widgetcontrols = json.loads(field['widgetcontrols'])
+            if widgetcontrols.get('include_widget'):
+                include_widget.setCurrentIndex(1)
+            else:
+                include_widget.setCurrentIndex(0)
+        else:
+            include_widget.setCurrentIndex(1)
+
+    include_widget.currentIndexChanged.connect(partial(get_dialog_changed_values, dialog, None, include_widget, field, _json))
+    include_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+    return include_widget
 # endregion

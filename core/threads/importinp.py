@@ -203,7 +203,7 @@ class DrImportInpTask(DrTask):
         for gpkg in gpkgs:
             if self.isCanceled():
                 return
-            self.PROGRESS_IMPORT_GPKGS = int(math.ceil((len(gpkgs)/10))*(gpkgs.index(gpkg)+1)+self.PROGRESS_IMPORT_NON_VISUAL)
+            self.PROGRESS_IMPORT_GPKGS = int(math.ceil((len(gpkgs) / 10)) * (gpkgs.index(gpkg) + 1) + self.PROGRESS_IMPORT_NON_VISUAL)
             gpkg_file = f"{self.save_folder}{os.sep}{gpkg}.gpkg"
             title = "Import gpkgs to project"
             msg = "Processing file...{0}"
@@ -348,7 +348,7 @@ class DrImportInpTask(DrTask):
             for idx, f in enumerate(pattern.factors):
                 if self.isCanceled():
                     return
-                values_str = f"('{pattern_name}', {idx+1}, {f})"
+                values_str = f"('{pattern_name}', {idx + 1}, {f})"
                 values.append(values_str)
 
             values_str = ", ".join(values)
@@ -472,14 +472,12 @@ class DrImportInpTask(DrTask):
             msg_params = (values_str,)
             self.progress_changed.emit(tools_qt.tr(title), self.PROGRESS_IMPORT_FILE, tools_qt.tr(msg, list_params=msg_params), True)
 
-            match times_type:
-                case "RELATIVE":
-                    fields = "timeseries, time, value"
-                case "ABSOLUTE":
-                    fields = "timeseries, date, time, value"
-                case _:
-                    continue
-
+            if times_type == "RELATIVE":
+                fields = "timeseries, time, value"
+            elif times_type == "ABSOLUTE":
+                fields = "timeseries, date, time, value"
+            else:
+                continue
             sql = f"INSERT INTO cat_timeseries_value ({fields}) VALUES "
             values = []
             for ts_data in ts.data:
@@ -525,7 +523,7 @@ class DrImportInpTask(DrTask):
     def _save_lids(self) -> None:
         from swmm_api.input_file.section_labels import LID_CONTROLS
 
-        lid_rows = get_rows("SELECT lidco_id FROM inp_lid", commit=self.force_commit)
+        lid_rows = get_rows("SELECT lidco_id FROM inp_lid", commit=self.force_commit)  # noqa
         lids_db: set[str] = set()
         if lid_rows:
             lids_db = {x[0] for x in lid_rows}
@@ -539,6 +537,7 @@ class DrImportInpTask(DrTask):
                     if new_name in lids_db:
                         continue
                     message = f'The curve "{lid_name}" has been renamed to "{new_name}" to avoid a collision with an existing curve.'
+                    print(message)
                     self.mappings["curves"][lid_name] = new_name
                     lid_name = new_name
                     break
@@ -546,7 +545,7 @@ class DrImportInpTask(DrTask):
             lid_type: str = lid.lid_kind
             sql = "INSERT INTO inp_lid (lidco_id, lidco_type) VALUES (%s, %s)"
             params = (lid_name, lid_type)
-            execute_sql(sql, params, commit=self.force_commit)
+            execute_sql(sql, params, commit=self.force_commit)  # noqa
 
             # Insert lid_values
             sql = """
@@ -556,21 +555,20 @@ class DrImportInpTask(DrTask):
             template = "(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
             params = []
             for k, v in lid.layer_dict.items():
-                match k:
-                    case 'SURFACE':
-                        lid_values = (lid_name, k, v.StorHt, v.VegFrac, v.Rough, v.Slope, v.Xslope, None, None)
-                    case 'SOIL':
-                        lid_values = (lid_name, k, v.Thick, v.Por, v.FC, v.WP, v.Ksat, v.Kcoeff, v.Suct)
-                    case 'PAVEMENT':
-                        lid_values = (lid_name, k, v.Thick, v.Vratio, v.FracImp, v.Perm, v.Vclog, v.regeneration_interval, v.regeneration_fraction)
-                    case 'STORAGE':
-                        lid_values = (lid_name, k, v.Height, v.Vratio, v.Seepage, v.Vclog, v.Covrd, None, None)
-                    case 'DRAIN':
-                        lid_values = (lid_name, k, v.Coeff, v.Expon, v.Offset, v.Delay, v.open_level, v.close_level, v.Qcurve)
-                    case 'DRAINMAT':
-                        lid_values = (lid_name, k, v.Thick, v.Vratio, v.Rough, None, None, None, None)
-                    case _:
-                        continue
+                if k == 'SURFACE':
+                    lid_values = (lid_name, k, v.StorHt, v.VegFrac, v.Rough, v.Slope, v.Xslope, None, None)
+                elif k == 'SOIL':
+                    lid_values = (lid_name, k, v.Thick, v.Por, v.FC, v.WP, v.Ksat, v.Kcoeff, v.Suct)
+                elif k == 'PAVEMENT':
+                    lid_values = (lid_name, k, v.Thick, v.Vratio, v.FracImp, v.Perm, v.Vclog, v.regeneration_interval, v.regeneration_fraction)
+                elif k == 'STORAGE':
+                    lid_values = (lid_name, k, v.Height, v.Vratio, v.Seepage, v.Vclog, v.Covrd, None, None)
+                elif k == 'DRAIN':
+                    lid_values = (lid_name, k, v.Coeff, v.Expon, v.Offset, v.Delay, v.open_level, v.close_level, v.Qcurve)
+                elif k == 'DRAINMAT':
+                    lid_values = (lid_name, k, v.Thick, v.Vratio, v.Rough, None, None, None, None)
+                else:
+                    continue
                 params.append(lid_values)
-            toolsdb_execute_values(sql, params, template, commit=self.force_commit)
+            toolsdb_execute_values(sql, params, template, commit=self.force_commit)  # noqa
             self.results["lids"] += 1

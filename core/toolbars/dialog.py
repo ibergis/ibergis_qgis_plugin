@@ -25,7 +25,7 @@ class DrAction:
         self.project_type = global_vars.project_type
 
         icon = None
-        if os.path.exists(icon_path):
+        if icon_path is not None and os.path.exists(icon_path):
             icon = QIcon(icon_path)
 
         self.action = None

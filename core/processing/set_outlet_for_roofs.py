@@ -142,7 +142,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                     'NEIGHBORS': neighbor_limit, 'MAX_DISTANCE': None, 'OUTPUT': 'memory:'
                 })['OUTPUT']
                 self.nearest_valid_roof_outlets = self.getNearestValidOutlets(nearest_roof_outlets, feedback)
-            except:
+            except Exception:
                 self.nearest_valid_roof_outlets = None
 
         if feedback.isCanceled():
@@ -223,8 +223,8 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                         if current_updated_roofs >= batch_size:
                             self.file_roofs.commitChanges()
                             current_updated_roofs = 0
-                            feedback.setProgressText(self.tr(f"Roofs updated with a batch of {batch_size} [{(updated_roofs+self.skipped_from_near)}/{len(self.nearest_valid_roof_outlets)+self.skipped_from_near}]"))
-                            feedback.setProgress(tools_dr.lerp_progress(int(((progress_index+1)/(len(self.nearest_valid_roof_outlets.keys())/batch_size))*100), 80, 98))
+                            feedback.setProgressText(self.tr(f"Roofs updated with a batch of {batch_size} [{(updated_roofs + self.skipped_from_near)}/{len(self.nearest_valid_roof_outlets) + self.skipped_from_near}]"))
+                            feedback.setProgress(tools_dr.lerp_progress(int(((progress_index + 1) / (len(self.nearest_valid_roof_outlets.keys()) / batch_size)) * 100), 80, 98))
                             progress_index += 1
                             QApplication.processEvents()
                 except Exception as e:
@@ -237,12 +237,13 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
             self.below_roofs = list(dict.fromkeys(self.below_roofs))
             feedback.setProgressText(self.tr(f"Roofs skipped: ({len(self.skipped_roofs)})"))
             feedback.setProgressText(self.tr(f"Roofs setted below: ({len(self.below_roofs)})"))
-            feedback.setProgressText(self.tr(f"Roofs updated[{(len(self.nearest_valid_roof_outlets)+self.skipped_from_near)-len(self.skipped_roofs)}/{len(self.nearest_valid_roof_outlets)+self.skipped_from_near}]"))
+            feedback.setProgressText(self.tr(f"Roofs updated[{(len(self.nearest_valid_roof_outlets) + self.skipped_from_near) - len(self.skipped_roofs)}/{len(self.nearest_valid_roof_outlets) + self.skipped_from_near}]"))
             feedback.setProgressText(self.tr("Outlets assigned for roofs."))
 
             if len(self.skipped_roofs) > 0 or len(self.below_roofs) > 0:
                 # Create a temporal layer with skipped features and load it on QGIS
-                temporal_features_layer: QgsVectorLayer = QgsVectorLayer("MultiPolygon?crs=EPSG:25831", "roof_features", "memory")
+                srid = QgsProject.instance().crs().authid()
+                temporal_features_layer: QgsVectorLayer = QgsVectorLayer(f"MultiPolygon?crs={srid}", "roof_features", "memory")
                 temporal_features_layer.dataProvider().addAttributes(self.roof_elev_layer.fields())
                 temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
                 temporal_features_layer.updateFields()
@@ -302,7 +303,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         necessary_fields: List[str] = ['code', 'code_2', 'elev', 'elev_min', 'distance']
         skipped_near_features: list[str] = []
         for index, feature in enumerate(nearest_layer.getFeatures()):
-            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/nearest_layer.featureCount())*100), min_progress, max_progress))
+            feedback.setProgress(tools_dr.lerp_progress(int(((index + 1) / nearest_layer.featureCount()) * 100), min_progress, max_progress))
             valid_attributes = True
             has_elevation_data = True
             if feedback.isCanceled():
@@ -313,7 +314,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
                     feedback.pushWarning(self.tr(f"Field {field} not found in roof or outlet."))
                     return None
                 fields = [field.name() for field in nearest_layer.fields()]
-                if not field in fields or str(feature[field]) == 'NULL' or feature[field] is None:
+                if field not in fields or str(feature[field]) == 'NULL' or feature[field] is None:
                     if field == 'code':
                         return None
                     elif field in ['elev', 'elev_min']:
@@ -355,7 +356,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
 
         # Get nearest valid outlet for each roof
         for index, (roof_code, values) in enumerate(nearest_outlets_list.items()):
-            feedback.setProgress(tools_dr.lerp_progress(int(((index+1)/len(nearest_outlets_list.keys()))*100), min_progress, max_progress))
+            feedback.setProgress(tools_dr.lerp_progress(int(((index + 1) / len(nearest_outlets_list.keys())) * 100), min_progress, max_progress))
             if feedback.isCanceled():
                 return None
             if len(values['outlets']) == 1:

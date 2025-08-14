@@ -224,27 +224,27 @@ class ImportInpFile (QgsProcessingAlgorithm):
                 if result_prefix != '':
                     layer_name = (
                         str(import_parameters_dict['result_prefix'])
-                        +'_'
+                        + '_'
                         + layer_name
                     )
                 geodata_driver_name = def_ogr_driver_names[geodata_driver_num]
                 geodata_driver_extension = def_ogr_driver_dict[geodata_driver_name]
                 fname = os.path.join(
                     folder_save, 
-                    layer_name+ '.' +geodata_driver_extension
+                    layer_name + '.' + geodata_driver_extension
                 )
                 if os.path.isfile(fname):
-                    raise QgsProcessingException('File '+fname
+                    raise QgsProcessingException('File ' + fname
                         + ' already exists. Please choose another folder.')
             for section_name in def_tables_dict.keys():
                 save_name = def_tables_dict[section_name]['filename']
                 if result_prefix != '':
-                    save_name = str(result_prefix)+'_'+save_name
-                ext = '.xlsx' # default setting
+                    save_name = str(result_prefix) + '_' + save_name
+                ext = '.xlsx'  # default setting
                 save_name_ext = save_name + ext
                 fname = os.path.join(folder_save, save_name_ext)
                 if os.path.isfile(fname):
-                    raise QgsProcessingException('File '+fname
+                    raise QgsProcessingException('File ' + fname
                         + ' already exists. Please choose another folder.')
 
         # reading input text file
@@ -271,7 +271,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
         # SWMM sections in the text file
         inp_text_sections = [i for i in inp_text if i.startswith('[') and i.endswith(']')]
         pos_start_list = [inp_text.index(sect) for sect in inp_text_sections]
-        pos_end_list = pos_start_list[1:]+[len(inp_text)]
+        pos_end_list = pos_start_list[1:] + [len(inp_text)]
         
         # make a dict of sections to extract
         dict_search = {
@@ -306,7 +306,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
         # options section
         if 'OPTIONS' in dict_all_vals.keys():
             section_name = 'OPTIONS'
-            feedback.setProgressText('Preparing section \"'+section_name+'\"')
+            feedback.setProgressText('Preparing section \"' + section_name + '\"')
             feedback.setProgress(5)
             from .g_s_options import convert_options_format_for_import
             df_options = build_df_for_section(
@@ -346,7 +346,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
             
         # inflows section
         section_name = 'INFLOWS'
-        feedback.setProgressText('Preparing section \"'+section_name+'\"')
+        feedback.setProgressText('Preparing section \"' + section_name + '\"')
         feedback.setProgress(8)
         if 'INFLOWS' in dict_all_vals.keys():
             df_inflows = build_df_for_section(
@@ -407,7 +407,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
 
         if 'PATTERNS' in dict_all_vals.keys():
             section_name = 'PATTERNS'
-            feedback.setProgressText('Preparing section \"'+section_name+'\"')
+            feedback.setProgressText('Preparing section \"' + section_name + '\"')
             feedback.setProgress(12)
             all_patterns = build_df_for_section('PATTERNS', dict_all_vals)
             if len(all_patterns) == 0:
@@ -447,8 +447,8 @@ class ImportInpFile (QgsProcessingAlgorithm):
             :param str pattern_row
             :return: list
             """
-            count_patterns = int(len(all_patterns[pattern_type])/len(pattern_times[pattern_type]))
-            new_col = pattern_times[pattern_type]*count_patterns
+            count_patterns = int(len(all_patterns[pattern_type]) / len(pattern_times[pattern_type]))
+            new_col = pattern_times[pattern_type] * count_patterns
             return new_col
         for pattern_type in pattern_cols.keys():
             if pattern_type in all_patterns.keys():
@@ -467,7 +467,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
         # curves section
         if 'CURVES' in dict_all_vals.keys():
             section_name = 'CURVES'
-            feedback.setProgressText('Preparing section \"'+section_name+'\"')
+            feedback.setProgressText('Preparing section \"' + section_name + '\"')
             feedback.setProgress(16)
             curve_type_dict = {x[0]: x[1] for x in dict_all_vals['CURVES']['data'] if x[1].capitalize() in curve_cols_dict.keys()}
             occuring_curve_types = list(set(curve_type_dict.values()))
@@ -513,7 +513,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
         col_names = all_quality['LANDUSES'].columns.tolist()
         col_names.extend(all_quality['BUILDUP'].columns.tolist()[1:])
         landuses = landuses[col_names]
-        landuses['join_name'] = landuses['Name']+landuses['Pollutant']
+        landuses['join_name'] = landuses['Name'] + landuses['Pollutant']
         all_quality['WASHOFF']['join_name'] = all_quality['WASHOFF']['Name'] + all_quality['WASHOFF']['Pollutant']
         all_quality['WASHOFF'] = all_quality['WASHOFF'].drop(columns=['Name', 'Pollutant'])
         landuses = landuses.join(all_quality['WASHOFF'].set_index('join_name'), on='join_name')
@@ -547,7 +547,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
         # streets and inlets section
         if 'STREETS' in dict_all_vals.keys() or 'INLETS' in dict_all_vals.keys():
             section_name = 'STREETS'
-            feedback.setProgressText('Preparing section \"'+section_name+'\"')
+            feedback.setProgressText('Preparing section \"' + section_name + '\"')
             feedback.setProgress(25)
             street_data = {}
             street_data['STREETS'] = build_df_for_section('STREETS', dict_all_vals)
@@ -575,11 +575,11 @@ class ImportInpFile (QgsProcessingAlgorithm):
                 'ModifierElevations'
             ]
             section_name = 'TRANSECTS'
-            feedback.setProgressText('Preparing section \"'+section_name+'\"')
+            feedback.setProgressText('Preparing section \"' + section_name + '\"')
             transects_list = dict_all_vals['TRANSECTS']['data'].copy()
             tr_startp = [i for i, x in enumerate(transects_list) if x[0] == 'NC']
             n_trans = len(tr_startp)
-            tr_endp = tr_startp[1:]+[len(transects_list)]
+            tr_endp = tr_startp[1:] + [len(transects_list)]
 
             def get_transects_data2(tr_i):
                 tr_roughness = [float(x) for x in tr_i[0][1:]]
@@ -588,13 +588,13 @@ class ImportInpFile (QgsProcessingAlgorithm):
                 tr_bankstat_left = float(tr_i[1][3])
                 tr_bankstat_right = float(tr_i[1][4])
                 tr_modifier = [float(x) for x in tr_i[1][7:10]]
-                tr_data = [tr_name]+tr_roughness+[tr_bankstat_left]+[tr_bankstat_right]+tr_modifier
+                tr_data = [tr_name] + tr_roughness + [tr_bankstat_left] + [tr_bankstat_right] + tr_modifier
                 tr_values = [del_kw_from_list(x, 'GR', 0) for x in tr_i[2:]]
                 tr_values = [x for sublist in tr_values for x in sublist]
                 tr_values_splitted = [[
                     tr_name,
-                    float(tr_values[x*2]),   # split into list of lists of len 2
-                    float(tr_values[(x*2)+1])
+                    float(tr_values[x * 2]),   # split into list of lists of len 2
+                    float(tr_values[(x * 2) + 1])
                 ] for x in range(int(tr_count))]
                 return tr_values_splitted, tr_data
                 
@@ -606,7 +606,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
                 val, dat = get_transects_data2(transects_list[x[0]:x[1]])
                 all_tr_vals = all_tr_vals + val
                 all_tr_dats = all_tr_dats + [dat]
-                feedback.setProgress(((i+1)/n_trans)*90)
+                feedback.setProgress(((i + 1) / n_trans) * 90)
 
             all_tr_vals_df = build_df_from_vals_list(
                 all_tr_vals,
@@ -659,17 +659,17 @@ class ImportInpFile (QgsProcessingAlgorithm):
                     feedback=feedback,
                     **import_parameters_dict
                 )
-                layer_list = layer_list+[created_layer]
+                layer_list = layer_list + [created_layer]
             layerlist_to_excel(
                 layer_list,
                 section_name,
-                feedback = feedback,
+                feedback=feedback,
                 **import_parameters_dict
             )
             del layer_list
 
         # sections with geometries, which will be added as layers
-        #------------------------------
+        # ------------------------------
         # prepare
         feedback.setProgress(0)
         for section_name in def_sections_geoms_list:  # the list is used to keep the order
@@ -695,7 +695,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
                     if result_prefix != '':
                         layer_name = (
                             str(import_parameters_dict['result_prefix'])
-                            +'_'
+                            + '_'
                             + def_layer_names_dict[section_name]
                         )
                     else:
@@ -714,7 +714,7 @@ class ImportInpFile (QgsProcessingAlgorithm):
                         **import_parameters_dict
                     )
                     dict_all_vals[section_name]['status'] = ImportDataStatus.FILE_READY
-            feedback.setProgress((n+1)/n_itms*100)
+            feedback.setProgress((n + 1) / n_itms * 100)
 
         # add layers to canvas
         feedback.setProgressText(
@@ -735,6 +735,6 @@ class ImportInpFile (QgsProcessingAlgorithm):
                 dict_all_vals[section_name]['status'] == ImportDataStatus.DONE
 
         feedback.setProgressText(
-            self.tr('all data was saved in '+str(folder_save))
+            self.tr('all data was saved in ' + str(folder_save))
         )
         return {}

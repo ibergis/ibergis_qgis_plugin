@@ -22,7 +22,12 @@ try:
 
     import geopandas  # noqa: F401
     imported_packages.append('geopandas')
-    from packages.gmsh import gmsh  # noqa: F401
+
+    import platform
+    if platform.system() == "Windows":
+        from packages.gmsh import gmsh  # noqa: F401
+    else:
+        import gmsh  # noqa: F401
     imported_packages.append('gmsh')
     import pandamesh  # noqa: F401
     imported_packages.append('pandamesh')
@@ -100,72 +105,40 @@ class Drain(QObject):
 
         try:
             # Reset values for global_vars.project_vars
-            global_vars.project_vars['info_type'] = None
-            global_vars.project_vars['add_schema'] = None
-            global_vars.project_vars['main_schema'] = None
-            global_vars.project_vars['project_role'] = None
-            global_vars.project_vars['project_type'] = None
+            global_vars.project_vars['project_gpkg_path'] = None
         except Exception as e:
             msg = "Exception in unload when reset values for global_vars.project_vars: {0}"
             msg_params = (e,)
             tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         msg = "Exception in unload when {0}: {1}"
+        self._manage_dialogs(msg)
+
+        self._manage_signals(hide_gw_button, msg)
+
         try:
-            # Remove Giswater dockers
-            self._remove_dockers()
+            # Remove file handler when reloading
+            if hide_gw_button:
+                global_vars.logger.close_logger()
         except Exception as e:
-            msg_params = ("self._remove_dockers()", e,)
+            msg_params = ("global_vars.logger.close_logger()", e,)
             tools_qt.show_exception_message(msg, msg_params=msg_params)
 
-        try:
-            # Close all open dialogs
-            self._close_open_dialogs()
-        except Exception as e:
-            msg_params = ("self._close_open_dialogs()", e,)
-            tools_qt.show_exception_message(msg, msg_params=msg_params)
-
-        if hide_gw_button is None:
-            try:
-                # Manage unset signals
-                self._unset_signals()
-            except Exception as e:
-                msg_params = ("self._unset_signals()", e,)
-                tools_qt.show_exception_message(msg, msg_params=msg_params)
+        self._manage_buttons(hide_gw_button, msg)
 
         try:
-            # Force action pan
-            self.iface.actionPan().trigger()
+            # Unload processing provider
+            if hide_gw_button is None or False:
+                QgsApplication.processingRegistry().removeProvider(self.provider)
+                QgsApplication.processingRegistry().removeProvider(self.provider_mesh)
         except Exception as e:
-            msg_params = ("self.iface.actionPan().trigger()", e,)
-            tools_qt.show_exception_message(msg, msg_params=msg_params)
-
-        message = "Exception in unload when disconnecting {0} signal: {1}"
-        try:
-            # Disconnect QgsProject.instance().crsChanged signal
-            tools_dr.disconnect_signal('load_project', 'project_read_crsChanged_set_epsg')
-        except Exception as e:
-            msg_params = ("QgsProject.instance().crsChanged", e,)
+            message = "Couldn't unload the processing providers: {0}"
+            msg_params = (e,)
             tools_qt.show_exception_message(message, msg_params=msg_params)
 
-        try:
-            tools_dr.disconnect_signal('load_project', 'manage_attribute_table_focusChanged')
-        except Exception as e:
-            msg_params = ("focusChanged", e,)
-            tools_qt.show_exception_message(message, msg_params=msg_params)
+        self.load_project = None
 
-        try:
-            tools_dr.disconnect_signal('load_project', 'currentLayerChanged')
-        except Exception as e:
-            msg_params = ("currentLayerChanged", e,)
-            tools_qt.show_exception_message(message, msg_params=msg_params)
-
-        try:
-            tools_dr.disconnect_signal('layer_changed')
-        except Exception as e:
-            msg_params = ("layer_changed", e,)
-            tools_qt.show_exception_message(message, msg_params=msg_params)
-
+    def _manage_buttons(self, hide_gw_button, msg):
         try:
             # Remove 'Main Info button'
             self._unset_info_button()
@@ -178,14 +151,6 @@ class Drain(QObject):
             self._unset_toc_buttons()
         except Exception as e:
             msg_params = ("self._unset_toc_buttons()", e,)
-            tools_qt.show_exception_message(msg, msg_params=msg_params)
-
-        try:
-            # Remove file handler when reloading
-            if hide_gw_button:
-                global_vars.logger.close_logger()
-        except Exception as e:
-            msg_params = ("global_vars.logger.close_logger()", e,)
             tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         try:
@@ -230,17 +195,62 @@ class Drain(QObject):
             msg_params = ("self._set_info_button()", e,)
             tools_qt.show_exception_message(msg, msg_params=msg_params)
 
+    def _manage_signals(self, hide_gw_button, msg):
+        if hide_gw_button is None:
+            try:
+                # Manage unset signals
+                self._unset_signals()
+            except Exception as e:
+                msg_params = ("self._unset_signals()", e,)
+                tools_qt.show_exception_message(msg, msg_params=msg_params)
+
         try:
-            # Unload processing provider
-            if hide_gw_button is None or False:
-                QgsApplication.processingRegistry().removeProvider(self.provider)
-                QgsApplication.processingRegistry().removeProvider(self.provider_mesh)
+            # Force action pan
+            self.iface.actionPan().trigger()
         except Exception as e:
-            message = "Couldn't unload the processing providers: {0}"
-            msg_params = (e,)
+            msg_params = ("self.iface.actionPan().trigger()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
+
+        message = "Exception in unload when disconnecting {0} signal: {1}"
+        try:
+            # Disconnect QgsProject.instance().crsChanged signal
+            tools_dr.disconnect_signal('load_project', 'project_read_crsChanged_set_epsg')
+        except Exception as e:
+            msg_params = ("QgsProject.instance().crsChanged", e,)
             tools_qt.show_exception_message(message, msg_params=msg_params)
 
-        self.load_project = None
+        try:
+            tools_dr.disconnect_signal('load_project', 'manage_attribute_table_focusChanged')
+        except Exception as e:
+            msg_params = ("focusChanged", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
+
+        try:
+            tools_dr.disconnect_signal('load_project', 'currentLayerChanged')
+        except Exception as e:
+            msg_params = ("currentLayerChanged", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
+
+        try:
+            tools_dr.disconnect_signal('layer_changed')
+        except Exception as e:
+            msg_params = ("layer_changed", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
+
+    def _manage_dialogs(self, msg):
+        try:
+            # Remove IberGIS dockers
+            self._remove_dockers()
+        except Exception as e:
+            msg_params = ("self._remove_dockers()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
+
+        try:
+            # Close all open dialogs
+            self._close_open_dialogs()
+        except Exception as e:
+            msg_params = ("self._close_open_dialogs()", e,)
+            tools_qt.show_exception_message(msg, msg_params=msg_params)
 
     # region private functions
     def _initProcessing(self):
@@ -482,12 +492,6 @@ class Drain(QObject):
         docker_info = self.iface.mainWindow().findChild(QDockWidget, 'docker')
         if docker_info:
             self.iface.removeDockWidget(docker_info)
-
-        # Remove 'current_selections' docker
-        if global_vars.session_vars['current_selections']:
-            self.iface.removeDockWidget(global_vars.session_vars['current_selections'])
-            global_vars.session_vars['current_selections'].deleteLater()
-            global_vars.session_vars['current_selections'] = None
 
         # Manage 'dialog_docker' from global_vars.session_vars and remove it if exists
         tools_dr.close_docker()

@@ -177,7 +177,7 @@ def data_preparation(data_name, data_entry, export_params):
             else:
                 needed_U_H = list(rdii_df['UnitHydrograph'])
                 misshing_U_H = [h for h in needed_U_H if h not in list(hydrogr_df['Name'])]
-                if len (misshing_U_H) > 0:
+                if len(misshing_U_H) > 0:
                     feedback.pushWarning(
                         'Warning: Missing hydrographs for RDII: '
                         + ', '.join([str(x) for x in misshing_U_H])
@@ -235,13 +235,13 @@ def data_preparation(data_name, data_entry, export_params):
             data_entry.copy(),
             export_params['all_subcatchments']
         )
-        return  {
-            'POLLUTANTS':  {'data':pollutants_df},
-            'LANDUSES':  {'data':landuses_df},
-            'BUILDUP':  {'data':buildup_df},
-            'WASHOFF':  {'data':washoff_df},
-            'COVERAGES':  {'data':coverages_df},
-            'LOADINGS':  {'data':loadings_df}
+        return {
+            'POLLUTANTS':  {'data': pollutants_df},
+            'LANDUSES':  {'data': landuses_df},
+            'BUILDUP':  {'data': buildup_df},
+            'WASHOFF':  {'data': washoff_df},
+            'COVERAGES':  {'data': coverages_df},
+            'LOADINGS':  {'data': loadings_df}
         }
     elif data_name == 'TRANSECTS':
         from .g_s_links import get_transects_from_table
@@ -321,19 +321,19 @@ def use_z_if_available(
             vertices_z_out = [coords_dict[link_name]['Z_Coord'].tolist()[-1] for link_name in df['Name']]
             nodes_z_in = [
                 coords_nodes.loc[
-                    coords_nodes['Name']==node_name,
+                    coords_nodes['Name'] == node_name,
                     'Z_Coord'
                 ].tolist()[0] for node_name in df['FromNode']
             ]
             nodes_z_out = [
                 coords_nodes.loc[
-                    coords_nodes['Name']==node_name,
+                    coords_nodes['Name'] == node_name,
                     'Z_Coord'
                 ].tolist()[0] for node_name in df['ToNode']
             ]
             if link_offsets == 'ELEVATION':
-                #df['InOffset'] = vertices_z_in
-                #df['OutOffset'] = vertices_z_out
+                # df['InOffset'] = vertices_z_in
+                # df['OutOffset'] = vertices_z_out
                 df['InOffset'] = [str(v_in) if (v_in - n_in != 0) else '*' for v_in, n_in in zip(vertices_z_in, nodes_z_in)]
                 df['OutOffset'] = [str(v_out) if (v_out - n_out != 0) else '*' for v_out, n_out in zip(vertices_z_out, nodes_z_out)]
             elif link_offsets == 'DEPTH':
@@ -634,10 +634,10 @@ def adjust_datetime(
         if not any([x.isNull() for x in dt_val_list]):
             dt_val_list = [dt_val.toString(str_output_format) for dt_val in dt_val_list]
             feedback.pushWarning(
-                'Timeseries \"'+ts_name+'\" '+dt_type+'column was derived from strings (assumed format: '+d_f
+                'Timeseries \"' + ts_name + '\" ' + dt_type + 'column was derived from strings (assumed format: ' + d_f
             )
         else:
-            raise QgsProcessingException(str(ts_name)+': column '+dt_type+' could not be converted properly. Tested formats: '+dt_formats)
+            raise QgsProcessingException(str(ts_name) + ': column ' + dt_type + ' could not be converted properly. Tested formats: ' + dt_formats)
     return dt_val_list
 
 
@@ -721,7 +721,7 @@ def check_deprecated(
     for dep_col in cols_deprecated.keys():
         if dep_col in df.columns:
             feedback.pushWarning(
-                'Warning: usage of columns name \"' + dep_col +'\" in section '
+                'Warning: usage of columns name \"' + dep_col + '\" in section '
                 + swmm_section
                 + ' is deprecated and will be removed in future versions of the plugin. Please use \"'
                 + cols_deprecated[dep_col] + '\" instead.'
@@ -749,7 +749,7 @@ def check_columns(
     if len(missing_cols) == 0 or len(cols_in_df) <= 0:
         pass
     else:
-        err_message = 'Missing columns in '+swmm_data_file_name+': '+', '.join(missing_cols)
-        err_message = err_message+'. Please add columns or check if the correct file/layer was selected. '
-        err_message = err_message+'For further advice regarding columns, read the documentation file in the plugin folder.'
+        err_message = 'Missing columns in ' + swmm_data_file_name + ': ' + ', '.join(missing_cols)
+        err_message = err_message + '. Please add columns or check if the correct file/layer was selected. '
+        err_message = err_message + 'For further advice regarding columns, read the documentation file in the plugin folder.'
         raise QgsProcessingException(err_message)

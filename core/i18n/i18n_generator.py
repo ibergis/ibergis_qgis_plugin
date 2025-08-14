@@ -1,5 +1,5 @@
 """
-This file is part of Giswater
+This file is part of Giswater 3
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -317,7 +317,7 @@ class DrI18NGenerator:
             os.makedirs(cfg_path, exist_ok=True)
 
         # Get All table values
-        self._write_header(cfg_path + file_name, file_type)
+        self._write_header(cfg_path + file_name)
         dbtables = self.path_dic[file_type]["tables"]
         for dbtable in dbtables:
             dbtable_rows, dbtable_columns = self._get_table_values(dbtable)
@@ -562,7 +562,7 @@ class DrI18NGenerator:
  
     # region Extra functions
 
-    def _write_header(self, path, file_type):
+    def _write_header(self, path):
         """
         Write the file header
             :param path: Full destination path (String)
@@ -575,13 +575,6 @@ class DrI18NGenerator:
                   'as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. '
                   'This version of Giswater is provided by Giswater Association.\n'
                   '*/\n\n\n')
-        if file_type in ["i18n_ws", "i18n_ud"]:
-            header += ('SET search_path = SCHEMA_NAME, public, pg_catalog;\n'
-                       "UPDATE config_param_system SET value = FALSE WHERE parameter = 'admin_config_control_trigger';\n\n")
-        elif file_type == "am":
-            header += 'SET search_path = am, public;\n'
-        elif file_type == "cm":
-            header += 'SET search_path = SCHEMA_NAME, public, pg_catalog;\n'
 
         file.write(header)
         file.close()

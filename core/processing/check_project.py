@@ -10,7 +10,7 @@ from qgis.core import (
     QgsProcessingParameterBoolean
 )
 from typing import Any, Optional
-from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt.QtCore import QVariant
 
 from ...lib.tools_gpkgdao import DrGpkgDao
 from ...lib import tools_qt, tools_qgis
@@ -96,8 +96,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             return {}
 
         # Create outlayer values map
-        self.outlayer_values = {
-            # TODO get values from config
+        self.default_outlayer_values = {
             'manning': {
                 'min': 0,
                 'max': 1,
@@ -153,6 +152,12 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 'include_max': True
             }
         }
+        self.outlayer_values = self._get_outlayer_values()
+        if not self.outlayer_values:
+            msg = 'ERROR: Error getting outlayer values'
+            feedback.pushWarning(self.tr(msg))
+            self.bool_error_on_execution = True
+            return {}
 
         # Execute checkproject queries
         for index, query in enumerate(queries):
@@ -171,10 +176,10 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 self.check_mandatory_null_or_outlayer(query, sys_messages_dict, feedback)
             # endregion MANDATORY NULL
 
-            feedback.setProgress(tools_dr.lerp_progress(int(index+1/len(queries)*100), 0, 70))
+            feedback.setProgress(tools_dr.lerp_progress(int(index + 1 / len(queries) * 100), 0, 70))
 
         # Hardcoded checks
-        feedback.setProgressText(f'Executing: hardcoded checks')
+        feedback.setProgressText('Executing: hardcoded checks')
         temporal_layer = self.check_roof_volumes(feedback)
         if temporal_layer is not None:
             if temporal_layer.featureCount() > 0:
@@ -233,7 +238,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             }
         }
 
-        feedback.setProgressText(f'Executing: mesh validations')
+        feedback.setProgressText('Executing: mesh validations')
         for index, validation in enumerate(validations):
             validation_config = validations[validation]
             method_name = validation_config['method']
@@ -288,7 +293,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 msg_params = (method_name,)
                 feedback.pushWarning(self.tr(msg, list_params=msg_params))
 
-            feedback.setProgress(tools_dr.lerp_progress(int(index+1/len(validations)*100), 80, 90))
+            feedback.setProgress(tools_dr.lerp_progress(int(index + 1 / len(validations) * 100), 80, 90))
 
         self.dao_data.close_db()
         self.dao_config.close_db()
@@ -327,7 +332,8 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             self.temporal_layers_to_add.append(temporal_layer)
 
         if temporal_layer.featureCount() == 0:
-            self.info_messages.append(self.tr(f'INFO ({query["table_name"]}): ' + info_message))
+            table_name = query["table_name"]
+            self.info_messages.append(self.tr(f'INFO ({table_name}): ' + info_message))
             return
 
         msg_text = exception_message.format((temporal_layer.featureCount()))
@@ -396,14 +402,24 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                     feedback.pushWarning(self.tr(msg, list_params=msg_params))
                     return
             elif query['query_type'] == 'OUTLAYER':
-                msg = 'INFO ({0}): {1}'
-                msg_params = (query['table_name'], info_message.format(self.outlayer_values[columns[0]]['min'], self.outlayer_values[columns[0]]['max'], f'{columns}'))
-                self.info_messages.append(self.tr(msg, list_params=msg_params))
+                for column in columns:
+                    if column in self.outlayer_values.keys():
+                        msg = 'INFO ({0}): {1}'
+                        msg_params = (query['table_name'], info_message.format(self.outlayer_values[column]['min'], self.outlayer_values[column]['max'], f'{column}'))
+                        self.info_messages.append(self.tr(msg, list_params=msg_params))
+                    else:
+                        msg = 'ERROR-{0} ({1}) ({2}): Error getting outlayer values for column "{3}" on table "{4}"'
+                        msg_params = (query['error_code'], query['table_name'], query['query_type'], column, query['table_name'])
+                        feedback.pushWarning(self.tr(msg, list_params=msg_params))
+                        return
             return
 
         if query['create_layer']:
             # Create temporal layer
-            temporal_layer = QgsVectorLayer(f'{query['geometry_type']}', f'{query['query_type'].replace(" ", "_").lower()}_{query['table_name']}', 'memory')
+            geometry_type = query["geometry_type"]
+            query_type = query["query_type"].replace(" ", "_").lower()
+            table_name = query["table_name"]
+            temporal_layer = QgsVectorLayer(geometry_type, f'{query_type}_{table_name}', 'memory')
             temporal_layer.setCrs(QgsProject.instance().crs())
             temporal_layer.dataProvider().addAttributes([QgsField('Code', QVariant.String), QgsField('Exception', QVariant.String)])
             temporal_layer.updateFields()
@@ -418,30 +434,8 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             for column in columns:
                 if column not in columns_dict.keys():
                     columns_dict[column] = 0
-                if query['query_type'] == 'MANDATORY NULL':
-                    # Check if feature field is None
-                    if feature[column] in (None, 'NULL', 'null'):
-                        invalid_columns.append(column)
-                        columns_dict[column] += 1
-                elif query['query_type'] == 'OUTLAYER':
-                    value = feature[column]
-                    min_val = self.outlayer_values[column]['min']
-                    max_val = self.outlayer_values[column]['max']
-                    include_min = self.outlayer_values[column]['include_min']
-                    include_max = self.outlayer_values[column]['include_max']
-
-                    if value is None or value == 'NULL' or value == 'null':
-                        invalid_columns.append(column)
-                        columns_dict[column] += 1
-                        continue
-
-                    # Check if value is outside bounds considering inclusion flags
-                    is_below_min = value < min_val if include_min else value <= min_val
-                    is_above_max = value > max_val if include_max else value >= max_val
-
-                    if is_below_min or is_above_max:
-                        invalid_columns.append(column)
-                        columns_dict[column] += 1
+                invalid_columns.append(column)
+                columns_dict[column] += 1
 
             if query['create_layer'] and len(invalid_columns) > 0:
                 # Create new feature
@@ -501,11 +495,11 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 if error_msg != '':
                     if query['except_lvl'] == 2:
                         msg = 'WARNING-{0}/{1} ({2}) ({3}): {4}'
-                        msg_params = (query['error_code'], index+1, query['table_name'], query['query_type'], error_msg)
+                        msg_params = (query['error_code'], index + 1, query['table_name'], query['query_type'], error_msg)
                         self.warning_messages.append(self.tr(msg, list_params=msg_params))
                     else:
                         msg = 'ERROR-{0}/{1} ({2}) ({3}): {4}'
-                        msg_params = (query['error_code'], index+1, query['table_name'], query['query_type'], error_msg)
+                        msg_params = (query['error_code'], index + 1, query['table_name'], query['query_type'], error_msg)
                         self.error_messages.append(self.tr(msg, list_params=msg_params))
 
             # Save info message for valid columns
@@ -605,12 +599,14 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         for col in columns:
             # Add column conditions to check query WHERE clause
             if query['query_type'] == 'OUTLAYER':
-                max_operator = ">=" if self.outlayer_values[col]["include_max"] else ">"
-                min_operator = "<=" if self.outlayer_values[col]["include_min"] else "<"
+                max_operator = ">" if self.outlayer_values[col]["include_max"] else ">="
+                min_operator = "<" if self.outlayer_values[col]["include_min"] else "<="
+                max_val = self.outlayer_values[col]["max"]
+                min_val = self.outlayer_values[col]["min"]
                 if columns_select is None:
-                    columns_select = f'''({col} {max_operator} {self.outlayer_values[col]["max"]} OR {col} {min_operator} {self.outlayer_values[col]["min"]})'''
+                    columns_select = f'({col} {min_operator} {min_val} OR {col} {max_operator} {max_val})'
                 else:
-                    columns_select += f''' OR ({col} {max_operator} {self.outlayer_values[col]["max"]} OR {col} {min_operator} {self.outlayer_values[col]["min"]})'''
+                    columns_select += f' OR ({col} {min_operator} {min_val} OR {col} {max_operator} {max_val})'
             else:
                 if columns_select is None:
                     columns_select = col + ' ISNULL'
@@ -626,16 +622,21 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         if query['extra_condition']:
             condition_select = query['extra_condition'].replace('"', "'")
 
-        if query['table_name']:
+        table_name = query['table_name']
+        if table_name:
+            if query['geometry_type'] is None:
+                geom = ''
+            else:
+                geom = ', AsWKT(CastAutomagic(geom)) as geom_wkt'
             if condition_select is not None:
                 # Build check query with WHERE clause and additional conditions
-                check_query = f'SELECT *, AsWKT(CastAutomagic(geom)) as geom_wkt FROM {query['table_name']} WHERE ({columns_select}) '
-                check_query_nogeom = f'SELECT * FROM {query['table_name']} WHERE ({columns_select}) '
+                check_query = f"SELECT *{geom} FROM {table_name} WHERE ({columns_select}) "
+                check_query_nogeom = f"SELECT * FROM {table_name} WHERE ({columns_select}) "
                 check_query += condition_select
             else:
                 # Build check query with WHERE clause
-                check_query = f'SELECT *, AsWKT(CastAutomagic(geom)) as geom_wkt FROM {query['table_name']} WHERE {columns_select} '
-                check_query_nogeom = f'SELECT * FROM {query['table_name']} WHERE {columns_select} '
+                check_query = f"SELECT *{geom} FROM {table_name} WHERE {columns_select} "
+                check_query_nogeom = f"SELECT * FROM {table_name} WHERE {columns_select} "
 
         return check_query, check_query_nogeom, columns_checked
 
@@ -652,10 +653,12 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             msg_params = (query['query_type'], query['table_name'])
             feedback.pushWarning(self.tr(msg, list_params=msg_params))
 
-        if query['table_name'] in ['arc', 'node']:
-            source_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername={query['table_name']}', query['table_name'], 'ogr')
+        table_name = query['table_name']
+        if table_name in ['arc', 'node']:
+            db_filepath = global_vars.gpkg_dao_data.db_filepath
+            source_layer = QgsVectorLayer(f'{db_filepath}|layername={table_name}', table_name, 'ogr')
         else:
-            source_layer = tools_qgis.get_layer_by_tablename(query['table_name'])
+            source_layer = tools_qgis.get_layer_by_tablename(table_name)
         if source_layer is None:
             msg = 'ERROR-{0} ({1}): No layer found for table "{2}"'
             msg_params = (query['error_code'], query['query_type'], query['table_name'])
@@ -718,7 +721,10 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         duplicates = list(set(duplicates))
 
         # Create temporal layer
-        temporal_layer = QgsVectorLayer(f'{query['geometry_type']}', f'{query['query_type'].replace(" ", "_").lower()}_{query['table_name']}', 'memory')
+        geometry_type = query["geometry_type"]
+        query_type = query["query_type"].replace(" ", "_").lower()
+        table_name = query["table_name"]
+        temporal_layer = QgsVectorLayer(geometry_type, f'{query_type}_{table_name}', 'memory')
         if temporal_layer is None:
             msg = 'ERROR-{0} ({1}): Error creating temporal layer for table "{2}"'
             msg_params = (query['error_code'], query['query_type'], query['table_name'])
@@ -881,7 +887,9 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         orphan_node_codes_geom_only = orphan_node_codes_geom - orphan_node_codes_db
 
         # Create temporal layer
-        temporal_layer = QgsVectorLayer('Point', f'{query["query_type"].replace(" ", "_").lower()}_{query["table_name"]}', 'memory')
+        query_type = query["query_type"].replace(" ", "_").lower()
+        table_name = query["table_name"]
+        temporal_layer = QgsVectorLayer('Point', f'{query_type}_{table_name}', 'memory')
         if temporal_layer is None:
             msg = 'ERROR-{0} ({1}): Error creating temporal layer for table "{2}"'
             msg_params = (query['error_code'], query['query_type'], query['table_name'])
@@ -979,6 +987,48 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             temporal_layer.commitChanges()
 
         return temporal_layer
+
+    def _get_outlayer_values(self):
+        """ Get outlayer values from config_param_user """
+        outlayer_values = {}
+        sql = "SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'outlayer_%'"
+        result = self.dao_data.get_rows(sql)
+        for row in result:
+            parameter, value = row
+            split_parameter = parameter.split('_')
+            name = None
+            for name in self.default_outlayer_values.keys():
+                if name in parameter:
+                    name = name
+                    break
+            if name is None:
+                return None
+            param = split_parameter[-1]
+            if param == 'include':
+                param = f"{split_parameter[-1]}_{split_parameter[-2]}"
+                if value == '1':
+                    value = True
+                else:
+                    value = False
+            else:
+                value = float(value)
+            if name not in outlayer_values.keys():
+                outlayer_values[name] = {}
+            outlayer_values[name][param] = value
+        # Validate values and set default values if needed
+        for name in self.default_outlayer_values.keys():
+            if name not in self.default_outlayer_values.keys():
+                outlayer_values[name] = self.default_outlayer_values[name]
+            try:
+                min_value = outlayer_values[name].get('min', self.default_outlayer_values[name]['min'])
+                max_value = outlayer_values[name].get('max', self.default_outlayer_values[name]['max'])
+                if min_value > max_value:
+                    outlayer_values[name]['min'] = self.default_outlayer_values[name]['min']
+                    outlayer_values[name]['max'] = self.default_outlayer_values[name]['max']
+            except Exception:
+                print(f"Error getting values for {name}. Using default values...")
+                outlayer_values[name] = self.default_outlayer_values[name]
+        return outlayer_values
 
     def helpUrl(self):
         return "https://github.com/drain-iber"

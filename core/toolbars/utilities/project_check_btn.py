@@ -10,12 +10,11 @@ from sip import isdeleted
 from time import time
 from datetime import timedelta
 
-from qgis.core import QgsProcessingContext, QgsApplication
+from qgis.core import QgsApplication
 from qgis.PyQt.QtCore import QTimer
 from qgis.PyQt.QtWidgets import QLabel, QTextEdit
 
 from ..dialog import DrAction
-from ...processing.check_project import DrCheckProjectAlgorithm
 from ...threads.project_check import DrProjectCheckTask
 from ...ui.ui_manager import DrProjectCheckUi
 
@@ -60,7 +59,6 @@ class DrProjectCheckButton(DrAction):
         QgsApplication.taskManager().addTask(self.check_project_task)
         QgsApplication.taskManager().triggerTask(self.check_project_task)
 
-
     def _progress_update(self, process, progress, text, new_line):
         # Progress bar
         if progress is not None:
@@ -79,7 +77,6 @@ class DrProjectCheckButton(DrAction):
         # Scroll to the bottom
         scrollbar = txt_infolog.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
-
 
     def _open_dialog(self):
 

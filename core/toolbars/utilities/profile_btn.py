@@ -5,26 +5,20 @@ General Public License as published by the Free Software Foundation, either vers
 or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
-import json
-import math
 import subprocess
 import os
-from collections import OrderedDict
-from decimal import Decimal
 from functools import partial
 
 from qgis.PyQt.QtCore import QDate, QDateTime
-from qgis.PyQt.QtGui import QDoubleValidator
-from qgis.PyQt.QtWidgets import QListWidgetItem, QLineEdit, QAction, QButtonGroup
-from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression
+from qgis.PyQt.QtWidgets import QListWidgetItem, QAction, QButtonGroup
+from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression, QgsProject
 from qgis.gui import QgsMapToolEmitPoint
 
 from ..dialog import DrAction
 from ...ui.ui_manager import DrProfileUi, DrProfilesListUi
 from ...utils import tools_dr
 from ...utils.snap_manager import DrSnapManager
-from ....lib import tools_qt, tools_log, tools_qgis, tools_os
-from .... import global_vars
+from ....lib import tools_qt, tools_qgis
 
 try:
     import matplotlib.pyplot as plt
@@ -135,7 +129,6 @@ class DrProfileButton(DrAction):
         self.dlg_draw_profile.btn_save_profile.clicked.connect(self._save_profile)
         self.dlg_draw_profile.btn_load_profile.clicked.connect(self._open_profile)
         self.dlg_draw_profile.btn_clear_profile.clicked.connect(self._clear_profile)
-        self.dlg_draw_profile.btn_results_path.clicked.connect(self._select_results_path)
         self.dlg_draw_profile.rb_instant.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.rb_period.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.dlg_closed.connect(partial(tools_dr.save_settings, self.dlg_draw_profile))
@@ -156,9 +149,6 @@ class DrProfileButton(DrAction):
         self.dlg_draw_profile.rb_depth.setChecked(True)
         self._manage_timestamp_widgets()
 
-        # Set last parameters
-        tools_qt.set_widget_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder,
-                                 tools_dr.get_config_parser('btn_profile', 'results_folder', "user", "session"))
         # Restore datetime values
         dtm_instant_val = tools_dr.get_config_parser('btn_profile', 'dtm_instant', "user", "session")
         dtm_start_val = tools_dr.get_config_parser('btn_profile', 'dtm_start', "user", "session")
@@ -205,12 +195,6 @@ class DrProfileButton(DrAction):
             self.dlg_draw_profile.lbl_period_sep.setEnabled(True)
             self.dlg_draw_profile.dtm_instant.setEnabled(False)
 
-    def _select_results_path(self):
-        """ Open folder dialog and set path to textbox """
-        path = tools_os.open_folder_path()
-        if path:
-            tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_results_folder', str(path))
-
     def _get_profile(self):
 
         # Clear main variables
@@ -220,9 +204,6 @@ class DrProfileButton(DrAction):
         self.links = []
         self.none_values = []
 
-        # Save profile values
-        results_folder = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder)
-        tools_dr.set_config_parser('btn_profile', 'results_folder', f'{results_folder}')
         # Save datetime values
         dtm_instant_val = self.dlg_draw_profile.dtm_instant.dateTime().toString('yyyy-MM-dd HH:mm:ss')
         dtm_start_val = self.dlg_draw_profile.dtm_start.dateTime().toString('yyyy-MM-dd HH:mm:ss')
@@ -411,7 +392,7 @@ class DrProfileButton(DrAction):
         event_point = self.snapper_manager.get_event_point(point=point)
 
         # Snapping
-        result = self.snapper_manager.snap_to_project_config_layers(event_point)
+        result = self.snapper_manager.snap_to_current_layer(event_point)
 
         if result.isValid():
             # Get the feature
@@ -512,10 +493,20 @@ class DrProfileButton(DrAction):
         from swmm_api import read_inp_file, read_out_file
         import pandas as pd
         from ...utils.profile_utils import ProfilePlotter
-        import sys
 
         # Get parameters
-        results_folder = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_results_folder)
+        results_folder = tools_qgis.get_project_variable('project_results_folder')
+        if results_folder is None:
+            tools_qgis.show_warning("No results folder selected")
+            return
+        results_folder = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{results_folder}")
+        if not os.path.exists(results_folder) or not os.path.isdir(results_folder):
+            tools_qgis.show_warning("Invalid results folder")
+            return
+        if not os.path.exists(os.path.join(results_folder, 'Iber_SWMM.inp')) or \
+                not os.path.exists(os.path.join(results_folder, 'Iber_SWMM.out')):
+            tools_qgis.show_warning("No Iber_SWMM.inp or Iber_SWMM.out file found")
+            return
         timestamp: str = self.dlg_draw_profile.dtm_instant.dateTime().toString('yyyy-MM-dd HH:mm:ss')
         custom_start: str = self.dlg_draw_profile.dtm_start.dateTime().toString('yyyy-MM-dd HH:mm:ss')
         custom_end: str = self.dlg_draw_profile.dtm_end.dateTime().toString('yyyy-MM-dd HH:mm:ss')
@@ -523,15 +514,14 @@ class DrProfileButton(DrAction):
         plot_type: int = 0 if self.dlg_draw_profile.rb_instant.isChecked() else 1  # 0 - Static, 1 - Dynamic (time series)
 
         # Define the path of the files
-        inputfile   = f"{results_folder}{os.sep}Iber_SWMM.inp"
-        inifile     = f"{results_folder}{os.sep}Iber_SWMM.ini"
-        outputfile  = f"{results_folder}{os.sep}Iber_SWMM.out"
+        inputfile = f"{results_folder}{os.sep}Iber_SWMM.inp"
+        outputfile = f"{results_folder}{os.sep}Iber_SWMM.out"
 
         # Load the simulation
         inp = read_inp_file(inputfile)
         out = read_out_file(outputfile)
 
-        res_out = out.to_frame()
+        out.to_frame()
 
         # SWMM API and SWMM library versions. Informative.
         print(f'SWMM API version - {swmm_api_version}')
@@ -556,7 +546,7 @@ class DrProfileButton(DrAction):
 
         # Period of results, 1 - Dynamic (time series)
         custom_start = pd.Timestamp(custom_start)
-        custom_end   = pd.Timestamp(custom_end)
+        custom_end = pd.Timestamp(custom_end)
         print(f"Custom start = {custom_start}")
         print(f"Custom end   = {custom_end}")
 

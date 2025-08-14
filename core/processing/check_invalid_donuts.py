@@ -20,7 +20,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
 from ...lib import tools_qgis
-from ...core.utils import  Feedback
+from ...core.utils import Feedback
 from typing import Optional
 import processing
 
@@ -92,11 +92,11 @@ class CheckInvalidDonuts(QgsProcessingAlgorithm):
 
         # Merge layers
         merged_layer = processing.run("native:mergevectorlayers",
-                                      {'LAYERS':[
+                                      {'LAYERS': [
                                           self.ground_layer,
                                           self.roof_layer
                                           ],
-                                          'CRS':QgsProject.instance().crs(),'OUTPUT':'TEMPORARY_OUTPUT'})['OUTPUT']
+                                          'CRS': QgsProject.instance().crs(), 'OUTPUT': 'TEMPORARY_OUTPUT'})['OUTPUT']
         if merged_layer is None:
             feedback.pushWarning(self.tr('Error merging layers.'))
             return {}

@@ -9,7 +9,12 @@ import geopandas as gpd
 import shapely
 import numpy as np
 import time
-from packages.gmsh import gmsh
+import platform
+
+if platform.system() == "Windows":
+    from packages.gmsh import gmsh
+else:
+    import gmsh
 
 
 # From pandamesh
@@ -96,12 +101,12 @@ def clean_geometries(gdf: gpd.GeoDataFrame, feedback):
 
     for i, count in zip(indices, counts):
         if count == 1:
-            assert vertices.loc[i, "moved"] == False
+            assert not vertices.loc[i, "moved"]
             if not vertices.loc[i, "anchor"]:
                 entry = join.loc[i]
                 other_i = entry["index_right"]
 
-                assert vertices.loc[other_i, "moved"] == False
+                assert not vertices.loc[other_i, "moved"]
 
                 vertices.loc[i, "geometry"] = vertices.loc[other_i].geometry
                 vertices.loc[i, "moved"] = True

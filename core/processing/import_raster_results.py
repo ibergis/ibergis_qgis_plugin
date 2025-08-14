@@ -22,7 +22,8 @@ from qgis.core import (
     QgsRasterShader,
     QgsSingleBandPseudoColorRenderer,
     QgsInterval,
-    QgsTemporalNavigationObject
+    QgsTemporalNavigationObject,
+    QgsMapLayerStyle
 )
 from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QTimeZone, QTime, QDate
 from qgis.PyQt.QtGui import QColor, QAction
@@ -31,7 +32,9 @@ from typing import Optional
 from datetime import datetime
 from ... import global_vars
 import os
+import numpy as np
 from ...lib.tools_gpkgdao import DrGpkgDao
+from swmm_api import read_inp_file
 
 
 class ImportRasterResults(QgsProcessingAlgorithm):
@@ -55,6 +58,8 @@ class ImportRasterResults(QgsProcessingAlgorithm):
     iface = global_vars.iface
     dao: Optional[DrGpkgDao] = None
     folder_results_path: Optional[str] = None
+    layer_names: list[str] = []
+    from_inp: bool = True
 
     def initAlgorithm(self, config):
         """
@@ -83,6 +88,8 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.iface = global_vars.iface
         self.layers = []
         self.dao = global_vars.gpkg_dao_data.clone()
+        self.layer_names: list[str] = []
+        self.from_inp: bool = True
 
         # reading geodata
         feedback.setProgressText(self.tr('Reading folder...'))
@@ -90,16 +97,22 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         self.folder_results_path = self.parameterAsFile(parameters, self.FOLDER_RESULTS, context)
         group_name: str = self.parameterAsString(parameters, self.CUSTOM_NAME, context)
-        file_netcdf: str = f'{self.folder_results_path}{os.sep}DrainResults{os.sep}rasters.nc'
+        folder_netcdf: str = f'{self.folder_results_path}{os.sep}IberGisResults'
+        inp_file: str = f'{self.folder_results_path}{os.sep}Iber_SWMM.inp'
 
         # Check if folder is valid and if NetCDF and INP files exist
         if self.folder_results_path is not None and os.path.exists(self.folder_results_path) and os.path.isdir(self.folder_results_path):
-            if os.path.exists(file_netcdf) and os.path.exists(file_netcdf) and os.path.isfile(file_netcdf):
-                feedback.setProgressText(self.tr("NetCDF file found."))
+            if os.path.exists(folder_netcdf) and os.path.isdir(folder_netcdf):
+                feedback.setProgressText(self.tr("NetCDF folder found."))
             else:
-                feedback.pushWarning(self.tr("NetCDF file not found."))
+                feedback.pushWarning(self.tr("NetCDF folder not found."))
                 self.folder_results_path = None
                 return {}
+            if os.path.exists(inp_file) and os.path.isfile(inp_file):
+                feedback.setProgressText(self.tr("INP file found."))
+            else:
+                feedback.pushWarning(self.tr("INP file not found. Using geopackage temporal values."))
+                self.from_inp = False
         else:
             feedback.pushWarning(self.tr("This folder is not valid."))
             return {}
@@ -108,21 +121,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         # Get INP Config
         feedback.setProgressText(self.tr("Getting temporal values."))
         feedback.setProgress(11)
-        sql = f"SELECT parameter, value FROM config_param_user WHERE parameter IN ('inp_options_start_date', 'inp_options_start_time', 'inp_options_end_date', 'inp_options_end_time', 'inp_options_report_step')"
-        result = self.dao.get_rows(sql)
-        if result:
-            for row in result:
-                parameter, value = row
-                if parameter == 'inp_options_start_date':
-                    self.start_date = QDate.fromString(value, 'yyyy-MM-dd')
-                elif parameter == 'inp_options_start_time':
-                    self.start_time = QTime.fromString(value, 'hh:mm:ss')
-                elif parameter == 'inp_options_end_date':
-                    self.end_date = QDate.fromString(value, 'yyyy-MM-dd')
-                elif parameter == 'inp_options_end_time':
-                    self.end_time = QTime.fromString(value, 'hh:mm:ss')
-                elif parameter == 'inp_options_report_step':
-                    self.step_time = QTime.fromString(value, 'hh:mm:ss')
+        self._get_temporal_values(self.from_inp, inp_file)
         if self.start_date is None or self.start_time is None or self.step_time is None or self.end_date is None or self.end_time is None:
             feedback.pushWarning(self.tr("Error getting temporal values."))
             return {}
@@ -131,7 +130,10 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         feedback.setProgress(15)
 
         # Set layer names
-        layer_names: list[str] = ["Depth", "Velocity"]
+        self.layer_names: list[str] = ["Depth", "Velocity", "Rain_Depth"]
+        #                                   "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
+        #                                   "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008",
+        #                                   "Water_Elevation", "Water_Permanence"]
 
         project: QgsProject = QgsProject.instance()
 
@@ -145,9 +147,15 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.layers_group = root.insertGroup(0, display_group_name)
 
         try:
-            for layer_name in layer_names:
+            for layer_name in self.layer_names:
+                # Get netcdf file
+                netcdf_file: str = f'{folder_netcdf}{os.sep}{layer_name}.nc'
+                if not os.path.exists(netcdf_file) or not os.path.isfile(netcdf_file):
+                    feedback.pushWarning(self.tr(f'Skipping {layer_name} layer. File not found.'))
+                    continue
+
                 # Get layer from netcdf
-                layer_uri: str = f'NETCDF:"{file_netcdf}":{layer_name}'
+                layer_uri: str = f'NETCDF:"{netcdf_file}":{layer_name}'
 
                 # Create raster layer
                 raster_layer: QgsRasterLayer = QgsRasterLayer(layer_uri, f'{group_name} - {layer_name}')
@@ -163,11 +171,40 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         return {"Result": True}
 
+    def _get_temporal_values(self, from_inp: bool = True, inp_file: Optional[str] = None):
+        """ Get temporal values from INP file or geopackage """
+
+        if from_inp:
+            inp_data = read_inp_file(inp_file)
+            options = inp_data['OPTIONS']
+            self.start_date = QDate.fromString(options['START_DATE'].strftime("%Y-%m-%d"), 'yyyy-MM-dd')
+            self.start_time = QTime.fromString(options['START_TIME'].strftime("%H:%M:%S"), 'hh:mm:ss')
+            self.end_date = QDate.fromString(options['END_DATE'].strftime("%Y-%m-%d"), 'yyyy-MM-dd')
+            self.end_time = QTime.fromString(options['END_TIME'].strftime("%H:%M:%S"), 'hh:mm:ss')
+            self.step_time = QTime.fromString(options['REPORT_STEP'].strftime("%H:%M:%S"), 'hh:mm:ss')
+            return
+
+        sql = "SELECT parameter, value FROM config_param_user WHERE parameter IN ('inp_options_start_date', 'inp_options_start_time', 'inp_options_end_date', 'inp_options_end_time', 'inp_options_report_step')"
+        result = self.dao.get_rows(sql)
+        if result:
+            for row in result:
+                parameter, value = row
+                if parameter == 'inp_options_start_date':
+                    self.start_date = QDate.fromString(value, 'yyyy-MM-dd')
+                elif parameter == 'inp_options_start_time':
+                    self.start_time = QTime.fromString(value, 'hh:mm:ss')
+                elif parameter == 'inp_options_end_date':
+                    self.end_date = QDate.fromString(value, 'yyyy-MM-dd')
+                elif parameter == 'inp_options_end_time':
+                    self.end_time = QTime.fromString(value, 'hh:mm:ss')
+                elif parameter == 'inp_options_report_step':
+                    self.step_time = QTime.fromString(value, 'hh:mm:ss')
+
     def postProcessAlgorithm(self, context: QgsProcessingContext, feedback: Feedback):
+        self.dao.close_db()
+
         if self.folder_results_path is None:
             return {}
-
-        self.dao.close_db()
 
         # Add layers
         try:
@@ -193,26 +230,94 @@ class ImportRasterResults(QgsProcessingAlgorithm):
     def configLayer(self, layer: QgsRasterLayer, feedback: Feedback):
         """ Configure style and temporal configuration to layer """
 
+        min_value = 0
+        max_value = 2
+        include_min_value = False
+        longest_qgis_step = 0.0000000000000001
+
+        # Get min and max values
+        layer_name = layer.name().split('-')[1].strip().lower()
+
+        sql = f"SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'result_symbology_%_{layer_name}%'"
+        result = global_vars.gpkg_dao_data.get_rows(sql)
+        if result:
+            for row in result:
+                parameter, value = row
+                if parameter == f'result_symbology_max_{layer_name}':
+                    max_value = float(value)
+                elif parameter == f'result_symbology_min_{layer_name}':
+                    min_value = float(value)
+                elif parameter == f'result_symbology_min_{layer_name}_include':
+                    include_min_value = True if value == '1' else False
+        else:
+            feedback.pushWarning(self.tr('Error getting min and max values. Using default values...'))
+            min_value = 0
+            max_value = 2
+            include_min_value = False
+
+        if min_value > max_value:
+            feedback.pushWarning(self.tr('Inconsistent min and max values. Using default values...'))
+            min_value = 0
+            max_value = 2
+            include_min_value = False
+
+        if not include_min_value:
+            min_value += longest_qgis_step
+
         # Set main colors
-        main_colors: dict = {0: QColor(0, 0, 255), 0.5: QColor(0, 255, 255), 1: QColor(0, 255, 0), 1.5: QColor(255, 255, 0), 2: QColor(255, 0, 0)}
+        if layer_name == 'depth':
+            # Blue gradient
+            main_colors: dict = self._generate_color_map([QColor(205, 233, 249), QColor(137, 201, 246), QColor(74, 166, 232), QColor(30, 118, 193), QColor(8, 56, 130)], min_value, max_value)
+        else:
+            # Multi-color gradient
+            main_colors: dict = self._generate_color_map([QColor(0, 0, 255), QColor(0, 255, 255), QColor(0, 255, 0), QColor(255, 255, 0), QColor(255, 0, 0)], min_value, max_value)
 
         # Create color ramp
-        color_items = self.createColorRamp(main_colors, 0, 2)
+        color_items = self.createColorRamp(main_colors, min_value, max_value, longest_qgis_step=longest_qgis_step)
 
         # Create shader
         shader = QgsRasterShader()
-        color_ramp = QgsColorRampShader(0, 2)
+        color_ramp = QgsColorRampShader()
+        color_ramp.setMinimumValue(min_value)
+        color_ramp.setMaximumValue(max_value)
         color_ramp.setColorRampItemList(color_items)
         color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
         shader.setRasterShaderFunction(color_ramp)
 
         # Create render
         provider = layer.dataProvider()
-        renderer = QgsSingleBandPseudoColorRenderer(provider, 0, shader)
+
+        # Ensure NoData is correctly defined
+        try:
+            for band_index in range(1, layer.bandCount() + 1):
+                provider.setNoDataValue(band_index, -9999.0)
+        except Exception:
+            pass
+
+        # Use 1-based band index and persist explicit classification range
+        renderer = QgsSingleBandPseudoColorRenderer(provider, 1, shader)
+        try:
+            renderer.setClassificationMin(min_value)
+            renderer.setClassificationMax(max_value)
+        except Exception:
+            pass
 
         # Apply render
         layer.setRenderer(renderer)
         layer.triggerRepaint()
+
+        # Persist style into project
+        try:
+            style = QgsMapLayerStyle()
+            style.readFromLayer(layer)
+            style_name = f"Auto-{layer.name()}"
+            sm = layer.styleManager()
+            if style_name in sm.styles():
+                sm.removeStyle(style_name)
+            sm.addStyle(style_name, style)
+            sm.setCurrentStyle(style_name)
+        except Exception:
+            pass
 
         # Config temporal
         temporal: QgsRasterLayerTemporalProperties = layer.temporalProperties()
@@ -230,12 +335,17 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         for i in range(layer.bandCount()):
             end_time = start_time.addSecs(interval_seconds)
             dt_range = QgsDateTimeRange(start_time, end_time)
-            ranges[i+1] = dt_range
+            ranges[i + 1] = dt_range
             start_time = start_time.addSecs(interval_seconds)
 
         temporal.setFixedRangePerBand(ranges)
 
-    def createColorRamp(self, main_colors: dict, min_val: float, max_val: float, num_steps: int = 20, min_invisible: bool = True):
+    def _generate_color_map(self, colors: list[QColor], min_val: float, max_val: float) -> dict:
+        """ Generates a color map from a list of colors and a minimum and maximum value """
+        steps = np.linspace(min_val, max_val, num=len(colors))
+        return {step: color for step, color in zip(steps, colors)}
+
+    def createColorRamp(self, main_colors: dict, min_val: float, max_val: float, num_steps: int = 20, min_invisible: bool = True, longest_qgis_step: float = 0.0000000000000001):
         """ Creates a color ramp from main colors
                 Parameters:
                     main_colors --> Main color references to make the gradient
@@ -243,6 +353,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                     max_val --> Maximum value
                     num_steps --> Number of ramp values. The more values, more precise color
                     min_invisible --> Boolean to set the minimum value(-9999) invisible
+                    longest_qgis_step --> Longest step of QGIS
         """
 
         # Calculate value difference
@@ -259,11 +370,11 @@ class ImportRasterResults(QgsProcessingAlgorithm):
             keys: list[float] = sorted(main_colors.keys())
             color = QColor(0, 0, 0)  # Default color
 
-            for i in range(len(keys)-1):
-                if keys[i] <= val <= keys[i+1]:
-                    ratio = (val - keys[i]) / (keys[i+1] - keys[i])
+            for i in range(len(keys) - 1):
+                if keys[i] <= val <= keys[i + 1]:
+                    ratio = (val - keys[i]) / (keys[i + 1] - keys[i])
                     c1 = main_colors[keys[i]]
-                    c2 = main_colors[keys[i+1]]
+                    c2 = main_colors[keys[i + 1]]
 
                     # Calculate color
                     r = int(c1.red() + (c2.red() - c1.red()) * ratio)
@@ -276,12 +387,13 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                 color = QColor(0, 0, 0)  # Default color
 
             last_color = color  # Store the last calculated color
-            # Store color into color list
-            color_items.append(QgsColorRampShader.ColorRampItem(val, color, f"{val}".replace('.', ',')))
+            # Store color into color list, enforce dot decimal to avoid NaN on reload
+            color_items.append(QgsColorRampShader.ColorRampItem(val, color, f"{val:.6g}"))
 
         if min_invisible:
             # Set minimum value(-9999) invisible
-            color_items.insert(0, QgsColorRampShader.ColorRampItem(-9999.0, QColor(0, 0, 0, 0), "-9999.0"))
+            color_items.insert(0, QgsColorRampShader.ColorRampItem(-9999.0, QColor(0, 0, 0, 0), "-9999"))
+            color_items.insert(1, QgsColorRampShader.ColorRampItem(min_val - longest_qgis_step, QColor(0, 0, 0, 0), f"{(min_val - longest_qgis_step):.10g}"))
             # Set maximum value(9999) like the last color
             color_items.append(QgsColorRampShader.ColorRampItem(9999.0, last_color, "9999.0"))
 
