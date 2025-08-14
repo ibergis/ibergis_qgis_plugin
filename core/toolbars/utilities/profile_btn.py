@@ -392,7 +392,7 @@ class DrProfileButton(DrAction):
         event_point = self.snapper_manager.get_event_point(point=point)
 
         # Snapping
-        result = self.snapper_manager.snap_to_project_config_layers(event_point)
+        result = self.snapper_manager.snap_to_current_layer(event_point)
 
         if result.isValid():
             # Get the feature
