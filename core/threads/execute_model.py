@@ -477,29 +477,34 @@ class DrExecuteModel(DrTask):
         for topic, value in mapper.items():
             swmm_df = getattr(report_values, report_values_map[topic]['swmm']['name'])
             table_name = report_values_map[topic]['ibergis']['name']
-            for index, row in swmm_df.iterrows():
-                start_sql = f"INSERT INTO {table_name} (code, "
-                end_sql = f") VALUES ('{index}', "
-                for field, swmm_field in value.items():
-                    if swmm_field is None or str(row[swmm_field]) == 'nan':
-                        continue
-                    if field == 'time_days':
-                        start_sql += "time_days, "
-                        end_sql += f"'{str(row[swmm_field]).split(' ')[0]}', "
-                        continue
-                    elif field == 'time_hour':
-                        start_sql += "time_hour, "
-                        end_sql += f"'{str(row[swmm_field]).split(' ')[-1]}', "
-                        continue
-                    start_sql += f"{field}, "
-                    end_sql += f"{row[swmm_field]}, " if isinstance(row[swmm_field], (int, float)) else f"'{row[swmm_field]}', "
-                start_sql = start_sql[:-2]
-                end_sql = end_sql[:-2]
-                sql = f"{start_sql}{end_sql})"
-                result = dao.execute_sql(sql)
-                if not result:
-                    msg = f"Error filling rpt gpkg for {topic}: \n {sql}"
-                    self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+            try:
+                for index, row in swmm_df.iterrows():
+                    start_sql = f"INSERT INTO {table_name} (code, "
+                    end_sql = f") VALUES ('{index}', "
+                    for field, swmm_field in value.items():
+                        if swmm_field is None or str(row[swmm_field]) == 'nan':
+                            continue
+                        if field == 'time_days':
+                            start_sql += "time_days, "
+                            end_sql += f"'{str(row[swmm_field]).split(' ')[0]}', "
+                            continue
+                        elif field == 'time_hour':
+                            start_sql += "time_hour, "
+                            end_sql += f"'{str(row[swmm_field]).split(' ')[-1]}', "
+                            continue
+                        start_sql += f"{field}, "
+                        end_sql += f"{row[swmm_field]}, " if isinstance(row[swmm_field], (int, float)) else f"'{row[swmm_field]}', "
+                    start_sql = start_sql[:-2]
+                    end_sql = end_sql[:-2]
+                    sql = f"{start_sql}{end_sql})"
+                    result = dao.execute_sql(sql)
+                    if not result:
+                        msg = f"Error filling rpt gpkg for {topic}: \n {sql}"
+                        self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+            except Exception as e:
+                print(f"Error filling rpt gpkg for {topic}: \n {e}")
+                msg = f"Error filling rpt gpkg for {topic}: \n {e}"
+                self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
         dao.close_db()
 
         msg = "Filled rpt gpkg"
