@@ -6,6 +6,7 @@ import numpy as np
 import rasterio
 import xarray as xr
 from typing import List, Tuple, Optional, Any
+from osgeo import gdal
 from qgis.core import QgsProject
 try:
     from qgis.PyQt.QtCore import pyqtSignal
@@ -15,7 +16,7 @@ except ImportError:
 # TODO import proj.db from qgis or packages. if its not imported, the script will use the postgres one which is on a lower version
 
 
-def convert_asc_to_netcdf(input_folder: str, output_folder: str, result_names: list[str], progress_changed: Optional[Any]) -> None:
+def convert_asc_to_netcdf(input_folder: str, output_folder: str, result_names: list[str], progress_changed: Optional[Any], generate_cogs: bool = False) -> None:
     if not os.path.exists(input_folder) or not os.path.isdir(input_folder):
         if progress_changed:
             progress_changed.emit('Export results', None, "Error: The rasters folder does not exist.", True)
@@ -111,6 +112,18 @@ def convert_asc_to_netcdf(input_folder: str, output_folder: str, result_names: l
             if progress_changed:
                 progress_changed.emit('Export results', None, f"Error: Error saving NetCDF file for {var}: {e}", True)
             print(f"Error: Error saving NetCDF file for {var}: {e}")
+
+        if generate_cogs:
+            output_cog = os.path.join(output_folder, f"{var}.tif")
+            try:
+                gdal.Translate(output_cog, output_file, format='COG', noData='-9999')
+                if progress_changed:
+                    progress_changed.emit('Export results', None, f"COG file created successfully: {output_cog}", True)
+                print(f"COG file created successfully: {output_cog}")
+            except Exception as e:
+                if progress_changed:
+                    progress_changed.emit('Export results', None, f"Error: Error creating COG file for {var}: {e}", True)
+                print(f"Error: Error creating COG file for {var}: {e}")
 
     if len(created_files) == 0:
         if progress_changed:

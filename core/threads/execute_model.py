@@ -169,7 +169,7 @@ class DrExecuteModel(DrTask):
         #                            "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008"
         #                            "Water_Elevation", "Water_Permanence"]
         try:
-            convert_asc_to_netcdf(raster_files, netcdf_file, result_names, self.progress_changed)
+            convert_asc_to_netcdf(raster_files, netcdf_file, result_names, self.progress_changed, generate_cogs=True)
         except Exception:
             msg = "Error creating NetCDF file"
             self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
