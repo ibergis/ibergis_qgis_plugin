@@ -180,15 +180,36 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         # Hardcoded checks
         feedback.setProgressText('Executing: hardcoded checks')
-        temporal_layer = self.check_roof_volumes(feedback)
-        if temporal_layer is not None:
-            if temporal_layer.featureCount() > 0:
-                self.temporal_layers_to_add.append(temporal_layer)
+        # Roof volumes
+        roof_volume_layer = self.check_roof_volumes(feedback)
+        if roof_volume_layer is not None:
+            if roof_volume_layer.featureCount() > 0:
+                self.temporal_layers_to_add.append(roof_volume_layer)
                 msg = 'ERROR (roof): Volume errors detected ({0})'
-                msg_params = (temporal_layer.featureCount(),)
+                msg_params = (roof_volume_layer.featureCount(),)
                 self.error_messages.append(self.tr(msg, list_params=msg_params))
             else:
                 msg = 'INFO (roof): No volume errors detected'
+                self.info_messages.append(self.tr(msg))
+        # Rain options
+        missing_rain_options: Optional[str] = self.check_rain_options(feedback)
+        if missing_rain_options is not None:
+            msg = 'WARNING (rain): Missing rain options ({0})'
+            msg_params = (missing_rain_options,)
+            self.warning_messages.append(self.tr(msg, list_params=msg_params))
+        else:
+            msg = 'INFO (rain): Necessary rain options found'
+            self.info_messages.append(self.tr(msg))
+        # Bridge checks
+        bridge_checks_layer = self.check_bridge_checks(feedback)
+        if bridge_checks_layer is not None:
+            if bridge_checks_layer.featureCount() > 0:
+                self.temporal_layers_to_add.append(bridge_checks_layer)
+                msg = 'ERROR (bridge): Bridge errors detected ({0})'
+                msg_params = (bridge_checks_layer.featureCount(),)
+                self.error_messages.append(self.tr(msg, list_params=msg_params))
+            else:
+                msg = 'INFO (bridge): No bridge errors detected'
                 self.info_messages.append(self.tr(msg))
 
         # Mesh validations
@@ -988,8 +1009,168 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         return temporal_layer
 
+    def check_rain_options(self, feedback: QgsProcessingFeedback):
+        """ Check rain options """
+
+        wrong_options: list[str] = []
+        rain_options: dict[str, dict[str, Any]] = {
+            'options_rain_class': {
+                'widget': 'combo',
+                'wrong_value': ['0', None]
+            },
+            'result_results_raster': {
+                'widget': 'combo',
+                'wrong_value': ['0', None]
+            },
+            'result_results_raster_cell': {
+                'widget': 'text',
+                'type': 'integer'
+            },
+            'options_setrainfall_raster': {
+                'widget': 'combo',
+                'wrong_value': ['0', None],
+                'parent': 'options_rain_class',
+                'parent_value': '2'
+            }
+        }
+
+        # Check options
+        for option in rain_options.keys():
+            sql = f"SELECT value FROM config_param_user WHERE parameter = '{option}'"
+            row = self.dao_data.get_row(sql)
+            if row:
+                value = row[0]
+                if rain_options[option]['widget'] == 'combo':
+                    if rain_options[option].get('parent') and rain_options[option]['parent'] in rain_options.keys():
+                        sql = f"SELECT value FROM config_param_user WHERE parameter = '{rain_options[option]['parent']}'"
+                        row = self.dao_data.get_row(sql)
+                        if row and row[0] != rain_options[option]['parent_value']:
+                            continue
+                    if value in rain_options[option]['wrong_value']:
+                        wrong_options.append(option)
+                elif rain_options[option]['widget'] == 'text':
+                    if rain_options[option].get('wrong_value') and value in rain_options[option]['wrong_value']:
+                        wrong_options.append(option)
+                    elif rain_options[option].get('type') == 'integer' and not value.isdigit():
+                        wrong_options.append(option)
+
+        # Return wrong options as string
+        if wrong_options:
+            return ', '.join(wrong_options)  # TODO: Show description instead of columname and translate it
+        else:
+            return None
+
+    def check_bridge_checks(self, feedback: QgsProcessingFeedback):
+        """ Check bridges """
+
+        bridge_layer = tools_qgis.get_layer_by_tablename('bridge')
+        if bridge_layer is None:
+            bridge_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=bridge', 'bridge', 'ogr')
+        ground_layer = tools_qgis.get_layer_by_tablename('ground')
+        if ground_layer is None:
+            ground_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=ground', 'ground', 'ogr')
+        roof_layer = tools_qgis.get_layer_by_tablename('roof')
+        if roof_layer is None:
+            roof_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=roof', 'roof', 'ogr')
+
+        # Check if layers exist and are valid
+        if bridge_layer is None or not bridge_layer.isValid():
+            feedback.pushWarning(self.tr('ERROR: Bridge layer not found or invalid'))
+            return None
+        if ground_layer is None or not ground_layer.isValid():
+            feedback.pushWarning(self.tr('ERROR: Ground layer not found or invalid'))
+            return None
+        if roof_layer is None or not roof_layer.isValid():
+            feedback.pushWarning(self.tr('ERROR: Roof layer not found or invalid'))
+            return None
+
+        # Create temporal layer for bridges that touch edges
+        temporal_layer = QgsVectorLayer('LineString', 'bridge_edge_touches', 'memory')
+        temporal_layer.setCrs(QgsProject.instance().crs())
+        temporal_layer.dataProvider().addAttributes([
+            QgsField('Code', QVariant.String),
+            QgsField('Exception', QVariant.String)
+        ])
+        temporal_layer.updateFields()
+
+        features_to_add = []
+
+        # Convert layers to GeoPandas
+        bridge_geometries = []
+        bridge_codes = []
+
+        for feature in bridge_layer.getFeatures():
+            if feature.geometry() is None or feature.geometry().isEmpty():
+                continue
+            bridge_geometries.append(shape(feature.geometry()))
+            bridge_codes.append(feature['code'])
+
+        if not bridge_geometries:
+            return temporal_layer
+
+        bridges_gdf = gpd.GeoDataFrame({'code': bridge_codes}, geometry=bridge_geometries)
+
+        # Get ground and roof layer boundaries
+        ground_geometries = []
+        roof_geometries = []
+
+        for feature in ground_layer.getFeatures():
+            if feature.geometry() is None or feature.geometry().isEmpty():
+                continue
+            ground_geometries.append(shape(feature.geometry()))
+
+        for feature in roof_layer.getFeatures():
+            if feature.geometry() is None or feature.geometry().isEmpty():
+                continue
+            roof_geometries.append(shape(feature.geometry()))
+
+        if not ground_geometries and not roof_geometries:
+            return temporal_layer
+
+        # Check for bridges touching edges
+        for idx, bridge_row in bridges_gdf.iterrows():
+            bridge_geom = bridge_row.geometry
+            bridge_code = bridge_row['code']
+            touching_issues = []
+
+            # Check against ground layer boundaries
+            for ground_geom in ground_geometries:
+                if hasattr(ground_geom, 'boundary'):
+                    ground_boundary = ground_geom.boundary
+                    if bridge_geom.touches(ground_boundary) or bridge_geom.intersects(ground_boundary):
+                        touching_issues.append('ground layer edge')
+                        break
+
+            # Check against roof layer boundaries
+            for roof_geom in roof_geometries:
+                if hasattr(roof_geom, 'boundary'):
+                    roof_boundary = roof_geom.boundary
+                    if bridge_geom.touches(roof_boundary) or bridge_geom.intersects(roof_boundary):
+                        touching_issues.append('roof layer edge')
+                        break
+
+            # If bridge touches any edges, add to error features
+            if touching_issues:
+                new_feature = QgsFeature()
+                new_feature.setAttributes([
+                    bridge_code,
+                    f'Bridge touches: {", ".join(touching_issues)}'
+                ])
+                new_feature.setGeometry(QgsGeometry.fromWkt(bridge_geom.wkt))
+                features_to_add.append(new_feature)
+
+        # Add features to temporal layer
+        if features_to_add:
+            temporal_layer.dataProvider().addFeatures(features_to_add)
+            temporal_layer.updateExtents()
+
+        # TODO: Check cellsize of the ground depending on the distance between ground and the bridge
+
+        return temporal_layer
+
     def _get_outlayer_values(self):
         """ Get outlayer values from config_param_user """
+
         outlayer_values = {}
         sql = "SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'outlayer_%'"
         result = self.dao_data.get_rows(sql)
