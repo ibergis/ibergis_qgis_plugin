@@ -106,7 +106,7 @@ insert into tables_nogeom (table_name, index_col) values
 INSERT INTO checkproject_query
 (id, query_type, table_name, columns, extra_condition, create_layer, geometry_type, error_message_id, info_message_id, except_lvl, error_code)
 VALUES
-(1, 'MANDATORY NULL', 'cat_bscenario', '{descript}', NULL, 0, NULL, 1, 10, 3, 119),
+(1, 'MANDATORY NULL', 'cat_bscenario', '{idval}', NULL, 0, NULL, 1, 10, 3, 119),
 (2, 'MANDATORY NULL', 'boundary_conditions', '{bscenario, boundary_type}', NULL, 0, 'MultiLineString', 1, 10, 3, 105),
 (3, 'MANDATORY NULL', 'cat_controls', '{descript}', NULL, 0, NULL, 1, 10, 3, 120),
 (4, 'MANDATORY NULL', 'cat_curve', '{curve_type}', NULL, 0, NULL, 1, 10, 3, 121),
