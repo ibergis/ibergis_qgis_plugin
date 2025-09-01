@@ -82,6 +82,11 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
         roof_fp.write("\nRoof elements\n")
         for pol in mesh.polygons[mesh.polygons["category"] == "roof"].itertuples():
             roof_fp.write(f"{pol.Index} {pol.roof_id}\n")
+    else:
+        roof_fp.write("Number of roofs\n")
+        roof_fp.write(str(0) + "\n")
+        roof_fp.write("Roofs properties\n")
+        roof_fp.write("\nRoof elements\n")
 
     if len(mesh.bridges):
         for bridge in mesh.bridges.itertuples():
