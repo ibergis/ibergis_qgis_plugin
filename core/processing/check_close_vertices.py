@@ -42,7 +42,11 @@ class CheckCloseVertices(QgsProcessingAlgorithm):
         """
         inputs and output of the algorithm
         """
-        ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
+        ground_layer_param = None
+        try:
+            ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
+        except Exception:
+            pass
 
         self.addParameter(
             QgsProcessingParameterVectorLayer(

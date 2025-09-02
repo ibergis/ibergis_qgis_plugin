@@ -45,8 +45,16 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
         """
         inputs and output of the algorithm
         """
-        ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
-        roof_layer_param = tools_qgis.get_layer_by_tablename('roof')
+        ground_layer_param = None
+        try:
+            ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
+        except Exception:
+            pass
+        roof_layer_param = None
+        try:
+            roof_layer_param = tools_qgis.get_layer_by_tablename('roof')
+        except Exception:
+            pass
 
         self.addParameter(
             QgsProcessingParameterVectorLayer(

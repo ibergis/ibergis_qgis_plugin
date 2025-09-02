@@ -64,7 +64,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         """
         inputs and output of the algorithm
         """
-        inlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
+        inlet_layer: QgsVectorLayer = None
+        try:
+            inlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
+        except Exception:
+            pass
         inlet_layer_param = QgsProcessingParameterVectorLayer(
             name=self.FILE_INLETS,
             description=self.tr('Inlets layer'),
@@ -81,7 +85,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             defaultValue=False
         ))
 
-        pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('pinlet')
+        pinlet_layer: QgsVectorLayer = None
+        try:
+            pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('pinlet')
+        except Exception:
+            pass
         pinlet_layer_param = QgsProcessingParameterVectorLayer(
             name=self.FILE_PINLETS,
             description=self.tr('Pinlets layer'),
@@ -98,7 +106,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             defaultValue=False
         ))
 
-        outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
+        outlet_layer: QgsVectorLayer = None
+        try:
+            outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
+        except Exception:
+            pass
         outlet_layer_param = QgsProcessingParameterVectorLayer(
             name=self.FILE_OUTLETS,
             description=self.tr('Outlets layer'),

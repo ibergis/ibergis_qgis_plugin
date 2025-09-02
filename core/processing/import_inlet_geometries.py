@@ -77,14 +77,18 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
             description=self.tr('Selected features only'),
             defaultValue=False
         ))
-        target_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
+        inlet_layer: QgsVectorLayer = None
+        try:
+            inlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
+        except Exception:
+            pass
         target_layer_param = QgsProcessingParameterVectorLayer(
             self.FILE_TARGET,
             self.tr('Target layer (inlet or pinlet)'),
             types=[QgsProcessing.SourceType.VectorPoint, QgsProcessing.SourceType.VectorPolygon]
         )
-        if target_layer:
-            target_layer_param.setDefaultValue(target_layer)
+        if inlet_layer:
+            target_layer_param.setDefaultValue(inlet_layer)
         self.addParameter(target_layer_param)
         custom_code = QgsProcessingParameterField(
             self.FIELD_CUSTOM_CODE,
@@ -459,7 +463,16 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         error_message = ''
         source_layer: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
         target_layer: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_TARGET, context)
-        inlet_layer = tools_qgis.get_layer_by_tablename('inlet')
+        inlet_layer = None
+        try:
+            inlet_layer = tools_qgis.get_layer_by_tablename('inlet')
+        except Exception:
+            pass
+        pinlet_layer = None
+        try:
+            pinlet_layer = tools_qgis.get_layer_by_tablename('pinlet')
+        except Exception:
+            pass
         pinlet_layer = tools_qgis.get_layer_by_tablename('pinlet')
 
         if source_layer is None:
