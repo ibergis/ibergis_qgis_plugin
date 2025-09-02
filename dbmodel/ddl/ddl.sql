@@ -780,6 +780,7 @@ create view if not exists vi_outfalls as
     end as FixedStage,
     case
         when outfall_type = 'TIMESERIES' then timeseries
+        when outfall_type = 'TIDAL' then curve
         else null
     end as Curve_TS,
     gate as FlapGate,

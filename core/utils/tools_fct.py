@@ -366,6 +366,7 @@ def getinfofromid(p_input: dict) -> dict:
 
     try:
 
+        dao_config = global_vars.gpkg_dao_config.clone()
         dao_data = global_vars.gpkg_dao_data.clone()
 
         v_islayer = p_input['feature'].get('isLayer')
@@ -409,9 +410,9 @@ def getinfofromid(p_input: dict) -> dict:
                         v_addparam = widget['addparam']
                         if v_addparam:
                             v_addparam = json.loads(v_addparam)
-                            if v_addparam.get('execute_on') == 'data':
+                            if v_addparam.get('execute_on') == 'config':
                                 # Execute query on data gpkg if configured in addparam
-                                result = dao_data.get_rows(v_querystring)
+                                result = dao_config.get_rows(v_querystring)
                                 executed = True
 
                         # Execute on config gpkg if not configured
