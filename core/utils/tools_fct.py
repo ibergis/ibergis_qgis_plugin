@@ -417,7 +417,7 @@ def getinfofromid(p_input: dict) -> dict:
 
                         # Execute on config gpkg if not configured
                         if not result and not executed:
-                            result = dao_config.get_rows(v_querystring)
+                            result = dao_data.get_rows(v_querystring)
 
                         if result:
                             for row in result:

@@ -774,8 +774,14 @@ create view if not exists vi_outfalls as
     elev as Elevation,
     routeto as RouteTo,
     outfall_type as Type,
-    stage as FixedStage,
-    curve as Curve_TS,
+    case
+        when outfall_type = 'FIXED' then stage
+        else null
+    end as FixedStage,
+    case
+        when outfall_type = 'TIMESERIES' then timeseries
+        else null
+    end as Curve_TS,
     gate as FlapGate,
     annotation as Annotation,
     geom
