@@ -366,7 +366,6 @@ def getinfofromid(p_input: dict) -> dict:
 
     try:
 
-        dao_config = global_vars.gpkg_dao_config.clone()
         dao_data = global_vars.gpkg_dao_data.clone()
 
         v_islayer = p_input['feature'].get('isLayer')
