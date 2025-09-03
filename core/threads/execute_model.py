@@ -41,6 +41,7 @@ class RptTopicConfig:
     swmm_attr: str
     table_name: str
     field_map: dict[str, Optional[str]]
+    parent_table: str
 
 
 class DrExecuteModel(DrTask):
@@ -105,8 +106,7 @@ class DrExecuteModel(DrTask):
         tools_log.log_info(msg, msg_params=msg_params)
         self._delete_raster_results(show_question=False)
         status = self._execute_model()
-
-        # self._close_dao()
+        self._close_dao()
 
         return status
 
@@ -245,6 +245,7 @@ class DrExecuteModel(DrTask):
                     'time_days': 'Time of Max_Occurrence_days hr:min',
                     'time_hour': 'Time of Max_Occurrence_days hr:min',
                 },
+                parent_table='node'
             ),
             RptTopicConfig(
                 topic='Node Inflow',
@@ -266,6 +267,7 @@ class DrExecuteModel(DrTask):
                     'flow_balance_error': 'Flow_Balance_Error_Percent',
                     'other_info': None,
                 },
+                parent_table='node'
             ),
             RptTopicConfig(
                 topic='Node Surcharge',
@@ -282,6 +284,7 @@ class DrExecuteModel(DrTask):
                     'max_height': 'Max. Height_Above Crown_Meters',
                     'min_depth': 'Min. Depth_Below Rim_Meters',
                 },
+                parent_table='node'
             ),
             RptTopicConfig(
                 topic='Node Flooding',
@@ -300,6 +303,7 @@ class DrExecuteModel(DrTask):
                     'tot_flood': 'Total_Flood_Volume_10^6 ltr',
                     'max_ponded': 'Maximum_Ponded_Depth_Meters',
                 },
+                parent_table='node'
             ),
             RptTopicConfig(
                 topic='Storage Volume',
@@ -320,6 +324,7 @@ class DrExecuteModel(DrTask):
                     'time_hour': 'Time of Max_Occurrence_days hr:min',
                     'max_out': 'Maximum_Outflow_CMS',
                 },
+                parent_table='node'
             ),
             RptTopicConfig(
                 topic='Outfall Loading',
@@ -336,6 +341,7 @@ class DrExecuteModel(DrTask):
                     'max_flow': 'Max_Flow_CMS',
                     'total_vol': 'Total_Volume_10^6 ltr',
                 },
+                parent_table='node'
             ),
             RptTopicConfig(
                 topic='Link Flow',
@@ -365,6 +371,7 @@ class DrExecuteModel(DrTask):
                     'day_min': None,
                     'time_min': None,
                 },
+                parent_table='arc'
             ),
             RptTopicConfig(
                 topic='Flow Classification',
@@ -389,6 +396,7 @@ class DrExecuteModel(DrTask):
                     'froud_numb': None,
                     'flow_chang': None,
                 },
+                parent_table='arc'
             ),
             RptTopicConfig(
                 topic='Conduit Surcharge',
@@ -408,6 +416,7 @@ class DrExecuteModel(DrTask):
                     'hour_nflow': 'Hours_Above Full_Normal Flow',
                     'hour_limit': 'Hours_Capacity_Limited',
                 },
+                parent_table='arc'
             ),
             RptTopicConfig(
                 topic='Pumping',
@@ -425,11 +434,25 @@ class DrExecuteModel(DrTask):
                     'timoff_min': '% Time Off_Pump Curve_Low',
                     'timoff_max': '% Time Off_Pump Curve_High',
                 },
+                parent_table='arc'
             ),
         ]
 
         msg = "Filling rpt gpkg"
         self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+
+        node_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=node', 'node', 'ogr')
+        arc_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=arc', 'arc', 'ogr')
+
+        node_dict: dict[str, QgsFeature] = {}
+        arc_dict: dict[str, QgsFeature] = {}
+        for feature in node_layer.getFeatures():
+            node_dict[feature.attribute('code')] = feature
+        for feature in arc_layer.getFeatures():
+            arc_dict[feature.attribute('code')] = feature
+
+        # Get SRID from the node layer
+        srid = node_layer.crs().authid().split(':')[-1] if node_layer.crs().authid() else '25831'
 
         for cfg in configs:
             swmm_df = getattr(report_values, cfg.swmm_attr)
@@ -451,6 +474,15 @@ class DrExecuteModel(DrTask):
                             continue
                         start_sql += f"{field}, "
                         end_sql += f"{row[swmm_field]}, " if isinstance(row[swmm_field], (int, float)) else f"'{row[swmm_field]}', "
+                    # Get geometry
+                    if cfg.parent_table == 'node':
+                        geom = node_dict[index].geometry().asWkt()
+                    else:
+                        geom = arc_dict[index].geometry().asWkt()
+                    if geom:
+                        start_sql += "geom, "
+                        end_sql += f"ST_GeomFromText('{geom}', {srid}), "
+
                     start_sql = start_sql[:-2]
                     end_sql = end_sql[:-2]
                     sql = f"{start_sql}{end_sql})"
@@ -459,7 +491,6 @@ class DrExecuteModel(DrTask):
                         msg = f"Error filling rpt gpkg for {cfg.topic}: \n {sql}"
                         self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
             except Exception as e:
-                print(f"Error filling rpt gpkg for {cfg.topic}: \n {e}")
                 msg = f"Error filling rpt gpkg for {cfg.topic}: \n {e}"
                 self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
         dao.close_db()
