@@ -130,7 +130,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         feedback.setProgress(15)
 
         # Set layer names
-        self.layer_names: list[str] = ["Depth", "Velocity", "Rain_Depth"]
+        self.layer_names: list[str] = ["Depth", "Velocity", "Rain_Depth", "Water_Elevation"]
         #                                   "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
         #                                   "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008",
         #                                   "Water_Elevation", "Water_Permanence"]
