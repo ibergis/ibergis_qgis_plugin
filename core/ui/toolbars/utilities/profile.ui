@@ -32,7 +32,7 @@
          <x>0</x>
          <y>0</y>
          <width>560</width>
-         <height>269</height>
+         <height>271</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
@@ -237,7 +237,6 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionProfile"/>
-   <addaction name="actionAddPoint"/>
   </widget>
   <action name="actionProfile">
    <property name="checkable">
@@ -248,18 +247,6 @@
    </property>
    <property name="toolTip">
     <string>Set nodes</string>
-   </property>
-  </action>
-  <action name="actionAddPoint">
-   <property name="icon">
-    <iconset>
-     <normaloff>../../../../icons/dialogs/143.png</normaloff>../../../../icons/dialogs/143.png</iconset>
-   </property>
-   <property name="text">
-    <string>addPoint</string>
-   </property>
-   <property name="toolTip">
-    <string>Add additional point</string>
    </property>
   </action>
  </widget>

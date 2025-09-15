@@ -80,8 +80,6 @@ class DrProfileButton(DrAction):
         self.rotation_vd_exist = False
         self.lastnode_datatype = 'REAL'
         self.none_values = []
-        self.add_points = False
-        self.add_points_list = []
 
     def clicked_event(self):
 
@@ -105,16 +103,8 @@ class DrProfileButton(DrAction):
         # Toolbar actions
         action = self.dlg_draw_profile.findChild(QAction, "actionProfile")
         tools_dr.add_icon(action, "131", sub_folder="24x24")
-        action.triggered.connect(partial(self._activate_add_points, False))
         action.triggered.connect(partial(self._activate_snapping_node))
         self.action_profile = action
-
-        action = self.dlg_draw_profile.findChild(QAction, "actionAddPoint")
-        tools_dr.add_icon(action, "111", sub_folder="24x24")
-        action.triggered.connect(partial(self._activate_add_points, True))
-        action.triggered.connect(partial(self._activate_snapping_node))
-        self.action_add_point = action
-        self.action_add_point.setDisabled(True)
 
         # Set radio button groups
         self.rbg_timestamp = QButtonGroup()
@@ -173,15 +163,6 @@ class DrProfileButton(DrAction):
         self.initNode = None
         self.endNode = None
         self.first_node = True
-        self.add_points = False
-        self.add_points_list = []
-
-    def _activate_add_points(self, activate=True):
-        self.add_points = activate
-        if not activate:
-            self.add_points_list.clear()
-            self.add_points_list = []
-            self.endNode = None
 
     def _manage_timestamp_widgets(self):
         if self.dlg_draw_profile.rb_instant.isChecked():
@@ -232,7 +213,7 @@ class DrProfileButton(DrAction):
         self.endNode = None if not hasattr(self, "endNode") else self.endNode
         self.first_node = True if not hasattr(self, "first_node") else self.first_node
 
-        if self.first_node is False and not self.add_points:
+        if self.first_node is False:
             msg = "First node already selected with id: {0}. Select second one."
             msg_params = (self.initNode)
             tools_qgis.show_info(msg, msg_params=msg_params)
@@ -290,32 +271,26 @@ class DrProfileButton(DrAction):
             element_id = snapped_feat.attribute('code')
             self.element_id = str(element_id)
 
-            if self.first_node and not self.add_points:
+            if self.first_node:
                 self.initNode = element_id
                 self.first_node = False
                 msg = "Node 1 selected"
                 tools_qgis.show_info(msg, parameter=element_id)
                 tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_init', element_id)
             else:
-                if self.element_id == self.initNode or self.element_id == self.endNode \
-                        or self.element_id in self.add_points_list:
+                if self.element_id == self.initNode or self.element_id == self.endNode:
                     msg = "Node already selected"
                     param = element_id
                     tools_qgis.show_warning(msg, parameter=param)
-                    if not self.add_points:
-                        tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
-                        tools_dr.disconnect_signal('profile')
-                        self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
-                        self.action_add_point.setDisabled(True)
-                        # Clear old list arcs
-                        # self.dlg_draw_profile.tbl_list_arc.clear()
+                    tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
+                    tools_dr.disconnect_signal('profile')
+                    self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
+                    # Clear old list arcs
+                    # self.dlg_draw_profile.tbl_list_arc.clear()
 
-                        self._remove_selection()
+                    self._remove_selection()
                 else:
-                    if self.add_points:
-                        self.add_points_list.append(element_id)
-                    else:
-                        self.endNode = element_id
+                    self.endNode = element_id
                     msg = "Node 2 selected"
                     tools_qgis.show_info(msg, parameter=element_id)
                     tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_end', element_id)
@@ -328,8 +303,6 @@ class DrProfileButton(DrAction):
 
                 # Next profile will be done from scratch
                 self.first_node = True
-                if self.add_points:
-                    self.add_points = False
 
     def _action_pan(self):
         if self.first_node:
@@ -458,7 +431,6 @@ class DrProfileButton(DrAction):
         tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_init', '')
         tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_end', '')
         self.action_profile.setDisabled(False)
-        self.action_add_point.setDisabled(True)
         self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
 
         # Clear selection
