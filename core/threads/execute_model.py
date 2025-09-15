@@ -95,6 +95,7 @@ class DrExecuteModel(DrTask):
         self.do_import = self.params.get('do_import', True)
         self.do_write_inlets = self.params.get('do_write_inlets', True)
         self.pinlet_layer = self.params.get('pinlet_layer', tools_qgis.get_layer_by_tablename('pinlet'))
+        self.do_generate_cogs = self.params.get('do_generate_cogs', False)
 
     def run(self):
 
@@ -169,7 +170,7 @@ class DrExecuteModel(DrTask):
         #                            "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008"
         #                            "Water_Elevation", "Water_Permanence"]
         try:
-            convert_asc_to_netcdf(raster_files, netcdf_file, result_names, self.progress_changed, generate_cogs=True)
+            convert_asc_to_netcdf(raster_files, netcdf_file, result_names, self.progress_changed, generate_cogs=self.do_generate_cogs)
         except Exception:
             msg = "Error creating NetCDF file"
             self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)

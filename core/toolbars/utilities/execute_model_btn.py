@@ -124,6 +124,8 @@ class DrExecuteModelButton(DrAction):
         if row and row[0] == '0':
             do_generate_inp = False
 
+        do_generate_cogs = tools_qt.is_checked(self.execute_dlg, 'chk_cog')
+
         self._save_user_values()
 
         # Show tab log
@@ -143,7 +145,8 @@ class DrExecuteModelButton(DrAction):
         description = "Execute model"
 
         params = {"dialog": self.execute_dlg, "folder_path": self.export_path,
-                  "do_generate_inp": do_generate_inp, "do_export": True, "do_run": True, "do_import": do_import}
+                  "do_generate_inp": do_generate_inp, "do_export": True, "do_run": True, "do_import": do_import,
+                  "do_generate_cogs": do_generate_cogs}
         self.feedback = Feedback()
         self.execute_model_task = DrExecuteModel(description, params, self.feedback, timer=self.timer)
         self.execute_model_task.progress_changed.connect(self._progress_changed)
@@ -197,6 +200,12 @@ class DrExecuteModelButton(DrAction):
         if value:
             tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', value)
 
+        # Generate COG checkbox
+        value = tools_dr.get_config_parser('btn_execute_model', 'chk_cog', "user", "session")
+        if value:
+            value = tools_os.set_boolean(value)
+            tools_qt.set_checked(self.execute_dlg, 'chk_cog', value)
+
     def _save_user_values(self):
         """ Save QGIS settings related with file_manager """
 
@@ -207,6 +216,10 @@ class DrExecuteModelButton(DrAction):
         # Export file path
         value = f"{tools_qt.get_text(self.execute_dlg, 'txt_folder_path', return_string_null=False)}"
         tools_dr.set_config_parser('btn_execute_model', 'txt_folder_path', f"{value}")
+
+        # Generate COG checkbox
+        value = tools_qt.is_checked(self.execute_dlg, 'chk_cog')
+        tools_dr.set_config_parser('btn_execute_model', 'chk_cog', value, "user", "session")
 
     def _calculate_elapsed_time(self, dialog):
 
