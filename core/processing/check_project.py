@@ -394,7 +394,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             feedback.pushWarning(self.tr(msg, list_params=msg_params))
             return
 
-        # Exectue check query
+        # Execute check query
         features = self.dao_data.get_rows(query_data)
         if not features and self.dao_data.last_error is not None:
             features = self.dao_data.get_rows(query_data_nogeom)
@@ -455,8 +455,46 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             for column in columns:
                 if column not in columns_dict.keys():
                     columns_dict[column] = 0
-                invalid_columns.append(column)
-                columns_dict[column] += 1
+
+                # Check if this specific column is actually null for this feature
+                # sqlite3.Row objects can be accessed like dictionaries
+                try:
+                    column_value = feature[column]
+                except (KeyError, IndexError):
+                    column_value = None
+
+                is_null = column_value is None or column_value == '' or str(column_value).upper() in ['NULL', 'NONE']
+
+                if query['query_type'] == 'MANDATORY NULL' and is_null:
+                    invalid_columns.append(column)
+                    columns_dict[column] += 1
+                elif query['query_type'] == 'OUTLAYER':
+                    # For OUTLAYER, check if value is outside the valid range
+                    if column in self.outlayer_values and column_value is not None:
+                        try:
+                            numeric_value = float(column_value)
+                            min_val = self.outlayer_values[column]['min']
+                            max_val = self.outlayer_values[column]['max']
+                            include_min = self.outlayer_values[column]['include_min']
+                            include_max = self.outlayer_values[column]['include_max']
+
+                            is_out_of_range = False
+                            if include_min and numeric_value < min_val:
+                                is_out_of_range = True
+                            elif not include_min and numeric_value <= min_val:
+                                is_out_of_range = True
+                            elif include_max and numeric_value > max_val:
+                                is_out_of_range = True
+                            elif not include_max and numeric_value >= max_val:
+                                is_out_of_range = True
+
+                            if is_out_of_range:
+                                invalid_columns.append(column)
+                                columns_dict[column] += 1
+                        except (ValueError, TypeError):
+                            # If value can't be converted to float, treat as invalid
+                            invalid_columns.append(column)
+                            columns_dict[column] += 1
 
             if query['create_layer'] and len(invalid_columns) > 0:
                 # Create new feature
@@ -1056,7 +1094,12 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
 
         # Return wrong options as string
         if wrong_options:
-            return ', '.join(wrong_options)  # TODO: Show description instead of columname and translate it
+            for index, option in enumerate(wrong_options):
+                sql = f"SELECT label FROM config_form_fields WHERE columnname = '{option}'"
+                row = self.dao_data.get_row(sql)
+                if row:
+                    wrong_options[index] = row[0]
+            return ', '.join(wrong_options)
         else:
             return None
 
