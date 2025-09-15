@@ -9,13 +9,13 @@ import subprocess
 import os
 from functools import partial
 
-from qgis.PyQt.QtCore import QDate, QDateTime
+from qgis.PyQt.QtCore import QDateTime
 from qgis.PyQt.QtWidgets import QListWidgetItem, QAction, QButtonGroup
 from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression, QgsProject
 from qgis.gui import QgsMapToolEmitPoint
 
 from ..dialog import DrAction
-from ...ui.ui_manager import DrProfileUi, DrProfilesListUi
+from ...ui.ui_manager import DrProfileUi
 from ...utils import tools_dr
 from ...utils.snap_manager import DrSnapManager
 from ....lib import tools_qt, tools_qgis
