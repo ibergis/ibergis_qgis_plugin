@@ -993,9 +993,19 @@ SELECT r.code, r.outlet_code, setsrid(MakeLine(centroid(r.geom), j.geom), <SRID_
 
 
 CREATE VIEW vi_inlet2junction as
-SELECT i.code, i.outlet_node, setsrid(MakeLine(i.geom, j.geom),  <SRID_VALUE>) AS geom
+SELECT i.code, i.outlet_node, i.top_elev, j.elev,
+       (i.top_elev - j.elev) as elev_diff,
+       CASE WHEN (i.top_elev - j.elev) > 0 THEN 0 ELSE 1 END as inverted_slope,
+       SetSRID(MakeLine(i.geom, j.geom), <SRID_VALUE>) AS geom
     FROM inlet i
-    JOIN inp_junction j ON i.outlet_node = j.code;
+    JOIN inp_junction j ON i.outlet_node = j.code
+UNION
+SELECT pi.code, pi.outlet_node, pi.top_elev, j.elev,
+       (pi.top_elev - j.elev) as elev_diff,
+       CASE WHEN (pi.top_elev - j.elev) > 0 THEN 0 ELSE 1 END as inverted_slope,
+       SetSRID(MakeLine(ST_Centroid(pi.geom), j.geom), <SRID_VALUE>) AS geom
+    FROM pinlet pi
+    JOIN inp_junction j ON pi.outlet_node = j.code;
 
 
 -- ----------------------------------------
