@@ -443,6 +443,7 @@ CREATE TABLE inp_weir (
     geom3 real check (typeof(geom3) = 'real' or geom3 = null)  DEFAULT 0.00,
     geom4 real check (typeof(geom4) = 'real' or geom4 = null),
     elev real check (typeof(elev) = 'real' or elev = null),
+    cd1 real check (typeof(cd1) = 'real' or cd1 = null),
     cd2 real check (typeof(cd2) = 'real' or cd2 = null),
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     ec integer check (typeof(ec) = 'integer' or ec = null),

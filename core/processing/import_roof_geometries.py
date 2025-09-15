@@ -40,7 +40,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
     FIELD_WIDTH = 'FIELD_WIDTH'
     FIELD_ROUGHNESS = 'FIELD_ROUGHNESS'
     FIELD_ISCONNECTED = 'FIELD_ISCONNECTED'
-    FIELD_OUTLET_TYPE = 'FIELD_OUTLET_TYPE'
     FIELD_OUTLET_CODE = 'FIELD_OUTLET_CODE'
     FIELD_OUTLET_VOL = 'FIELD OUTLET_VOL'
     FIELD_STREET_VOL = 'FIELD_STREET_VOL'
@@ -127,15 +126,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         )
         isconnected.setFlags(isconnected.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        outlet_type = QgsProcessingParameterField(
-            self.FIELD_OUTLET_TYPE,
-            self.tr('Select *outlet_type* reference'),
-            parentLayerParameterName=self.FILE_SOURCE,
-            type=QgsProcessingParameterField.String,
-            optional=True
-        )
-        outlet_type.setFlags(outlet_type.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
-
         outlet_code = QgsProcessingParameterField(
             self.FIELD_OUTLET_CODE,
             self.tr('Select *outlet_code* reference'),
@@ -187,7 +177,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         self.addParameter(width)
         self.addParameter(roughness)
         self.addParameter(isconnected)
-        self.addParameter(outlet_type)
         self.addParameter(outlet_code)
         self.addParameter(outlet_vol)
         self.addParameter(street_vol)
@@ -212,7 +201,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
             "width": next(iter(self.parameterAsFields(parameters, self.FIELD_WIDTH, context)), None),
             "roughness": next(iter(self.parameterAsFields(parameters, self.FIELD_ROUGHNESS, context)), None),
             "isconnected": next(iter(self.parameterAsFields(parameters, self.FIELD_ISCONNECTED, context)), None),
-            "outlet_type": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_TYPE, context)), None),
             "outlet_code": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_CODE, context)), None),
             "outlet_vol": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_VOL, context)), None),
             "street_vol": next(iter(self.parameterAsFields(parameters, self.FIELD_STREET_VOL, context)), None),
