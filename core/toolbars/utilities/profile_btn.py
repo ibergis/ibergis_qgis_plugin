@@ -234,8 +234,8 @@ class DrProfileButton(DrAction):
 
         if self.first_node is False and not self.add_points:
             msg = "First node already selected with id: {0}. Select second one."
-            mgs_params = (self.initNode)
-            tools_qgis.show_info(msg, mgs_params=mgs_params)
+            msg_params = (self.initNode)
+            tools_qgis.show_info(msg, msg_params=msg_params)
 
         # Set vertex marker propierties
         self.snapper_manager.set_vertex_marker(self.vertex_marker, icon_type=4)
@@ -295,6 +295,7 @@ class DrProfileButton(DrAction):
                 self.first_node = False
                 msg = "Node 1 selected"
                 tools_qgis.show_info(msg, parameter=element_id)
+                tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_init', element_id)
             else:
                 if self.element_id == self.initNode or self.element_id == self.endNode \
                         or self.element_id in self.add_points_list:
@@ -315,11 +316,12 @@ class DrProfileButton(DrAction):
                         self.add_points_list.append(element_id)
                     else:
                         self.endNode = element_id
+                    msg = "Node 2 selected"
+                    tools_qgis.show_info(msg, parameter=element_id)
+                    tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_end', element_id)
                     tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
                     tools_dr.disconnect_signal('profile')
                     self.dlg_draw_profile.btn_draw_profile.setEnabled(True)
-                    msg = "Node 2 selected"
-                    tools_qgis.show_info(msg, parameter=element_id)
 
                     # Clear old list arcs
                     # self.dlg_draw_profile.tbl_list_arc.clear()
@@ -496,6 +498,8 @@ class DrProfileButton(DrAction):
 
         # Clear widgets
         # self.dlg_draw_profile.tbl_list_arc.clear()
+        tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_init', '')
+        tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_end', '')
         self.action_profile.setDisabled(False)
         self.action_add_point.setDisabled(True)
         self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
