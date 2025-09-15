@@ -102,6 +102,19 @@ class DrExecuteModelButton(DrAction):
             tools_qgis.show_warning(msg, dialog=self.execute_dlg)
             return False
 
+        # Check if boundary conditions exist but mesh doesn't have them
+        # NOTE: this doesn't check the actual boundary conditions, only if there are any boundary conditions.
+        sql = """SELECT COUNT(*) FROM boundary_conditions WHERE bscenario = (SELECT idval FROM cat_bscenario WHERE active = 1 LIMIT 1)"""
+        row = tools_db.get_row(sql)
+        if row and row[0] > 0:
+            sql = f"""SELECT COUNT(*) FROM cat_file WHERE id = '{mesh_id}' AND iber2d LIKE '%CONDICIONS INICIALS_CC: CONDICIONS CONTORN_123456789%';"""
+            row = tools_db.get_row(sql)
+            if row and row[0] > 0:
+                msg = "Boundary conditions exist but they aren't in the mesh.\nTo save them to the mesh, use the boundary conditions manager.\nDo you want to continue anyway?"
+                answer = tools_qt.show_question(msg)
+                if not answer:
+                    return False
+
         # TODO: ask for import
         do_import = True
 
