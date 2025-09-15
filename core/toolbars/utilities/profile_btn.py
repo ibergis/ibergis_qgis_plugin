@@ -94,9 +94,13 @@ class DrProfileButton(DrAction):
         self.dlg_draw_profile = DrProfileUi()
         tools_dr.load_settings(self.dlg_draw_profile)
 
-        self.dlg_draw_profile.grb_profile.setVisible(False)
-        # Set layer_node
+        # Set allowed node layers for snapping (junction, divider, outfall, storage)
         self.layer_node = tools_qgis.get_layer_by_tablename('inp_junction', show_warning_=False)
+        self.allowed_node_layers = []
+        for _layer_name in ['inp_junction', 'inp_divider', 'inp_outfall', 'inp_storage']:
+            _layer_obj = tools_qgis.get_layer_by_tablename(_layer_name, show_warning_=False)
+            if _layer_obj:
+                self.allowed_node_layers.append(_layer_obj)
 
         # Toolbar actions
         action = self.dlg_draw_profile.findChild(QAction, "actionProfile")
@@ -257,11 +261,13 @@ class DrProfileButton(DrAction):
         event_point = self.snapper_manager.get_event_point(point=point)
 
         # Snapping
-        result = self.snapper_manager.snap_to_current_layer(event_point)
+        result = self.snapper_manager.snap_to_project_config_layers(event_point)
         if result.isValid():
             layer = self.snapper_manager.get_snapped_layer(result)
-            if layer == self.layer_node:
+            if hasattr(self, 'allowed_node_layers') and layer in self.allowed_node_layers:
                 self.snapper_manager.add_marker(result, self.vertex_marker)
+            else:
+                self.vertex_marker.hide()
         else:
             self.vertex_marker.hide()
 
@@ -271,9 +277,14 @@ class DrProfileButton(DrAction):
         event_point = self.snapper_manager.get_event_point(point=point)
 
         # Snapping
-        result = self.snapper_manager.snap_to_current_layer(event_point)
+        result = self.snapper_manager.snap_to_project_config_layers(event_point)
 
         if result.isValid():
+            # Only allow features from the configured node layers
+            snapped_layer = self.snapper_manager.get_snapped_layer(result)
+            if hasattr(self, 'allowed_node_layers') and snapped_layer not in self.allowed_node_layers:
+                tools_qgis.show_warning("Please select a node from inp_junction, inp_divider, inp_outfall or inp_storage")
+                return
             # Get the feature
             snapped_feat = self.snapper_manager.get_snapped_feature(result)
             element_id = snapped_feat.attribute('code')
@@ -293,11 +304,10 @@ class DrProfileButton(DrAction):
                     if not self.add_points:
                         tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
                         tools_dr.disconnect_signal('profile')
-                        self.dlg_draw_profile.btn_save_profile.setEnabled(False)
                         self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
                         self.action_add_point.setDisabled(True)
                         # Clear old list arcs
-                        self.dlg_draw_profile.tbl_list_arc.clear()
+                        # self.dlg_draw_profile.tbl_list_arc.clear()
 
                         self._remove_selection()
                 else:
@@ -308,10 +318,9 @@ class DrProfileButton(DrAction):
                     tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
                     tools_dr.disconnect_signal('profile')
                     self.dlg_draw_profile.btn_draw_profile.setEnabled(True)
-                    self.dlg_draw_profile.btn_save_profile.setEnabled(True)
 
                     # Clear old list arcs
-                    self.dlg_draw_profile.tbl_list_arc.clear()
+                    # self.dlg_draw_profile.tbl_list_arc.clear()
 
                     return
 
@@ -340,7 +349,7 @@ class DrProfileButton(DrAction):
                     list_arcs = []
                     for arc in result['body']['data']['arc']:
                         item_arc = QListWidgetItem(str(arc['arc_id']))
-                        self.dlg_draw_profile.tbl_list_arc.addItem(item_arc)
+                        # self.dlg_draw_profile.tbl_list_arc.addItem(item_arc)
                         list_arcs.append(arc['arc_id'])
 
                     expr_filter = "\"arc_id\" IN ("
@@ -484,12 +493,10 @@ class DrProfileButton(DrAction):
         self.nodes = []
 
         # Clear widgets
-        self.dlg_draw_profile.tbl_list_arc.clear()
-        self.dlg_draw_profile.txt_profile_id.clear()
+        # self.dlg_draw_profile.tbl_list_arc.clear()
         self.action_profile.setDisabled(False)
         self.action_add_point.setDisabled(True)
         self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
-        self.dlg_draw_profile.btn_save_profile.setEnabled(False)
 
         # Clear selection
         self._remove_selection()
