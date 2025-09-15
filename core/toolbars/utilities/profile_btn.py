@@ -348,7 +348,7 @@ class DrProfileButton(DrAction):
                     self._remove_selection()
                     list_arcs = []
                     for arc in result['body']['data']['arc']:
-                        item_arc = QListWidgetItem(str(arc['arc_id']))
+                        # item_arc = QListWidgetItem(str(arc['arc_id']))
                         # self.dlg_draw_profile.tbl_list_arc.addItem(item_arc)
                         list_arcs.append(arc['arc_id'])
 
