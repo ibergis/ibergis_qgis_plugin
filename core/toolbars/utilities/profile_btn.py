@@ -11,7 +11,7 @@ from functools import partial
 
 from qgis.PyQt.QtCore import QDateTime
 from qgis.PyQt.QtWidgets import QAction, QButtonGroup
-from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression, QgsProject
+from qgis.core import QgsVectorLayer, QgsProject
 from qgis.gui import QgsMapToolEmitPoint
 
 from ..dialog import DrAction
