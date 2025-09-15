@@ -10,7 +10,7 @@ import os
 from functools import partial
 
 from qgis.PyQt.QtCore import QDateTime
-from qgis.PyQt.QtWidgets import QListWidgetItem, QAction, QButtonGroup
+from qgis.PyQt.QtWidgets import QAction, QButtonGroup
 from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression, QgsProject
 from qgis.gui import QgsMapToolEmitPoint
 
