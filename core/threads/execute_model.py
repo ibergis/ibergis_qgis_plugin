@@ -14,6 +14,7 @@ import traceback
 import processing
 import time
 import platform
+import pandas as pd
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import QgsProcessingContext, QgsVectorLayer, QgsFeature, \
@@ -218,8 +219,9 @@ class DrExecuteModel(DrTask):
 
     def _fill_rpt_gpkg(self, title: str):
         """Fill rpt gpkg"""
-        dao = DrGpkgDao()
-        dao.init_db(f'{self.folder_path}{os.sep}IberGisResults{os.sep}results.gpkg')
+        dao_rpt = DrGpkgDao()
+        dao_rpt.init_db(f'{self.folder_path}{os.sep}IberGisResults{os.sep}results.gpkg')
+        dao_data = global_vars.gpkg_dao_data
 
         if os.path.exists(f'{self.folder_path}{os.sep}Iber_SWMM.rpt'):
             report_values = read_rpt_file(f'{self.folder_path}{os.sep}Iber_SWMM.rpt')
@@ -266,7 +268,6 @@ class DrExecuteModel(DrTask):
                     'latinf_vol': 'Lateral_Inflow_Volume_10^6 ltr',
                     'totinf_vol': 'Total_Inflow_Volume_10^6 ltr',
                     'flow_balance_error': 'Flow_Balance_Error_Percent',
-                    'other_info': None,
                 },
                 parent_table='node'
             ),
@@ -318,7 +319,8 @@ class DrExecuteModel(DrTask):
                     'ysur': None,
                     'aver_vol': 'Average_Volume_1000 m3',
                     'avg_full': 'Avg_Pcnt_Full',
-                    'ei_loss': None,
+                    'evap_loss': 'Evap_Pcnt_Loss',
+                    'exfil_loss': 'Exfil_Pcnt_Loss',
                     'max_vol': 'Maximum_Volume_1000 m3',
                     'max_full': 'Max_Pcnt_Full',
                     'time_days': 'Time of Max_Occurrence_days hr:min',
@@ -355,7 +357,6 @@ class DrExecuteModel(DrTask):
                     'geom2': None,
                     'geom3': None,
                     'geom4': None,
-                    'flow': None,
                     'arc_type': None,
                     'max_flow': 'Maximum_|Flow|_CMS',
                     'time_days': 'Time of Max_Occurrence_days hr:min',
@@ -363,14 +364,6 @@ class DrExecuteModel(DrTask):
                     'max_veloc': 'Maximum_|Veloc|_m/sec',
                     'mfull_flow': 'Max/_Full_Flow',
                     'mfull_dept': 'Max/_Full_Depth',
-                    'max_shear': None,
-                    'max_hr': None,
-                    'max_slope': None,
-                    'day_max': None,
-                    'time_max': None,
-                    'min_shear': None,
-                    'day_min': None,
-                    'time_min': None,
                 },
                 parent_table='arc'
             ),
@@ -385,7 +378,6 @@ class DrExecuteModel(DrTask):
                     'geom2': None,
                     'geom3': None,
                     'geom4': None,
-                    'flow': None,
                     'length': 'Adjusted_/Actual_Length',
                     'dry': 'Dry',
                     'up_dry': 'Up_Dry',
@@ -394,8 +386,8 @@ class DrExecuteModel(DrTask):
                     'sub_crit_1': 'Sup_Crit',
                     'up_crit': 'Up_Crit',
                     'down_crit': 'Down_Crit',
-                    'froud_numb': None,
-                    'flow_chang': None,
+                    'norm_ltd': 'Norm_Ltd',
+                    'inlet_ctrl': 'Inlet_Ctrl',
                 },
                 parent_table='arc'
             ),
@@ -410,7 +402,6 @@ class DrExecuteModel(DrTask):
                     'geom2': None,
                     'geom3': None,
                     'geom4': None,
-                    'flow': None,
                     'both_ends': 'HoursFull_Both_Ends',
                     'upstream': 'Hours Full_Upstream',
                     'dnstream': 'HoursFull_Dnstream',
@@ -459,22 +450,39 @@ class DrExecuteModel(DrTask):
             swmm_df = getattr(report_values, cfg.swmm_attr)
             table_name = cfg.table_name
             try:
-                for index, row in swmm_df.iterrows():
+                for index, data_row in swmm_df.iterrows():
                     start_sql = f"INSERT INTO {table_name} (code, "
                     end_sql = f") VALUES ('{index}', "
                     for field, swmm_field in cfg.field_map.items():
-                        if swmm_field is None or str(row[swmm_field]) == 'nan':
+                        if swmm_field is None:
+                            # Get value from inp table
+                            sql = f"SELECT table_name FROM {cfg.parent_table} WHERE code = '{index}'"
+                            row = dao_data.get_row(sql)
+                            if row is None:
+                                msg = f"Error getting value from inp table for {cfg.topic}: \n {sql}"
+                                self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+                                continue
+                            sql = f"SELECT {field} FROM {cfg.parent_table} AS general INNER JOIN {row[0]} inp ON general.code = inp.code WHERE general.code = '{index}'"
+                            row = dao_data.get_row(sql)
+                            if row is None:
+                                msg = f"Error getting value from inp table for {cfg.topic}: \n {sql}"
+                                self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+                                continue
+                            start_sql += f"{field}, "
+                            end_sql += f"{row[0]}, " if isinstance(row[0], (int, float)) else f"'{row[0]}', "
                             continue
-                        if field == 'time_days':
+                        elif swmm_field not in data_row or pd.isna(data_row[swmm_field]) or str(data_row[swmm_field]) == 'nan':
+                            continue
+                        elif field == 'time_days':
                             start_sql += "time_days, "
-                            end_sql += f"'{str(row[swmm_field]).split(' ')[0]}', "
+                            end_sql += f"'{str(data_row[swmm_field]).split(' ')[0]}', "
                             continue
                         elif field == 'time_hour':
                             start_sql += "time_hour, "
-                            end_sql += f"'{str(row[swmm_field]).split(' ')[-1]}', "
+                            end_sql += f"'{str(data_row[swmm_field]).split(' ')[-1]}', "
                             continue
                         start_sql += f"{field}, "
-                        end_sql += f"{row[swmm_field]}, " if isinstance(row[swmm_field], (int, float)) else f"'{row[swmm_field]}', "
+                        end_sql += f"{data_row[swmm_field]}, " if isinstance(data_row[swmm_field], (int, float)) else f"'{data_row[swmm_field]}', "
                     # Get geometry
                     if cfg.parent_table == 'node':
                         geom = node_dict[index].geometry().asWkt()
@@ -487,14 +495,14 @@ class DrExecuteModel(DrTask):
                     start_sql = start_sql[:-2]
                     end_sql = end_sql[:-2]
                     sql = f"{start_sql}{end_sql})"
-                    result = dao.execute_sql(sql)
+                    result = dao_rpt.execute_sql(sql)
                     if not result:
                         msg = f"Error filling rpt gpkg for {cfg.topic}: \n {sql}"
                         self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
             except Exception as e:
                 msg = f"Error filling rpt gpkg for {cfg.topic}: \n {e}"
                 self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
-        dao.close_db()
+        dao_rpt.close_db()
 
         msg = "Filled rpt gpkg"
         self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)

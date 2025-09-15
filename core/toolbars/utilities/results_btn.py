@@ -10,7 +10,7 @@ import processing
 
 from qgis.PyQt.QtWidgets import QMenu, QAction
 from qgis.PyQt.QtGui import QIcon
-from qgis.core import QgsEditFormConfig, QgsProject
+from qgis.core import QgsEditFormConfig, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt
 
 from ....lib import tools_qgis
@@ -175,6 +175,57 @@ class DrResultsButton(DrAction):
         }
         processing.execAlgorithmDialog('IberGISProvider:ImportRasterResults', params)
 
+    def load_rpt_results(self):
+        """ Load rpt results """
+
+        results_folder = tools_qgis.get_project_variable('project_results_folder')
+        if results_folder is None:
+            tools_qgis.show_warning("No results folder selected")
+            return
+        results_folder = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{results_folder}")
+        if not os.path.exists(results_folder) or not os.path.isdir(results_folder):
+            tools_qgis.show_warning("Invalid results folder")
+            return
+        if not os.path.exists(os.path.join(results_folder, 'IberGisResults')):
+            tools_qgis.show_warning("No IberGisResults folder found")
+            return
+        if not os.path.exists(os.path.join(results_folder, 'IberGisResults', 'results.gpkg')):
+            tools_qgis.show_warning("No results gpkg file found")
+            return
+        style_folder = os.path.join(global_vars.plugin_dir, 'resources', 'templates', 'rpt')
+        if not os.path.exists(style_folder) or not os.path.isdir(style_folder):
+            tools_qgis.show_warning("No style folder found")
+            return
+
+        rpt_layers = {
+            'rpt_storagevol_sum': 'Storage Volume',
+            'rpt_outfallflow_sum': 'Outfall Flow',
+            'rpt_pumping_sum': 'Pumping Summary',
+            'rpt_condsurcharge_sum': 'Conduit Surcharge',
+            'rpt_flowclass_sum': 'Flow Classification',
+            'rpt_arcflow_sum': 'Arc Flow',
+            'rpt_nodedepth_sum': 'Node Depth',
+            'rpt_nodeinflow_sum': 'Node Inflow',
+            'rpt_nodesurcharge_sum': 'Node Surcharge',
+            'rpt_nodeflooding_sum': 'Node Flooding'
+        }
+        group_name = "RESULTS - " + os.path.basename(results_folder)
+        group = QgsProject.instance().layerTreeRoot().insertGroup(0, group_name)
+        for tablename, layer_name in rpt_layers.items():
+            qml_file = os.path.join(style_folder, f'{tablename}.qml')
+            if not os.path.exists(qml_file) or not os.path.isfile(qml_file):
+                tools_qgis.show_warning(f"No qml file found for {tablename}")
+                continue
+            qgs_layer = QgsVectorLayer(f'{results_folder}{os.sep}IberGisResults{os.sep}results.gpkg|layername={tablename}', layer_name, 'ogr')
+            if not qgs_layer.isValid():
+                tools_qgis.show_warning(f"No valid layer found for {tablename}")
+                continue
+            qgs_layer.loadNamedStyle(qml_file)
+            qgs_layer.triggerRepaint()
+            qgs_layer.setDataSource(f'{results_folder}{os.sep}IberGisResults{os.sep}results.gpkg|layername={tablename}', layer_name, 'ogr')
+            QgsProject.instance().addMapLayer(qgs_layer, False)
+            group.addLayer(qgs_layer)
+
     # region private functions
     def _fill_results_menu(self):
         """ Fill results menu """
@@ -182,10 +233,6 @@ class DrResultsButton(DrAction):
         self.menu.clear()
 
         # Add results actions
-        self.load_raster_results_action = QAction("Load raster results", self.menu)
-        self.load_raster_results_action.triggered.connect(self.load_raster_results)
-        self.load_raster_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '17.png')))
-
         self.profile_action = QAction("Profile", self.menu)
         self.profile_action.triggered.connect(self.show_profile)
         self.profile_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '15.png')))
@@ -199,6 +246,14 @@ class DrResultsButton(DrAction):
         self.time_series_graph_action.triggered.connect(self.show_time_series_graph)
         self.time_series_graph_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '19.png')))
         self.time_series_graph_action.setCheckable(True)
+
+        self.load_raster_results_action = QAction("Load raster results", self.menu)
+        self.load_raster_results_action.triggered.connect(self.load_raster_results)
+        self.load_raster_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '17.png')))
+
+        self.load_rpt_results_action = QAction("Load rpt results", self.menu)
+        self.load_rpt_results_action.triggered.connect(self.load_rpt_results)
+        self.load_rpt_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '21.png')))
 
         rel_path = tools_qgis.get_project_variable('project_results_folder')
         abs_path = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{rel_path}")
@@ -218,11 +273,15 @@ class DrResultsButton(DrAction):
             self.profile_action.setDisabled(True)
             self.report_summary_action.setDisabled(True)
             self.time_series_graph_action.setDisabled(True)
+            self.load_rpt_results_action.setDisabled(True)
+        self.time_series_graph_action.setDisabled(True)  # TODO: Remove this when time series graph is implemented
 
-        self.menu.addAction(self.load_raster_results_action)
         self.menu.addAction(self.profile_action)
         self.menu.addAction(self.report_summary_action)
         self.menu.addAction(self.time_series_graph_action)
+        self.menu.addSeparator()
+        self.menu.addAction(self.load_raster_results_action)
+        self.menu.addAction(self.load_rpt_results_action)
         self.menu.addSeparator()
         self.menu.addAction(self.set_results_folder_action)
 

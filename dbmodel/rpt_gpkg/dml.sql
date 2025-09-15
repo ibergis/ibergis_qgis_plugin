@@ -25,7 +25,7 @@ INSERT INTO tables_geom (table_name, isgeom, index_col) VALUES
 ('rpt_nodeinflow_sum', 'POINT', 'code'),
 ('rpt_nodesurcharge_sum', 'POINT', 'code'),
 ('rpt_outfallflow_sum', 'POINT', 'code'),
-('rpt_pumping_sum', 'POINT', 'code'),
+('rpt_pumping_sum', 'LINESTRING', 'code'),
 ('rpt_storagevol_sum', 'POINT', 'code');
 
 -- ----------------------------
