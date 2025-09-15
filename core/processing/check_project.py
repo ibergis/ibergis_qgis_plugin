@@ -457,44 +457,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                     columns_dict[column] = 0
 
                 # Check if this specific column is actually null for this feature
-                # sqlite3.Row objects can be accessed like dictionaries
-                try:
-                    column_value = feature[column]
-                except (KeyError, IndexError):
-                    column_value = None
-
-                is_null = column_value is None or column_value == '' or str(column_value).upper() in ['NULL', 'NONE']
-
-                if query['query_type'] == 'MANDATORY NULL' and is_null:
-                    invalid_columns.append(column)
-                    columns_dict[column] += 1
-                elif query['query_type'] == 'OUTLAYER':
-                    # For OUTLAYER, check if value is outside the valid range
-                    if column in self.outlayer_values and column_value is not None:
-                        try:
-                            numeric_value = float(column_value)
-                            min_val = self.outlayer_values[column]['min']
-                            max_val = self.outlayer_values[column]['max']
-                            include_min = self.outlayer_values[column]['include_min']
-                            include_max = self.outlayer_values[column]['include_max']
-
-                            is_out_of_range = False
-                            if include_min and numeric_value < min_val:
-                                is_out_of_range = True
-                            elif not include_min and numeric_value <= min_val:
-                                is_out_of_range = True
-                            elif include_max and numeric_value > max_val:
-                                is_out_of_range = True
-                            elif not include_max and numeric_value >= max_val:
-                                is_out_of_range = True
-
-                            if is_out_of_range:
-                                invalid_columns.append(column)
-                                columns_dict[column] += 1
-                        except (ValueError, TypeError):
-                            # If value can't be converted to float, treat as invalid
-                            invalid_columns.append(column)
-                            columns_dict[column] += 1
+                columns_dict, invalid_columns = self._check_column_null_or_outlayer(feature, column, columns_dict, invalid_columns, query, feedback)
 
             if query['create_layer'] and len(invalid_columns) > 0:
                 # Create new feature
@@ -1253,6 +1216,49 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 print(f"Error getting values for {name}. Using default values...")
                 outlayer_values[name] = self.default_outlayer_values[name]
         return outlayer_values
+
+    def _check_column_null_or_outlayer(self, feature, column, columns_dict, invalid_columns, query, feedback):
+        """ Check if column is null or out of range """
+
+        try:
+            column_value = feature[column]
+        except (KeyError, IndexError):
+            column_value = None
+
+        is_null = column_value is None or column_value == '' or str(column_value).upper() in ['NULL', 'NONE']
+
+        if query['query_type'] == 'MANDATORY NULL' and is_null:
+            invalid_columns.append(column)
+            columns_dict[column] += 1
+        elif query['query_type'] == 'OUTLAYER':
+            # For OUTLAYER, check if value is outside the valid range
+            if column in self.outlayer_values and column_value is not None:
+                try:
+                    numeric_value = float(column_value)
+                    min_val = self.outlayer_values[column]['min']
+                    max_val = self.outlayer_values[column]['max']
+                    include_min = self.outlayer_values[column]['include_min']
+                    include_max = self.outlayer_values[column]['include_max']
+
+                    is_out_of_range = False
+                    if include_min and numeric_value < min_val:
+                        is_out_of_range = True
+                    elif not include_min and numeric_value <= min_val:
+                        is_out_of_range = True
+                    elif include_max and numeric_value > max_val:
+                        is_out_of_range = True
+                    elif not include_max and numeric_value >= max_val:
+                        is_out_of_range = True
+
+                    if is_out_of_range:
+                        invalid_columns.append(column)
+                        columns_dict[column] += 1
+                except (ValueError, TypeError):
+                    # If value can't be converted to float, treat as invalid
+                    invalid_columns.append(column)
+                    columns_dict[column] += 1
+
+        return columns_dict, invalid_columns
 
     def helpUrl(self):
         return "https://github.com/drain-iber"
