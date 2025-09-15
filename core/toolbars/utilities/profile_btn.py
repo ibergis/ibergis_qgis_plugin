@@ -318,6 +318,8 @@ class DrProfileButton(DrAction):
                     tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
                     tools_dr.disconnect_signal('profile')
                     self.dlg_draw_profile.btn_draw_profile.setEnabled(True)
+                    msg = "Node 2 selected"
+                    tools_qgis.show_info(msg, parameter=element_id)
 
                     # Clear old list arcs
                     # self.dlg_draw_profile.tbl_list_arc.clear()
