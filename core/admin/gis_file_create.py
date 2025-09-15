@@ -48,7 +48,7 @@ class DrGisFileCreate:
             folder_path = gis_locale_path
 
         if not os.path.exists(folder_path):
-            os.mkdir(folder_path)
+            os.makedirs(folder_path, exist_ok=True)
 
         # Set QGS file path
         qgs_path = folder_path + os.sep + filename + "." + gis_extension
