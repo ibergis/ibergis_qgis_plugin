@@ -126,9 +126,7 @@ class DrProfileButton(DrAction):
 
         # Triggers
         self.dlg_draw_profile.btn_draw_profile.clicked.connect(partial(self._get_profile))
-        self.dlg_draw_profile.btn_save_profile.clicked.connect(self._save_profile)
-        self.dlg_draw_profile.btn_load_profile.clicked.connect(self._open_profile)
-        self.dlg_draw_profile.btn_clear_profile.clicked.connect(self._clear_profile)
+        # self.dlg_draw_profile.btn_clear_profile.clicked.connect(self._clear_profile)
         self.dlg_draw_profile.rb_instant.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.rb_period.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.dlg_closed.connect(partial(tools_dr.save_settings, self.dlg_draw_profile))
@@ -139,17 +137,20 @@ class DrProfileButton(DrAction):
         # Set shortcut keys
         self.dlg_draw_profile.key_escape.connect(partial(tools_dr.close_dialog, self.dlg_draw_profile))
 
-        # Set calendar date as today
-        # tools_qt.set_calendar(self.dlg_draw_profile, "dtm_instant", None)
-        # tools_qt.set_calendar(self.dlg_draw_profile, "dtm_start", None)
-        # tools_qt.set_calendar(self.dlg_draw_profile, "dtm_end", None)
-
         # Set default values
         self.dlg_draw_profile.rb_instant.setChecked(True)
         self.dlg_draw_profile.rb_depth.setChecked(True)
         self._manage_timestamp_widgets()
 
         # Restore datetime values
+        self._load_user_values()
+
+        # Show form
+        tools_dr.open_dialog(self.dlg_draw_profile, dlg_name='profile')
+
+    # region private functions
+
+    def _load_user_values(self):
         dtm_instant_val = tools_dr.get_config_parser('btn_profile', 'dtm_instant', "user", "session")
         dtm_start_val = tools_dr.get_config_parser('btn_profile', 'dtm_start', "user", "session")
         dtm_end_val = tools_dr.get_config_parser('btn_profile', 'dtm_end', "user", "session")
@@ -162,11 +163,6 @@ class DrProfileButton(DrAction):
         if dtm_end_val:
             dtm_end_qdt = QDateTime.fromString(dtm_end_val, 'yyyy-MM-dd HH:mm:ss')
             self.dlg_draw_profile.dtm_end.setDateTime(dtm_end_qdt)
-
-        # Show form
-        tools_dr.open_dialog(self.dlg_draw_profile, dlg_name='profile')
-
-    # region private functions
 
     def _reset_profile_variables(self):
 
@@ -223,123 +219,6 @@ class DrProfileButton(DrAction):
         # if len(self.none_values) > 0:
         #     msg = "There are missing values in these nodes:"
         #     tools_qt.show_info_box(msg, inf_text=self.none_values)
-
-    def _save_profile(self):
-        """ Save profile """
-
-        profile_id = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_profile_id)
-        if profile_id in (None, 'null'):
-            msg = "Profile name is mandatory."
-            tools_qgis.show_warning(msg)
-            return
-
-        # Clear and populate list with new arcs
-        list_arc = []
-        n = self.dlg_draw_profile.tbl_list_arc.count()
-        for i in range(n):
-            list_arc.append(int(self.dlg_draw_profile.tbl_list_arc.item(i).text()))
-
-        # Get values from profile form
-        links_distance = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_min_distance)
-        if links_distance in ("", "None", None):
-            links_distance = 1
-        title = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_title)
-        date = tools_qt.get_calendar_date(self.dlg_draw_profile, self.dlg_draw_profile.date, date_format='dd/MM/yyyy')
-
-        # Create variable with all the content of the form
-        extras = f'"profile_id":"{profile_id}", "listArcs":"{list_arc}","initNode":"{self.initNode}", ' \
-            f'"endNode":"{self.endNode}", ' \
-            f'"linksDistance":{links_distance}, "scale":{{ "eh":1000, ' \
-            f'"ev":1000}}, "title":"{title}", "date":"{date}"'
-        body = tools_dr.create_body(extras=extras)
-        result = tools_dr.execute_procedure('gw_fct_setprofile', body)
-        if result is None or result['status'] == 'Failed':
-            return
-        message = f"{result['message']}"
-        tools_qgis.show_info(message)
-
-    def _open_profile(self):
-        """ Open dialog profile_list.ui """
-
-        self.dlg_load = DrProfilesListUi(self)
-        tools_dr.load_settings(self.dlg_load)
-
-        # Get profils on database
-        body = tools_dr.create_body()
-        result_profile = tools_dr.execute_procedure('gw_fct_getprofile', body)
-        if not result_profile or result_profile['status'] == 'Failed':
-            return
-        message = f"{result_profile['message']}"
-        tools_qgis.show_info(message)
-
-        self.dlg_load.btn_open.clicked.connect(partial(self._load_profile, result_profile))
-        self.dlg_load.btn_delete_profile.clicked.connect(partial(self._delete_profile))
-
-        # Populate profile list
-        for profile in result_profile['body']['data']:
-            item_arc = QListWidgetItem(str(profile['profile_id']))
-            self.dlg_load.tbl_profiles.addItem(item_arc)
-
-        tools_dr.open_dialog(self.dlg_load, dlg_name='profile_list')
-
-    def _load_profile(self, parameters):
-        """ Open selected profile from dialog load_profiles.ui """
-
-        selected_list = self.dlg_load.tbl_profiles.selectionModel().selectedRows()
-        if len(selected_list) == 0:
-            msg = "Any record selected"
-            tools_qgis.show_warning(msg)
-            return
-
-        tools_dr.close_dialog(self.dlg_load)
-
-        profile_id = self.dlg_load.tbl_profiles.currentItem().text()
-
-        # Setting parameters on profile form
-        self.dlg_draw_profile.btn_draw_profile.setEnabled(True)
-        self.dlg_draw_profile.btn_save_profile.setEnabled(True)
-        for profile in parameters['body']['data']:
-            if profile['profile_id'] == profile_id:
-                # Get data
-                self.initNode = profile['values']['initNode']
-                self.endNode = profile['values']['endNode']
-                list_arcs = profile['values']['listArcs']
-
-                # Get arcs from profile
-                expr_filter = "\"arc_id\" IN ("
-                for arc in list_arcs.strip('][').split(', '):
-                    expr_filter += f"'{arc}', "
-                expr_filter = expr_filter[:-2] + ")"
-                expr = QgsExpression(expr_filter)
-                # Get a featureIterator from this expression:
-                self.layer_arc = tools_qgis.get_layer_by_tablename("v_edit_arc")
-                it = self.layer_arc.getFeatures(QgsFeatureRequest(expr))
-
-                self.id_list = [i.id() for i in it]
-                if not self.id_list:
-                    msg = "Couldn't draw profile. You may need to select another exploitation."
-                    tools_qgis.show_warning(msg)
-                    return
-
-                # Set data in dialog
-                self.dlg_draw_profile.txt_profile_id.setText(str(profile_id))
-                self.dlg_draw_profile.tbl_list_arc.clear()
-
-                for arc in list_arcs.strip('][').split(', '):
-                    item_arc = QListWidgetItem(str(arc))
-                    self.dlg_draw_profile.tbl_list_arc.addItem(item_arc)
-                self.dlg_draw_profile.txt_min_distance.setText(str(profile['values']['linksDistance']))
-
-                self.dlg_draw_profile.txt_title.setText(str(profile['values']['title']))
-                date = QDate.fromString(profile['values']['date'], 'dd-MM-yyyy')
-                tools_qt.set_calendar(self.dlg_draw_profile, self.dlg_draw_profile.date, date)
-
-                # Select features in map
-                self._remove_selection()
-                self.layer_arc.selectByIds(self.id_list)
-
-                # Center shortest path in canvas - ZOOM SELECTION
-                self.canvas.zoomToSelected(self.layer_arc)
 
     def _activate_snapping_node(self):
 
