@@ -102,4 +102,7 @@ class DrProjectCheckTask(DrTask):
         if self.timer:
             self.timer.stop()
 
+        # Scroll to top
+        self.txt_infolog.verticalScrollBar().setValue(0)
+
         self.setProgress(100)
