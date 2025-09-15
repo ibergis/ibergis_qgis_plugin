@@ -1888,6 +1888,12 @@ VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_max_veloc
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_min_velocity', 'lyt_ibergis_1_1', 4, 'real', 'spinbox', 'Min value for velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_max_raindepth', 'lyt_ibergis_1_1', 5, 'real', 'spinbox', 'Max value for rain depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of rain depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_min_raindepth', 'lyt_ibergis_1_1', 6, 'real', 'spinbox', 'Min value for rain depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of rain depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 
 -- manning
 INSERT INTO config_form_fields

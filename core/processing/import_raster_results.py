@@ -130,7 +130,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         feedback.setProgress(15)
 
         # Set layer names
-        self.layer_names: list[str] = ["Depth", "Velocity", "Rain_Depth", "Water_Elevation"]
+        self.layer_names: list[str] = ["Depth", "Velocity", "Rain_Depth"]
         #                                   "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
         #                                   "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008",
         #                                   "Water_Elevation", "Water_Permanence"]
@@ -236,7 +236,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         longest_qgis_step = 0.0000000000000001
 
         # Get min and max values
-        layer_name = layer.name().split('-')[1].strip().lower()
+        layer_name = layer.name().split('-')[1].strip().lower().replace('_', '')
 
         sql = f"SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'result_symbology_%_{layer_name}%'"
         result = global_vars.gpkg_dao_data.get_rows(sql)
@@ -319,26 +319,29 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         except Exception:
             pass
 
-        # Config temporal
-        temporal: QgsRasterLayerTemporalProperties = layer.temporalProperties()
-        temporal.setIsActive(True)
-        temporal.setMode(Qgis.RasterTemporalMode.FixedRangePerBand)
+        try:
+            # Config temporal
+            temporal: QgsRasterLayerTemporalProperties = layer.temporalProperties()
+            temporal.setIsActive(True)
+            temporal.setMode(Qgis.RasterTemporalMode.FixedRangePerBand)
 
-        start_time: QDateTime = QDateTime(self.start_date, self.start_time, QTimeZone.utc())
+            start_time: QDateTime = QDateTime(self.start_date, self.start_time, QTimeZone.utc())
 
-        interval_seconds: Optional[int] = None
-        if self.step_time is not None:
-            interval_seconds = (self.step_time.hour() * 60 + self.step_time.minute()) * 60 + self.step_time.second()
+            interval_seconds: Optional[int] = None
+            if self.step_time is not None:
+                interval_seconds = (self.step_time.hour() * 60 + self.step_time.minute()) * 60 + self.step_time.second()
 
-        # Create a time range per band
-        ranges: dict = {}
-        for i in range(layer.bandCount()):
-            end_time = start_time.addSecs(interval_seconds)
-            dt_range = QgsDateTimeRange(start_time, end_time)
-            ranges[i + 1] = dt_range
-            start_time = start_time.addSecs(interval_seconds)
+            # Create a time range per band
+            ranges: dict = {}
+            for i in range(layer.bandCount()):
+                end_time = start_time.addSecs(interval_seconds)
+                dt_range = QgsDateTimeRange(start_time, end_time)
+                ranges[i + 1] = dt_range
+                start_time = start_time.addSecs(interval_seconds)
 
-        temporal.setFixedRangePerBand(ranges)
+            temporal.setFixedRangePerBand(ranges)
+        except Exception:
+            pass
 
     def _generate_color_map(self, colors: list[QColor], min_val: float, max_val: float) -> dict:
         """ Generates a color map from a list of colors and a minimum and maximum value """

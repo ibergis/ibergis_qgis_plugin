@@ -166,7 +166,7 @@ class DrExecuteModel(DrTask):
         created_netcdf: bool = False
         raster_files: str = f'{self.folder_path}{os.sep}RasterResults'
         netcdf_file: str = f'{self.folder_path}{os.sep}IberGisResults'
-        result_names: list[str] = ["Depth", "Velocity", "Rain_Depth", "Water_Elevation"]
+        result_names: list[str] = ["Depth", "Velocity", "Rain_Depth"]
         #                            "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
         #                            "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008"
         #                            "Water_Elevation", "Water_Permanence"]
