@@ -326,49 +326,6 @@ class DrProfileButton(DrAction):
                     # Clear old list arcs
                     # self.dlg_draw_profile.tbl_list_arc.clear()
 
-                    return
-
-                    # Populate list arcs
-                    extras = f'"initNode":"{self.initNode}", "endNode":"{self.endNode}"'
-                    if self.add_points and self.add_points_list:
-                        points_list = str(self.add_points_list).replace("'", "")
-                        extras += f', "midNodes":{points_list}'
-                    body = tools_dr.create_body(extras=extras)
-                    result = tools_dr.execute_procedure('gw_fct_getprofilevalues', body)
-                    if result is None or result['status'] == 'Failed':
-                        return
-                    self.layer_arc = tools_qgis.get_layer_by_tablename("v_edit_arc")
-
-                    # Manage level and message from query result
-                    if result['message']:
-                        level = int(result['message']['level'])
-                        msg = result['message']['text']
-                        tools_qgis.show_message(msg, level)
-                        if result['message']['level'] != 3:
-                            # If error reset profile
-                            self._clear_profile()
-                            return
-
-                    self._remove_selection()
-                    list_arcs = []
-                    for arc in result['body']['data']['arc']:
-                        # item_arc = QListWidgetItem(str(arc['arc_id']))
-                        # self.dlg_draw_profile.tbl_list_arc.addItem(item_arc)
-                        list_arcs.append(arc['arc_id'])
-
-                    expr_filter = "\"arc_id\" IN ("
-                    for arc in result['body']['data']['arc']:
-                        expr_filter += f"'{arc['arc_id']}', "
-                    expr_filter = expr_filter[:-2] + ")"
-                    expr = QgsExpression(expr_filter)
-                    # Get a featureIterator from this expression:
-                    it = self.layer_arc.getFeatures(QgsFeatureRequest(expr))
-
-                    self.id_list = [i.id() for i in it]
-                    self.layer_arc.selectByIds(self.id_list)
-
-                    self.action_add_point.setDisabled(False)
-
                 # Next profile will be done from scratch
                 self.first_node = True
                 if self.add_points:
