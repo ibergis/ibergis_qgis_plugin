@@ -356,7 +356,7 @@ class DrProfileButton(DrAction):
         # Temporal parameters
         write_time_step = out.report_interval
         start_date = out.start_date
-        end_date = start_date + out.n_periods * out.report_interval
+        end_date = start_date + out.n_periods * write_time_step
 
         print(f"Start date = {start_date}")
         print(f"End date   = {end_date}")
@@ -371,6 +371,16 @@ class DrProfileButton(DrAction):
         custom_end = pd.Timestamp(custom_end)
         print(f"Custom start = {custom_start}")
         print(f"Custom end   = {custom_end}")
+
+        # Helper function to check if timestamp aligns with simulation timesteps
+        def is_valid_timestep(check_time, start_time, timestep_interval):
+            """Check if a timestamp aligns with simulation timesteps"""
+            time_diff = check_time - start_time
+            total_seconds = time_diff.total_seconds()
+            timestep_seconds = timestep_interval.total_seconds()
+
+            # Check if the time difference is a multiple of the timestep
+            return abs(total_seconds % timestep_seconds) < 1e-6  # Small tolerance for floating point precision
 
         # Nodes
         start_node = self.initNode
@@ -402,6 +412,13 @@ class DrProfileButton(DrAction):
                 msg_params = (start_date.strftime('%d-%m-%Y %H:%M:%S'), end_date.strftime('%d-%m-%Y %H:%M:%S'))
                 tools_qgis.show_warning("The selected time must be within the simulation period. ({0} - {1})", msg_params=msg_params)
                 return
+
+            # Check if timestamp aligns with simulation timesteps
+            if not is_valid_timestep(timestamp, start_date, write_time_step):
+                timestep_minutes = int(write_time_step.total_seconds() / 60)
+                tools_qgis.show_warning("The selected timestamp does not align with simulation timesteps. Timestep interval is {0} minutes.", msg_params=(timestep_minutes,))
+                return
+
             fig, ax = profile_plotter.plot_longitudinal(start_node, end_node, timestamp, add_node_labels=False)
             fig.show()
 
@@ -415,6 +432,18 @@ class DrProfileButton(DrAction):
                 msg_params = (custom_start.strftime('%d-%m-%Y %H:%M:%S'), custom_end.strftime('%d-%m-%Y %H:%M:%S'))
                 tools_qgis.show_warning("The end time must be bigger than the start time. ({0} >= {1})", msg_params=msg_params)
                 return
+
+            # Check if custom_start and custom_end align with simulation timesteps
+            if not is_valid_timestep(custom_start, start_date, write_time_step):
+                timestep_minutes = int(write_time_step.total_seconds() / 60)
+                tools_qgis.show_warning("The start time does not align with simulation timesteps. Timestep interval is {0} minutes.", msg_params=(timestep_minutes,))
+                return
+
+            if not is_valid_timestep(custom_end, start_date, write_time_step):
+                timestep_minutes = int(write_time_step.total_seconds() / 60)
+                tools_qgis.show_warning("The end time does not align with simulation timesteps. Timestep interval is {0} minutes.", msg_params=(timestep_minutes,))
+                return
+
             profile_plotter.show_with_slider(start_node, end_node, write_time_step, custom_start, custom_end)
 
     def _clear_profile(self):
