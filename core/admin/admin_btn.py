@@ -415,7 +415,7 @@ class DrAdminButton(DrGpkgBase):
         self.error_count = 0
 
         # Set title
-        window_title = f'Drain ({self.plugin_version})'
+        window_title = f'IberGIS ({self.plugin_version})'
         self.dlg_readsql.setWindowTitle(window_title)
 
         tools_dr.open_dialog(self.dlg_readsql, 'admin_ui')

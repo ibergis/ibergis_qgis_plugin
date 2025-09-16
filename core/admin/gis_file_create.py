@@ -19,7 +19,7 @@ class DrGisFileCreate:
         self.plugin_dir = plugin_dir
         self.layer_source = None
 
-    def gis_project_database(self, folder_path, filename, gpkg_file, srid, roletype='admin'):
+    def gis_project_database(self, folder_path, filename, gpkg_file, srid):
 
         # Get locale of QGIS application
         locale = tools_qgis.get_locale()
@@ -36,7 +36,7 @@ class DrGisFileCreate:
             gis_locale_path = os.path.join(gis_folder, "en_US")
 
         # Check if template_path and folder_path exists
-        template_path = os.path.join(gis_locale_path, f"{roletype}.{gis_extension}")
+        template_path = os.path.join(gis_locale_path, f"template.{gis_extension}")
         if not os.path.exists(template_path):
             msg = "Template GIS file not found: {0}"
             msg_params = (template_path,)
