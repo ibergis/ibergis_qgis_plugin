@@ -8,6 +8,7 @@ or (at your option) any later version.
 import os
 import processing
 from functools import partial
+from typing import Optional, Literal
 
 from sip import isdeleted
 from qgis.PyQt.QtWidgets import QMenu, QAction, QListWidgetItem
@@ -46,7 +47,9 @@ TS_GRAPH_VARIABLES = {
 class DataSeries:
     """ Class to hold data series information """
 
-    def __init__(self, object_type, object_name, variable, legend_label, axis):
+    def __init__(self, object_type: Optional[Literal['Subcatchment', 'Node', 'Link', 'System']],
+                 object_name: Optional[str], variable: Optional[str], legend_label: Optional[str],
+                 axis: Literal['Left', 'Right']):
         self.object_type = object_type
         self.object_name = object_name
         self.variable = variable
@@ -149,8 +152,11 @@ class DrResultsButton(DrAction):
         print("show_time_series_graph")
         self.ts_graph_selection_dlg = DrTimeseriesGraphUi()
 
-        self._fill_ts_graph_sel_combos(self.ts_graph_selection_dlg)
+        # Fill combos
+        self._fill_cmb_type(self.ts_graph_selection_dlg)
+        self._fill_cmb_variable(self.ts_graph_selection_dlg)
 
+        # Connect signals
         self.ts_graph_selection_dlg.cmb_type.currentTextChanged.connect(partial(self._fill_cmb_variable, self.ts_graph_selection_dlg))
         self.ts_graph_selection_dlg.btn_add.clicked.connect(partial(self._add_data_series, self.ts_graph_selection_dlg))
         self.ts_graph_selection_dlg.btn_delete.clicked.connect(partial(self._delete_data_series, self.ts_graph_selection_dlg))
@@ -168,18 +174,11 @@ class DrResultsButton(DrAction):
 
         tools_dr.open_dialog(self.ts_graph_selection_dlg, dlg_name='timeseries_graph')
 
-    def _fill_ts_graph_sel_combos(self, dialog):
-        """ Fill time series graph selection dialog combos """
-
-        self._fill_cmb_type(dialog)
-
-        self._fill_cmb_variable(dialog)
-
     def _add_data_series(self, dialog):
         """ Add empty data series and select it """
 
         # Create empty DataSeries instance with default values
-        data_series = DataSeries("", "", "", "", "Left")
+        data_series = DataSeries(None, None, None, None, "Left")
 
         # Create QListWidgetItem with string representation and add to list
         list_item = QListWidgetItem(str(data_series))
@@ -188,8 +187,6 @@ class DrResultsButton(DrAction):
 
         # Select the newly added item
         dialog.lst_data_series.setCurrentItem(list_item)
-
-        print(f"Added empty data series: {data_series}")
 
     def _on_list_selection_changed(self, dialog):
         """ Handle list selection change to update widgets """
@@ -272,8 +269,6 @@ class DrResultsButton(DrAction):
         # Get the current row and remove the item
         current_row = dialog.lst_data_series.currentRow()
         dialog.lst_data_series.takeItem(current_row)
-
-        print(f"Deleted data series at row {current_row}")
 
     def _fill_cmb_type(self, dialog):
         # Type
