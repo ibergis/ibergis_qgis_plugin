@@ -42,6 +42,7 @@ TS_GRAPH_VARIABLES = {
     ]
 }
 
+
 class DrResultsButton(DrAction):
     """ Button 16: Results """
 
