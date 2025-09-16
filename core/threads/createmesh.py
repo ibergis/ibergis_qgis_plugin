@@ -27,6 +27,7 @@ import numpy as np
 import pandas as pd
 import processing
 import bisect
+from datetime import datetime
 
 
 class DrCreateMeshTask(DrTask):
@@ -379,7 +380,7 @@ class DrCreateMeshTask(DrTask):
         # Initialize raster flags
         self.roughness_from_raster = False
         self.losses_from_raster = False
-        
+
         # Triangles
         ground_triangles_df = pd.DataFrame(triangles, columns=["v1", "v2", "v3"], dtype=np.uint32)
         ground_triangles_df["v4"] = ground_triangles_df["v1"]
@@ -617,12 +618,12 @@ class DrCreateMeshTask(DrTask):
             print(f"Done! {time.time() - start}s")
         return bridges_df
 
-    def _finalize_mesh(self, triangles_df: pd.DataFrame, vertices_df: pd.DataFrame, 
+    def _finalize_mesh(self, triangles_df: pd.DataFrame, vertices_df: pd.DataFrame,
                       roofs_df: pd.DataFrame, bridges_df: pd.DataFrame) -> bool:
         """Finalize mesh creation and processing."""
         # Get losses data
         losses_data = self._process_ground_losses()
-        
+
         self.mesh = mesh_parser.Mesh(
             polygons=triangles_df,
             vertices=vertices_df,
@@ -701,9 +702,10 @@ class DrCreateMeshTask(DrTask):
         mesh_str, roof_str, losses_str, bridges_str = mesh_parser.dumps(self.mesh)
         print(f"Done! {time.time() - start}s")
 
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.dao.execute_sql(f"""
-            INSERT INTO cat_file (name, iber2d, roof, losses, bridge)
-            VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}')
+            INSERT INTO cat_file (name, iber2d, roof, losses, bridge, timestamp)
+            VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}', '{timestamp}')
         """)
         return True
 

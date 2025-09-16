@@ -16,6 +16,8 @@ from .... import global_vars
 from ....lib.tools_gpkgdao import DrGpkgDao
 from typing import Optional
 
+from datetime import datetime
+
 
 class DrMeshManagerButton(DrAction):
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
@@ -94,6 +96,7 @@ class DrMeshManagerButton(DrAction):
         tools_qt.set_tableview_config(widget, selection=QAbstractItemView.SelectRows, edit_triggers=set_edit_triggers,
                                       sectionResizeMode=2, stretchLastSection=False)
         widget.horizontalHeader().setSectionResizeMode(0, 1)
+        widget.horizontalHeader().setSectionResizeMode(1, 3)
 
         # Sort the table by name
         model.sort(0, 0)
@@ -213,11 +216,14 @@ class DrMeshManagerButton(DrAction):
     def _insert_mesh(self, mesh_path, roof_path, losses_path):
         mesh_name = tools_qt.get_text(self.dlg_lineedit, 'txt_input')
 
-        columns = "name, iber2d"
+        # Get current date and time
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        columns = "name, iber2d, timestamp"
         values = f"'{mesh_name}'"
         with open(mesh_path) as f:
             content = f.read()
-            values += f", '{content}'"
+            values += f", '{content}', '{timestamp}'"
 
         if roof_path.exists():
             columns += ", roof"
