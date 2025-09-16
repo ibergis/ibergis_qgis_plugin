@@ -232,6 +232,34 @@ class DrExecuteModel(DrTask):
 
         configs: list[RptTopicConfig] = [
             RptTopicConfig(
+                topic='Node',
+                swmm_attr='node_depth_summary',
+                table_name='rpt_node',
+                field_map={
+                    'epa_type': 'Type',
+                    'ymax': None,
+                    'elev': None,
+                    'y0': None,
+                    'ysur': None
+                },
+                parent_table='node'
+            ),
+            RptTopicConfig(
+                topic='Arc',
+                swmm_attr='link_flow_summary',
+                table_name='rpt_arc',
+                field_map={
+                    'epa_type': 'Type',
+                    'shape': None,
+                    'geom1': None,
+                    'geom2': None,
+                    'geom3': None,
+                    'geom4': None,
+                    'arc_type': None
+                },
+                parent_table='arc'
+            ),
+            RptTopicConfig(
                 topic='Node Depth',
                 swmm_attr='node_depth_summary',
                 table_name='rpt_nodedepth_sum',
@@ -241,7 +269,6 @@ class DrExecuteModel(DrTask):
                     'elev': None,
                     'y0': None,
                     'ysur': None,
-                    'swnod_type': None,
                     'aver_depth': 'Average_Depth_Meters',
                     'max_depth': 'Maximum_Depth_Meters',
                     'max_hgl': 'Maximum_HGL_Meters',
@@ -260,7 +287,6 @@ class DrExecuteModel(DrTask):
                     'elev': None,
                     'y0': None,
                     'ysur': None,
-                    'swnod_type': None,
                     'max_latinf': 'Maximum_Lateral_Inflow_CMS',
                     'max_totinf': 'Maximum_Total_Inflow_CMS',
                     'time_days': 'Time of Max_Occurrence_days hr:min',
@@ -281,7 +307,6 @@ class DrExecuteModel(DrTask):
                     'elev': None,
                     'y0': None,
                     'ysur': None,
-                    'swnod_type': None,
                     'hour_surch': 'Hours_Surcharged',
                     'max_height': 'Max. Height_Above Crown_Meters',
                     'min_depth': 'Min. Depth_Below Rim_Meters',
@@ -459,15 +484,18 @@ class DrExecuteModel(DrTask):
                             sql = f"SELECT table_name FROM {cfg.parent_table} WHERE code = '{index}'"
                             row = dao_data.get_row(sql)
                             if row is None:
-                                msg = f"Error getting value from inp table for {cfg.topic}: \n {sql}"
+                                msg = f"Error getting table name for {cfg.topic}: \n {sql}"
                                 self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
                                 continue
                             sql = f"SELECT {field} FROM {cfg.parent_table} AS general INNER JOIN {row[0]} inp ON general.code = inp.code WHERE general.code = '{index}'"
                             row = dao_data.get_row(sql)
                             if row is None:
-                                msg = f"Error getting value from inp table for {cfg.topic}: \n {sql}"
-                                self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
-                                continue
+                                sql = f"SELECT {field} FROM {'rpt_node' if cfg.parent_table == 'node' else 'rpt_arc'} WHERE code = '{index}'"
+                                row = dao_rpt.get_row(sql)
+                                if row is None:
+                                    msg = f"Error getting value for {cfg.topic}: \n {sql}"
+                                    self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+                                    continue
                             start_sql += f"{field}, "
                             end_sql += f"{row[0]}, " if isinstance(row[0], (int, float)) else f"'{row[0]}', "
                             continue
@@ -484,13 +512,15 @@ class DrExecuteModel(DrTask):
                         start_sql += f"{field}, "
                         end_sql += f"{data_row[swmm_field]}, " if isinstance(data_row[swmm_field], (int, float)) else f"'{data_row[swmm_field]}', "
                     # Get geometry
+                    geom = None
                     if cfg.parent_table == 'node':
-                        geom = node_dict[index].geometry().asWkt()
-                    else:
-                        geom = arc_dict[index].geometry().asWkt()
-                    if geom:
-                        start_sql += "geom, "
-                        end_sql += f"ST_GeomFromText('{geom}', {srid}), "
+                        if index in node_dict:
+                            geom = node_dict[index].geometry().asWkt()
+                    elif cfg.parent_table == 'arc':
+                        if index in arc_dict:
+                            geom = arc_dict[index].geometry().asWkt()
+                    start_sql += "geom, "
+                    end_sql += f"ST_GeomFromText('{geom}', {srid}), "
 
                     start_sql = start_sql[:-2]
                     end_sql = end_sql[:-2]
