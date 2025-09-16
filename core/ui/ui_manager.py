@@ -156,6 +156,13 @@ FROM_CLASS = _get_ui_class('bridge.ui', 'main')
 class DrBridgeUi(DrDialog, FROM_CLASS):
     pass
 
+
+FROM_CLASS = _get_ui_class('timeseries_graph.ui', 'utilities')
+
+
+class DrTimeseriesGraphUi(DrDialog, FROM_CLASS):
+    pass
+
 # endregion
 
 

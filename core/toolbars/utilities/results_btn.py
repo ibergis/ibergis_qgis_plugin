@@ -7,20 +7,40 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 import os
 import processing
+from functools import partial
 
+from sip import isdeleted
 from qgis.PyQt.QtWidgets import QMenu, QAction
 from qgis.PyQt.QtGui import QIcon
-from qgis.core import QgsEditFormConfig, QgsProject, QgsVectorLayer
+from qgis.core import QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt
 
-from ....lib import tools_qgis
 from .... import global_vars
-from sip import isdeleted
+from ....lib import tools_qgis
+from ....core.utils import tools_dr
 from ....core.toolbars.dialog import DrAction
+from ....core.ui.ui_manager import DrTimeseriesGraphUi
 from ....core.toolbars.utilities.profile_btn import DrProfileButton
 from ....core.toolbars.utilities.report_summary_btn import DrReportSummaryButton
 from ....core.toolbars.utilities.results_folder_selector_btn import DrResultsFolderSelectorButton
 
+
+TS_GRAPH_TYPES = ['Subcatchment', 'Node', 'Link', 'System']
+TS_GRAPH_VARIABLES = {
+    'Subcatchment': [
+        'Precipitation', 'Snow Depth', 'Evaporation', 'Infiltration', 'Runoff', 'GW Flow', 'GW Elev.', 'Soil Moisture'
+    ],
+    'Node': [
+        'Depth', 'Head', 'Volume', 'Lateral Inflow', 'Total Inflow', 'Flooding'
+    ],
+    'Link': [
+        'Flow', 'Depth', 'Velocity', 'Volume', 'Capacity'
+    ],
+    'System': [
+        'Temperature', 'Precipitation', 'Snow Depth', 'Infiltration', 'Runoff', 'DW Inflow', 'GW Inflow',
+        'I&I Inflow', 'Direct Inflow', 'Total Inflow', 'Flooding', 'Outflow', 'Storage', 'Evaporation', 'PET'
+    ]
+}
 
 class DrResultsButton(DrAction):
     """ Button 16: Results """
@@ -100,40 +120,34 @@ class DrResultsButton(DrAction):
         """ Show time series graph """
 
         print("show_time_series_graph")
-        return
-        # Return if theres one bridge dialog already open
-        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
-            # Bring the existing dialog to the front
-            self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
-            self.dialog.raise_()
-            self.dialog.show()
-            self.dialog.activateWindow()
-            tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
-            return
+        self.ts_graph_selection_dlg = DrTimeseriesGraphUi()
 
-        # Show info message
-        msg = "Draw a linestring to define the bridge and then use right click to finish the drawing."
-        tools_qgis.show_info(msg)
+        self._fill_ts_graph_sel_combos(self.ts_graph_selection_dlg)
 
-        # Get the bridge layer
-        bridge_layer = tools_qgis.get_layer_by_tablename('bridge')
-        if bridge_layer is None:
-            tools_qgis.show_warning("Bridge layer not found.")
-            return
+        self.ts_graph_selection_dlg.cmb_type.currentTextChanged.connect(partial(self._fill_cmb_variable, self.ts_graph_selection_dlg))
 
-        # Store previous form suppression setting
-        config = bridge_layer.editFormConfig()
-        self._conf_supp = config.suppress()
-        config.setSuppress(QgsEditFormConfig.FeatureFormSuppress.SuppressOn)  # SuppressOn
-        bridge_layer.setEditFormConfig(config)
+        tools_dr.open_dialog(self.ts_graph_selection_dlg, dlg_name='timeseries_graph')
 
-        # Start editing and trigger add feature tool
-        global_vars.iface.setActiveLayer(bridge_layer)
-        bridge_layer.startEditing()
-        global_vars.iface.actionAddFeature().trigger()
+    def _fill_ts_graph_sel_combos(self, dialog):
+        """ Fill time series graph selection dialog combos """
 
-        # Connect to featureAdded signal
-        bridge_layer.featureAdded.connect(self._on_bridge_feature_added)
+        self._fill_cmb_type(dialog)
+
+        self._fill_cmb_variable(dialog)
+
+    def _fill_cmb_type(self, dialog):
+        # Type
+        cmb_type = dialog.cmb_type
+        cmb_type.clear()
+        cmb_type.addItems(TS_GRAPH_TYPES)
+
+    def _fill_cmb_variable(self, dialog):
+        # Variables
+        cmb_variable = dialog.cmb_variable
+        cmb_variable.blockSignals(True)
+        cmb_variable.clear()
+        cmb_variable.addItems(TS_GRAPH_VARIABLES[dialog.cmb_type.currentText()])
+        cmb_variable.blockSignals(False)
 
     def set_results_folder(self):
         """ Set results folder """
@@ -274,7 +288,6 @@ class DrResultsButton(DrAction):
             self.report_summary_action.setDisabled(True)
             self.time_series_graph_action.setDisabled(True)
             self.load_rpt_results_action.setDisabled(True)
-        self.time_series_graph_action.setDisabled(True)  # TODO: Remove this when time series graph is implemented
 
         self.menu.addAction(self.profile_action)
         self.menu.addAction(self.report_summary_action)
