@@ -10,7 +10,7 @@ import processing
 from functools import partial
 
 from sip import isdeleted
-from qgis.PyQt.QtWidgets import QMenu, QAction
+from qgis.PyQt.QtWidgets import QMenu, QAction, QListWidgetItem
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt
@@ -41,6 +41,32 @@ TS_GRAPH_VARIABLES = {
         'I&I Inflow', 'Direct Inflow', 'Total Inflow', 'Flooding', 'Outflow', 'Storage', 'Evaporation', 'PET'
     ]
 }
+
+
+class DataSeries:
+    """ Class to hold data series information """
+
+    def __init__(self, object_type, object_name, variable, legend_label, axis):
+        self.object_type = object_type
+        self.object_name = object_name
+        self.variable = variable
+        self.legend_label = legend_label
+        self.axis = axis
+
+    def __str__(self):
+        # Handle empty values for better display
+        object_type = self.object_type or ""
+        object_name = self.object_name or ""
+        variable = self.variable or ""
+        legend_label = self.legend_label or ""
+
+        if not object_type and not object_name and not variable:
+            return "New series"
+
+        if legend_label:
+            return f"{legend_label}"
+
+        return f"{object_type} {object_name} {variable}"
 
 
 class DrResultsButton(DrAction):
@@ -126,6 +152,19 @@ class DrResultsButton(DrAction):
         self._fill_ts_graph_sel_combos(self.ts_graph_selection_dlg)
 
         self.ts_graph_selection_dlg.cmb_type.currentTextChanged.connect(partial(self._fill_cmb_variable, self.ts_graph_selection_dlg))
+        self.ts_graph_selection_dlg.btn_add.clicked.connect(partial(self._add_data_series, self.ts_graph_selection_dlg))
+        self.ts_graph_selection_dlg.btn_delete.clicked.connect(partial(self._delete_data_series, self.ts_graph_selection_dlg))
+
+        # Connect list selection change
+        self.ts_graph_selection_dlg.lst_data_series.currentItemChanged.connect(partial(self._on_list_selection_changed, self.ts_graph_selection_dlg))
+
+        # Connect widget changes to update DataSeries
+        self.ts_graph_selection_dlg.cmb_type.currentTextChanged.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
+        self.ts_graph_selection_dlg.txt_name.textChanged.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
+        self.ts_graph_selection_dlg.cmb_variable.currentTextChanged.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
+        self.ts_graph_selection_dlg.txt_legend_label.textChanged.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
+        self.ts_graph_selection_dlg.rb_axis_left.toggled.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
+        self.ts_graph_selection_dlg.rb_axis_right.toggled.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
 
         tools_dr.open_dialog(self.ts_graph_selection_dlg, dlg_name='timeseries_graph')
 
@@ -135,6 +174,106 @@ class DrResultsButton(DrAction):
         self._fill_cmb_type(dialog)
 
         self._fill_cmb_variable(dialog)
+
+    def _add_data_series(self, dialog):
+        """ Add empty data series and select it """
+
+        # Create empty DataSeries instance with default values
+        data_series = DataSeries("", "", "", "", "Left")
+
+        # Create QListWidgetItem with string representation and add to list
+        list_item = QListWidgetItem(str(data_series))
+        list_item.setData(Qt.UserRole, data_series)  # Store the DataSeries object
+        dialog.lst_data_series.addItem(list_item)
+
+        # Select the newly added item
+        dialog.lst_data_series.setCurrentItem(list_item)
+
+        print(f"Added empty data series: {data_series}")
+
+    def _on_list_selection_changed(self, dialog):
+        """ Handle list selection change to update widgets """
+
+        current_item = dialog.lst_data_series.currentItem()
+        if current_item is None:
+            return
+
+        # Get the DataSeries object from the selected item
+        data_series = current_item.data(Qt.UserRole)
+        if data_series is None:
+            return
+
+        # Block signals to prevent recursive updates
+        dialog.cmb_type.blockSignals(True)
+        dialog.txt_name.blockSignals(True)
+        dialog.cmb_variable.blockSignals(True)
+        dialog.txt_legend_label.blockSignals(True)
+        dialog.rb_axis_left.blockSignals(True)
+        dialog.rb_axis_right.blockSignals(True)
+
+        # Update widgets with DataSeries data
+        if data_series.object_type:
+            dialog.cmb_type.setCurrentText(data_series.object_type)
+        dialog.txt_name.setText(data_series.object_name)
+        if data_series.variable:
+            dialog.cmb_variable.setCurrentText(data_series.variable)
+        dialog.txt_legend_label.setText(data_series.legend_label)
+
+        # Set axis radio buttons
+        if data_series.axis == "Left":
+            dialog.rb_axis_left.setChecked(True)
+        else:
+            dialog.rb_axis_right.setChecked(True)
+
+        # Unblock signals
+        dialog.cmb_type.blockSignals(False)
+        dialog.txt_name.blockSignals(False)
+        dialog.cmb_variable.blockSignals(False)
+        dialog.txt_legend_label.blockSignals(False)
+        dialog.rb_axis_left.blockSignals(False)
+        dialog.rb_axis_right.blockSignals(False)
+
+        # Update variable combo after unblocking signals if type is set
+        if data_series.object_type:
+            self._fill_cmb_variable(dialog)
+            # Set the variable again after filling the combo
+            if data_series.variable:
+                dialog.cmb_variable.setCurrentText(data_series.variable)
+
+    def _on_widget_changed(self, dialog):
+        """ Handle widget changes to update selected DataSeries """
+
+        current_item = dialog.lst_data_series.currentItem()
+        if current_item is None:
+            return
+
+        # Get the DataSeries object from the selected item
+        data_series = current_item.data(Qt.UserRole)
+        if data_series is None:
+            return
+
+        # Update DataSeries with widget values
+        data_series.object_type = dialog.cmb_type.currentText()
+        data_series.object_name = dialog.txt_name.text()
+        data_series.variable = dialog.cmb_variable.currentText()
+        data_series.legend_label = dialog.txt_legend_label.text()
+        data_series.axis = "Left" if dialog.rb_axis_left.isChecked() else "Right"
+
+        # Update the list item text with new string representation
+        current_item.setText(str(data_series))
+
+    def _delete_data_series(self, dialog):
+        """ Delete selected data series """
+
+        current_item = dialog.lst_data_series.currentItem()
+        if current_item is None:
+            return
+
+        # Get the current row and remove the item
+        current_row = dialog.lst_data_series.currentRow()
+        dialog.lst_data_series.takeItem(current_row)
+
+        print(f"Deleted data series at row {current_row}")
 
     def _fill_cmb_type(self, dialog):
         # Type
