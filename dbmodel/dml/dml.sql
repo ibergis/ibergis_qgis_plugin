@@ -149,7 +149,9 @@ VALUES
 (42, 'OUTLAYER', 'roof', '{slope}', NULL, 0, NULL, 6, 12, 2, 142),
 (43, 'OUTLAYER', 'roof', '{roughness, outlet_vol, street_vol}', NULL, 0, NULL, 6, 12, 3, 143),
 (44, 'MANDATORY NULL', 'inp_storage', '{a1, a2, a0}', 'AND storage_type == "FUNCTIONAL"', 0, NULL, 2, 11, 3, 144),
-(45, 'MANDATORY NULL', 'inlet', '{weir_cd, orifice_cd}', 'AND method == "W_O"', 0, NULL, 2, 11, 3, 145);
+(45, 'MANDATORY NULL', 'inlet', '{weir_cd, orifice_cd}', 'AND method == "W_O"', 0, NULL, 2, 11, 3, 145),
+(46, 'OUTLAYER', 'inlet', '{weir_cd, orifice_cd}', NULL, 0, NULL, 6, 12, 3, 143),
+(47, 'OUTLAYER', 'pinlet', '{weir_cd, orifice_cd}', NULL, 0, NULL, 6, 12, 3, 143);
 
 
 INSERT INTO sys_message (id, "text") VALUES
@@ -668,6 +670,12 @@ VALUES(166, 'dlg_options_layout', 'lyt_rpt_iber_1_2', 'Maximums', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(167, 'dlg_options_layout', 'lyt_rpt_iber_1_3', 'Other results', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(168, 'dlg_options_layout', 'lyt_ibergis_6_1', 'Check project - weir_cd', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(169, 'dlg_options_layout', 'lyt_ibergis_6_2', 'Check project - orifice_cd', NULL, NULL);
 
 
 INSERT INTO config_form_fields
@@ -1966,3 +1974,19 @@ VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_street_vol_max', 
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_street_vol_min', 'lyt_ibergis_5_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for street_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
+
+-- weir_cd
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_weir_cd_max', 'lyt_ibergis_6_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '10', 'Maximum value for weir_cd on check project', '{"spinboxDecimals": 2, "maximumNumber": 10, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_weir_cd_min', 'lyt_ibergis_6_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for weir_cd on check project', '{"spinboxDecimals": 2, "maximumNumber": 10, "minimumNumber": 0, "include_widget": true}');
+
+-- orifice_cd
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_orifice_cd_max', 'lyt_ibergis_6_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '10', 'Maximum value for orifice_cd on check project', '{"spinboxDecimals": 2, "maximumNumber": 10, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_orifice_cd_min', 'lyt_ibergis_6_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for orifice_cd on check project', '{"spinboxDecimals": 2, "maximumNumber": 10, "minimumNumber": 0, "include_widget": true}');

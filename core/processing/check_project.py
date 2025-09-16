@@ -150,6 +150,18 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 'max': 100,
                 'include_min': True,
                 'include_max': True
+            },
+            'weir_cd': {
+                'min': 0,
+                'max': 10,
+                'include_min': True,
+                'include_max': True
+            },
+            'orifice_cd': {
+                'min': 0,
+                'max': 10,
+                'include_min': True,
+                'include_max': True
             }
         }
         self.outlayer_values = self._get_outlayer_values()
