@@ -23,7 +23,8 @@ from qgis.core import (
     QgsSingleBandPseudoColorRenderer,
     QgsInterval,
     QgsTemporalNavigationObject,
-    QgsMapLayerStyle
+    QgsMapLayerStyle,
+    QgsProcessingParameterBoolean
 )
 from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QTimeZone, QTime, QDate
 from qgis.PyQt.QtGui import QColor, QAction
@@ -43,6 +44,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
     """
     FOLDER_RESULTS = 'FOLDER_RESULTS'
     CUSTOM_NAME = 'CUSTOM_NAME'
+    FILE_SELECTION = 'FILE_SELECTION'
 
     # Layer params
     layers: list[QgsRasterLayer] = []
@@ -58,8 +60,11 @@ class ImportRasterResults(QgsProcessingAlgorithm):
     iface = global_vars.iface
     dao: Optional[DrGpkgDao] = None
     folder_results_path: Optional[str] = None
-    layer_names: list[str] = []
     from_inp: bool = True
+    files: list[str] = ['Depth', 'Velocity', 'Rain_Depth']
+                            # "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
+                            # "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008",
+                            # "Water_Elevation", "Water_Permanence"]
 
     def initAlgorithm(self, config):
         """
@@ -72,6 +77,14 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                 behavior=QgsProcessingParameterFile.Folder
             )
         )
+        for file in self.files:
+            self.addParameter(
+                QgsProcessingParameterBoolean(
+                    file,
+                    self.tr(f'Import *{file}* NetCDF file'),
+                    defaultValue=True
+                )
+            )
         self.addParameter(
             QgsProcessingParameterString(
                 self.CUSTOM_NAME,
@@ -88,7 +101,6 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.iface = global_vars.iface
         self.layers = []
         self.dao = global_vars.gpkg_dao_data.clone()
-        self.layer_names: list[str] = []
         self.from_inp: bool = True
 
         # reading geodata
@@ -99,6 +111,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         group_name: str = self.parameterAsString(parameters, self.CUSTOM_NAME, context)
         folder_netcdf: str = f'{self.folder_results_path}{os.sep}IberGisResults'
         inp_file: str = f'{self.folder_results_path}{os.sep}Iber_SWMM.inp'
+        self.files = [file for file in self.files if self.parameterAsBoolean(parameters, file, context)]
 
         # Check if folder is valid and if NetCDF and INP files exist
         if self.folder_results_path is not None and os.path.exists(self.folder_results_path) and os.path.isdir(self.folder_results_path):
@@ -129,12 +142,6 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         feedback.setProgressText(self.tr("Importing layers..."))
         feedback.setProgress(15)
 
-        # Set layer names
-        self.layer_names: list[str] = ["Depth", "Velocity", "Rain_Depth"]
-        #                                   "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
-        #                                   "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008",
-        #                                   "Water_Elevation", "Water_Permanence"]
-
         project: QgsProject = QgsProject.instance()
 
         # Create layer group
@@ -147,7 +154,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.layers_group = root.insertGroup(0, display_group_name)
 
         try:
-            for layer_name in self.layer_names:
+            for layer_name in self.files:
                 # Get netcdf file
                 netcdf_file: str = f'{folder_netcdf}{os.sep}{layer_name}.nc'
                 if not os.path.exists(netcdf_file) or not os.path.isfile(netcdf_file):
