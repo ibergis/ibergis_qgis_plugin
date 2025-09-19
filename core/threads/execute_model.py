@@ -493,8 +493,6 @@ class DrExecuteModel(DrTask):
                                 sql = f"SELECT {field} FROM {'rpt_node' if cfg.parent_table == 'node' else 'rpt_arc'} WHERE code = '{index}'"
                                 row = dao_rpt.get_row(sql)
                                 if row is None:
-                                    msg = f"Error getting value for {cfg.topic}: \n {sql}"
-                                    self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
                                     continue
                             start_sql += f"{field}, "
                             end_sql += f"{row[0]}, " if isinstance(row[0], (int, float)) else f"'{row[0]}', "

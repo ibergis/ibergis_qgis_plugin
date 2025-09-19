@@ -18,7 +18,6 @@ from ....lib import tools_qt, tools_qgis, tools_os
 from ....lib.tools_gpkgdao import DrGpkgDao
 from qgis.core import QgsProject
 from qgis.PyQt.QtWidgets import QTableView
-from swmm_api import read_rpt_file
 
 
 @dataclass(frozen=True)
@@ -35,7 +34,6 @@ class DrReportSummaryButton(DrAction):
 
         # Call ParentDialog constructor
         super().__init__(icon_path, action_name, text, toolbar, action_group)
-        self.report_values = {}
         self.folder_path = None
         self.dao = DrGpkgDao()
         self.configs: list[RptSummaryConfig] = [
@@ -43,12 +41,8 @@ class DrReportSummaryButton(DrAction):
                 topic='Node Depth',
                 table_name='rpt_nodedepth_sum',
                 field_labels={
+                    'code': 'Code',
                     'epa_type': 'Type',
-                    'ymax': None,
-                    'elev': None,
-                    'y0': None,
-                    'ysur': None,
-                    'swnod_type': None,
                     'aver_depth': 'Average Depth Meters',
                     'max_depth': 'Maximum Depth Meters',
                     'max_hgl': 'Maximum HGL Meters',
@@ -60,12 +54,8 @@ class DrReportSummaryButton(DrAction):
                 topic='Node Inflow',
                 table_name='rpt_nodeinflow_sum',
                 field_labels={
+                    'code': 'Code',
                     'epa_type': 'Type',
-                    'ymax': None,
-                    'elev': None,
-                    'y0': None,
-                    'ysur': None,
-                    'swnod_type': None,
                     'max_latinf': 'Maximum Lateral Inflow CMS',
                     'max_totinf': 'Maximum Total Inflow CMS',
                     'time_days': 'Day of Maximum Inflow',
@@ -73,19 +63,14 @@ class DrReportSummaryButton(DrAction):
                     'latinf_vol': 'Lateral Inflow Volume 10^6 ltr',
                     'totinf_vol': 'Total Inflow Volume 10^6 ltr',
                     'flow_balance_error': 'Flow Balance Error %',
-                    'other_info': None,
                 },
             ),
             RptSummaryConfig(
                 topic='Node Surcharge',
                 table_name='rpt_nodesurcharge_sum',
                 field_labels={
+                    'code': 'Code',
                     'epa_type': 'Type',
-                    'ymax': None,
-                    'elev': None,
-                    'y0': None,
-                    'ysur': None,
-                    'swnod_type': None,
                     'hour_surch': 'Hours Surcharged',
                     'max_height': 'Max Height Above Crown Meters',
                     'min_depth': 'Min Depth Below Rim Meters',
@@ -95,11 +80,8 @@ class DrReportSummaryButton(DrAction):
                 topic='Node Flooding',
                 table_name='rpt_nodeflooding_sum',
                 field_labels={
-                    'epa_type': None,
-                    'ymax': None,
-                    'elev': None,
-                    'y0': None,
-                    'ysur': None,
+                    'code': 'Code',
+                    'epa_type': 'Type',
                     'hour_flood': 'Hours Flooded',
                     'max_rate': 'Maximum Rate CMS',
                     'time_days': 'Day of Maximum Flooding',
@@ -112,14 +94,12 @@ class DrReportSummaryButton(DrAction):
                 topic='Storage Volume',
                 table_name='rpt_storagevol_sum',
                 field_labels={
-                    'epa_type': None,
-                    'ymax': None,
-                    'elev': None,
-                    'y0': None,
-                    'ysur': None,
+                    'code': 'Code',
+                    'epa_type': 'Type',
                     'aver_vol': 'Average Volume 1000 m3',
                     'avg_full': 'Average Percent Full',
-                    'ei_loss': None,
+                    'evap_loss': 'Evaporation Loss %',
+                    'exfil_loss': 'Exfiltration Loss %',
                     'max_vol': 'Maximum Volume 1000 m3',
                     'max_full': 'Maximum Percent Full',
                     'time_days': 'Day of Maximum Volume',
@@ -131,11 +111,8 @@ class DrReportSummaryButton(DrAction):
                 topic='Outfall Loading',
                 table_name='rpt_outfallflow_sum',
                 field_labels={
-                    'epa_type': None,
-                    'ymax': None,
-                    'elev': None,
-                    'y0': None,
-                    'ysur': None,
+                    'code': 'Code',
+                    'epa_type': 'Type',
                     'flow_freq': 'Flow Frequency %',
                     'avg_flow': 'Average Flow CMS',
                     'max_flow': 'Maximum Flow CMS',
@@ -146,41 +123,22 @@ class DrReportSummaryButton(DrAction):
                 topic='Link Flow',
                 table_name='rpt_arcflow_sum',
                 field_labels={
+                    'code': 'Code',
                     'epa_type': 'Type',
-                    'shape': None,
-                    'geom1': None,
-                    'geom2': None,
-                    'geom3': None,
-                    'geom4': None,
-                    'flow': None,
-                    'arc_type': None,
                     'max_flow': 'Maximum|Flow|CMS',
                     'time_days': 'Day of Maximum Flow',
                     'time_hour': 'Hour of Maximum Flow',
                     'max_veloc': 'Maximum|Velocity|m/sec',
                     'mfull_flow': 'Max / Full_Flow',
                     'mfull_dept': 'Max / Full_Depth',
-                    'max_shear': None,
-                    'max_hr': None,
-                    'max_slope': None,
-                    'day_max': None,
-                    'time_max': None,
-                    'min_shear': None,
-                    'day_min': None,
-                    'time_min': None,
                 },
             ),
             RptSummaryConfig(
                 topic='Flow Classification',
                 table_name='rpt_flowclass_sum',
                 field_labels={
-                    'epa_type': None,
-                    'shape': None,
-                    'geom1': None,
-                    'geom2': None,
-                    'geom3': None,
-                    'geom4': None,
-                    'flow': None,
+                    'code': 'Code',
+                    'epa_type': 'Type',
                     'length': 'Adjusted/Actual Length',
                     'dry': 'Fully Dry',
                     'up_dry': 'Upstrm Dry',
@@ -189,21 +147,16 @@ class DrReportSummaryButton(DrAction):
                     'sub_crit_1': 'Super Critical',
                     'up_crit': 'Upstrm Critical',
                     'down_crit': 'Dnstrm Critical',
-                    'froud_numb': None,
-                    'flow_chang': None,
+                    'norm_ltd': 'Normal Flow Limited',
+                    'inlet_ctrl': 'Inlet Control',
                 },
             ),
             RptSummaryConfig(
                 topic='Conduit Surcharge',
                 table_name='rpt_condsurcharge_sum',
                 field_labels={
-                    'epa_type': None,
-                    'shape': None,
-                    'geom1': None,
-                    'geom2': None,
-                    'geom3': None,
-                    'geom4': None,
-                    'flow': None,
+                    'code': 'Code',
+                    'epa_type': 'Type',
                     'both_ends': 'Hours Both Ends Full',
                     'upstream': 'Hours Upstream Full',
                     'dnstream': 'Hours Downstream Full',
@@ -215,7 +168,8 @@ class DrReportSummaryButton(DrAction):
                 topic='Pumping',
                 table_name='rpt_pumping_sum',
                 field_labels={
-                    'epa_type': None,
+                    'code': 'Code',
+                    'epa_type': 'Type',
                     'percent': 'Percent Utilized',
                     'num_startup': 'Number of Start-Ups',
                     'min_flow': 'Minimum Flow CMS',
@@ -253,14 +207,6 @@ class DrReportSummaryButton(DrAction):
 
         # Init dao
         self.dao.init_db(os.path.join(self.folder_path, 'IberGisResults', 'results.gpkg'))
-
-        # Get report values
-        self.rpt_path = os.path.join(self.folder_path, 'Iber_SWMM.rpt')
-        if self.rpt_path:
-            self.report_values = read_rpt_file(self.rpt_path)
-        else:
-            tools_qgis.show_warning("No rpt file found")
-            return
 
         # Populate widgets
         self._populate_widgets()
@@ -310,7 +256,8 @@ class DrReportSummaryButton(DrAction):
 
         # Get tableview
         tbl_summary = self.dlg_report_summary.tbl_summary
-        tbl_summary.clear()
+        tbl_summary.setRowCount(0)
+        tbl_summary.setColumnCount(0)
 
         sql = f"SELECT * FROM {cfg.table_name}"
         rows = self.dao.get_rows(sql)
@@ -332,7 +279,6 @@ class DrReportSummaryButton(DrAction):
         for col_idx, field in enumerate(valid_fields):
             header_label = cfg.field_labels[field]
             tbl_summary.setHorizontalHeaderItem(col_idx, QTableWidgetItem(header_label))
-        tbl_summary.setHorizontalHeaderItem(0, QTableWidgetItem('Code'))
 
         # Populate table data
         for row_idx, row_data in enumerate(rows):
@@ -341,7 +287,6 @@ class DrReportSummaryButton(DrAction):
                 if value is None:
                     value = ''
                 tbl_summary.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
-            tbl_summary.setItem(row_idx, 0, QTableWidgetItem(str(row_data['code'])))
 
     def _select_results_path(self):
         """ Open folder dialog and set path to textbox """
