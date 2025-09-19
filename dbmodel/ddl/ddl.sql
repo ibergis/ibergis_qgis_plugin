@@ -444,7 +444,7 @@ CREATE TABLE inp_weir (
     geom3 real check (typeof(geom3) = 'real' or geom3 = null)  DEFAULT 0.00,
     geom4 real check (typeof(geom4) = 'real' or geom4 = null),
     elev real check (typeof(elev) = 'real' or elev = null),
-    cd1 real check (typeof(cd1) = 'real' or cd1 = null),
+    cd real check (typeof(cd) = 'real' or cd = null),
     cd2 real check (typeof(cd2) = 'real' or cd2 = null),
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     ec integer check (typeof(ec) = 'integer' or ec = null),
@@ -453,7 +453,6 @@ CREATE TABLE inp_weir (
     road_surf text check (typeof(road_surf) in ('text', null) and road_surf in ('PAVED', 'GRAVEL')),
     curve text check (typeof(curve) = 'text' or curve = null),
     crest_height real check (typeof(crest_height)='real' or crest_height = null),
-    end_coeff real check (typeof(end_coeff)='real' or end_coeff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
     FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
@@ -742,7 +741,8 @@ create view if not exists vi_weirs as
     node_2 as ToNode,
     weir_type as Type,
     crest_height as CrestHeigh,
-    cd2 as Qcoeff,
+    cd as Qcoeff,
+    cd2 as EndCoeff,
     flap as FlapGate,
     ec as EndContrac,
     surcharge as Surcharge,
@@ -753,7 +753,6 @@ create view if not exists vi_weirs as
     geom1 as Height,
     geom2 as Length,
     geom3 as SideSlope,
-    end_coeff as EndCoeff,
     geom
     from inp_weir;
 

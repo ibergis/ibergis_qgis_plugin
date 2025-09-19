@@ -131,7 +131,7 @@ VALUES
 (23, 'MANDATORY NULL', 'inp_outlet', '{code, flap, outlet_type, offsetval, cd1, cd2, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 114),
 (24, 'MANDATORY NULL', 'inp_pump', '{code, state, startup, shutoff, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 115),
 (25, 'MANDATORY NULL', 'inp_storage', '{code, elev, ymax, y0, ysur, storage_type}', NULL, 0, 'Point', 1, 10, 3, 116),
-(26, 'MANDATORY NULL', 'inp_weir', '{code, flap, weir_type, geom1, geom2, cd1, cd2, ec, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 117),
+(26, 'MANDATORY NULL', 'inp_weir', '{code, flap, weir_type, geom1, geom2, cd, cd2, ec, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 117),
 (27, 'MANDATORY NULL', 'roof', '{code, slope, width, roughness, isconnected, outlet_code, outlet_vol, street_vol, infiltr_vol}', NULL, 0, 'MultiPolygon', 1, 10, 3, 118),
 (28, 'GEOMETRIC DUPLICATE', 'arc', NULL, NULL, 1, 'LineString', 3, 7, 3, 101),
 (29, 'GEOMETRIC DUPLICATE', 'node', NULL, NULL, 1, 'Point', 4, 8, 3, 102),
@@ -927,7 +927,7 @@ INSERT INTO config_form_fields
 VALUES('inp_junction', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'cd1', NULL, NULL, 'real', 'text', 'cd1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('inp_weir', 'form_feature', 'tabdata', 'cd', NULL, NULL, 'real', 'text', 'cd', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('inp_weir', 'form_feature', 'tabdata', 'cd2', NULL, NULL, 'real', 'text', 'cd2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);

@@ -528,7 +528,7 @@ INSERT INTO inlet (outlet_node, top_elev, geom) VALUES('J5', 40.1, ST_GeomFromTe
 -- ------------------------------------------------------------
 -- INP_WEIR, INFLOW, STORAGE, PUMP, DIVIDER, OUTLET AND ORIFICE
 -- ------------------------------------------------------------
-INSERT INTO inp_weir (weir_type, node_1, node_2, geom1, geom2, geom3, geom4, cd2, flap, ec, surcharge, crest_height, end_coeff, geom) VALUES('TRANSVERSE', 'S1', 'J61', 1.0, 1.0, 0.0, 0.0, 1.5, 'NO', 0, 'YES', 17.15, 0.0, ST_GeomFromText('LINESTRING(418716.023346 4577601.812087, 418716.460232 4577600.003434)', <SRID_VALUE>));
+INSERT INTO inp_weir (weir_type, node_1, node_2, geom1, geom2, geom3, geom4, cd, cd2, flap, ec, surcharge, crest_height, geom) VALUES('TRANSVERSE', 'S1', 'J61', 1.0, 1.0, 0.0, 0.0, 1.5, 0.0, 'NO', 0, 'YES', 17.15, ST_GeomFromText('LINESTRING(418716.023346 4577601.812087, 418716.460232 4577600.003434)', <SRID_VALUE>));
 
 INSERT INTO inp_inflow (code, timeseries, format, mfactor, sfactor, ufactor, base) VALUES('J1', 'INFLOW-5m', 'FLOW', 1.0, 1.0, 1.0, 0.0);
 
