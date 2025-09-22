@@ -946,7 +946,7 @@ class DrExecuteModel(DrTask):
             return None
 
         # Get pinlet layer
-        if pinlet_layer is None:
+        if pinlet_layer is None or pinlet_layer.featureCount() == 0:
             return None
 
         # Get mesh layer data
