@@ -165,24 +165,28 @@ class DrExecuteModel(DrTask):
         # Create NetCDF file
         created_netcdf: bool = False
         raster_files: str = f'{self.folder_path}{os.sep}RasterResults'
-        netcdf_file: str = f'{self.folder_path}{os.sep}IberGisResults'
+        netcdf_folder: str = f'{self.folder_path}{os.sep}IberGisResults'
         result_names: list[str] = ["Depth", "Velocity", "Rain_Depth"]
         #                            "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
         #                            "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008"
         #                            "Water_Elevation", "Water_Permanence"]
         try:
-            convert_asc_to_netcdf(raster_files, netcdf_file, result_names, self.progress_changed, generate_cogs=self.do_generate_cogs)
+            convert_asc_to_netcdf(raster_files, netcdf_folder, result_names, self.progress_changed, generate_cogs=self.do_generate_cogs)
         except Exception:
             msg = "Error creating NetCDF file"
             self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
-        if os.path.exists(netcdf_file):
-            msg = "NetCDF file created"
+        if os.path.exists(netcdf_folder):
+            for result_name in result_names:
+                file_path = f'{netcdf_folder}{os.sep}{result_name}.nc'
+                if os.path.exists(file_path):
+                    created_netcdf = True
+                    break
+            msg = "NetCDF files created"
             self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
             msg = "Exported results"
             self.progress_changed.emit(tools_qt.tr(title), self.EXPORT_RESULTS, tools_qt.tr(msg), True)
-            created_netcdf = True
         else:
-            msg = "Error creating NetCDF file"
+            msg = "Error creating NetCDF files"
             self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
 
         if self.isCanceled():

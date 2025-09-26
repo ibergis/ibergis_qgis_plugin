@@ -57,7 +57,6 @@ class DrCreateMeshButton(DrAction):
         tools_qt.fill_combo_values(self.dlg_mesh.cmb_dem_layer, rows, add_empty=False)
         # Roughness
         rows = [
-            [None, "Fill roughness with zeroes"],
             ["ground_layer", "Ground"],
             *raster_layers,
         ]

@@ -678,7 +678,7 @@ UPDATE inlet SET outlet_type = 'TO NETWORK', method = 'W_O', weir_cd = 1.6 , ori
 UPDATE inlet SET outlet_type = 'SINK', method = 'W_O', a_param = 0.496 , b_param = 0.712, efficiency = 90 , width = 1, length = 0.2 where fid = 44;
 
 -- ground
-update ground set landuse = 'OPEN SPACE', custom_roughness = 0.02, scs_cn = 65;
+update ground set landuse = 'OPEN SPACE', custom_roughness = 0.02, scs_cn = 85;
 
 -- outfall
 UPDATE inp_outfall set gate = 'NO', curve = 'PUMP-02';

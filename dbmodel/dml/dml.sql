@@ -231,7 +231,7 @@ INSERT INTO edit_typevalue
 VALUES(18, 'options_rain_format', '1', 'Volume', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(19, 'plg_swmm_options', '0', 'Only gullies', NULL, NULL);
+VALUES(19, 'plg_swmm_options', '0', 'Only inlets', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(20, 'plg_swmm_options', '1', 'Complete network', NULL, NULL);
@@ -604,9 +604,6 @@ VALUES(144, 'inp_typevalue_file_type', 'RDII', 'RDII', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(145, 'inp_typevalue_file_type', 'RUNOFF', 'RUNOFF', NULL, NULL);
-INSERT INTO edit_typevalue
-(rowid, typevalue, id, idval, descript, addparam)
-VALUES(146, 'result_results_raster', '0', 'No raster results', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(147, 'result_results_raster', '1', 'Linear interpolation', NULL, NULL);
@@ -1404,7 +1401,7 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_plugins', 'plg_swmm', 'lyt_plugins_1_1', 1, 'boolean', 'check', NULL, NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_plugins', 'plg_swmm_options', 'lyt_plugins_1_1', 2, 'integer', 'combo', 'Only gullies or complete network:', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''plg_swmm_options''', 0, 0, 0, NULL, NULL, '1', 'Only gullies or complete network', NULL);
+VALUES('dlg_options', 'form_options', 'tab_plugins', 'plg_swmm_options', 'lyt_plugins_1_1', 2, 'integer', 'combo', 'Only inlets or complete network:', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''plg_swmm_options''', 0, 0, 0, NULL, NULL, '1', 'Only inlets or complete network', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_plugins', 'plg_swmm_outlet', 'lyt_plugins_1_1', 3, 'boolean', 'check', 'Enable or disable outlet loss:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Enables outlet loss', NULL);
@@ -1845,7 +1842,7 @@ INSERT INTO config_form_fields
 VALUES('inp_inflow', 'form_feature', 'tabdata', 'timeseries', NULL, NULL, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster', 'lyt_rpt_iber_2_2', 1, 'string', 'combo', 'Raster results', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''result_results_raster''', NULL, NULL, 0, NULL, NULL, '0', 'Results 2 raster', NULL);
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster', 'lyt_rpt_iber_2_2', 1, 'string', 'combo', 'Raster results', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''result_results_raster''', NULL, NULL, 0, NULL, NULL, '1', 'Results 2 raster', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_cell', 'lyt_rpt_iber_2_2', 2, 'real', 'text', 'Cell size [m]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '100', 'Size of the pixel [m]', NULL);
