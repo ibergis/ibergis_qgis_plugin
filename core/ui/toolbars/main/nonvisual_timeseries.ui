@@ -179,7 +179,8 @@
           </column>
           <column>
            <property name="text">
-            <string>Value</string>
+            <string>Value
+(mm/h)</string>
            </property>
           </column>
          </widget>

@@ -1261,7 +1261,7 @@ class DrNonVisual:
             if timeser_type in timeser_type_headers:
                 headers = timeser_type_headers.get(timeser_type)
             else:
-                headers = ['Date\n(M/D/Y)', 'Time\n(H:M)', 'Value']
+                headers = ['Date\n(M/D/Y)', 'Time\n(H:M)', 'Value\n(mm/h)']
             tbl_timeseries_value.setHorizontalHeaderLabels(headers)
 
         text = tools_qt.get_combo_value(dialog, dialog.cmb_timeser_type)
