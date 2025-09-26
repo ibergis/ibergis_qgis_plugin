@@ -175,8 +175,8 @@ class DrResultsButton(DrAction):
         }
         processing.execAlgorithmDialog('IberGISProvider:ImportRasterResults', params)
 
-    def load_rpt_results(self):
-        """ Load rpt results """
+    def load_vector_results(self):
+        """ Load vector results """
 
         results_folder = tools_qgis.get_project_variable('project_results_folder')
         if results_folder is None:
@@ -251,9 +251,9 @@ class DrResultsButton(DrAction):
         self.load_raster_results_action.triggered.connect(self.load_raster_results)
         self.load_raster_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '17.png')))
 
-        self.load_rpt_results_action = QAction("Load rpt results", self.menu)
-        self.load_rpt_results_action.triggered.connect(self.load_rpt_results)
-        self.load_rpt_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '21.png')))
+        self.load_vector_results_action = QAction("Load vector results", self.menu)
+        self.load_vector_results_action.triggered.connect(self.load_vector_results)
+        self.load_vector_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '21.png')))
 
         rel_path = tools_qgis.get_project_variable('project_results_folder')
         abs_path = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{rel_path}")
@@ -273,7 +273,7 @@ class DrResultsButton(DrAction):
             self.profile_action.setDisabled(True)
             self.report_summary_action.setDisabled(True)
             self.time_series_graph_action.setDisabled(True)
-            self.load_rpt_results_action.setDisabled(True)
+            self.load_vector_results_action.setDisabled(True)
         self.time_series_graph_action.setDisabled(True)  # TODO: Remove this when time series graph is implemented
 
         self.menu.addAction(self.profile_action)
@@ -281,7 +281,7 @@ class DrResultsButton(DrAction):
         self.menu.addAction(self.time_series_graph_action)
         self.menu.addSeparator()
         self.menu.addAction(self.load_raster_results_action)
-        self.menu.addAction(self.load_rpt_results_action)
+        self.menu.addAction(self.load_vector_results_action)
         self.menu.addSeparator()
         self.menu.addAction(self.set_results_folder_action)
 
