@@ -704,8 +704,8 @@ class DrCreateMeshTask(DrTask):
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.dao.execute_sql(f"""
-            INSERT INTO cat_file (name, iber2d, roof, losses, bridge, timestamp)
-            VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}', '{timestamp}')
+            INSERT INTO cat_file (name, iber2d, roof, losses, bridge, timestamp, elements)
+            VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}', '{timestamp}', {int(len(self.mesh.polygons))})
         """)
         return True
 

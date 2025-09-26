@@ -96,6 +96,7 @@ CREATE TABLE cat_file (
     id integer primary key,
     name text unique check (typeof(name)='text' OR name=NULL),
     timestamp datetime CHECK (typeof(timestamp)='datetime' OR timestamp=NULL),
+    elements integer CHECK (typeof(elements)='integer' OR elements=NULL),
     iber2d text null,
 	roof text null,
     losses text null,
@@ -983,7 +984,7 @@ CREATE TABLE arc (
 
 
 CREATE VIEW if not exists v_ui_file AS
-    SELECT name, timestamp as creation_date FROM cat_file ORDER BY name ASC;
+    SELECT name, elements, timestamp as creation_date FROM cat_file ORDER BY name ASC;
 
 
 CREATE VIEW vi_roof2junction as

@@ -97,6 +97,7 @@ class DrMeshManagerButton(DrAction):
                                       sectionResizeMode=2, stretchLastSection=False)
         widget.horizontalHeader().setSectionResizeMode(0, 1)
         widget.horizontalHeader().setSectionResizeMode(1, 3)
+        widget.horizontalHeader().setSectionResizeMode(2, 3)
 
         # Sort the table by name
         model.sort(0, 0)
@@ -219,11 +220,11 @@ class DrMeshManagerButton(DrAction):
         # Get current date and time
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        columns = "name, iber2d, timestamp"
+        columns = "name, iber2d, timestamp, elements"
         values = f"'{mesh_name}'"
         with open(mesh_path) as f:
             content = f.read()
-            values += f", '{content}', '{timestamp}'"
+            values += f", '{content}', '{timestamp}', {int(content.splitlines()[3].strip())}"
 
         if roof_path.exists():
             columns += ", roof"
