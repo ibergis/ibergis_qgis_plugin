@@ -693,6 +693,38 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
             editor_widget_setup = QgsEditorWidgetSetup('Hidden', {})
             layer.setEditorWidgetSetup(field_index, editor_widget_setup)
 
+    # Set attribute table column order based on layoutorder
+    try:
+        config = layer.attributeTableConfig()
+        columns = config.columns()
+
+        # Sort fields by layoutorder, then by columnname
+        sorted_fields = sorted(json_result['body']['data']['fields'],
+                              key=lambda x: (x.get('layoutorder', 999) if x.get('layoutorder') is not None else 999,
+                                            x.get('columnname', '')))
+
+        # Create new column list in the correct order
+        new_columns = []
+        for field in sorted_fields:
+            for column in columns:
+                if column.name == field['columnname']:
+                    new_columns.append(column)
+                    break
+
+        # Add any remaining columns that weren't in the field configuration
+        for column in columns:
+            if column not in new_columns:
+                new_columns.append(column)
+
+        # Apply the new column order
+        config.setColumns(new_columns)
+        layer.setAttributeTableConfig(config)
+
+    except Exception as e:
+        msg = "Warning: Could not set field order for layer {0}: {1}"
+        msg_params = (layer_name, str(e),)
+        tools_log.log_warning(msg, msg_params=msg_params)
+
 
 def fill_tab_log(dialog, data, force_tab=True, reset_text=True, tab_idx=1, call_set_tabs_enabled=True, close=True):
     """

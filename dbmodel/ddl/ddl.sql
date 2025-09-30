@@ -227,7 +227,6 @@ CREATE TABLE roof (
     street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
     infiltr_vol real CHECK (typeof(infiltr_vol) = 'real' OR infiltr_vol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    min_elev real CHECK (typeof(min_elev) = 'real' OR min_elev=NULL),
     geom geometry
     --FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
 );
@@ -338,7 +337,7 @@ create table bridge (
     freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL) DEFAULT 0.6 NOT NULL,
     sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL) DEFAULT 0.8 NOT NULL,
     gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL) DEFAULT 1 NOT NULL,
-	length real CHECK (typeof(gaugenumber)='real' OR gaugenumber = NULL),
+	length real CHECK (typeof(length)='real' OR length = NULL),
     descript text unique check (typeof(descript) = 'text' or descript = null),
     geom geometry
 );
