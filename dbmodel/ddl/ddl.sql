@@ -42,6 +42,7 @@ CREATE TABLE config_form_fields (
 	vdefault TEXT NULL CHECK (typeof(vdefault) = 'text' OR vdefault IS NULL),
 	descript TEXT NULL CHECK (typeof(descript) = 'text' OR descript IS NULL),
 	widgetcontrols JSON NULL CHECK (typeof(widgetcontrols) = 'text' OR widgetcontrols IS NULL),
+	widgetfunction JSON NULL CHECK (typeof(widgetfunction) = 'text' OR widgetfunction IS NULL),
     PRIMARY KEY (formname, formtype, tabname, columnname)
 );
 

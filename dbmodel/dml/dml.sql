@@ -673,6 +673,9 @@ VALUES(168, 'dlg_options_layout', 'lyt_ibergis_6_1', 'Check project - weir_cd', 
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(169, 'dlg_options_layout', 'lyt_ibergis_6_2', 'Check project - orifice_cd', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(170, 'dlg_options_layout', 'lyt_rpt_iber_2_3', 'Raster results frame', NULL, NULL);
 
 
 -- GROUND
@@ -2050,13 +2053,17 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_maxs', 'lyt_rpt_iber_2_2', 3, 'boolean', 'check', 'Maximums at the end', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Only writes the raster of maximums at the end of the simulation [envelope]', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_frame', 'lyt_rpt_iber_2_2', 4, 'boolean', 'check', 'Raster frame', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Generate raster only in a frame', NULL);
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_frame', 'lyt_rpt_iber_2_2', 4, 'boolean', 'check', 'Use raster frame', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Generate raster only in a frame', NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols, widgetfunction)
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xybtn', 'lyt_rpt_iber_2_3', 1, NULL, 'button', 'Set raster frame', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, '{"qgis_widget": "QgsExtentWidget"}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xymin', 'lyt_rpt_iber_2_2', 5, 'string', 'text', 'XYmin', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0,0', 'Type coordinates separed by a comma', NULL);
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xymin', 'lyt_rpt_iber_2_3', 2, 'string', 'text', 'XYmin', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0,0', 'Type coordinates separed by a comma', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xymax', 'lyt_rpt_iber_2_2', 6, 'string', 'text', 'XYmax', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0,0', 'Type coordinates separed by a comma', NULL);
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xymax', 'lyt_rpt_iber_2_3', 3, 'string', 'text', 'XYmax', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0,0', 'Type coordinates separed by a comma', NULL);
+
 
 -- raster results values
 INSERT INTO config_form_fields
@@ -2078,6 +2085,7 @@ INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_min_raindepth', 'lyt_ibergis_1_1', 6, 'real', 'spinbox', 'Min value for rain depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of rain depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 
+-- OUTLAYER CHECK PROJECT OPTIONS
 -- manning
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
