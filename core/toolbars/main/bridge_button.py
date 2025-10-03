@@ -12,7 +12,6 @@ from qgis.PyQt.QtWidgets import QTableView, QSizePolicy, QLineEdit, \
     QApplication, QShortcut, QMenu, QAction
 from qgis.PyQt.QtGui import QKeySequence, QIcon, QDoubleValidator
 from qgis.core import QgsFeature, QgsEditFormConfig, QgsProject, QgsMapLayer, QgsCoordinateTransform, QgsPointXY
-from qgis.PyQt.QtCore import Qt
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 
@@ -22,7 +21,6 @@ from ...utils import tools_dr
 from ....lib import tools_qgis, tools_qt, tools_db
 from .... import global_vars
 from typing import Optional
-from sip import isdeleted
 from ....core.toolbars.dialog import DrAction
 from ....core.utils.item_delegates import NumericDelegate, NumericTableWidgetItem
 
@@ -193,13 +191,7 @@ class DrBridgeButton(DrAction):
         """ Edit bridge """
 
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
-            # Bring the existing dialog to the front
-            self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
-            self.dialog.raise_()
-            self.dialog.show()
-            self.dialog.activateWindow()
-            tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
+        if tools_dr.check_if_already_open('dialog', self):
             return
 
         # Show info message
@@ -417,13 +409,7 @@ class DrBridgeButton(DrAction):
         """ Add bridge interactively by drawing a linestring and then opening the bridge dialog. """
 
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
-            # Bring the existing dialog to the front
-            self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
-            self.dialog.raise_()
-            self.dialog.show()
-            self.dialog.activateWindow()
-            tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
+        if tools_dr.check_if_already_open('dialog', self):
             return
 
         # Show info message

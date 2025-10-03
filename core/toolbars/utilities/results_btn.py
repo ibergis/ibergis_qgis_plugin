@@ -14,6 +14,7 @@ from qgis.core import QgsEditFormConfig, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt
 
 from ....lib import tools_qgis
+from ...utils import tools_dr
 from .... import global_vars
 from sip import isdeleted
 from ....core.toolbars.dialog import DrAction
@@ -59,16 +60,8 @@ class DrResultsButton(DrAction):
     def show_profile(self):
         """ Show profile """
 
-        # Return if theres the profile dialog open
-        if (self.profile_btn is not None and self.profile_btn.dlg_draw_profile is not None and
-                not isdeleted(self.profile_btn.dlg_draw_profile) and self.profile_btn.dlg_draw_profile.isVisible()):
-            # Bring the existing dialog to the front
-            self.profile_btn.dlg_draw_profile.setWindowState(
-                self.profile_btn.dlg_draw_profile.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
-            )
-            self.profile_btn.dlg_draw_profile.raise_()
-            self.profile_btn.dlg_draw_profile.show()
-            self.profile_btn.dlg_draw_profile.activateWindow()
+        # Return if theres one profile dialog already open
+        if tools_dr.check_if_already_open('dlg_draw_profile', self.profile_btn):
             return
 
         # Get the profile button class
@@ -79,16 +72,8 @@ class DrResultsButton(DrAction):
     def show_report_summary(self):
         """ Show report summary """
 
-        # Return if theres the report summary dialog open
-        if (self.report_summary_btn is not None and self.report_summary_btn.dlg_report_summary is not None and
-                not isdeleted(self.report_summary_btn.dlg_report_summary) and self.report_summary_btn.dlg_report_summary.isVisible()):
-            # Bring the existing dialog to the front
-            self.report_summary_btn.dlg_report_summary.setWindowState(
-                self.report_summary_btn.dlg_report_summary.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
-            )
-            self.report_summary_btn.dlg_report_summary.raise_()
-            self.report_summary_btn.dlg_report_summary.show()
-            self.report_summary_btn.dlg_report_summary.activateWindow()
+        # Return if theres one report summary dialog already open
+        if tools_dr.check_if_already_open('dlg_report_summary', self.report_summary_btn):
             return
 
         # Get the report summary button class
@@ -138,16 +123,8 @@ class DrResultsButton(DrAction):
     def set_results_folder(self):
         """ Set results folder """
 
-        # Return if theres the results folder selector dialog open
-        if (self.results_folder_selector_btn is not None and self.results_folder_selector_btn.dlg_results_folder_selector is not None and
-                not isdeleted(self.results_folder_selector_btn.dlg_results_folder_selector) and self.results_folder_selector_btn.dlg_results_folder_selector.isVisible()):
-            # Bring the existing dialog to the front
-            self.results_folder_selector_btn.dlg_results_folder_selector.setWindowState(
-                self.results_folder_selector_btn.dlg_results_folder_selector.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
-            )
-            self.results_folder_selector_btn.dlg_results_folder_selector.raise_()
-            self.results_folder_selector_btn.dlg_results_folder_selector.show()
-            self.results_folder_selector_btn.dlg_results_folder_selector.activateWindow()
+        # Return if theres one results folder selector dialog already open
+        if tools_dr.check_if_already_open('dlg_results_folder_selector', self.results_folder_selector_btn):
             return
 
         # Get the results folder selector button class

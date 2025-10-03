@@ -18,6 +18,7 @@ import importlib
 if 'nt' in sys.builtin_module_names:
     import ctypes
 from functools import partial
+from sip import isdeleted
 
 from qgis.PyQt.QtCore import Qt, QStringListModel, QVariant, QDate, QSettings, QLocale, QRegExp
 from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QStandardItem, QIntValidator, \
@@ -965,6 +966,34 @@ def set_style_mapzones():
 
                 # repaint layer
                 lyr.triggerRepaint()
+
+
+def check_if_already_open(dialog, obj, bring_to_front=True) -> bool:
+    """ Check if dialog is already open and if so, bring it to the front """
+    if obj is None or not hasattr(obj, dialog) or getattr(obj, dialog) is None:
+        return False
+    dialog = getattr(obj, dialog)
+    # Return if dialog is already open
+    if (dialog is not None and dialog is not None and
+            not isdeleted(dialog) and dialog.isVisible()):
+        msg = "This dialog is already open. You can only have one open at a time."
+        if bring_to_front:
+            # Bring the existing dialog to the front
+            dialog.setWindowState(
+                dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
+            )
+            dialog.raise_()
+            dialog.show()
+            dialog.activateWindow()
+            try:
+                # Try-catch to avoid error if dialog has no messageBar
+                tools_qgis.show_warning(msg, dialog=dialog)
+            except Exception:
+                tools_qgis.show_warning(msg)
+        else:
+            tools_qgis.show_warning(msg)
+        return True
+    return False
 
 
 def _get_field_id_from_fields(fields):

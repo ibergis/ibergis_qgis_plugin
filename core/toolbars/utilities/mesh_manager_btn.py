@@ -32,6 +32,9 @@ class DrMeshManagerButton(DrAction):
         self.dao: Optional[DrGpkgDao] = None
 
     def clicked_event(self):
+        # Return if theres one mesh manager dialog already open
+        if tools_dr.check_if_already_open('dlg_manager', self):
+            return
         self.manage_meshes()
 
     def manage_meshes(self):

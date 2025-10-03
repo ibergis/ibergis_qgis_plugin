@@ -7,6 +7,7 @@ or (at your option) any later version.
 # -*- coding: utf-8 -*-
 from ..dialog import DrAction
 from ...shared.options import DrOptions
+from ...utils import tools_dr
 
 
 class DrOptionsButton(DrAction):
@@ -17,6 +18,10 @@ class DrOptionsButton(DrAction):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
 
     def clicked_event(self):
+
+        # Return if theres one options dialog already open
+        if tools_dr.check_if_already_open('dlg_go2epa_options', self.options if hasattr(self, 'options') else None):
+            return
 
         self._open_options()
 
