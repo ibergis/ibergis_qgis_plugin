@@ -40,7 +40,7 @@ class DrDialog(QDialog):
                         self.layout().addLayout(item.layout(), row + 1, column, rowSpan, columnSpan)
             self.layout().addWidget(self.messageBar(), 0, 0, 1, -1)
         except Exception:
-            self._messageBar = global_vars.iface
+            self._messageBar = global_vars.iface.messageBar()
 
         # Set window icon
         icon_folder = f"{global_vars.plugin_dir}{os.sep}icons"

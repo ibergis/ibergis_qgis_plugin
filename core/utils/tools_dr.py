@@ -985,11 +985,7 @@ def check_if_already_open(dialog, obj, bring_to_front=True) -> bool:
             dialog.raise_()
             dialog.show()
             dialog.activateWindow()
-            try:
-                # Try-catch to avoid error if dialog has no messageBar
-                tools_qgis.show_warning(msg, dialog=dialog)
-            except Exception:
-                tools_qgis.show_warning(msg)
+            tools_qgis.show_warning(msg, dialog=dialog)
         else:
             tools_qgis.show_warning(msg)
         return True
