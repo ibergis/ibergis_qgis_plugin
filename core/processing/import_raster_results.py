@@ -307,7 +307,7 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         longest_qgis_step = 0.0000000000000001
 
         # Get min and max values
-        layer_name = layer.name().split('-')[1].strip()
+        layer_name = layer.name().split(f'{os.path.basename(self.folder_results_path)} - ')[1].strip()
         max_value = self.result_options[layer_name]['max']
         min_value = self.result_options[layer_name]['min']
         include_min_value = self.result_options[layer_name]['include']
