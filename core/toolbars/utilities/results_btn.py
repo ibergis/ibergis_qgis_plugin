@@ -332,13 +332,13 @@ class DrResultsButton(DrAction):
             if data_series:
                 # Validate data series
                 if not data_series.object_type:
-                    tools_qgis.show_warning(f"Data series at position {i+1} is missing object type")
+                    tools_qgis.show_warning(f"Data series at position {i + 1} is missing object type")
                     return
                 if data_series.object_type != 'System' and not data_series.object_name:
-                    tools_qgis.show_warning(f"Data series at position {i+1} is missing object name")
+                    tools_qgis.show_warning(f"Data series at position {i + 1} is missing object name")
                     return
                 if not data_series.variable:
-                    tools_qgis.show_warning(f"Data series at position {i+1} is missing variable")
+                    tools_qgis.show_warning(f"Data series at position {i + 1} is missing variable")
                     return
 
                 # Convert to TSDataSeries (plotter's DataSeries class)
