@@ -8,9 +8,7 @@ or (at your option) any later version.
 
 from qgis.core import (
     QgsProcessingAlgorithm,
-    QgsProcessingParameterFile,
     QgsLayerTreeLayer,
-    QgsProcessingParameterString,
     QgsProject,
     QgsRasterLayer,
     QgsLayerTreeGroup,
@@ -23,7 +21,8 @@ from qgis.core import (
     QgsSingleBandPseudoColorRenderer,
     QgsInterval,
     QgsTemporalNavigationObject,
-    QgsMapLayerStyle
+    QgsMapLayerStyle,
+    QgsProcessingParameterBoolean
 )
 from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QTimeZone, QTime, QDate
 from qgis.PyQt.QtGui import QColor, QAction
@@ -35,14 +34,15 @@ import os
 import numpy as np
 from ...lib.tools_gpkgdao import DrGpkgDao
 from swmm_api import read_inp_file
+import glob
+import re
+from ...lib import tools_qgis
 
 
 class ImportRasterResults(QgsProcessingAlgorithm):
     """
     Class to import raster results from a model results folder.
     """
-    FOLDER_RESULTS = 'FOLDER_RESULTS'
-    CUSTOM_NAME = 'CUSTOM_NAME'
 
     # Layer params
     layers: list[QgsRasterLayer] = []
@@ -57,28 +57,31 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
     iface = global_vars.iface
     dao: Optional[DrGpkgDao] = None
-    folder_results_path: Optional[str] = None
-    layer_names: list[str] = []
     from_inp: bool = True
+    detected_files: list[str] = []
+    folder_results_path: Optional[str] = None
+    result_options: dict = {}
 
     def initAlgorithm(self, config):
         """
         inputs and output of the algorithm
         """
-        self.addParameter(
-            QgsProcessingParameterFile(
-                self.FOLDER_RESULTS,
-                self.tr('Results folder'),
-                behavior=QgsProcessingParameterFile.Folder
+        self.folder_results_path = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{tools_qgis.get_project_variable('project_results_folder')}")
+        if self.folder_results_path is None or not os.path.exists(self.folder_results_path) or not os.path.isdir(self.folder_results_path):
+            return
+        # Auto-detect all NetCDF files
+        self.detected_files = self.detect_netcdf_files(f'{self.folder_results_path}{os.sep}IberGisResults')
+        if len(self.detected_files) == 0:
+            return
+        for file in self.detected_files:
+            file_name = self.transform_layer_name(file)
+            self.addParameter(
+                QgsProcessingParameterBoolean(
+                    file,
+                    self.tr(f'Import *{file_name}* NetCDF file'),
+                    defaultValue=True
+                )
             )
-        )
-        self.addParameter(
-            QgsProcessingParameterString(
-                self.CUSTOM_NAME,
-                self.tr('Group name. DEFAULT_NAME = "Results - Current_Datetime"'),
-                optional=True
-            )
-        )
 
     def processAlgorithm(self, parameters, context: QgsProcessingContext, feedback: Feedback):
         """
@@ -88,15 +91,19 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         self.iface = global_vars.iface
         self.layers = []
         self.dao = global_vars.gpkg_dao_data.clone()
-        self.layer_names: list[str] = []
         self.from_inp: bool = True
+
+        # Apply parameters
+        filtered_files = []
+        for file in self.detected_files:
+            if self.parameterAsBoolean(parameters, file, context):
+                filtered_files.append(file)
+        self.detected_files = filtered_files
 
         # reading geodata
         feedback.setProgressText(self.tr('Reading folder...'))
         feedback.setProgress(1)
 
-        self.folder_results_path = self.parameterAsFile(parameters, self.FOLDER_RESULTS, context)
-        group_name: str = self.parameterAsString(parameters, self.CUSTOM_NAME, context)
         folder_netcdf: str = f'{self.folder_results_path}{os.sep}IberGisResults'
         inp_file: str = f'{self.folder_results_path}{os.sep}Iber_SWMM.inp'
 
@@ -106,7 +113,6 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                 feedback.setProgressText(self.tr("NetCDF folder found."))
             else:
                 feedback.pushWarning(self.tr("NetCDF folder not found."))
-                self.folder_results_path = None
                 return {}
             if os.path.exists(inp_file) and os.path.isfile(inp_file):
                 feedback.setProgressText(self.tr("INP file found."))
@@ -117,6 +123,9 @@ class ImportRasterResults(QgsProcessingAlgorithm):
             feedback.pushWarning(self.tr("This folder is not valid."))
             return {}
         feedback.setProgress(10)
+
+        # Get result options
+        self._get_result_options()
 
         # Get INP Config
         feedback.setProgressText(self.tr("Getting temporal values."))
@@ -129,25 +138,16 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         feedback.setProgressText(self.tr("Importing layers..."))
         feedback.setProgress(15)
 
-        # Set layer names
-        self.layer_names: list[str] = ["Depth", "Velocity", "Rain_Depth"]
-        #                                   "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
-        #                                   "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008",
-        #                                   "Water_Elevation", "Water_Permanence"]
-
         project: QgsProject = QgsProject.instance()
 
         # Create layer group
-        if group_name == "" or group_name is None:
-            display_group_name: str = "RESULTS - " + os.path.basename(str(self.folder_results_path))
-            group_name = os.path.basename(str(self.folder_results_path))
-        else:
-            display_group_name = f"RESULTS - {group_name}"
+        display_group_name: str = "RESULTS - " + os.path.basename(str(self.folder_results_path))
+        group_name = os.path.basename(str(self.folder_results_path))
         root: QgsLayerTreeLayer = project.layerTreeRoot()
         self.layers_group = root.insertGroup(0, display_group_name)
 
         try:
-            for layer_name in self.layer_names:
+            for layer_name in self.detected_files:
                 # Get netcdf file
                 netcdf_file: str = f'{folder_netcdf}{os.sep}{layer_name}.nc'
                 if not os.path.exists(netcdf_file) or not os.path.isfile(netcdf_file):
@@ -155,10 +155,13 @@ class ImportRasterResults(QgsProcessingAlgorithm):
                     continue
 
                 # Get layer from netcdf
-                layer_uri: str = f'NETCDF:"{netcdf_file}":{layer_name}'
+                layer_uri: str = f'NETCDF:"{netcdf_file}"'
+
+                layer_name = self.transform_layer_name(layer_name)
 
                 # Create raster layer
                 raster_layer: QgsRasterLayer = QgsRasterLayer(layer_uri, f'{group_name} - {layer_name}')
+                raster_layer.setCrs(QgsProject.instance().crs())
 
                 # Verify if layer is valid and add it to layers list
                 if raster_layer.isValid():
@@ -170,6 +173,71 @@ class ImportRasterResults(QgsProcessingAlgorithm):
             return {}
 
         return {"Result": True}
+
+    def _get_result_options(self):
+        """ Get result options """
+
+        file_names: dict = {
+            'depth': 'Depth timeseries',
+            'energy': 'Energy timeseries',
+            'froude': 'Froude timeseries',
+            'hazard_aca': 'Hazard ACA timeseries',
+            'infiltration_rate': 'Infiltration Rate timeseries',
+            'local_time_step': 'Local Time Step timeseries',
+            'max_depth': 'MAX Depth timeseries',
+            'max_hazard_aca': 'MAX Hazard ACA timeseries',
+            'max_local_time_step': 'MAX Local Time Step timeseries',
+            'max_severe_hazard': 'MAX Severe Hazard RD9-2008 timeseries',
+            'max_specific_discharge': 'MAX Spec Discharge timeseries',
+            'max_velocity': 'MAX Velocity timeseries',
+            'max_water_elevation': 'MAX Water Elevation timeseries',
+            'rain_depth': 'Rain Depth timeseries',
+            'severe_hazard': 'Severe Hazard RD9-2008 timeseries',
+            'specific_discharge_x': 'Specific Discharge x timeseries',
+            'specific_discharge_y': 'Specific Discharge y timeseries',
+            'velocity_x': 'Velocity x timeseries',
+            'velocity_y': 'Velocity y timeseries',
+            'velocity': 'Velocity timeseries',
+            'water_elevation': 'Water Elevation timeseries',
+            'water_permanence': 'Water Permanence timeseries'
+        }
+
+        sql = "SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'result_symbology_%'"
+        result = self.dao.get_rows(sql)
+        if result:
+            for row in result:
+                parameter, value = row
+                # Parse parameter name: result_symbology_{property}_{layer_name}
+                parts = parameter.replace('result_symbology_', '').split('_', 1)
+                if len(parts) < 2:
+                    continue
+
+                property_name = parts[0]  # 'min', 'max', 'include'
+                layer_option_name = parts[1]  # 'depth', 'velocity', etc.
+                if layer_option_name.endswith('_include'):
+                    layer_name = file_names[layer_option_name.replace('_include', '')]
+                else:
+                    layer_name = file_names[layer_option_name]
+
+                # Initialize layer dict if it doesn't exist
+                if layer_name not in self.result_options:
+                    self.result_options[layer_name] = {
+                        'min': 0.0,
+                        'max': 2.0,
+                        'include': False,
+                        'colorramp': '0'  # default
+                    }
+
+                # Set the property value
+                if property_name == 'min':
+                    if layer_option_name.endswith('_include'):
+                        self.result_options[layer_name]['include'] = True if value == '1' else False
+                        continue
+                    self.result_options[layer_name]['min'] = float(value)
+                elif property_name == 'max':
+                    self.result_options[layer_name]['max'] = float(value)
+                elif property_name == 'colorramp':
+                    self.result_options[layer_name]['colorramp'] = value
 
     def _get_temporal_values(self, from_inp: bool = True, inp_file: Optional[str] = None):
         """ Get temporal values from INP file or geopackage """
@@ -206,19 +274,22 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         if self.folder_results_path is None:
             return {}
 
+        if len(self.layers) == 0:
+            feedback.pushWarning(self.tr('No layers to import.'))
+            return {}
+
         # Add layers
         try:
-            first_layer: QgsRasterLayer = None
             for layer in self.layers:
-                if first_layer is None:
-                    first_layer = layer
+                if layer is None:
+                    continue
                 QgsProject.instance().addMapLayer(layer, False)
                 self.configLayer(layer, feedback)
                 feedback.setProgressText(self.tr(f'Layer {layer.name()} added correctly.'))
                 if self.layers_group is not None:
                     self.layers_group.addLayer(layer)
             feedback.setProgressText(self.tr('Configuring temporal line...'))
-            self.openTemporalLine(first_layer)
+            self.openTemporalLine()
             feedback.setProgressText(self.tr('Importing process finished.'))
             feedback.setProgress(100)
             self.layers = []
@@ -236,24 +307,11 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         longest_qgis_step = 0.0000000000000001
 
         # Get min and max values
-        layer_name = layer.name().split('-')[1].strip().lower().replace('_', '')
-
-        sql = f"SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'result_symbology_%_{layer_name}%'"
-        result = global_vars.gpkg_dao_data.get_rows(sql)
-        if result:
-            for row in result:
-                parameter, value = row
-                if parameter == f'result_symbology_max_{layer_name}':
-                    max_value = float(value)
-                elif parameter == f'result_symbology_min_{layer_name}':
-                    min_value = float(value)
-                elif parameter == f'result_symbology_min_{layer_name}_include':
-                    include_min_value = True if value == '1' else False
-        else:
-            feedback.pushWarning(self.tr('Error getting min and max values. Using default values...'))
-            min_value = 0
-            max_value = 2
-            include_min_value = False
+        layer_name = layer.name().split('-')[1].strip()
+        max_value = self.result_options[layer_name]['max']
+        min_value = self.result_options[layer_name]['min']
+        include_min_value = self.result_options[layer_name]['include']
+        colorramp = self.result_options[layer_name]['colorramp']
 
         if min_value > max_value:
             feedback.pushWarning(self.tr('Inconsistent min and max values. Using default values...'))
@@ -264,13 +322,13 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         if not include_min_value:
             min_value += longest_qgis_step
 
+        colorramps: dict = {
+            '0': self._generate_color_map([QColor(0, 0, 255), QColor(0, 255, 255), QColor(0, 255, 0), QColor(255, 255, 0), QColor(255, 0, 0)], min_value, max_value),
+            '1': self._generate_color_map([QColor(205, 233, 249), QColor(137, 201, 246), QColor(74, 166, 232), QColor(30, 118, 193), QColor(8, 56, 130)], min_value, max_value),
+        }
+
         # Set main colors
-        if layer_name == 'depth':
-            # Blue gradient
-            main_colors: dict = self._generate_color_map([QColor(205, 233, 249), QColor(137, 201, 246), QColor(74, 166, 232), QColor(30, 118, 193), QColor(8, 56, 130)], min_value, max_value)
-        else:
-            # Multi-color gradient
-            main_colors: dict = self._generate_color_map([QColor(0, 0, 255), QColor(0, 255, 255), QColor(0, 255, 0), QColor(255, 255, 0), QColor(255, 0, 0)], min_value, max_value)
+        main_colors: dict = colorramps[colorramp]
 
         # Create color ramp
         color_items = self.createColorRamp(main_colors, min_value, max_value, longest_qgis_step=longest_qgis_step)
@@ -402,17 +460,12 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         return color_items
 
-    def openTemporalLine(self, layer: QgsRasterLayer):
+    def openTemporalLine(self):
         """ Configure and open the QGIS temporal line """
 
         # Get the temporal controller from the QGIS project
         temporal_controller = self.iface.mapCanvas().temporalController()
         if not temporal_controller:
-            return
-
-        # Check if the layer has active temporal properties
-        temporal_properties = layer.temporalProperties()
-        if not temporal_properties.isActive():
             return
 
         # Close the temporal controller if it's open
@@ -440,9 +493,37 @@ class ImportRasterResults(QgsProcessingAlgorithm):
         action = self.iface.mainWindow().findChild(QAction, 'mActionTemporalController')
         action.trigger()
 
+    def detect_netcdf_files(self, folder_netcdf: str) -> list[str]:
+        """
+        Detect all NetCDF files in the results folder and extract variable names.
+        
+        Returns a list of variable names (without .nc extension).
+        """
+        if not os.path.exists(folder_netcdf) or not os.path.isdir(folder_netcdf):
+            return []
+
+        netcdf_files = glob.glob(os.path.join(folder_netcdf, "*.nc"))
+
+        variable_names = []
+        for filepath in netcdf_files:
+            filename = os.path.basename(filepath)
+            # Remove .nc extension to get variable name
+            var_name = os.path.splitext(filename)[0]
+            variable_names.append(var_name)
+
+        return sorted(variable_names)
+
+    def transform_layer_name(self, layer_name: str) -> str:
+        """ Transform layer name """
+        # Remove the underscores at the end of the layer name
+        layer_name = re.sub(r'_{1,}$', '', layer_name)
+        # Replace underscores between letters with a space
+        layer_name = re.sub(r'_{1,}(?=[a-zA-Z])', ' ', layer_name)
+        return layer_name
+
     def shortHelpString(self):
-        return self.tr("""Imports raster results (such as depth and velocity) from a model results folder into QGIS, applies a color gradient, and configures the Temporal Controller for time-based visualization. 
-                       You can optionally set a custom group name for the imported layers.""")
+        return self.tr("""Imports raster results from a results folder into QGIS, applies a color ramp, and configures the Temporal Controller for time-based visualization. 
+                       You can select the layers to import.""")
 
     def helpUrl(self):
         return "https://github.com/drain-iber"

@@ -126,18 +126,6 @@ IberGIS uses the following third-party libraries:
   geopandas extends the datatypes used by pandas to allow spatial operations on geometric types.
   The geopandas license can be viewed in the [LICENSE](./packages/geopandas/LICENSE.txt) or in their [repository](https://github.com/geopandas/geopandas/blob/main/LICENSE.txt).
 
-- **rasterio**: [rasterio GitHub](https://github.com/rasterio/rasterio)
-  Rasterio reads and writes geospatial raster data.
-  The rasterio license can be viewed in the [LICENSE](./packages/rasterio/LICENSE.txt) or in their [repository](https://github.com/rasterio/rasterio/blob/main/LICENSE.txt).
-
-- **xarray**: [xarray GitHub](https://github.com/geopandas/geopandas)
-  xarray is an open source project and Python package that makes working with labelled multi-dimensional arrays simple, efficient, and fun.
-  The geopandas license can be viewed in the [LICENSE](./packages/xarray/LICENSE) or in their [repository](https://github.com/pydata/xarray/blob/main/LICENSE).
-
-- **rioxarray**: [rioxarray GitHub](https://github.com/corteva/rioxarray)
-  rioxarray is an extension of rasterio and xarray.
-  The rioxarray license can be viewed in the [LICENSE](./packages/rioxarray/LICENSE) or in their [repository](https://github.com/corteva/rioxarray/blob/master/LICENSE).
-
 ## 📄 License
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See LICENSE file for more information.

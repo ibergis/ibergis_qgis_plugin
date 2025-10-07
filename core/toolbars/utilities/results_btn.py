@@ -16,6 +16,8 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt
 
+from ....lib import tools_qgis
+from ...utils import tools_dr
 from .... import global_vars
 from ....lib import tools_qgis
 from ....core.utils import tools_dr
@@ -109,16 +111,8 @@ class DrResultsButton(DrAction):
     def show_profile(self):
         """ Show profile """
 
-        # Return if theres the profile dialog open
-        if (self.profile_btn is not None and self.profile_btn.dlg_draw_profile is not None and
-                not isdeleted(self.profile_btn.dlg_draw_profile) and self.profile_btn.dlg_draw_profile.isVisible()):
-            # Bring the existing dialog to the front
-            self.profile_btn.dlg_draw_profile.setWindowState(
-                self.profile_btn.dlg_draw_profile.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
-            )
-            self.profile_btn.dlg_draw_profile.raise_()
-            self.profile_btn.dlg_draw_profile.show()
-            self.profile_btn.dlg_draw_profile.activateWindow()
+        # Return if theres one profile dialog already open
+        if tools_dr.check_if_already_open('dlg_draw_profile', self.profile_btn):
             return
 
         # Get the profile button class
@@ -129,16 +123,8 @@ class DrResultsButton(DrAction):
     def show_report_summary(self):
         """ Show report summary """
 
-        # Return if theres the report summary dialog open
-        if (self.report_summary_btn is not None and self.report_summary_btn.dlg_report_summary is not None and
-                not isdeleted(self.report_summary_btn.dlg_report_summary) and self.report_summary_btn.dlg_report_summary.isVisible()):
-            # Bring the existing dialog to the front
-            self.report_summary_btn.dlg_report_summary.setWindowState(
-                self.report_summary_btn.dlg_report_summary.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
-            )
-            self.report_summary_btn.dlg_report_summary.raise_()
-            self.report_summary_btn.dlg_report_summary.show()
-            self.report_summary_btn.dlg_report_summary.activateWindow()
+        # Return if theres one report summary dialog already open
+        if tools_dr.check_if_already_open('dlg_report_summary', self.report_summary_btn):
             return
 
         # Get the report summary button class
@@ -287,16 +273,8 @@ class DrResultsButton(DrAction):
     def set_results_folder(self):
         """ Set results folder """
 
-        # Return if theres the results folder selector dialog open
-        if (self.results_folder_selector_btn is not None and self.results_folder_selector_btn.dlg_results_folder_selector is not None and
-                not isdeleted(self.results_folder_selector_btn.dlg_results_folder_selector) and self.results_folder_selector_btn.dlg_results_folder_selector.isVisible()):
-            # Bring the existing dialog to the front
-            self.results_folder_selector_btn.dlg_results_folder_selector.setWindowState(
-                self.results_folder_selector_btn.dlg_results_folder_selector.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
-            )
-            self.results_folder_selector_btn.dlg_results_folder_selector.raise_()
-            self.results_folder_selector_btn.dlg_results_folder_selector.show()
-            self.results_folder_selector_btn.dlg_results_folder_selector.activateWindow()
+        # Return if theres one results folder selector dialog already open
+        if tools_dr.check_if_already_open('dlg_results_folder_selector', self.results_folder_selector_btn):
             return
 
         # Get the results folder selector button class
@@ -324,8 +302,8 @@ class DrResultsButton(DrAction):
         }
         processing.execAlgorithmDialog('IberGISProvider:ImportRasterResults', params)
 
-    def load_rpt_results(self):
-        """ Load rpt results """
+    def load_vector_results(self):
+        """ Load vector results """
 
         results_folder = tools_qgis.get_project_variable('project_results_folder')
         if results_folder is None:
@@ -400,9 +378,9 @@ class DrResultsButton(DrAction):
         self.load_raster_results_action.triggered.connect(self.load_raster_results)
         self.load_raster_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '17.png')))
 
-        self.load_rpt_results_action = QAction("Load rpt results", self.menu)
-        self.load_rpt_results_action.triggered.connect(self.load_rpt_results)
-        self.load_rpt_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '21.png')))
+        self.load_vector_results_action = QAction("Load vector results", self.menu)
+        self.load_vector_results_action.triggered.connect(self.load_vector_results)
+        self.load_vector_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '21.png')))
 
         rel_path = tools_qgis.get_project_variable('project_results_folder')
         abs_path = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{rel_path}")
@@ -422,14 +400,15 @@ class DrResultsButton(DrAction):
             self.profile_action.setDisabled(True)
             self.report_summary_action.setDisabled(True)
             self.time_series_graph_action.setDisabled(True)
-            self.load_rpt_results_action.setDisabled(True)
+            self.load_vector_results_action.setDisabled(True)
+        self.time_series_graph_action.setDisabled(True)  # TODO: Remove this when time series graph is implemented
 
         self.menu.addAction(self.profile_action)
         self.menu.addAction(self.report_summary_action)
         self.menu.addAction(self.time_series_graph_action)
         self.menu.addSeparator()
         self.menu.addAction(self.load_raster_results_action)
-        self.menu.addAction(self.load_rpt_results_action)
+        self.menu.addAction(self.load_vector_results_action)
         self.menu.addSeparator()
         self.menu.addAction(self.set_results_folder_action)
 

@@ -39,7 +39,9 @@ class DrExecuteModelButton(DrAction):
         self.execute_model_task = None
 
     def clicked_event(self):
-
+        # Return if theres one execute model dialog already open
+        if tools_dr.check_if_already_open('execute_dlg', self):
+            return
         self._open_execute_dlg()
 
     def _open_execute_dlg(self):

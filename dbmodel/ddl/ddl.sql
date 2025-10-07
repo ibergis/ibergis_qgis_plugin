@@ -42,6 +42,7 @@ CREATE TABLE config_form_fields (
 	vdefault TEXT NULL CHECK (typeof(vdefault) = 'text' OR vdefault IS NULL),
 	descript TEXT NULL CHECK (typeof(descript) = 'text' OR descript IS NULL),
 	widgetcontrols JSON NULL CHECK (typeof(widgetcontrols) = 'text' OR widgetcontrols IS NULL),
+	widgetfunction JSON NULL CHECK (typeof(widgetfunction) = 'text' OR widgetfunction IS NULL),
     PRIMARY KEY (formname, formtype, tabname, columnname)
 );
 
@@ -96,6 +97,7 @@ CREATE TABLE cat_file (
     id integer primary key,
     name text unique check (typeof(name)='text' OR name=NULL),
     timestamp datetime CHECK (typeof(timestamp)='datetime' OR timestamp=NULL),
+    elements integer CHECK (typeof(elements)='integer' OR elements=NULL),
     iber2d text null,
 	roof text null,
     losses text null,
@@ -226,7 +228,6 @@ CREATE TABLE roof (
     street_vol real CHECK (typeof(street_vol) = 'real' OR street_vol=NULL),
     infiltr_vol real CHECK (typeof(infiltr_vol) = 'real' OR infiltr_vol=NULL),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
-    min_elev real CHECK (typeof(min_elev) = 'real' OR min_elev=NULL),
     geom geometry
     --FOREIGN KEY (outlet_code) REFERENCES node(code) on update cascade on delete restrict
 );
@@ -337,7 +338,7 @@ create table bridge (
     freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL) DEFAULT 0.6 NOT NULL,
     sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL) DEFAULT 0.8 NOT NULL,
     gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL) DEFAULT 1 NOT NULL,
-	length real CHECK (typeof(gaugenumber)='real' OR gaugenumber = NULL),
+	length real CHECK (typeof(length)='real' OR length = NULL),
     descript text unique check (typeof(descript) = 'text' or descript = null),
     geom geometry
 );
@@ -444,7 +445,7 @@ CREATE TABLE inp_weir (
     geom3 real check (typeof(geom3) = 'real' or geom3 = null)  DEFAULT 0.00,
     geom4 real check (typeof(geom4) = 'real' or geom4 = null),
     elev real check (typeof(elev) = 'real' or elev = null),
-    cd1 real check (typeof(cd1) = 'real' or cd1 = null),
+    cd real check (typeof(cd) = 'real' or cd = null),
     cd2 real check (typeof(cd2) = 'real' or cd2 = null),
     flap text check (typeof(flap) in ('text', null) and flap in ('YES', 'NO')),
     ec integer check (typeof(ec) = 'integer' or ec = null),
@@ -453,7 +454,6 @@ CREATE TABLE inp_weir (
     road_surf text check (typeof(road_surf) in ('text', null) and road_surf in ('PAVED', 'GRAVEL')),
     curve text check (typeof(curve) = 'text' or curve = null),
     crest_height real check (typeof(crest_height)='real' or crest_height = null),
-    end_coeff real check (typeof(end_coeff)='real' or end_coeff = null),
     annotation text check (typeof(annotation) = 'text' or annotation = null),
     geom geometry,
     FOREIGN KEY (curve) references cat_curve(idval) on update cascade on delete restrict,
@@ -742,7 +742,8 @@ create view if not exists vi_weirs as
     node_2 as ToNode,
     weir_type as Type,
     crest_height as CrestHeigh,
-    cd2 as Qcoeff,
+    cd as Qcoeff,
+    cd2 as EndCoeff,
     flap as FlapGate,
     ec as EndContrac,
     surcharge as Surcharge,
@@ -753,7 +754,6 @@ create view if not exists vi_weirs as
     geom1 as Height,
     geom2 as Length,
     geom3 as SideSlope,
-    end_coeff as EndCoeff,
     geom
     from inp_weir;
 
@@ -984,7 +984,7 @@ CREATE TABLE arc (
 
 
 CREATE VIEW if not exists v_ui_file AS
-    SELECT name, timestamp as creation_date FROM cat_file ORDER BY name ASC;
+    SELECT name, elements, timestamp as creation_date FROM cat_file ORDER BY name ASC;
 
 
 CREATE VIEW vi_roof2junction as

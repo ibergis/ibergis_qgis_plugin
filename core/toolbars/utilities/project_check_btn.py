@@ -34,6 +34,9 @@ class DrProjectCheckButton(DrAction):
         self.feedback: Optional[Feedback] = None
 
     def clicked_event(self):
+        # Return if theres one check project dialog already open
+        if tools_dr.check_if_already_open('dlg_audit_project', self):
+            return
         self._open_dialog()
 
     # region private functions

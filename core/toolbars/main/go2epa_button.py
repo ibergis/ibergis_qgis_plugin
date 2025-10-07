@@ -37,7 +37,9 @@ class DrGo2IberButton(DrAction):
         self.cur_text = None
 
     def clicked_event(self):
-
+        # Return if theres one go2epa dialog already open
+        if tools_dr.check_if_already_open('dlg_go2epa', self):
+            return
         self._open_go2epa()
 
     # region private functions
@@ -198,7 +200,7 @@ class DrGo2IberButton(DrAction):
         self.dlg_go2epa.txt_infolog.clear()
         status = self._check_fields()
         if status is False:
-            return 
+            return
 
         # Get widgets values
         self.export_file_path = tools_qt.get_text(self.dlg_go2epa, 'txt_file_path')

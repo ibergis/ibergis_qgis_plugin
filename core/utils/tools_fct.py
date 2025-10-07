@@ -34,7 +34,7 @@ def getconfig(p_input: dict) -> dict:
                         'CASE WHEN hidden = 1 THEN True ELSE False END AS hidden',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
-                        'vdefault AS value', 'tooltip', 'addparam', 'widgetcontrols'
+                        'vdefault AS value', 'tooltip', 'addparam', 'widgetcontrols', 'widgetfunction'
                         ]
         v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM config_form_fields " \

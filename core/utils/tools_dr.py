@@ -13,22 +13,24 @@ import random
 import re
 import sys
 import webbrowser
+import importlib
 
 if 'nt' in sys.builtin_module_names:
     import ctypes
 from functools import partial
+from sip import isdeleted
 
 from qgis.PyQt.QtCore import Qt, QStringListModel, QVariant, QDate, QSettings, QLocale, QRegExp
 from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QStandardItem, QIntValidator, \
     QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
     QCompleter, QPushButton, QTableView, QCheckBox, QDoubleSpinBox, QSpinBox, QDateEdit, QTextEdit, QToolButton, \
-    QWidget, QMenu
+    QWidget, QMenu, QDialog
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
-    QgsWkbTypes
-from qgis.gui import QgsDateTimeEdit, QgsRubberBand
+    QgsWkbTypes, QgsRectangle
+from qgis.gui import QgsDateTimeEdit, QgsRubberBand, QgsExtentWidget
 
 from ..ui.dialog import DrDialog
 from ..ui.main_window import DrMainWindow
@@ -693,6 +695,38 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
             editor_widget_setup = QgsEditorWidgetSetup('Hidden', {})
             layer.setEditorWidgetSetup(field_index, editor_widget_setup)
 
+    # Set attribute table column order based on layoutorder
+    try:
+        config = layer.attributeTableConfig()
+        columns = config.columns()
+
+        # Sort fields by layoutorder, then by columnname
+        sorted_fields = sorted(json_result['body']['data']['fields'],
+                              key=lambda x: (x.get('layoutorder', 999) if x.get('layoutorder') is not None else 999,
+                                            x.get('columnname', '')))
+
+        # Create new column list in the correct order
+        new_columns = []
+        for field in sorted_fields:
+            for column in columns:
+                if column.name == field['columnname']:
+                    new_columns.append(column)
+                    break
+
+        # Add any remaining columns that weren't in the field configuration
+        for column in columns:
+            if column not in new_columns:
+                new_columns.append(column)
+
+        # Apply the new column order
+        config.setColumns(new_columns)
+        layer.setAttributeTableConfig(config)
+
+    except Exception as e:
+        msg = "Warning: Could not set field order for layer {0}: {1}"
+        msg_params = (layer_name, str(e),)
+        tools_log.log_warning(msg, msg_params=msg_params)
+
 
 def fill_tab_log(dialog, data, force_tab=True, reset_text=True, tab_idx=1, call_set_tabs_enabled=True, close=True):
     """
@@ -934,6 +968,30 @@ def set_style_mapzones():
                 lyr.triggerRepaint()
 
 
+def check_if_already_open(dialog, obj, bring_to_front=True) -> bool:
+    """ Check if dialog is already open and if so, bring it to the front """
+    if obj is None or not hasattr(obj, dialog) or getattr(obj, dialog) is None:
+        return False
+    dialog = getattr(obj, dialog)
+    # Return if dialog is already open
+    if (dialog is not None and dialog is not None and
+            not isdeleted(dialog) and dialog.isVisible()):
+        msg = "This dialog is already open. You can only have one open at a time."
+        if bring_to_front:
+            # Bring the existing dialog to the front
+            dialog.setWindowState(
+                dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
+            )
+            dialog.raise_()
+            dialog.show()
+            dialog.activateWindow()
+            tools_qgis.show_warning(msg, dialog=dialog)
+        else:
+            tools_qgis.show_warning(msg)
+        return True
+    return False
+
+
 def _get_field_id_from_fields(fields):
     """Extract field_id from fields structure"""
     field_id = ''
@@ -1056,11 +1114,58 @@ def _create_spinbox_widget(field, dialog, _json):
     return widget
 
 
-def _create_button_widget(field, dialog, temp_layers_added):
+def _create_button_widget(field, dialog, temp_layers_added, _json):
     """Create button widget"""
     kwargs = {"dialog": dialog, "field": field, "temp_layers_added": temp_layers_added}
-    widget = add_button(**kwargs)
+    if field.get('widgetfunction') is not None:
+        field['widgetfunction'] = json.loads(field['widgetfunction'])
+        if field.get('widgetfunction').get('qgis_widget') is not None:
+            widget = _initialize_qgis_widget(field, dialog, _json)
+    else:
+        widget = add_button(**kwargs)
     return set_widget_size(widget, field)
+
+
+def _initialize_qgis_widget(field: dict, dialog: QDialog, _json: dict) -> QWidget:
+    """Initialize QGIS class"""
+    module = importlib.import_module('qgis.gui')
+    QgsClass = getattr(module, field.get('widgetfunction').get('qgis_widget'))
+    if field.get('widgetfunction').get('qgis_widget') == 'QgsExtentWidget':
+        widget = QgsClass(dialog, style=1)
+        widget.setMapCanvas(global_vars.canvas, drawOnCanvasOption=True)
+        project_crs = QgsProject.instance().crs()
+        widget.setOutputCrs(project_crs)
+        if not field.get('columnname') == 'result_results_raster_xybtn':
+            return widget
+        # Set extent from xymin and xymax
+        sql = "SELECT parameter, value FROM config_param_user WHERE parameter IN ('result_results_raster_xymin', 'result_results_raster_xymax')"
+        result = tools_db.get_rows(sql)
+        if not result:
+            msg = "Error getting xymin and xymax"
+            tools_log.log_warning(msg)
+            return
+        for item in result:
+            if item[0] == 'result_results_raster_xymin':
+                xymin = item[1]
+            elif item[0] == 'result_results_raster_xymax':
+                xymax = item[1]
+        if xymin and xymax:
+            try:
+                # Parse comma-separated values
+                x_min, y_min = map(float, xymin.split(','))
+                x_max, y_max = map(float, xymax.split(','))
+                # Create and set extent
+                extent = QgsRectangle(x_min, y_min, x_max, y_max)
+                widget.setOutputExtentFromUser(extent, project_crs)
+            except (ValueError, AttributeError) as e:
+                msg = "Error setting extent from xymin and xymax: {0}"
+                msg_params = (e,)
+                tools_log.log_warning(msg, msg_params=msg_params)
+                return
+        widget.extentChanged.connect(partial(get_dialog_changed_values, dialog, None, widget, field, _json))
+    else:
+        widget = QgsClass(dialog)
+    return widget
 
 
 def _create_widget_by_type(field, dialog, _json, temp_layers_added, module):
@@ -1078,7 +1183,7 @@ def _create_widget_by_type(field, dialog, _json, temp_layers_added, module):
     elif widget_type == 'spinbox':
         return _create_spinbox_widget(field, dialog, _json)
     elif widget_type == 'button':
-        return _create_button_widget(field, dialog, temp_layers_added)
+        return _create_button_widget(field, dialog, temp_layers_added, _json)
 
     return None
 
@@ -1112,6 +1217,8 @@ def _process_single_field(field, dialog, _json, temp_layers_added, module):
     lbl = _create_field_label(field)
     if lbl is None:
         return
+    if field.get('columnname') == 'result_results_raster_xybtn':
+        lbl = None
 
     widget = _create_widget_by_type(field, dialog, _json, temp_layers_added, module)
     if widget is None:
@@ -1197,6 +1304,9 @@ def get_dialog_changed_values(dialog, chk, widget, field, list, value=None):
         value = tools_qt.is_checked(dialog, widget)
     elif type(widget) is QDateEdit:
         value = tools_qt.get_calendar_date(dialog, widget)
+    elif type(widget) is QgsExtentWidget:
+        list = _process_referencial_values(dialog, widget, field, list)
+        return
 
     # When the QDoubleSpinbox contains decimals, for example 2,0001 when collecting the value, the spinbox itself sends
     # 2.0000999999, as in reality we only want, maximum 4 decimal places, we round up, thus fixing this small failure
@@ -1339,12 +1449,14 @@ def add_button(**kwargs):
     if 'data_' in widget.objectName():
         real_name = widget.objectName()[5:len(widget.objectName())]
 
-    if field['stylesheet'] is not None and 'icon' in field['stylesheet']:
+    if field.get('stylesheet') is not None and 'icon' in field.get('stylesheet', {}):
+        field['stylesheet'] = json.loads(field['stylesheet'])
         icon = field['stylesheet']['icon']
-        size = field['stylesheet']['size'] if 'size' in field['stylesheet'] else "20x20"
+        size = field['stylesheet']['size'] if 'size' in field['stylesheet'] else "24x24"
         add_icon(widget, f'{icon}', size)
 
     if 'widgetfunction' in field:
+        field['widgetfunction'] = json.loads(field['widgetfunction'])
         if 'module' in field['widgetfunction']:
             module = globals()[field['widgetfunction']['module']]
         function_name = field['widgetfunction'].get('functionName')
@@ -1484,6 +1596,7 @@ def add_checkbox(**kwargs):
         return widget
 
     if 'widgetfunction' in field:
+        field['widgetfunction'] = json.loads(field['widgetfunction'])
         if 'module' in field['widgetfunction']:
             module = globals()[field['widgetfunction']['module']]
         function_name = field['widgetfunction'].get('functionName')
@@ -3412,4 +3525,25 @@ def _create_include_widget(widget, dialog, field, _json):
     include_widget.currentIndexChanged.connect(partial(get_dialog_changed_values, dialog, None, include_widget, field, _json))
     include_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
     return include_widget
+
+
+def _process_referencial_values(dialog: QDialog, widget: QWidget, field: dict, list: list) -> list:
+    # Update result_results_raster_xymin and result_results_raster_xymax
+
+    # Remove existing extent items from the list
+    list[:] = [item for item in list if item['widget'] not in ["result_results_raster_xymin", "result_results_raster_xymax"]]
+
+    if widget:
+        extent = widget.outputExtent()
+
+        # Check if extent is null or empty
+        if extent.isNull() or extent.isEmpty():
+            msg = "Invalid results frame: extent is empty or null. All frame values must be valid to be saved."
+            tools_qgis.show_warning(msg, dialog=dialog)
+            return list
+
+        # Get extent values from widget and add them to the list
+        list.append({"widget": "result_results_raster_xymin", "value": f"{extent.xMinimum()},{extent.yMinimum()}"})
+        list.append({"widget": "result_results_raster_xymax", "value": f"{extent.xMaximum()},{extent.yMaximum()}"})
+    return list
 # endregion

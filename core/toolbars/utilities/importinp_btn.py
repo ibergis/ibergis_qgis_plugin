@@ -26,6 +26,9 @@ class DrImportINPButton(DrAction):
         self.cur_text = None
 
     def clicked_event(self):
+        # Return if theres one import inp dialog already open
+        if tools_dr.check_if_already_open('dlg_import', self):
+            return
         self.dlg_import = DrImportInpUi()
         dlg = self.dlg_import
 
@@ -55,7 +58,7 @@ class DrImportINPButton(DrAction):
             if not response:
                 return
             self._delete_folder(str(save_folder))
-        save_folder.mkdir(parents=True, exist_ok=True)        
+        save_folder.mkdir(parents=True, exist_ok=True)
 
         self.thread = DrImportInpTask(
             "Import INP file",
@@ -90,7 +93,7 @@ class DrImportINPButton(DrAction):
         for file in glob.glob(folder + "/*"):
             os.remove(file)
         os.rmdir(folder)
-        
+
     def _progress_changed(self, process, progress, text, new_line):
         # Progress bar
         if progress is not None:

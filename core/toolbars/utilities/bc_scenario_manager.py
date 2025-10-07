@@ -51,6 +51,9 @@ class DrBCScenarioManagerButton(DrAction):
         self.dlg_ms = None
 
     def clicked_event(self):
+        # Return if theres one bcscenario manager dialog already open
+        if tools_dr.check_if_already_open('dlg_manager', self):
+            return
         self.manage_bc_scenario()
 
     def manage_bc_scenario(self):
