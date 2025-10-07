@@ -10,7 +10,6 @@ import processing
 from functools import partial
 from typing import Optional, Literal
 
-from sip import isdeleted
 from qgis.PyQt.QtWidgets import QMenu, QAction, QListWidgetItem
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsProject, QgsVectorLayer
@@ -19,8 +18,6 @@ from qgis.PyQt.QtCore import Qt
 from ....lib import tools_qgis
 from ...utils import tools_dr
 from .... import global_vars
-from ....lib import tools_qgis
-from ....core.utils import tools_dr
 from ....core.toolbars.dialog import DrAction
 from ....core.ui.ui_manager import DrTimeseriesGraphUi
 from ....core.toolbars.utilities.profile_btn import DrProfileButton
