@@ -390,16 +390,16 @@ INSERT INTO edit_typevalue
 VALUES(73, 'options_losses_method', '0', 'NO LOSSES', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(74, 'dlg_options_layout', 'lyt_main_1_1', 'Project details', NULL, NULL);
+VALUES(74, 'dlg_options_layout', 'lyt_ibergis_options_1_1', 'Project details', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(75, 'dlg_options_layout', 'lyt_main_1_2', 'Numerical scheme', NULL, NULL);
+VALUES(75, 'dlg_options_layout', 'lyt_main_1_1', 'Numerical scheme', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(76, 'dlg_options_layout', 'lyt_main_2_1', 'Time && Simulation control', NULL, NULL);
+VALUES(76, 'dlg_options_layout', 'lyt_main_1_2', 'Time && Simulation control', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(77, 'dlg_options_layout', 'lyt_main_2_2', 'Hydrological processes', NULL, NULL);
+VALUES(77, 'dlg_options_layout', 'lyt_main_2_1', 'Hydrological processes', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(78, 'inp_typevalue_outfall_type', 'FREE', 'FREE', NULL, NULL);
@@ -1720,64 +1720,64 @@ INSERT INTO config_form_fields
 VALUES('inp_inflow', 'form_feature', 'tabdata', 'mfactor', NULL, NULL, 'real', 'text', 'mfactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_name', 'lyt_main_1_1', 1, 'string', 'text', 'Project name:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Name of the project', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_name', 'lyt_ibergis_options_1_1', 1, 'string', 'text', 'Project name:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Name of the project', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_descript', 'lyt_main_1_1', 2, 'string', 'text', 'Description:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Description of the project', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_descript', 'lyt_ibergis_options_1_1', 2, 'string', 'text', 'Description:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Description of the project', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_user', 'lyt_main_1_1', 3, 'string', 'text', 'User:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Nombre de usuario', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_user', 'lyt_ibergis_options_1_1', 3, 'string', 'text', 'User:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Nombre de usuario', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_tstamp', 'lyt_main_1_1', 4, 'date', 'datetime', 'Creation date:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Fecha de creación', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_tstamp', 'lyt_ibergis_options_1_1', 4, 'date', 'datetime', 'Creation date:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Fecha de creación', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_version', 'lyt_main_1_1', 5, 'string', 'text', 'Version:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Versión del proyecto', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_version', 'lyt_ibergis_options_1_1', 5, 'string', 'text', 'Version:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Versión del proyecto', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_delta_time', 'lyt_main_1_2', 3, 'integer', 'text', 'Max time increment [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Increase of maximum time', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_delta_time', 'lyt_main_1_1', 3, 'integer', 'text', 'Max time increment [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Increase of maximum time', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_tmax', 'lyt_main_2_1', 2, 'integer', 'text', 'Max simulation time [s]', NULL, 0, 0, NULL, NULL, NULL, 1, NULL, NULL, '10800', 'Maximum time of simulation', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_tmax', 'lyt_main_1_2', 2, 'integer', 'text', 'Max simulation time [s]', NULL, 0, 0, NULL, NULL, NULL, 1, NULL, NULL, '10800', 'Maximum time of simulation', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_rank_results', 'lyt_main_2_1', 3, 'integer', 'text', 'Results 2D time interval [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '300', 'Writing time for 2D results', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_rank_results', 'lyt_main_1_2', 3, 'integer', 'text', 'Results 2D time interval [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '300', 'Writing time for 2D results', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_order', 'lyt_main_1_2', 1, 'integer', 'combo', 'Numerical Scheme', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_order''', 0, 0, 0, NULL, NULL, '10', 'Numerical scheme', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_order', 'lyt_main_1_1', 1, 'integer', 'combo', 'Numerical Scheme', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_order''', 0, 0, 0, NULL, NULL, '10', 'Numerical scheme', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_cfl', 'lyt_main_1_2', 2, 'integer', 'text', 'CFL', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.45', 'CFL', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_cfl', 'lyt_main_1_1', 2, 'integer', 'text', 'CFL', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.45', 'CFL', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_wetdry_edge', 'lyt_main_1_2', 4, 'double', 'text', 'Wet-dry limit [m]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.0001', 'Wet-dry limit', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_wetdry_edge', 'lyt_main_1_1', 4, 'double', 'text', 'Wet-dry limit [m]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.0001', 'Wet-dry limit', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_viscosity_coeff', 'lyt_main_1_2', 5, 'double', 'text', 'Molecular viscosity [m2/s]', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, '0.000001', 'Molecular viscosity of the fluid', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_viscosity_coeff', 'lyt_main_1_1', 5, 'double', 'text', 'Molecular viscosity [m2/s]', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, '0.000001', 'Molecular viscosity of the fluid', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_t0', 'lyt_main_2_1', 1, 'integer', 'text', 'Initial time [s]', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0', 'Initial time for hydrological processes', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_t0', 'lyt_main_1_2', 1, 'integer', 'text', 'Initial time [s]', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0', 'Initial time for hydrological processes', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_simulation_details', 'lyt_main_2_1', 5, 'boolean', 'check', 'Simulation details', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0', 'Simulation details are written or not', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_simulation_details', 'lyt_main_1_2', 5, 'boolean', 'check', 'Simulation details', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0', 'Simulation details are written or not', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_simulation_new', 'lyt_main_2_1', 6, 'integer', 'combo', 'Simulation', NULL, 0, 0, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_simulation_new''', 0, 0, 1, NULL, NULL, '0', 'Continue simulation or create a new one', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_simulation_new', 'lyt_main_1_2', 6, 'integer', 'combo', 'Simulation', NULL, 0, 0, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_simulation_new''', 0, 0, 1, NULL, NULL, '0', 'Continue simulation or create a new one', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_plan_id', 'lyt_main_2_1', 8, 'integer', 'text', 'Plan ID', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0', 'ID of the simulation plan', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_plan_id', 'lyt_main_1_2', 8, 'integer', 'text', 'Plan ID', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0', 'ID of the simulation plan', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_simulation_plan', 'lyt_main_2_1', 7, 'boolean', 'check', 'Enable or disable simulation plan:', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, 'Disabled', 'Enable or disable simulation plan', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_simulation_plan', 'lyt_main_1_2', 7, 'boolean', 'check', 'Enable or disable simulation plan:', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, 'Disabled', 'Enable or disable simulation plan', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_timeseries', 'lyt_main_2_1', 4, 'integer', 'text', 'Timeseries time interval [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '300', 'Writing time for timeseries results', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_timeseries', 'lyt_main_1_2', 4, 'integer', 'text', 'Timeseries time interval [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '300', 'Writing time for timeseries results', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_method', 'lyt_main_2_2', 5, 'integer', 'combo', 'Losses method', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_losses_method''', 0, 0, 0, NULL, NULL, '2', 'Method used for losses (0 disabled, 2-SCS)', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_method', 'lyt_main_2_1', 5, 'integer', 'combo', 'Losses method', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_losses_method''', 0, 0, 0, NULL, NULL, '2', 'Method used for losses (0 disabled, 2-SCS)', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_rain_class', 'lyt_main_2_2', 2, 'integer', 'combo', 'Precipitation', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_rain_class''', 0, 0, 0, NULL, NULL, '0', 'Type of rain', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_rain_class', 'lyt_main_2_1', 2, 'integer', 'combo', 'Precipitation', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_rain_class''', 0, 0, 0, NULL, NULL, '0', 'Type of rain', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_depth', 'lyt_rpt_iber_1_1', 1, 'boolean', 'check', 'Depth', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Depth of the results', NULL);
@@ -2002,19 +2002,19 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_rpt_swmm', 'inp_report_links', 'lyt_swmm_rpt_1_2', 4, 'string', 'linetext', 'Timestep detailed links', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '', 'Value of links, which  gives a list of links whose results are to be reported', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_setallhyetografs', 'lyt_main_2_2', 3, 'integer', 'combo', 'Set rainfall for all hyetografs', NULL, 0, 1, 'SELECT group_concat(idval) AS id, group_concat(idval) AS idval from cat_timeseries WHERE times_type =''RELATIVE'' AND timser_type = ''RAINFALL'' ', 0, 1, 1, 'Rainfall timeseries (from cat_timeseries table)', '{"execute_on": "data"}', NULL, 'Set rainfall timeseries for all hyetografs', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_setallhyetografs', 'lyt_main_2_1', 3, 'integer', 'combo', 'Set rainfall for all hyetografs', NULL, 0, 1, 'SELECT group_concat(idval) AS id, group_concat(idval) AS idval from cat_timeseries WHERE times_type =''RELATIVE'' AND timser_type = ''RAINFALL'' ', 0, 1, 1, 'Rainfall timeseries (from cat_timeseries table)', '{"execute_on": "data"}', NULL, 'Set rainfall timeseries for all hyetografs', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_setrainfall_raster', 'lyt_main_2_2', 4, 'integer', 'combo', 'Set rainfall raster', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from cat_raster WHERE id is not null', 0, 1, 0, 'Raster (from cat_raster table)', '{"execute_on": "data"}', NULL, 'Set rainfall raster', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_setrainfall_raster', 'lyt_main_2_1', 4, 'integer', 'combo', 'Set rainfall raster', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from cat_raster WHERE id is not null', 0, 1, 0, 'Raster (from cat_raster table)', '{"execute_on": "data"}', NULL, 'Set rainfall raster', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_starttime', 'lyt_main_2_2', 1, 'date', 'text', 'Start time:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Start time for losses method', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_starttime', 'lyt_main_2_1', 1, 'date', 'text', 'Start time:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Start time for losses method', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_scs_cn_multiplier', 'lyt_main_2_2', 6, 'double', 'text', 'CN multiplier', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'CN multiplier  (tool to calibrate)', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_scs_cn_multiplier', 'lyt_main_2_1', 6, 'double', 'text', 'CN multiplier', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'CN multiplier  (tool to calibrate)', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_scs_ia_coefficient', 'lyt_main_2_2', 7, 'double', 'text', 'Ia', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.2', 'Ia coefficient', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_scs_ia_coefficient', 'lyt_main_2_1', 7, 'double', 'text', 'Ia', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.2', 'Ia coefficient', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_transects_value', 'form_feature', 'tabdata', 'transect', NULL, NULL, 'text', 'combo', 'transect', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
