@@ -23,6 +23,7 @@ from ....core.ui.ui_manager import DrTimeseriesGraphUi
 from ....core.toolbars.utilities.profile_btn import DrProfileButton
 from ....core.toolbars.utilities.report_summary_btn import DrReportSummaryButton
 from ....core.toolbars.utilities.results_folder_selector_btn import DrResultsFolderSelectorButton
+from ....core.utils.timeseries_plotter import TimeseriesPlotter, DataSeries as TSDataSeries
 
 
 TS_GRAPH_TYPES = ['Subcatchment', 'Node', 'Link', 'System']
@@ -155,6 +156,13 @@ class DrResultsButton(DrAction):
         self.ts_graph_selection_dlg.rb_axis_left.toggled.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
         self.ts_graph_selection_dlg.rb_axis_right.toggled.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
 
+        # Connect buttons
+        self.ts_graph_selection_dlg.btn_accept.clicked.connect(partial(self._show_timeseries_plot, self.ts_graph_selection_dlg))
+        self.ts_graph_selection_dlg.btn_cancel.clicked.connect(self.ts_graph_selection_dlg.close)
+
+        # Initialize date fields with simulation dates if available
+        self._initialize_date_fields(self.ts_graph_selection_dlg)
+
         tools_dr.open_dialog(self.ts_graph_selection_dlg, dlg_name='timeseries_graph')
 
     def _add_data_series(self, dialog):
@@ -266,6 +274,105 @@ class DrResultsButton(DrAction):
         cmb_variable.clear()
         cmb_variable.addItems(TS_GRAPH_VARIABLES[dialog.cmb_type.currentText()])
         cmb_variable.blockSignals(False)
+
+    def _initialize_date_fields(self, dialog):
+        """ Initialize date fields with simulation dates if available """
+
+        from qgis.PyQt.QtCore import QDateTime
+
+        results_folder = tools_qgis.get_project_variable('project_results_folder')
+        if not results_folder:
+            return
+
+        results_folder = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{results_folder}")
+        output_file = os.path.join(results_folder, 'Iber_SWMM.out')
+
+        if not os.path.exists(output_file):
+            return
+
+        try:
+            from swmm_api import read_out_file
+            swmm_out = read_out_file(output_file)
+
+            write_time_step = swmm_out.report_interval
+            start_date = swmm_out.start_date
+            end_date = start_date + swmm_out.n_periods * write_time_step
+            # Set start and end dates from simulation
+            start_dt = QDateTime(start_date)
+            end_dt = QDateTime(end_date)
+
+            dialog.dt_startdate.setDateTime(start_dt)
+            dialog.dt_enddate.setDateTime(end_dt)
+
+            swmm_out.close()
+        except Exception as e:
+            print(f"Could not initialize date fields: {e}")
+
+    def _show_timeseries_plot(self, dialog):
+        """ Show the timeseries plot based on user selections """
+
+        # Get results folder
+        results_folder = tools_qgis.get_project_variable('project_results_folder')
+        if not results_folder:
+            tools_qgis.show_warning("No results folder selected")
+            return
+
+        results_folder = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{results_folder}")
+        output_file = os.path.join(results_folder, 'Iber_SWMM.out')
+
+        if not os.path.exists(output_file):
+            tools_qgis.show_warning("No Iber_SWMM.out file found in results folder")
+            return
+
+        # Get all data series from the list
+        data_series_list = []
+        for i in range(dialog.lst_data_series.count()):
+            item = dialog.lst_data_series.item(i)
+            data_series = item.data(Qt.UserRole)
+            if data_series:
+                # Validate data series
+                if not data_series.object_type:
+                    tools_qgis.show_warning(f"Data series at position {i+1} is missing object type")
+                    return
+                if data_series.object_type != 'System' and not data_series.object_name:
+                    tools_qgis.show_warning(f"Data series at position {i+1} is missing object name")
+                    return
+                if not data_series.variable:
+                    tools_qgis.show_warning(f"Data series at position {i+1} is missing variable")
+                    return
+
+                # Convert to TSDataSeries (plotter's DataSeries class)
+                ts_data_series = TSDataSeries(
+                    object_type=data_series.object_type,
+                    object_name=data_series.object_name,
+                    variable=data_series.variable,
+                    legend_label=data_series.legend_label,
+                    axis=data_series.axis
+                )
+                data_series_list.append(ts_data_series)
+
+        if not data_series_list:
+            tools_qgis.show_warning("No data series to plot. Please add at least one data series.")
+            return
+
+        # Get time period settings
+        start_date = dialog.dt_startdate.dateTime().toPyDateTime()
+        end_date = dialog.dt_enddate.dateTime().toPyDateTime()
+        use_elapsed_time = dialog.rb_elapsed_time.isChecked()
+
+        # Create plotter and show plot
+        try:
+            plotter = TimeseriesPlotter(output_file)
+            plotter.show_plot(
+                data_series_list=data_series_list,
+                start_date=start_date,
+                end_date=end_date,
+                use_elapsed_time=use_elapsed_time,
+                title="SWMM Time Series"
+            )
+        except Exception as e:
+            tools_qgis.show_warning(f"Error creating plot: {e}")
+            print(f"Plot error details: {e}")
 
     def set_results_folder(self):
         """ Set results folder """
@@ -398,7 +505,6 @@ class DrResultsButton(DrAction):
             self.report_summary_action.setDisabled(True)
             self.time_series_graph_action.setDisabled(True)
             self.load_vector_results_action.setDisabled(True)
-        self.time_series_graph_action.setDisabled(True)  # TODO: Remove this when time series graph is implemented
 
         self.menu.addAction(self.profile_action)
         self.menu.addAction(self.report_summary_action)
