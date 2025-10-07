@@ -6,7 +6,7 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Tuple
 from datetime import datetime
 
 try:
@@ -296,7 +296,7 @@ class TimeseriesPlotter:
             use_elapsed_time: If True, use elapsed time; if False, use date/time
             title: Plot title
         """
-        fig = self.create_plot(data_series_list, start_date, end_date, use_elapsed_time, title)
+        self.create_plot(data_series_list, start_date, end_date, use_elapsed_time, title)
         plt.show()
 
     def close(self):
@@ -304,6 +304,6 @@ class TimeseriesPlotter:
         if self.swmm_output:
             try:
                 self.swmm_output.close()
-            except:
+            except Exception:
                 pass
 
