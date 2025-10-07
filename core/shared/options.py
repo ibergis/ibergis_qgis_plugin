@@ -10,7 +10,8 @@ from functools import partial
 from typing import List, Dict, Any
 
 from qgis.PyQt.QtWidgets import QWidget, QComboBox, QGroupBox, QSpacerItem, QSizePolicy, \
-    QGridLayout, QTabWidget
+    QGridLayout, QTabWidget, QScrollArea, QVBoxLayout
+from qgis.gui import QgsCollapsibleGroupBox
 from qgis.PyQt.QtCore import QDateTime
 from ..ui.ui_manager import DrGo2EpaOptionsUi
 from ..utils import tools_dr
@@ -25,10 +26,11 @@ class DrOptions:
         self.dlg_go2epa_options = None
         self.tabs_to_show = tabs_to_show
         if self.tabs_to_show is None:
-            self.tabs_to_show = ["tab_inp_swmm", "tab_rpt_swmm", "tab_main", "tab_rpt_iber", "tab_plugins", "tab_ibergis"]
+            self.tabs_to_show = ["tab_inp_swmm", "tab_rpt_swmm", "tab_main", "tab_rpt_iber", "tab_plugins", "tab_ibergis_check", "tab_ibergis_raster_results"]
         self.tab_aliases = {"tab_inp_swmm": tools_qt.tr("SWMM OPTIONS"), "tab_rpt_swmm": tools_qt.tr("SWMM RESULTS"),
                             "tab_main": tools_qt.tr("IBER OPTIONS"), "tab_rpt_iber": tools_qt.tr("IBER RESULTS"),
-                            "tab_plugins": tools_qt.tr("IBER PLUGINS"), "tab_ibergis": tools_qt.tr("IBERGIS OPTIONS")
+                            "tab_plugins": tools_qt.tr("IBER PLUGINS"), "tab_ibergis_check": tools_qt.tr("CHECK PROJECT"),
+                            "tab_ibergis_raster_results": tools_qt.tr("RASTER OPTIONS")
                             }
         self.parent = parent
 
@@ -64,11 +66,12 @@ class DrOptions:
                 "WHERE formname = 'dlg_options' AND layoutname IS NOT NULL"
         lyt_list = global_vars.gpkg_dao_data.get_rows(v_sql)
 
-        v_sql = "SELECT id, idval " \
+        v_sql = "SELECT id, idval, addparam " \
                 "FROM edit_typevalue " \
                 "WHERE typevalue = 'dlg_options_layout'"
         titles_list = global_vars.gpkg_dao_data.get_rows(v_sql)
         titles_dict = {row[0]: row[1] for row in titles_list}
+        addparam_dict = {row[0]: row[2] for row in titles_list}
 
         main_tab = self.dlg_go2epa_options.findChild(QTabWidget, 'main_tab')
 
@@ -82,13 +85,44 @@ class DrOptions:
             tab_widget.setObjectName(f"{tab_name}")
             main_tab.addTab(tab_widget, f"{self.tab_aliases.get(tab_name, tab_name)}")
 
-            # Mount layout tabs
-            layout = QGridLayout()
+            # Create scroll area for this tab
+            scroll_area = QScrollArea(tab_widget)
+            scroll_area.setWidgetResizable(True)
+
+            # Create a container widget for the scroll area content
+            scroll_content = QWidget()
+            scroll_area.setWidget(scroll_content)
+
+            # Set up the main layout for the tab (contains only the scroll area)
+            tab_main_layout = QVBoxLayout(tab_widget)
+            tab_main_layout.setContentsMargins(0, 0, 0, 0)
+            tab_main_layout.addWidget(scroll_area)
+
+            # Mount layout tabs - this layout will be inside the scroll area
+            layout = QGridLayout(scroll_content)
 
             for i, lyt in enumerate(lyt_list):
                 if lyt[1] == tab_name:
 
-                    groupBox = QGroupBox()
+                    # Check if the layout should be collapsible
+                    addparam = addparam_dict.get(lyt[0])
+                    is_collapsible = False
+                    is_collapsed = False
+                    if addparam:
+                        try:
+                            addparam_json = json.loads(addparam)
+                            is_collapsible = addparam_json.get('collapsable', False)
+                            is_collapsed = addparam_json.get('collapsed', False)
+                        except (json.JSONDecodeError, AttributeError):
+                            pass
+
+                    # Create appropriate groupbox type
+                    if is_collapsible:
+                        groupBox = QgsCollapsibleGroupBox()
+                        groupBox.setCollapsed(is_collapsed)
+                    else:
+                        groupBox = QGroupBox()
+
                     lyt_title = titles_dict.get(lyt[0])
                     if lyt_title:
                         groupBox.setTitle(f"{lyt_title}")
@@ -111,11 +145,16 @@ class DrOptions:
 
                     groupBox.setLayout(gridlayout)
 
-            # Add Vertical Spacer widget
+            # Add Vertical Spacer widget at the bottom of the grid
             vertical_spacer1 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-            layout.addItem(vertical_spacer1)
-
-            tab_widget.setLayout(layout)
+            # Find the maximum row used in this tab to place spacer after all content
+            max_row = 0
+            for lyt in lyt_list:
+                if lyt[1] == tab_name:
+                    lyt_name_split = lyt[0].split('_')
+                    row = int(lyt_name_split[-2])
+                    max_row = max(max_row, row)
+            layout.addItem(vertical_spacer1, max_row, 0)  # Place at next row after last groupbox
 
         # Build dialog widgets
         tools_dr.build_dialog_options(

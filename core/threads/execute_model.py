@@ -29,11 +29,11 @@ from .task import DrTask
 from .epa_file_manager import DrEpaFileManager
 from ..admin.admin_btn import DrRptGpkgCreate
 from ..processing.import_raster_results import ImportRasterResults
-from ...resources.scripts.convert_asc_to_netcdf import convert_asc_to_netcdf
 from typing import Optional, List
 from dataclasses import dataclass
 from ..utils.meshing_process import create_temp_mesh_layer
 from swmm_api import read_rpt_file
+from osgeo import gdal
 
 
 @dataclass(frozen=True)
@@ -122,10 +122,10 @@ class DrExecuteModel(DrTask):
 
         # Create report geopackage
         if not self.isCanceled() and result:
-            self._create_results_folder()
-            self._delete_raster_results()
             relative_path = os.path.relpath(self.folder_path, QgsProject.instance().absolutePath())
             tools_qgis.set_project_variable('project_results_folder', relative_path)
+            self._create_results_folder()
+            self._delete_raster_results()
 
         # self._close_file()
         if self.timer:
@@ -163,36 +163,23 @@ class DrExecuteModel(DrTask):
         self._fill_rpt_gpkg(title)
 
         # Create NetCDF file
-        created_netcdf: bool = False
         raster_files: str = f'{self.folder_path}{os.sep}RasterResults'
-        netcdf_folder: str = f'{self.folder_path}{os.sep}IberGisResults'
-        result_names: list[str] = ["Depth", "Velocity", "Rain_Depth"]
-        #                            "Hazard_ACA", "Infiltration_Rate",  TODO: Verify necessary results from iber
-        #                            "MAX_Hazard_ACA", "MAX_Severe_Hazard_RD9-2008", "Severe_Hazard_RD9-2008"
-        #                            "Water_Elevation", "Water_Permanence"]
         try:
-            convert_asc_to_netcdf(raster_files, netcdf_folder, result_names, self.progress_changed, generate_cogs=self.do_generate_cogs)
+            self._convert_asc_to_netcdf(raster_files, generate_cogs=self.do_generate_cogs)
         except Exception:
             msg = "Error creating NetCDF file"
-            self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
-        if os.path.exists(netcdf_folder):
-            for result_name in result_names:
-                file_path = f'{netcdf_folder}{os.sep}{result_name}.nc'
-                if os.path.exists(file_path):
-                    created_netcdf = True
-                    break
-            msg = "NetCDF files created"
-            self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
-            msg = "Exported results"
-            self.progress_changed.emit(tools_qt.tr(title), self.EXPORT_RESULTS, tools_qt.tr(msg), True)
-        else:
-            msg = "Error creating NetCDF files"
             self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
 
         if self.isCanceled():
             return
 
-        if created_netcdf and self.do_import:
+        exists_netcdf = False
+        for file in os.listdir(f'{self.folder_path}{os.sep}IberGisResults'):
+            if file.endswith('.nc'):
+                exists_netcdf = True
+                break
+
+        if self.do_import and exists_netcdf:
             msg = "Do you want to import the results into the project?"
             title = 'Import results'
             result: Optional[bool] = tools_qt.show_question(msg, title, force_action=True)
@@ -204,9 +191,8 @@ class DrExecuteModel(DrTask):
                 self.feedback.progress_changed.connect(self._import_results_progress_changed)
                 self.process = ImportRasterResults()
                 self.process.initAlgorithm(None)
-                params: dict = {'FOLDER_RESULTS': f'{self.folder_path}', 'CUSTOM_NAME': f'{os.path.basename(str(self.folder_path))}'}
                 context: QgsProcessingContext = QgsProcessingContext()
-                self.output = self.process.processAlgorithm(params, context, self.feedback)
+                self.output = self.process.processAlgorithm({}, context, self.feedback)
                 if not bool(self.output):
                     msg = "Error importing results"
                     self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
@@ -219,7 +205,59 @@ class DrExecuteModel(DrTask):
                         return
                 msg = "Imported results"
                 self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
+
         self.progress_changed.emit(None, self.PROGRESS_END, None, False)
+
+    def _convert_asc_to_netcdf(self, destination_folder: str, generate_cogs: bool = False) -> None:
+        """Convert ASC files to NetCDF files"""
+
+        converter_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}scripts{os.sep}ascii_to_netcdf{os.sep}ascii_grid_to_netcdf.exe"
+        title = "Export results"
+
+        if not os.path.exists(converter_exe_path):
+            self.error_msg = f"File not found: {converter_exe_path}"
+            return False
+
+        process = subprocess.Popen([converter_exe_path],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   text=True,
+                                   cwd=destination_folder,
+                                   bufsize=1,
+                                   creationflags=subprocess.CREATE_NO_WINDOW)
+
+        # Read output in real-time
+        while not self.isCanceled():
+            output = process.stdout.readline()  # TODO: Read the output from the file proceso.rep
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                self.progress_changed.emit(tools_qt.tr(title), None, f'{output.strip()}', True)
+
+        if process.poll() is None:
+            process.terminate()
+
+        # Wait for the process to finish and get the return code
+        return_code = process.wait()
+
+        # Move the NetCDF files to the IberGisResults folder
+        for file in os.listdir(destination_folder):
+            if not file.endswith('.nc'):
+                continue
+            shutil.move(os.path.join(destination_folder, file), os.path.join(self.folder_path, 'IberGisResults', file))
+            if generate_cogs:
+                output_cog = os.path.join(self.folder_path, 'IberGisResults', f"{file}.tif")
+                try:
+                    gdal.Translate(output_cog, os.path.join(self.folder_path, 'IberGisResults', file), format='COG', noData='-9999')
+                    self.progress_changed.emit('Export results', None, f"COG file created successfully: {output_cog}", True)
+                    print(f"COG file created successfully: {output_cog}")
+                except Exception as e:
+                    self.progress_changed.emit('Export results', None, f"Error: Error creating COG file for {file}: {e}", True)
+                    print(f"Error: Error creating COG file for {file}: {e}")
+
+        print(f"ASCII to NetCDF converter execution finished. Return code: {return_code}")
+
+        self.progress_changed.emit(tools_qt.tr(title), None, '', True)
 
     def _fill_rpt_gpkg(self, title: str):
         """Fill rpt gpkg"""
