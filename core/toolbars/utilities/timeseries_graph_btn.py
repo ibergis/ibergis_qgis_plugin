@@ -12,11 +12,13 @@ from typing import Optional, Literal
 from qgis.PyQt.QtWidgets import QListWidgetItem
 from qgis.PyQt.QtCore import Qt, QDateTime
 from qgis.core import QgsProject
+from qgis.gui import QgsMapToolEmitPoint
 
 from ..dialog import DrAction
 from ...ui.ui_manager import DrTimeseriesGraphUi
 from ...utils import tools_dr
-from ....lib import tools_qgis
+from ...utils.snap_manager import DrSnapManager
+from ....lib import tools_qgis, tools_qt
 from ....core.utils.timeseries_plotter import TimeseriesPlotter, DataSeries as TSDataSeries
 
 
@@ -71,41 +73,59 @@ class DrTimeseriesGraphButton(DrAction):
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
+        self.snapper_manager = DrSnapManager(self.iface)
+        self.vertex_marker = self.snapper_manager.vertex_marker
 
     def clicked_event(self):
         """ Show time series graph """
 
-        print("show_time_series_graph")
-        self.ts_graph_selection_dlg = DrTimeseriesGraphUi()
+        self.dlg_ts_graph_selection = DrTimeseriesGraphUi()
+
+        # Set allowed node layers for snapping (junction, divider, outfall, storage)
+        self.layer_node = tools_qgis.get_layer_by_tablename('inp_junction', show_warning_=False)
+        self.allowed_node_layers = []
+        for _layer_name in ['inp_junction', 'inp_divider', 'inp_outfall', 'inp_storage']:
+            _layer_obj = tools_qgis.get_layer_by_tablename(_layer_name, show_warning_=False)
+            if _layer_obj:
+                self.allowed_node_layers.append(_layer_obj)
+
+        # Set allowed arc layers for snapping (conduit, outlet, orifice, weir, pump)
+        self.layer_arc = tools_qgis.get_layer_by_tablename('inp_conduit', show_warning_=False)
+        self.allowed_arc_layers = []
+        for _layer_name in ['inp_conduit', 'inp_outlet', 'inp_orifice', 'inp_weir', 'inp_pump']:
+            _layer_obj = tools_qgis.get_layer_by_tablename(_layer_name, show_warning_=False)
+            if _layer_obj:
+                self.allowed_arc_layers.append(_layer_obj)
 
         # Fill combos
-        self._fill_cmb_type(self.ts_graph_selection_dlg)
-        self._fill_cmb_variable(self.ts_graph_selection_dlg)
+        self._fill_cmb_type(self.dlg_ts_graph_selection)
+        self._fill_cmb_variable(self.dlg_ts_graph_selection)
 
         # Connect signals
-        self.ts_graph_selection_dlg.cmb_type.currentTextChanged.connect(partial(self._fill_cmb_variable, self.ts_graph_selection_dlg))
-        self.ts_graph_selection_dlg.btn_add.clicked.connect(partial(self._add_data_series, self.ts_graph_selection_dlg))
-        self.ts_graph_selection_dlg.btn_delete.clicked.connect(partial(self._delete_data_series, self.ts_graph_selection_dlg))
+        self.dlg_ts_graph_selection.cmb_type.currentTextChanged.connect(partial(self._fill_cmb_variable, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.btn_add.clicked.connect(partial(self._add_data_series, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.btn_delete.clicked.connect(partial(self._delete_data_series, self.dlg_ts_graph_selection))
 
         # Connect list selection change
-        self.ts_graph_selection_dlg.lst_data_series.currentItemChanged.connect(partial(self._on_list_selection_changed, self.ts_graph_selection_dlg))
+        self.dlg_ts_graph_selection.lst_data_series.currentItemChanged.connect(partial(self._on_list_selection_changed, self.dlg_ts_graph_selection))
 
         # Connect widget changes to update DataSeries
-        self.ts_graph_selection_dlg.cmb_type.currentTextChanged.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
-        self.ts_graph_selection_dlg.txt_name.textChanged.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
-        self.ts_graph_selection_dlg.cmb_variable.currentTextChanged.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
-        self.ts_graph_selection_dlg.txt_legend_label.textChanged.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
-        self.ts_graph_selection_dlg.rb_axis_left.toggled.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
-        self.ts_graph_selection_dlg.rb_axis_right.toggled.connect(partial(self._on_widget_changed, self.ts_graph_selection_dlg))
+        self.dlg_ts_graph_selection.cmb_type.currentTextChanged.connect(partial(self._on_widget_changed, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.txt_name.textChanged.connect(partial(self._on_widget_changed, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.btn_snapping.clicked.connect(partial(self._activate_snapping, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.cmb_variable.currentTextChanged.connect(partial(self._on_widget_changed, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.txt_legend_label.textChanged.connect(partial(self._on_widget_changed, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.rb_axis_left.toggled.connect(partial(self._on_widget_changed, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.rb_axis_right.toggled.connect(partial(self._on_widget_changed, self.dlg_ts_graph_selection))
 
         # Connect buttons
-        self.ts_graph_selection_dlg.btn_accept.clicked.connect(partial(self._show_timeseries_plot, self.ts_graph_selection_dlg))
-        self.ts_graph_selection_dlg.btn_cancel.clicked.connect(self.ts_graph_selection_dlg.close)
+        self.dlg_ts_graph_selection.btn_accept.clicked.connect(partial(self._show_timeseries_plot, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.btn_cancel.clicked.connect(self.dlg_ts_graph_selection.close)
 
         # Initialize date fields with simulation dates if available
-        self._initialize_date_fields(self.ts_graph_selection_dlg)
+        self._initialize_date_fields(self.dlg_ts_graph_selection)
 
-        tools_dr.open_dialog(self.ts_graph_selection_dlg, dlg_name='timeseries_graph')
+        tools_dr.open_dialog(self.dlg_ts_graph_selection, dlg_name='timeseries_graph')
 
     # region private functions
 
@@ -324,6 +344,90 @@ class DrTimeseriesGraphButton(DrAction):
         except Exception as e:
             tools_qgis.show_warning(f"Error creating plot: {e}", dialog=dialog)
             print(f"Plot error details: {e}")
+
+    def _activate_snapping(self, dialog):
+        """ Activate snapping """
+
+        # Force enable snapping in vertex mode for all layers
+        # self._force_enable_snapping()
+
+        mode = self._get_mode()
+        icon_type = 4 if mode == 'node' else 1
+
+        # Set vertex marker propierties
+        self.snapper_manager.set_vertex_marker(self.vertex_marker, icon_type=icon_type)
+
+        # Create the appropriate map tool and connect the gotPoint() signal.
+        if hasattr(self, "emit_point") and self.emit_point is not None:
+            tools_dr.disconnect_signal('timeseries_graph', 'ep_canvasClicked_snapping_feature')
+        self.emit_point = QgsMapToolEmitPoint(self.canvas)
+        self.canvas.setMapTool(self.emit_point)
+        self.snapper = self.snapper_manager.get_snapper()
+        self.iface.setActiveLayer(self.layer_node)
+
+        tools_dr.connect_signal(self.canvas.xyCoordinates, self._mouse_move,
+                                'timeseries_graph', 'activate_snapping_feature_xyCoordinates_mouse_move')
+        tools_dr.connect_signal(self.emit_point.canvasClicked, partial(self._snapping_feature),
+                                'timeseries_graph', 'ep_canvasClicked_snapping_feature')
+        # To activate action pan and not move the canvas accidentally we have to override the canvasReleaseEvent.
+        # The "e" is the QgsMapMouseEvent given by the function
+        self.emit_point.canvasReleaseEvent = lambda e: self.iface.actionPan().trigger()
+
+    def _mouse_move(self, point):
+
+        event_point = self.snapper_manager.get_event_point(point=point)
+
+        # Snapping
+        result = self.snapper_manager.snap_to_project_config_layers(event_point)
+        if result.isValid():
+            mode = self._get_mode()
+
+            layer = self.snapper_manager.get_snapped_layer(result)
+            if hasattr(self, f'allowed_{mode}_layers') and layer in getattr(self, f'allowed_{mode}_layers'):
+                self.snapper_manager.add_marker(result, self.vertex_marker)
+            else:
+                self.vertex_marker.hide()
+        else:
+            self.vertex_marker.hide()
+
+    def _snapping_feature(self, point):   # @UnusedVariable
+
+        # Get clicked point
+        event_point = self.snapper_manager.get_event_point(point=point)
+
+        # Snapping
+        result = self.snapper_manager.snap_to_project_config_layers(event_point)
+
+        if result.isValid():
+            mode = self._get_mode()
+
+            # Only allow features from the configured layers
+            snapped_layer = self.snapper_manager.get_snapped_layer(result)
+            if hasattr(self, f'allowed_{mode}_layers') and snapped_layer not in getattr(self, f'allowed_{mode}_layers'):
+                tools_qgis.show_warning(f"Please select a {mode} from {', '.join([layer.name() for layer in getattr(self, f'allowed_{mode}_layers')])}")
+                return
+            # Get the feature
+            snapped_feat = self.snapper_manager.get_snapped_feature(result)
+            element_id = snapped_feat.attribute('code')
+            self.element_id = str(element_id)
+            tools_qt.set_widget_text(self.dlg_ts_graph_selection, 'txt_name', self.element_id)
+
+            # Disconnect snapping and signals
+            tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
+            tools_dr.disconnect_signal('timeseries_graph')
+
+    def _get_mode(self) -> Literal['node', 'arc', 'subcatchment', 'system']:
+        """ Get the mode from the combo box """
+        obj_type = self.dlg_ts_graph_selection.cmb_type.currentText()
+        if obj_type == 'Node':
+            mode = 'node'
+        elif obj_type == 'Link':
+            mode = 'arc'
+        elif obj_type == 'Subcatchment':
+            mode = 'subcatchment'
+        elif obj_type == 'System':
+            mode = 'system'
+        return mode
 
     # endregion
 
