@@ -12,6 +12,7 @@ from qgis.PyQt.QtWidgets import QMenu, QAction
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsEditFormConfig, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import Qt
+from typing import Optional
 
 from ....lib import tools_qgis
 from ...utils import tools_dr
@@ -129,7 +130,7 @@ class DrResultsButton(DrAction):
 
         # Get the results folder selector button class
         if self.results_folder_selector_btn is None:
-            self.results_folder_selector_btn = DrResultsFolderSelectorButton(None, None, None, None, None)
+            self.results_folder_selector_btn = DrResultsFolderSelectorButton(None, None, None, None, None, self)
         self.results_folder_selector_btn.clicked_event()
 
     def load_raster_results(self):
@@ -209,6 +210,16 @@ class DrResultsButton(DrAction):
 
         self.menu.clear()
 
+        rel_path = tools_qgis.get_project_variable('project_results_folder')
+        abs_path = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{rel_path}")
+        if abs_path is None or not os.path.exists(abs_path) or not os.path.isdir(abs_path):
+            tools_qgis.set_project_variable('project_results_folder', None)
+            abs_path = None
+        if abs_path is not None:
+            folder_name = f" - {os.path.basename(abs_path)}"
+        else:
+            folder_name = ""
+
         # Add results actions
         self.profile_action = QAction("Profile", self.menu)
         self.profile_action.triggered.connect(self.show_profile)
@@ -232,25 +243,18 @@ class DrResultsButton(DrAction):
         self.load_vector_results_action.triggered.connect(self.load_vector_results)
         self.load_vector_results_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '21.png')))
 
-        rel_path = tools_qgis.get_project_variable('project_results_folder')
-        abs_path = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{rel_path}")
-        if abs_path is None or not os.path.exists(abs_path) or not os.path.isdir(abs_path):
-            tools_qgis.set_project_variable('project_results_folder', None)
-            abs_path = None
-        if abs_path is not None:
-            folder_name = f" - {os.path.basename(abs_path)}"
-        else:
-            folder_name = ""
         self.set_results_folder_action = QAction(f"Set results folder{folder_name}", self.menu)
         self.set_results_folder_action.triggered.connect(self.set_results_folder)
         self.set_results_folder_action.setIcon(QIcon(os.path.join(self.plugin_dir, 'icons', 'toolbars', 'utilities', '20.png')))
 
-        if abs_path is None or not os.path.exists(abs_path) or not os.path.isdir(abs_path):
-            self.load_raster_results_action.setDisabled(True)
-            self.profile_action.setDisabled(True)
-            self.report_summary_action.setDisabled(True)
-            self.time_series_graph_action.setDisabled(True)
-            self.load_vector_results_action.setDisabled(True)
+        # Validate results folder and disable actions if not valid
+        validation_results = self.validate_results_folder(abs_path)
+        self.profile_action.setDisabled(not validation_results[0])
+        self.report_summary_action.setDisabled(not validation_results[1])
+        self.time_series_graph_action.setDisabled(not validation_results[2])
+        self.load_raster_results_action.setDisabled(not validation_results[3])
+        self.load_vector_results_action.setDisabled(not validation_results[4])
+
         self.time_series_graph_action.setDisabled(True)  # TODO: Remove this when time series graph is implemented
 
         self.menu.addAction(self.profile_action)
@@ -261,5 +265,52 @@ class DrResultsButton(DrAction):
         self.menu.addAction(self.load_vector_results_action)
         self.menu.addSeparator()
         self.menu.addAction(self.set_results_folder_action)
+
+    def validate_results_folder(self, folder: Optional[str]) -> list[bool]:
+        """ Validate results folder
+                Args:
+                    folder (str): The folder to validate
+                Returns:
+                    list: A list of boolean values indicating if the folder is valid for each type of results(profile, report_summary, time_series_graph, load_raster_results, load_vector_results, set_results_folder)
+        """
+        validations = [False] * 6
+
+        if folder is None:
+            return validations
+
+        # Validate folder
+        if not os.path.exists(folder) or not os.path.isdir(folder):
+            return validations
+        validations[5] = True
+
+        # Validate profile
+        if os.path.exists(os.path.join(folder, 'Iber_SWMM.inp')) and \
+            os.path.exists(os.path.join(folder, 'Iber_SWMM.out')):
+            validations[0] = True
+
+        # Validate report summary
+        if os.path.exists(os.path.join(folder, 'Iber_SWMM.rpt')):
+            validations[1] = True
+
+        # Validate time series graph
+        if os.path.exists(os.path.join(folder, 'Iber_SWMM.out')):
+            validations[2] = True
+
+        if not os.path.exists(os.path.join(folder, 'IberGisResults')):
+            return validations
+
+        # Validate load raster results
+        has_netcdf_file = False
+        for file in os.listdir(os.path.join(folder, 'IberGisResults')):
+            if file.endswith('.nc'):
+                has_netcdf_file = True
+                break
+        validations[3] = has_netcdf_file
+
+        # Validate load vector results
+        if os.path.exists(os.path.join(folder, 'IberGisResults', 'results.gpkg')):
+            validations[4] = True
+
+        return validations
 
     # endregion

@@ -19,10 +19,11 @@ from ....lib import tools_qt, tools_qgis, tools_os
 class DrResultsFolderSelectorButton(DrAction):
     """ Button 20: Results Folder Selector """
 
-    def __init__(self, icon_path, action_name, text, toolbar, action_group):
+    def __init__(self, icon_path, action_name, text, toolbar, action_group, results_btn):
 
         # Call ParentDialog constructor
         super().__init__(icon_path, action_name, text, toolbar, action_group)
+        self.results_btn = results_btn
 
     def clicked_event(self):
 
@@ -60,15 +61,32 @@ class DrResultsFolderSelectorButton(DrAction):
     def _save_results_folder(self):
         """ Save results folder """
         path = tools_qt.get_text(self.dlg_results_folder_selector, 'txt_folder_path')
-        if path and os.path.exists(path) and os.path.isdir(path):
-            tools_dr.set_config_parser('btn_results_folder_selector', 'results_folder', path, "user", "session")
-            # Save project path
-            relative_path = os.path.relpath(path, QgsProject.instance().absolutePath())
-            tools_qgis.set_project_variable('project_results_folder', relative_path)
-            tools_qgis.show_info("Results folder saved successfully")
-        else:
-            tools_qgis.show_warning("Results folder is not valid", dialog=self.dlg_results_folder_selector)
+
+        # Validate results folder
+        validation_results = self.results_btn.validate_results_folder(path)
+        if not validation_results[5]:
+            msg = "Results folder is not valid"
+            tools_qgis.show_warning(msg, dialog=self.dlg_results_folder_selector)
             return
+
+        # Check if there are any results in the results folder
+        result_data = any(validation_results[0:5])
+        if not result_data:
+            msg = "No results found in the folder"
+            tools_qgis.show_warning(msg, dialog=self.dlg_results_folder_selector)
+            return
+
+        # Check if all results are valid
+        if not all(validation_results[0:5]):
+            msg = "The folder is missing data; some result buttons will be disabled"
+            tools_qgis.show_info(msg)
+
+        tools_dr.set_config_parser('btn_results_folder_selector', 'results_folder', path, "user", "session")
+        # Save project path
+        relative_path = os.path.relpath(path, QgsProject.instance().absolutePath())
+        tools_qgis.set_project_variable('project_results_folder', relative_path)
+        msg = "Results folder saved successfully"
+        tools_qgis.show_info(msg)
 
         tools_dr.close_dialog(self.dlg_results_folder_selector)
 
