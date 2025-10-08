@@ -113,6 +113,8 @@ class DataSeries:
             return self.legend_label
         if self.object_type and self.object_name and self.variable:
             return f"{self.object_type} {self.object_name} - {self.variable}"
+        if self.object_type and self.variable:
+            return f"{self.variable} ({self.object_type})"
         return "Unknown"
 
 
