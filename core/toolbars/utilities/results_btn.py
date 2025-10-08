@@ -10,17 +10,16 @@ import processing
 
 from qgis.PyQt.QtWidgets import QMenu, QAction
 from qgis.PyQt.QtGui import QIcon
-from qgis.core import QgsEditFormConfig, QgsProject, QgsVectorLayer
-from qgis.PyQt.QtCore import Qt
+from qgis.core import QgsProject, QgsVectorLayer
 from typing import Optional
 
 from ....lib import tools_qgis
 from ...utils import tools_dr
 from .... import global_vars
-from sip import isdeleted
 from ....core.toolbars.dialog import DrAction
 from ....core.toolbars.utilities.profile_btn import DrProfileButton
 from ....core.toolbars.utilities.report_summary_btn import DrReportSummaryButton
+from ....core.toolbars.utilities.timeseries_graph_btn import DrTimeseriesGraphButton
 from ....core.toolbars.utilities.results_folder_selector_btn import DrResultsFolderSelectorButton
 
 
@@ -39,6 +38,7 @@ class DrResultsButton(DrAction):
         self.toolbar = toolbar
         self.profile_btn = None
         self.report_summary_btn = None
+        self.timeseries_graph_btn = None
         self.results_folder_selector_btn = None
 
         self.menu = QMenu()
@@ -85,41 +85,14 @@ class DrResultsButton(DrAction):
     def show_time_series_graph(self):
         """ Show time series graph """
 
-        print("show_time_series_graph")
-        return
-        # Return if theres one bridge dialog already open
-        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
-            # Bring the existing dialog to the front
-            self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
-            self.dialog.raise_()
-            self.dialog.show()
-            self.dialog.activateWindow()
-            tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
+        # Return if theres one time series graph dialog already open
+        if tools_dr.check_if_already_open('timeseries_graph', self.timeseries_graph_btn):
             return
 
-        # Show info message
-        msg = "Draw a linestring to define the bridge and then use right click to finish the drawing."
-        tools_qgis.show_info(msg)
-
-        # Get the bridge layer
-        bridge_layer = tools_qgis.get_layer_by_tablename('bridge')
-        if bridge_layer is None:
-            tools_qgis.show_warning("Bridge layer not found.")
-            return
-
-        # Store previous form suppression setting
-        config = bridge_layer.editFormConfig()
-        self._conf_supp = config.suppress()
-        config.setSuppress(QgsEditFormConfig.FeatureFormSuppress.SuppressOn)  # SuppressOn
-        bridge_layer.setEditFormConfig(config)
-
-        # Start editing and trigger add feature tool
-        global_vars.iface.setActiveLayer(bridge_layer)
-        bridge_layer.startEditing()
-        global_vars.iface.actionAddFeature().trigger()
-
-        # Connect to featureAdded signal
-        bridge_layer.featureAdded.connect(self._on_bridge_feature_added)
+        # Get the time series graph button class
+        if self.timeseries_graph_btn is None:
+            self.timeseries_graph_btn = DrTimeseriesGraphButton(None, None, None, None, None)
+        self.timeseries_graph_btn.clicked_event()
 
     def set_results_folder(self):
         """ Set results folder """
@@ -254,8 +227,6 @@ class DrResultsButton(DrAction):
         self.time_series_graph_action.setDisabled(not validation_results[2])
         self.load_raster_results_action.setDisabled(not validation_results[3])
         self.load_vector_results_action.setDisabled(not validation_results[4])
-
-        self.time_series_graph_action.setDisabled(True)  # TODO: Remove this when time series graph is implemented
 
         self.menu.addAction(self.profile_action)
         self.menu.addAction(self.report_summary_action)
