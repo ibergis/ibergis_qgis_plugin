@@ -101,6 +101,9 @@ class DrTimeseriesGraphButton(DrAction):
         self._fill_cmb_type(self.dlg_ts_graph_selection)
         self._fill_cmb_variable(self.dlg_ts_graph_selection)
 
+        # Buttons icons
+        tools_dr.add_icon(self.dlg_ts_graph_selection.btn_snapping, '137', sub_folder='20x20')
+
         # Connect signals
         self.dlg_ts_graph_selection.cmb_type.currentTextChanged.connect(partial(self._fill_cmb_variable, self.dlg_ts_graph_selection))
         self.dlg_ts_graph_selection.btn_add.clicked.connect(partial(self._add_data_series, self.dlg_ts_graph_selection))
