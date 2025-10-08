@@ -112,8 +112,17 @@ class DrTimeseriesGraphButton(DrAction):
     def _add_data_series(self, dialog):
         """ Add empty data series and select it """
 
-        # Create empty DataSeries instance with default values
-        data_series = DataSeries(None, None, None, None, "Left")
+        # If list is empty, use current widget values
+        if dialog.lst_data_series.count() == 0:
+            object_type = dialog.cmb_type.currentText()
+            object_name = dialog.txt_name.text()
+            variable = dialog.cmb_variable.currentText()
+            legend_label = dialog.txt_legend_label.text()
+            axis = "Left" if dialog.rb_axis_left.isChecked() else "Right"
+            data_series = DataSeries(object_type, object_name, variable, legend_label, axis)
+        else:
+            # Create empty DataSeries instance with default values
+            data_series = DataSeries(None, None, None, None, "Left")
 
         # Create QListWidgetItem with string representation and add to list
         list_item = QListWidgetItem(str(data_series))
@@ -256,14 +265,14 @@ class DrTimeseriesGraphButton(DrAction):
         # Get results folder
         results_folder = tools_qgis.get_project_variable('project_results_folder')
         if not results_folder:
-            tools_qgis.show_warning("No results folder selected")
+            tools_qgis.show_warning("No results folder selected", dialog=dialog)
             return
 
         results_folder = os.path.abspath(f"{QgsProject.instance().absolutePath()}{os.sep}{results_folder}")
         output_file = os.path.join(results_folder, 'Iber_SWMM.out')
 
         if not os.path.exists(output_file):
-            tools_qgis.show_warning("No Iber_SWMM.out file found in results folder")
+            tools_qgis.show_warning("No Iber_SWMM.out file found in results folder", dialog=dialog)
             return
 
         # Get all data series from the list
@@ -274,13 +283,13 @@ class DrTimeseriesGraphButton(DrAction):
             if data_series:
                 # Validate data series
                 if not data_series.object_type:
-                    tools_qgis.show_warning(f"Data series at position {i + 1} is missing object type")
+                    tools_qgis.show_warning(f"Data series at position {i + 1} is missing object type", dialog=dialog)
                     return
                 if data_series.object_type != 'System' and not data_series.object_name:
-                    tools_qgis.show_warning(f"Data series at position {i + 1} is missing object name")
+                    tools_qgis.show_warning(f"Data series at position {i + 1} is missing object name", dialog=dialog)
                     return
                 if not data_series.variable:
-                    tools_qgis.show_warning(f"Data series at position {i + 1} is missing variable")
+                    tools_qgis.show_warning(f"Data series at position {i + 1} is missing variable", dialog=dialog)
                     return
 
                 # Convert to TSDataSeries (plotter's DataSeries class)
@@ -294,7 +303,7 @@ class DrTimeseriesGraphButton(DrAction):
                 data_series_list.append(ts_data_series)
 
         if not data_series_list:
-            tools_qgis.show_warning("No data series to plot. Please add at least one data series.")
+            tools_qgis.show_warning("No data series to plot. Please add at least one data series.", dialog=dialog)
             return
 
         # Get time period settings
@@ -313,7 +322,7 @@ class DrTimeseriesGraphButton(DrAction):
                 title="SWMM Time Series"
             )
         except Exception as e:
-            tools_qgis.show_warning(f"Error creating plot: {e}")
+            tools_qgis.show_warning(f"Error creating plot: {e}", dialog=dialog)
             print(f"Plot error details: {e}")
 
     # endregion
