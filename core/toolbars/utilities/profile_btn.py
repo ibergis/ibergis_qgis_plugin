@@ -219,9 +219,6 @@ class DrProfileButton(DrAction):
             msg_params = (self.initNode)
             tools_qgis.show_info(msg, msg_params=msg_params)
 
-        # Force enable snapping in vertex mode for all layers
-        self._force_enable_snapping()
-
         # Set vertex marker propierties
         self.snapper_manager.set_vertex_marker(self.vertex_marker, icon_type=4)
 
@@ -501,21 +498,6 @@ class DrProfileButton(DrAction):
         self.canvas.refresh()
         if actionpan:
             self.iface.actionPan().trigger()
-
-    def _force_enable_snapping(self):
-        """ Force enable snapping in vertex mode for all layers """
-        from qgis.core import QgsSnappingConfig, QgsProject
-
-        # Get the current snapping configuration
-        snapping_config = QgsProject.instance().snappingConfig()
-
-        # Enable snapping in vertex mode for all layers
-        snapping_config.setEnabled(True)
-        snapping_config.setMode(QgsSnappingConfig.AllLayers)
-        snapping_config.setType(QgsSnappingConfig.Vertex)
-
-        # Apply the configuration to the project
-        QgsProject.instance().setSnappingConfig(snapping_config)
 
     def _disable_snapping(self):
         """ Disable snapping """

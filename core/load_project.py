@@ -111,6 +111,9 @@ class DrLoadProject(QObject):
         # Set boundary_conditions filter
         set_bc_filter()
 
+        # Set project snapping settings
+        tools_qgis.set_project_snapping_settings()
+
         # Connect signal for topocontrol
         tools_dr.connect_signal(self.iface.layerTreeView().currentLayerChanged, tools_dr.current_layer_changed,
                                 'load_project', 'currentLayerChanged')

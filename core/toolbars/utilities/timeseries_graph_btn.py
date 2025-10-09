@@ -153,6 +153,8 @@ class DrTimeseriesGraphButton(DrAction):
         self.dlg_ts_graph_selection.btn_load.clicked.connect(partial(self._load_config, self.dlg_ts_graph_selection))
         self.dlg_ts_graph_selection.btn_accept.clicked.connect(partial(self._show_timeseries_plot, self.dlg_ts_graph_selection))
         self.dlg_ts_graph_selection.btn_cancel.clicked.connect(self.dlg_ts_graph_selection.close)
+        self.dlg_ts_graph_selection.finished.connect(self._disconnect_snapping)
+        self.dlg_ts_graph_selection.finished.connect(self.iface.actionPan().trigger)
 
         # Initialize date fields with simulation dates if available
         self._initialize_date_fields(self.dlg_ts_graph_selection)
@@ -547,8 +549,7 @@ class DrTimeseriesGraphButton(DrAction):
             tools_qt.set_widget_text(self.dlg_ts_graph_selection, 'txt_name', self.element_id)
 
             # Disconnect snapping and signals
-            tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
-            tools_dr.disconnect_signal('timeseries_graph')
+            self._disconnect_snapping()
 
     def _get_mode(self) -> Literal['node', 'arc', 'subcatchment', 'system']:
         """ Get the mode from the combo box """
@@ -562,6 +563,11 @@ class DrTimeseriesGraphButton(DrAction):
         elif obj_type == 'System':
             mode = 'system'
         return mode
+
+    def _disconnect_snapping(self):
+        """ Disconnect snapping """
+        tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
+        tools_dr.disconnect_signal('timeseries_graph')
 
     # endregion
 
