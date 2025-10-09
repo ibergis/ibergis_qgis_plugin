@@ -133,6 +133,9 @@ class DrTimeseriesGraphButton(DrAction):
         # Initialize date fields with simulation dates if available
         self._initialize_date_fields(self.dlg_ts_graph_selection)
 
+        # Initally add an empty data series
+        self._add_data_series(self.dlg_ts_graph_selection)
+
         tools_dr.open_dialog(self.dlg_ts_graph_selection, dlg_name='timeseries_graph')
 
     # region private functions
@@ -140,17 +143,8 @@ class DrTimeseriesGraphButton(DrAction):
     def _add_data_series(self, dialog):
         """ Add empty data series and select it """
 
-        # If list is empty, use current widget values
-        if dialog.lst_data_series.count() == 0:
-            object_type = dialog.cmb_type.currentText()
-            object_name = dialog.txt_name.text()
-            variable = dialog.cmb_variable.currentText()
-            legend_label = dialog.txt_legend_label.text()
-            axis = "Left" if dialog.rb_axis_left.isChecked() else "Right"
-            data_series = DataSeries(object_type, object_name, variable, legend_label, axis)
-        else:
-            # Create empty DataSeries instance with default values
-            data_series = DataSeries(None, None, None, None, "Left")
+        # Create empty DataSeries instance with default values
+        data_series = DataSeries(None, None, None, None, "Left")
 
         # Create QListWidgetItem with string representation and add to list
         list_item = QListWidgetItem(str(data_series))
