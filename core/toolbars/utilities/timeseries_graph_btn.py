@@ -22,11 +22,16 @@ from ....lib import tools_qgis, tools_qt
 from ....core.utils.timeseries_plotter import TimeseriesPlotter, DataSeries as TSDataSeries
 
 
-TS_GRAPH_TYPES = ['Subcatchment', 'Node', 'Link', 'System']
+TS_GRAPH_TYPES = [
+    # 'Subcatchment',
+    'Node',
+    'Link',
+    'System'
+]
 TS_GRAPH_VARIABLES = {
-    'Subcatchment': [
-        'Precipitation', 'Snow Depth', 'Evaporation', 'Infiltration', 'Runoff', 'GW Flow', 'GW Elev.', 'Soil Moisture'
-    ],
+    # 'Subcatchment': [
+    #     'Precipitation', 'Snow Depth', 'Evaporation', 'Infiltration', 'Runoff', 'GW Flow', 'GW Elev.', 'Soil Moisture'
+    # ],
     'Node': [
         'Depth', 'Head', 'Volume', 'Lateral Inflow', 'Total Inflow', 'Flooding'
     ],
@@ -43,7 +48,7 @@ TS_GRAPH_VARIABLES = {
 class DataSeries:
     """ Class to hold data series information """
 
-    def __init__(self, object_type: Optional[Literal['Subcatchment', 'Node', 'Link', 'System']],
+    def __init__(self, object_type: Optional[Literal['Node', 'Link', 'System']],
                  object_name: Optional[str], variable: Optional[str], legend_label: Optional[str],
                  axis: Literal['Left', 'Right']):
         self.object_type = object_type
@@ -250,6 +255,14 @@ class DrTimeseriesGraphButton(DrAction):
         cmb_variable.clear()
         cmb_variable.addItems(TS_GRAPH_VARIABLES[dialog.cmb_type.currentText()])
         cmb_variable.blockSignals(False)
+
+        # Disable snapping if type is System
+        if dialog.cmb_type.currentText() == 'System':
+            dialog.txt_name.setDisabled(True)
+            dialog.btn_snapping.setDisabled(True)
+        else:
+            dialog.txt_name.setEnabled(True)
+            dialog.btn_snapping.setEnabled(True)
 
     def _initialize_date_fields(self, dialog):
         """ Initialize date fields with simulation dates if available """
