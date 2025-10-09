@@ -179,7 +179,6 @@ CREATE TABLE cat_controls (
     descript text check (typeof(descript = 'text') or descript = null)
 );
 
-
 CREATE TABLE cat_raster (
     id integer primary key,
     idval text unique check (typeof(idval)='text') NOT NULL,
@@ -194,6 +193,11 @@ CREATE TABLE cat_raster_value (
     FOREIGN KEY (raster) references cat_raster(idval) on update cascade on delete restrict
 );
 
+CREATE TABLE cat_tsgraph (
+    id integer primary key,
+    "name" text unique NOT NULL CHECK (typeof("name") = 'text' OR "name" = NULL),
+    config json NOT NULL CHECK (typeof(config) = 'text' OR config = NULL)
+);
 
 
 -- -----------

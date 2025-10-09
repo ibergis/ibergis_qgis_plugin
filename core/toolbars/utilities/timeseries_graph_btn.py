@@ -6,10 +6,11 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
+import json
 from functools import partial
 from typing import Optional, Literal
 
-from qgis.PyQt.QtWidgets import QListWidgetItem
+from qgis.PyQt.QtWidgets import QListWidgetItem, QInputDialog
 from qgis.PyQt.QtCore import Qt, QDateTime
 from qgis.core import QgsProject
 from qgis.gui import QgsMapToolEmitPoint
@@ -18,7 +19,7 @@ from ..dialog import DrAction
 from ...ui.ui_manager import DrTimeseriesGraphUi
 from ...utils import tools_dr
 from ...utils.snap_manager import DrSnapManager
-from ....lib import tools_qgis, tools_qt
+from ....lib import tools_qgis, tools_qt, tools_db
 from ....core.utils.timeseries_plotter import TimeseriesPlotter, DataSeries as TSDataSeries
 
 
@@ -71,6 +72,27 @@ class DataSeries:
             return f"{legend_label}"
 
         return f"{object_type} {object_name} {variable}"
+
+    def to_dict(self):
+        """Convert DataSeries to dictionary for JSON serialization"""
+        return {
+            'object_type': self.object_type,
+            'object_name': self.object_name,
+            'variable': self.variable,
+            'legend_label': self.legend_label,
+            'axis': self.axis
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create DataSeries from dictionary"""
+        return cls(
+            object_type=data.get('object_type'),
+            object_name=data.get('object_name'),
+            variable=data.get('variable'),
+            legend_label=data.get('legend_label'),
+            axis=data.get('axis', 'Left')
+        )
 
 
 class DrTimeseriesGraphButton(DrAction):
@@ -127,6 +149,8 @@ class DrTimeseriesGraphButton(DrAction):
         self.dlg_ts_graph_selection.rb_axis_right.toggled.connect(partial(self._on_widget_changed, self.dlg_ts_graph_selection))
 
         # Connect buttons
+        self.dlg_ts_graph_selection.btn_save.clicked.connect(partial(self._save_config, self.dlg_ts_graph_selection))
+        self.dlg_ts_graph_selection.btn_load.clicked.connect(partial(self._load_config, self.dlg_ts_graph_selection))
         self.dlg_ts_graph_selection.btn_accept.clicked.connect(partial(self._show_timeseries_plot, self.dlg_ts_graph_selection))
         self.dlg_ts_graph_selection.btn_cancel.clicked.connect(self.dlg_ts_graph_selection.close)
 
@@ -139,6 +163,99 @@ class DrTimeseriesGraphButton(DrAction):
         tools_dr.open_dialog(self.dlg_ts_graph_selection, dlg_name='timeseries_graph')
 
     # region private functions
+
+    def _save_config(self, dialog):
+        """Save current configuration to database"""
+
+        # Get configuration name from user
+        config_name, ok = QInputDialog.getText(dialog, "Save Configuration", "Enter configuration name:")
+        if not ok or not config_name:
+            return
+
+        # Collect all data series
+        series_list = []
+        for i in range(dialog.lst_data_series.count()):
+            item = dialog.lst_data_series.item(i)
+            data_series = item.data(Qt.UserRole)
+            if data_series:
+                series_list.append(data_series.to_dict())
+
+        # Build configuration object
+        config = {
+            'series': series_list,
+            'title': dialog.txt_title.text(),
+            'left_axis': dialog.txt_left_axis.text(),
+            'right_axis': dialog.txt_right_axis.text()
+        }
+
+        # Convert to JSON string
+        config_json = json.dumps(config)
+
+        # Save to database (insert or update)
+        sql = f"""
+            INSERT INTO cat_tsgraph (name, config) 
+            VALUES ('{config_name}', '{config_json}')
+            ON CONFLICT (name) DO UPDATE 
+            SET config = '{config_json}'
+        """
+
+        if tools_db.execute_sql(sql):
+            tools_qgis.show_info(f"Configuration '{config_name}' saved successfully", dialog=dialog)
+        else:
+            tools_qgis.show_warning("Failed to save configuration", dialog=dialog)
+
+    def _load_config(self, dialog):
+        """Load configuration from database"""
+
+        # Get list of saved configurations
+        sql = "SELECT name FROM cat_tsgraph ORDER BY name"
+        rows = tools_db.get_rows(sql, log_info=False)
+
+        if not rows:
+            tools_qgis.show_info("No saved configurations found", dialog=dialog)
+            return
+
+        # Let user select configuration
+        config_names = [row[0] for row in rows]
+        config_name, ok = QInputDialog.getItem(dialog, "Load Configuration", "Select configuration:", config_names, 0, False)
+        if not ok or not config_name:
+            return
+
+        # Load configuration from database
+        sql = f"SELECT config FROM cat_tsgraph WHERE name = '{config_name}'"
+        row = tools_db.get_row(sql, log_info=False)
+
+        if not row:
+            tools_qgis.show_warning("Configuration not found", dialog=dialog)
+            return
+
+        try:
+            # Parse JSON
+            config = json.loads(row[0])
+
+            # Clear existing data series
+            dialog.lst_data_series.clear()
+
+            # Load series
+            for series_dict in config.get('series', []):
+                data_series = DataSeries.from_dict(series_dict)
+                list_item = QListWidgetItem(str(data_series))
+                list_item.setData(Qt.UserRole, data_series)
+                dialog.lst_data_series.addItem(list_item)
+
+            # Load labels
+            dialog.txt_title.setText(config.get('title', ''))
+            dialog.txt_left_axis.setText(config.get('left_axis', ''))
+            dialog.txt_right_axis.setText(config.get('right_axis', ''))
+
+            # Select first item if available
+            if dialog.lst_data_series.count() > 0:
+                dialog.lst_data_series.setCurrentRow(0)
+
+            tools_qgis.show_info(f"Configuration '{config_name}' loaded successfully", dialog=dialog)
+
+        except Exception as e:
+            tools_qgis.show_warning(f"Failed to load configuration: {e}", dialog=dialog)
 
     def _add_data_series(self, dialog):
         """ Add empty data series and select it """

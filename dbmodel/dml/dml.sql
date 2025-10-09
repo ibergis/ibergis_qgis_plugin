@@ -70,6 +70,7 @@ insert into tables_nogeom (table_name, index_col) values
 ('cat_raster', 'idval'),
 ('cat_raster_value', null),
 ('cat_controls', null),
+('cat_tsgraph', null),
 ('inp_files', 'idval'),
 ('inp_dwf', 'code'),
 ('inp_inflow', 'code'),
