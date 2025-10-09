@@ -202,7 +202,9 @@ class TimeseriesPlotter:
                    start_date: Optional[datetime] = None,
                    end_date: Optional[datetime] = None,
                    use_elapsed_time: bool = True,
-                   title: str = "Time Series Plot") -> Figure:
+                   title: str = "Time Series Plot",
+                   left_axis_label: str = "Left Axis",
+                   right_axis_label: str = "Right Axis") -> Figure:
         """
         Create a matplotlib figure with the specified data series.
 
@@ -212,6 +214,8 @@ class TimeseriesPlotter:
             end_date: Optional end date filter
             use_elapsed_time: If True, use elapsed time; if False, use date/time
             title: Plot title
+            left_axis_label: Label for the left Y-axis
+            right_axis_label: Label for the right Y-axis
 
         Returns:
             matplotlib Figure object
@@ -265,12 +269,12 @@ class TimeseriesPlotter:
 
         # Configure axes
         ax1.set_xlabel('Elapsed Time (hours)' if use_elapsed_time else 'Date/Time')
-        ax1.set_ylabel('Left Axis')
+        ax1.set_ylabel(left_axis_label)
         ax1.grid(True, alpha=0.3)
         ax1.legend(loc='upper left')
 
         if ax2:
-            ax2.set_ylabel('Right Axis')
+            ax2.set_ylabel(right_axis_label)
             ax2.legend(loc='upper right')
 
         # Format x-axis for date/time
@@ -287,7 +291,9 @@ class TimeseriesPlotter:
                   start_date: Optional[datetime] = None,
                   end_date: Optional[datetime] = None,
                   use_elapsed_time: bool = True,
-                  title: str = "Time Series Plot"):
+                  title: str = "Time Series Plot",
+                  left_axis_label: str = "Left Axis",
+                  right_axis_label: str = "Right Axis"):
         """
         Create and show a matplotlib plot.
 
@@ -297,8 +303,10 @@ class TimeseriesPlotter:
             end_date: Optional end date filter
             use_elapsed_time: If True, use elapsed time; if False, use date/time
             title: Plot title
+            left_axis_label: Label for the left Y-axis
+            right_axis_label: Label for the right Y-axis
         """
-        self.create_plot(data_series_list, start_date, end_date, use_elapsed_time, title)
+        self.create_plot(data_series_list, start_date, end_date, use_elapsed_time, title, left_axis_label, right_axis_label)
         plt.show()
 
     def close(self):

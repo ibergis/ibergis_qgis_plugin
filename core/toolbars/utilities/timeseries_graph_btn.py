@@ -341,6 +341,11 @@ class DrTimeseriesGraphButton(DrAction):
         end_date = dialog.dt_enddate.dateTime().toPyDateTime()
         use_elapsed_time = dialog.rb_elapsed_time.isChecked()
 
+        # Get labels
+        title = dialog.txt_title.text() or "SWMM Time Series"
+        left_axis_label = dialog.txt_left_axis.text() or "Left Axis"
+        right_axis_label = dialog.txt_right_axis.text() or "Right Axis"
+
         # Create plotter and show plot
         try:
             plotter = TimeseriesPlotter(output_file)
@@ -349,7 +354,9 @@ class DrTimeseriesGraphButton(DrAction):
                 start_date=start_date,
                 end_date=end_date,
                 use_elapsed_time=use_elapsed_time,
-                title="SWMM Time Series"
+                title=title,
+                left_axis_label=left_axis_label,
+                right_axis_label=right_axis_label
             )
         except Exception as e:
             tools_qgis.show_warning(f"Error creating plot: {e}", dialog=dialog)
