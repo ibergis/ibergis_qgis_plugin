@@ -1551,6 +1551,75 @@ INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('inp_junction', 'form_feature', 'tabdata', 'geom', NULL, 11, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
 
+-- INP_DWF
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'format', NULL, 5, 'text', 'text', 'format', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'avg_value', NULL, 6, 'real', 'text', 'avg_value', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern1', NULL, 7, 'text', 'combo', 'pattern1', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern2', NULL, 8, 'text', 'combo', 'pattern2', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern3', NULL, 9, 'text', 'combo', 'pattern3', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern4', NULL, 10, 'text', 'combo', 'pattern4', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+
+-- INP_INFLOW
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'timeseries', NULL, 5, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_timeseries", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'format', NULL, 6, 'text', 'text', 'format', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'mfactor', NULL, 7, 'real', 'text', 'mfactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'sfactor', NULL, 8, 'real', 'text', 'sfactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'ufactor', NULL, 9, 'real', 'text', 'ufactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'base', NULL, 10, 'real', 'text', 'base', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'pattern', NULL, 11, 'text', 'combo', 'pattern', 'idval of cat_pattern', 0, 1, 'SELECT idval as id, idval FROM cat_pattern', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'type', NULL, 12, 'text', 'text', 'type', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 
 
 -- OTHERS
@@ -1592,34 +1661,10 @@ INSERT INTO config_form_fields
 VALUES('cat_transects', 'form_feature', 'tabdata', 'idval', NULL, NULL, 'text', 'text', 'idval', NULL, 1, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_pattern', 'form_feature', 'tabdata', 'pattern_type', NULL, NULL, 'text', 'text', 'pattern_type', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_pattern_value', 'form_feature', 'tabdata', 'timestep', NULL, NULL, 'datetime', 'text', 'timestep', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'pattern', NULL, NULL, 'text', 'combo', 'pattern', 'idval of cat_pattern', 0, 1, 'SELECT idval as id, idval FROM cat_pattern', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'sfactor', NULL, NULL, 'real', 'text', 'sfactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'ufactor', NULL, NULL, 'real', 'text', 'ufactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'base', NULL, NULL, 'real', 'text', 'base', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_bscenario', 'form_feature', 'tabdata', 'name', NULL, NULL, 'text', 'text', 'name', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
@@ -1632,9 +1677,6 @@ VALUES('cat_file', 'form_feature', 'tabdata', 'name', NULL, NULL, 'text', 'text'
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_landuses', 'form_feature', 'tabdata', 'idval', NULL, NULL, 'text', 'text', 'idval', NULL, 1, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'type', NULL, NULL, 'text', 'text', 'type', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_bscenario', 'form_feature', 'tabdata', 'active', NULL, NULL, 'integer', 'text', 'active', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
@@ -1707,18 +1749,6 @@ VALUES('cat_curve', 'form_feature', 'tabdata', 'curve_type', NULL, NULL, 'text',
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_curve_value', 'form_feature', 'tabdata', 'xcoord', NULL, NULL, 'real', 'text', 'xcoord', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'avg_value', NULL, NULL, 'real', 'text', 'avg_value', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'baseline', NULL, NULL, 'text', 'text', 'baseline', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'format', NULL, NULL, 'text', 'text', 'format', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'mfactor', NULL, NULL, 'real', 'text', 'mfactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_name', 'lyt_ibergis_options_1_1', 1, 'string', 'text', 'Project name:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Name of the project', NULL);
@@ -2073,33 +2103,6 @@ VALUES('inp_files', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', '
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('inp_files', 'form_feature', 'tabdata', 'fname', NULL, NULL, 'text', 'text', 'fname', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'format', NULL, NULL, 'text', 'text', 'format', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern1', NULL, NULL, 'text', 'combo', 'pattern1', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern2', NULL, NULL, 'text', 'combo', 'pattern2', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern3', NULL, NULL, 'text', 'combo', 'pattern3', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern4', NULL, NULL, 'text', 'combo', 'pattern4', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'timeseries', NULL, NULL, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster', 'lyt_rpt_iber_2_2', 1, 'string', 'combo', 'Raster results', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''result_results_raster''', NULL, NULL, 0, NULL, NULL, '1', 'Results 2 raster', NULL);
