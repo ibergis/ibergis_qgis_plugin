@@ -769,7 +769,7 @@ INSERT INTO config_form_fields
 VALUES('ground', 'form_feature', 'tabdata', 'annotation', NULL, 6, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'landuse', NULL, 7, 'text', 'combo', 'landuse', 'idval of cat_landuses', 0, 1, 'SELECT idval as id, idval FROM cat_landuses', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_landuse", "nullValue": false, "keyColumn": "id", "valueColumn": "idval", "filterExpression": null}}');
+VALUES('ground', 'form_feature', 'tabdata', 'landuse', NULL, 7, 'text', 'combo', 'landuse', 'idval of cat_landuses', 0, 1, 'SELECT idval as id, idval FROM cat_landuses', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_landuses", "nullValue": true, "keyColumn": "id", "valueColumn": "idval", "filterExpression": null}}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('ground', 'form_feature', 'tabdata', 'custom_roughness', NULL, 8, 'real', 'text', 'custom_roughness', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
@@ -917,7 +917,7 @@ INSERT INTO config_form_fields
 VALUES('hyetograph', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('hyetograph', 'form_feature', 'tabdata', 'timeseries', NULL, 4, 'text', 'combo', 'timeseries', 'idval of cat_timeseries', 0, 1, 'SELECT idval as id, idval FROM cat_timeseries', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+VALUES('hyetograph', 'form_feature', 'tabdata', 'timeseries', NULL, 4, 'text', 'combo', 'timeseries', 'idval of cat_timeseries', 0, 1, 'SELECT idval as id, idval FROM cat_timeseries', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_timeseries", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('hyetograph', 'form_feature', 'tabdata', 'geom', NULL, 5, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
@@ -937,13 +937,13 @@ INSERT INTO config_form_fields
 VALUES('boundary_conditions', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'bscenario', NULL, 5, 'text', 'combo', 'bscenario', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_bscenario', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'bscenario', NULL, 5, 'text', 'combo', 'bscenario', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_bscenario', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_bscenario", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('boundary_conditions', 'form_feature', 'tabdata', 'boundary_type', NULL, 6, 'text', 'combo', 'boundary_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_boundary_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'timeseries', NULL, 7, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'timeseries', NULL, 7, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_timeseries", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('boundary_conditions', 'form_feature', 'tabdata', 'other1', NULL, 8, 'real', 'text', 'other1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
@@ -2030,19 +2030,13 @@ INSERT INTO config_form_fields
 VALUES('cat_curve_value', 'form_feature', 'tabdata', 'curve', NULL, NULL, 'text', 'combo', 'curve', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('cat_timeseries', 'form_feature', 'tabdata', 'timser_type', NULL, NULL, 'text', 'text', 'timser_type
-times_type
-descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('cat_timeseries', 'form_feature', 'tabdata', 'timser_type', NULL, NULL, 'text', 'text', 'timser_type', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('cat_timeseries', 'form_feature', 'tabdata', 'times_type', NULL, NULL, 'text', 'text', 'timser_type
-times_type
-descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('cat_timeseries', 'form_feature', 'tabdata', 'times_type', NULL, NULL, 'text', 'text', 'times_type', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('cat_timeseries', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'timser_type
-times_type
-descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('cat_timeseries', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_timeseries_value', 'form_feature', 'tabdata', 'timeseries', NULL, NULL, 'text', 'combo', 'timeseries', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
