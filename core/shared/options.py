@@ -26,10 +26,10 @@ class DrOptions:
         self.dlg_go2epa_options = None
         self.tabs_to_show = tabs_to_show
         if self.tabs_to_show is None:
-            self.tabs_to_show = ["tab_inp_swmm", "tab_rpt_swmm", "tab_main", "tab_rpt_iber", "tab_plugins", "tab_ibergis_options", "tab_ibergis_check", "tab_ibergis_raster_results"]
-        self.tab_aliases = {"tab_inp_swmm": tools_qt.tr("SWMM OPTIONS"), "tab_rpt_swmm": tools_qt.tr("SWMM RESULTS"),
+            self.tabs_to_show = ["tab_ibergis_options", "tab_inp_swmm", "tab_rpt_swmm", "tab_main", "tab_rpt_iber", "tab_plugins", "tab_ibergis_check", "tab_ibergis_raster_results"]
+        self.tab_aliases = {"tab_ibergis_options": tools_qt.tr("IBERGIS OPTIONS"),
+                            "tab_inp_swmm": tools_qt.tr("SWMM OPTIONS"), "tab_rpt_swmm": tools_qt.tr("SWMM RESULTS"),
                             "tab_main": tools_qt.tr("IBER OPTIONS"), "tab_rpt_iber": tools_qt.tr("IBER RESULTS"),
-                            "tab_ibergis_options": tools_qt.tr("IBERGIS OPTIONS"),
                             "tab_plugins": tools_qt.tr("IBER PLUGINS"), "tab_ibergis_check": tools_qt.tr("CHECK PROJECT"),
                             "tab_ibergis_raster_results": tools_qt.tr("RASTER OPTIONS")
                             }
