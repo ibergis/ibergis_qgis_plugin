@@ -70,6 +70,30 @@ The plugin includes comprehensive sample datasets located in the `resources/exam
    flake8 .
    ```
 
+## 🔍 Troubleshooting
+
+### Mesh Creation Issues
+If you encounter problems creating a mesh, try uninstalling potentially conflicting packages from the OSGeo shell (you may need to run with administrator privileges):
+
+**Windows**:
+1. Open OSGeo4W Shell (`osgeo4w.bat`)
+2. Run:
+   ```bash
+   pip uninstall gmsh pandamesh geopandas triangle
+   ```
+
+**Linux**:
+1. Open your OSGeo shell
+2. Run:
+   ```bash
+   pip uninstall gmsh pandamesh geopandas triangle
+   ```
+
+After uninstalling them, restart QGIS. The plugin will use its bundled versions of these packages.
+
+### IberGIS Simulation Issues
+If you encounter problems running simulations, use the **Check Project** button to validate your project. Review any errors or warnings that appear, as they typically indicate configuration or data model issues that need to be addressed before running the simulation.
+
 ## 📚 Documentation
 
 - **Wiki**: Comprehensive documentation available at [GitHub Wiki](https://drain-iber.github.io/testing/en/docs/)
