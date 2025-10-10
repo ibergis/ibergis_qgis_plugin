@@ -466,6 +466,31 @@ def get_layer_by_tablename(tablename, show_warning_=False, log_info=False, schem
     return layer
 
 
+def hide_node_from_treeview(node, root, ltv):
+    # Hide the node from the tree view
+    index = get_node_index(node, ltv)
+    ltv.setRowHidden(index.row(), index.parent(), True)
+    node.setCustomProperty('nodeHidden', 'true')
+    ltv.setCurrentIndex(get_node_index(root, ltv))
+
+
+def get_node_index(node, ltv):
+    if Qgis.QGIS_VERSION_INT >= 31800:
+        return ltv.node2index(node)
+    else:
+        # Older QGIS versions
+        return ltv.layerTreeModel().node2index(node)
+
+
+def restore_hidden_nodes():
+    root = QgsProject.instance().layerTreeRoot()
+    ltv = iface.layerTreeView()
+
+    for node in root.children():
+        if node.customProperty('nodeHidden', '') == 'true':
+            hide_node_from_treeview(node, root, ltv)
+
+
 def get_tablename_from_layer(layer):
     """ Gets tablename of a layer """
     layer_tablename = layer.name()

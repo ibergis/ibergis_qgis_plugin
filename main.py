@@ -365,6 +365,8 @@ class Drain(QObject):
                                     'main', 'newProjectCreated')
             tools_dr.connect_signal(self.iface.actionSaveProject().triggered, self._save_toolbars_position,
                                     'main', 'actionSaveProject_save_toolbars_position')
+            tools_dr.connect_signal(QgsProject.instance().readProject, tools_qgis.restore_hidden_nodes,
+                                    'main', 'projectRead_restore_hidden_nodes')
         except AttributeError:
             pass
 
@@ -381,6 +383,10 @@ class Drain(QObject):
             pass
         try:
             tools_dr.disconnect_signal('main', 'actionSaveProject_save_toolbars_position')
+        except TypeError:
+            pass
+        try:
+            tools_dr.disconnect_signal('main', 'projectRead_restore_hidden_nodes')
         except TypeError:
             pass
 
