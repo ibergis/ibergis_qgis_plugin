@@ -111,41 +111,45 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
         feedback.setProgress(5)
 
         # Merge layers
+        tmp_gpkg = os.path.join(tempfile.gettempdir(), "splited_layer.gpkg")
         merged_layer = processing.run("native:mergevectorlayers",
                                       {'LAYERS': [
                                           self.ground_layer,
                                           self.roof_layer
                                           ],
-                                          'CRS': QgsProject.instance().crs(), 'OUTPUT': 'TEMPORARY_OUTPUT'})['OUTPUT']
+                                          'CRS': QgsProject.instance().crs(), 'OUTPUT': tmp_gpkg})['OUTPUT']
         if merged_layer is None:
             feedback.pushWarning(self.tr('Error merging layers.'))
+            # Clean up temporary file
+            if os.path.exists(tmp_gpkg):
+                try:
+                    os.remove(tmp_gpkg)
+                except OSError:
+                    pass
             return {}
+        merged_layer = QgsVectorLayer(merged_layer, 'merged_layer', 'ogr')
         merged_layer.dataProvider().deleteAttributes([0])
         merged_layer.updateFields()
 
-        feedback.setProgressText(self.tr('Spliting multipolygons into single polygons...'))
-        feedback.setProgress(20)
-
-        tmp_gpkg = os.path.join(tempfile.gettempdir(), "splited_layer.gpkg")
-        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT': merged_layer, 'OUTPUT': tmp_gpkg})['OUTPUT']
-        if splited_layer is None:
-            feedback.pushWarning(self.tr('Error splitting multipolygons into single polygons.'))
-            return {}
-        splited_layer = QgsVectorLayer(splited_layer, 'splited_layer', 'ogr')
-
         if feedback.isCanceled():
+            # Clean up temporary file
+            if os.path.exists(tmp_gpkg):
+                try:
+                    os.remove(tmp_gpkg)
+                except OSError:
+                    pass
             return {}
 
         feedback.setProgressText(self.tr('Merging features...'))
         feedback.setProgress(35)
 
         # Build spatial index for cleaned_layer
-        if splited_layer.featureCount() == 0:
-            feedback.pushWarning(self.tr('No features in splited layer.'))
+        if merged_layer.featureCount() == 0:
+            feedback.pushWarning(self.tr('No features in merged layer.'))
             return {}
 
         # Convert QGIS layers to GeoDataFrames
-        cleaned_gdf = self.qgis_layer_to_gdf(splited_layer)
+        cleaned_gdf = self.qgis_layer_to_gdf(merged_layer)
 
         processing_features = 1
         processed_grounds = 0
@@ -160,7 +164,9 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
                 return {}
 
             neighbors = cleaned_gdf[
-                (cleaned_gdf.geometry.touches(ground.geometry)) &
+                (cleaned_gdf.geometry.touches(ground.geometry) |
+                 cleaned_gdf.geometry.contains(ground.geometry) |
+                 cleaned_gdf.geometry.within(ground.geometry)) &
                 (cleaned_gdf.index != ground.name)
                 ]
             if neighbors.empty:
@@ -176,6 +182,9 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
             for _, n_row in neighbors.iterrows():
                 if feedback.isCanceled():
                     return {}
+                if n_row.geometry.contains(ground.geometry):
+                    best_neighbor = n_row
+                    break
                 shared = ground.geometry.boundary.intersection(n_row.geometry.boundary)
                 if shared is None:
                     continue
@@ -197,7 +206,7 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
 
         feedback.pushInfo(self.tr('Processed {0}/{1} grounds.').format(processed_grounds, wrong_grounds))
 
-        cleaned_layer = self.gdf_to_qgis_layer(cleaned_gdf, QgsProject.instance().crs(), splited_layer.fields(), 'cleaned_layer')
+        cleaned_layer = self.gdf_to_qgis_layer(cleaned_gdf, QgsProject.instance().crs(), merged_layer.fields(), 'cleaned_layer')
 
         # Split cleaned_layer into roof and ground layers
         feedback.setProgressText(self.tr('Splitting layer into roof and ground layers...'))
@@ -209,7 +218,7 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
             self.FIXED_ROOF_LAYER,
             context,
             self.roof_layer.fields(),
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             QgsProject.instance().crs()
         )
 
@@ -218,7 +227,7 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
             self.FIXED_GROUND_LAYER,
             context,
             self.ground_layer.fields(),
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             QgsProject.instance().crs()
         )
 
@@ -286,7 +295,7 @@ class FixOrphanGrounds(QgsProcessingAlgorithm):
 
     def gdf_to_qgis_layer(self, gdf: gpd.GeoDataFrame, crs: QgsCoordinateReferenceSystem, fields: QgsFields, layer_name: str = "result") -> QgsVectorLayer:
         # Create memory layer
-        layer = QgsVectorLayer(f"MultiPolygon?crs={crs}", layer_name, "memory")
+        layer = QgsVectorLayer(f"Polygon?crs={crs}", layer_name, "memory")
         layer.dataProvider().addAttributes(fields)
         layer.updateFields()
         for _, row in gdf.iterrows():

@@ -144,7 +144,7 @@ class CheckCloseVertices(QgsProcessingAlgorithm):
 
     def gdf_to_qgis_layer(self, gdf: gpd.GeoDataFrame, crs: QgsCoordinateReferenceSystem, fields: QgsFields, layer_name: str = "result") -> QgsVectorLayer:
         # Create memory layer
-        layer = QgsVectorLayer(f"MultiPolygon?crs={crs}", layer_name, "memory")
+        layer = QgsVectorLayer(f"Polygon?crs={crs}", layer_name, "memory")
         layer.dataProvider().addAttributes(fields)
         layer.updateFields()
         for _, row in gdf.iterrows():

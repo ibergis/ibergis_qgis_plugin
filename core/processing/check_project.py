@@ -987,7 +987,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             feedback.pushWarning(self.tr(msg))
             return
 
-        temporal_layer = QgsVectorLayer('MultiPolygon', 'roof_volumes', 'memory')
+        temporal_layer = QgsVectorLayer('Polygon', 'roof_volumes', 'memory')
         if temporal_layer is None:
             msg = 'ERROR (roof_volumes): Error creating temporal layer for roof volumes check'
             feedback.pushWarning(self.tr(msg))

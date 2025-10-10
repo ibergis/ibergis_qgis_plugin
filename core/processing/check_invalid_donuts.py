@@ -158,7 +158,7 @@ class CheckInvalidDonuts(QgsProcessingAlgorithm):
             self.INVALID_DONUTS_LAYER,
             context,
             fields,
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             QgsProject.instance().crs()
         )
 

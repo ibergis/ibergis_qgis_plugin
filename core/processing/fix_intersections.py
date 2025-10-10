@@ -111,25 +111,15 @@ class FixIntersections(QgsProcessingAlgorithm):
         feedback.setProgress(5)
 
         # Merge layers
+        tmp_gpkg = tempfile.mktemp(suffix=".gpkg", prefix="merged_layer_")
         merged_layer = processing.run("native:mergevectorlayers",
                                       {'LAYERS': [
                                           self.ground_layer,
                                           self.roof_layer
                                           ],
-                                          'CRS': QgsProject.instance().crs(), 'OUTPUT': 'TEMPORARY_OUTPUT'})['OUTPUT']
+                                          'CRS': QgsProject.instance().crs(), 'OUTPUT': tmp_gpkg})['OUTPUT']
         if merged_layer is None:
             feedback.pushWarning(self.tr('Error merging layers.'))
-            return {}
-        merged_layer.dataProvider().deleteAttributes([0])
-        merged_layer.updateFields()
-
-        feedback.setProgressText(self.tr('Spliting multipolygons into single polygons...'))
-        feedback.setProgress(20)
-
-        tmp_gpkg = tempfile.mktemp(suffix=".gpkg", prefix="splited_layer_")
-        splited_layer = processing.run("native:multiparttosingleparts", {'INPUT': merged_layer, 'OUTPUT': tmp_gpkg})['OUTPUT']
-        if splited_layer is None:
-            feedback.pushWarning(self.tr('Error splitting multipolygons into single polygons.'))
             # Clean up temporary file
             if os.path.exists(tmp_gpkg):
                 try:
@@ -137,6 +127,9 @@ class FixIntersections(QgsProcessingAlgorithm):
                 except OSError:
                     pass
             return {}
+        merged_layer = QgsVectorLayer(merged_layer, 'merged_layer', 'ogr')
+        merged_layer.dataProvider().deleteAttributes([0])
+        merged_layer.updateFields()
 
         if feedback.isCanceled():
             # Clean up temporary file
@@ -187,7 +180,7 @@ class FixIntersections(QgsProcessingAlgorithm):
             self.FIXED_ROOF_LAYER,
             context,
             self.roof_layer.fields(),
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             QgsProject.instance().crs()
         )
 
@@ -196,7 +189,7 @@ class FixIntersections(QgsProcessingAlgorithm):
             self.FIXED_GROUND_LAYER,
             context,
             self.ground_layer.fields(),
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             QgsProject.instance().crs()
         )
 
@@ -272,7 +265,7 @@ class FixIntersections(QgsProcessingAlgorithm):
 
     def gdf_to_qgis_layer(self, gdf: gpd.GeoDataFrame, crs: QgsCoordinateReferenceSystem, fields: QgsFields, layer_name: str = "result") -> QgsVectorLayer:
         # Create memory layer
-        layer = QgsVectorLayer(f"MultiPolygon?crs={crs}", layer_name, "memory")
+        layer = QgsVectorLayer(f"Polygon?crs={crs}", layer_name, "memory")
         layer.dataProvider().addAttributes(fields)
         layer.updateFields()
         for _, row in gdf.iterrows():

@@ -181,7 +181,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
             self.SIMPLIFIED_ROOF_LAYER,
             context,
             self.roof_layer.fields(),
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             self.simplified_layer.crs()
         )
 
@@ -190,7 +190,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
             self.SIMPLIFIED_GROUND_LAYER,
             context,
             self.ground_layer.fields(),
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             self.simplified_layer.crs()
         )
 

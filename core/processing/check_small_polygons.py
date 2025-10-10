@@ -187,7 +187,7 @@ class CheckSmallPolygons(QgsProcessingAlgorithm):
             self.SMALL_POLYGONS_LAYER,
             context,
             fields,
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             QgsProject.instance().crs()
         )
 

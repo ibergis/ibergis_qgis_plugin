@@ -18,8 +18,8 @@ INSERT INTO gpkg_spatial_ref_sys (srs_name, srs_id, organization, organization_c
 -- ---------------------------
 
 INSERT INTO tables_geom (table_name, isgeom, index_col) values
-('ground', 'MULTIPOLYGON', 'code'),
-('roof', 'MULTIPOLYGON', 'code'),
+('ground', 'POLYGON', 'code'),
+('roof', 'POLYGON', 'code'),
 ('mesh_anchor_points', 'POINT', null),
 ('mesh_anchor_lines', 'LINESTRINGZ', null),
 ('boundary_conditions', 'MULTILINESTRING', 'code'),
@@ -49,7 +49,7 @@ INSERT INTO tables_geom (table_name, isgeom, index_col) values
 ('hyetograph', 'POINT', null),
 ('vi_inlet', 'POINT', null),
 ('culvert', 'LINESTRING', 'code'),
-('pinlet', 'MULTIPOLYGON', 'code'),
+('pinlet', 'POLYGON', 'code'),
 ('bridge', 'LINESTRING', 'code');
 
 
@@ -119,7 +119,7 @@ VALUES
 (10, 'MANDATORY NULL', 'cat_raster_value', '{time, fname}', NULL, 0, NULL, 1, 10, 3, 127),
 (11, 'MANDATORY NULL', 'cat_timeseries', '{timser_type, times_type}', NULL, 0, NULL, 1, 10, 3, 128),
 (12, 'MANDATORY NULL', 'cat_timeseries_value', '{time, value}', NULL, 0, NULL, 1, 10, 3, 129),
-(13, 'MANDATORY NULL', 'ground', '{code, cellsize}', NULL, 0, 'MultiPolygon', 1, 10, 3, 106),
+(13, 'MANDATORY NULL', 'ground', '{code, cellsize}', NULL, 0, 'Polygon', 1, 10, 3, 106),
 (14, 'MANDATORY NULL', 'hyetograph', '{code}', NULL, 0, 'Point', 1, 10, 3, 107),
 (15, 'MANDATORY NULL', 'inlet', '{code, outlet_node, top_elev, width, length, method, efficiency}', NULL, 1, 'Point', 1, 10, 3, 108),
 (16, 'MANDATORY NULL', 'inp_conduit', '{code, shape, geom1, roughness, length, z1, z2, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 109),
@@ -133,7 +133,7 @@ VALUES
 (24, 'MANDATORY NULL', 'inp_pump', '{code, state, startup, shutoff, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 115),
 (25, 'MANDATORY NULL', 'inp_storage', '{code, elev, ymax, y0, ysur, storage_type}', NULL, 0, 'Point', 1, 10, 3, 116),
 (26, 'MANDATORY NULL', 'inp_weir', '{code, flap, weir_type, geom1, geom2, cd, cd2, ec, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 117),
-(27, 'MANDATORY NULL', 'roof', '{code, slope, width, roughness, isconnected, outlet_code, outlet_vol, street_vol, infiltr_vol}', NULL, 0, 'MultiPolygon', 1, 10, 3, 118),
+(27, 'MANDATORY NULL', 'roof', '{code, slope, width, roughness, isconnected, outlet_code, outlet_vol, street_vol, infiltr_vol}', NULL, 0, 'Polygon', 1, 10, 3, 118),
 (28, 'GEOMETRIC DUPLICATE', 'arc', NULL, NULL, 1, 'LineString', 3, 7, 3, 101),
 (29, 'GEOMETRIC DUPLICATE', 'node', NULL, NULL, 1, 'Point', 4, 8, 3, 102),
 (30, 'GEOMETRIC ORPHAN', 'node', NULL, NULL, 1, 'Point', 5, 9, 3, 103),
