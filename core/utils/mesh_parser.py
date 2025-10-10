@@ -412,6 +412,7 @@ def loads(mesh_string, roof_string="", losses_string="", bridges_string=""):
     ):
         return load(mesh_file, roof_file, losses_file, bridges_file)
 
+
 def export_to_2dm_file(mesh: Mesh, filepath: str) -> None:
     """
     Export the mesh to a .2dm file.
