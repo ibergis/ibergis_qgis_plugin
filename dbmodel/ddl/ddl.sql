@@ -341,7 +341,6 @@ create table bridge (
     deck_cd real CHECK (typeof(deck_cd)='real' OR deck_cd = NULL) DEFAULT 1.7 NOT NULL,
     freeflow_cd real CHECK (typeof(freeflow_cd)='real' OR freeflow_cd = NULL) DEFAULT 0.6 NOT NULL,
     sumergeflow_cd real CHECK (typeof(sumergeflow_cd)='real' OR sumergeflow_cd = NULL) DEFAULT 0.8 NOT NULL,
-    gaugenumber integer CHECK (typeof(gaugenumber)='integer' OR gaugenumber = NULL) DEFAULT 1 NOT NULL,
 	length real CHECK (typeof(length)='real' OR length = NULL),
     descript text unique check (typeof(descript) = 'text' or descript = null),
     geom geometry

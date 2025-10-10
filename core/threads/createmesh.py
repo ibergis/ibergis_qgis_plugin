@@ -789,7 +789,7 @@ class DrCreateMeshTask(DrTask):
     def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame, bridge_layer: QgsVectorLayer) -> pd.DataFrame:
         bridges = layer_to_gdf(
             bridge_layer,
-            ["code", "freeflow_cd", "deck_cd", "sumergeflow_cd", "gaugenumber"],
+            ["code", "freeflow_cd", "deck_cd", "sumergeflow_cd", "fid"],
         )
         bridges_values_dict = self.get_bridges_values_dict()
 
@@ -893,7 +893,7 @@ class DrCreateMeshTask(DrTask):
                     freepressureflowcd = bridge.freeflow_cd
                     deckcd = bridge.deck_cd
                     sumergeflowcd = bridge.sumergeflow_cd
-                    gaugenumber = bridge.gaugenumber
+                    gaugenumber = bridge.fid
 
                     feature_list = [
                         idx,

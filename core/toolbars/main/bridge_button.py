@@ -60,7 +60,6 @@ class DrBridgeButton(DrAction):
     DECK_DEFAULT = 1.7
     FREEFLOW_DEFAULT = 0.6
     SUMERGEFLOW_DEFAULT = 0.8
-    GAUGENUMBER_DEFAULT = 1
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
@@ -115,8 +114,7 @@ class DrBridgeButton(DrAction):
         line_texts = {
             'txt_deck': str(self.DECK_DEFAULT),
             'txt_freeflow': str(self.FREEFLOW_DEFAULT),
-            'txt_sumergeflow': str(self.SUMERGEFLOW_DEFAULT),
-            'txt_gaugenumber': str(self.GAUGENUMBER_DEFAULT)
+            'txt_sumergeflow': str(self.SUMERGEFLOW_DEFAULT)
         }
         for line_name, line_text in line_texts.items():
             self.dialog.findChild(QLineEdit, line_name).setPlaceholderText(line_text)
@@ -228,7 +226,6 @@ class DrBridgeButton(DrAction):
         txt_deck = dialog.txt_deck
         txt_freeflow = dialog.txt_freeflow
         txt_sumergeflow = dialog.txt_sumergeflow
-        txt_gaugenumber = dialog.txt_gaugenumber
         txt_length = dialog.txt_length
         txt_descript = dialog.txt_descript
 
@@ -237,7 +234,6 @@ class DrBridgeButton(DrAction):
         deck = tools_qt.get_text(dialog, txt_deck, add_quote=False)
         freeflow = tools_qt.get_text(dialog, txt_freeflow, add_quote=False)
         sumergeflow = tools_qt.get_text(dialog, txt_sumergeflow, add_quote=False)
-        gaugenumber = tools_qt.get_text(dialog, txt_gaugenumber, add_quote=False)
         length = tools_qt.get_text(dialog, txt_length, add_quote=False)
         descript = tools_qt.get_text(dialog, txt_descript, add_quote=False)
 
@@ -245,7 +241,6 @@ class DrBridgeButton(DrAction):
             'deck': deck,
             'freeflow': freeflow,
             'sumergeflow': sumergeflow,
-            'gaugenumber': gaugenumber,
             'length': length,
             'descript': descript,
             'geom': f"ST_GeomFromText('{bridge.geometry().asWkt()}')"
@@ -269,7 +264,6 @@ class DrBridgeButton(DrAction):
             'deck': 'deck_cd',
             'freeflow': 'freeflow_cd',
             'sumergeflow': 'sumergeflow_cd',
-            'gaugenumber': 'gaugenumber',
             'length': 'length',
             'descript': 'descript',
             'geom': 'geom'
@@ -279,8 +273,7 @@ class DrBridgeButton(DrAction):
         default_values = {
             'deck': self.DECK_DEFAULT,
             'freeflow': self.FREEFLOW_DEFAULT,
-            'sumergeflow': self.SUMERGEFLOW_DEFAULT,
-            'gaugenumber': self.GAUGENUMBER_DEFAULT
+            'sumergeflow': self.SUMERGEFLOW_DEFAULT
         }
 
         # Insert or update
@@ -317,7 +310,6 @@ class DrBridgeButton(DrAction):
             deck = default_values['deck']
             freeflow = default_values['freeflow']
             sumergeflow = default_values['sumergeflow']
-            gaugenumber = default_values['gaugenumber']
 
             # Insert bridge
             columns_str = ', '.join(columns)
@@ -957,7 +949,6 @@ class DrBridgeButton(DrAction):
             'txt_deck': bridge['deck_cd'],
             'txt_freeflow': bridge['freeflow_cd'],
             'txt_sumergeflow': bridge['sumergeflow_cd'],
-            'txt_gaugenumber': bridge['gaugenumber'],
             'txt_length': bridge['length'],
             'txt_descript': bridge['descript']
         }
