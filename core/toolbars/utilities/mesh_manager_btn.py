@@ -2,7 +2,7 @@ from functools import partial
 from pathlib import Path
 
 from qgis.core import QgsApplication
-from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog
+from qgis.PyQt.QtWidgets import QAbstractItemView, QTableView, QFileDialog, QMenu
 from qgis.PyQt.QtSql import QSqlTableModel
 from qgis.utils import iface
 
@@ -12,6 +12,7 @@ from .createmesh_btn import DrCreateMeshButton
 from ...threads.create_temp_layer import DrCreateTempMeshLayerTask
 from ....lib import tools_qgis, tools_qt, tools_db
 from ...utils import tools_dr
+from ...utils import mesh_parser
 from .... import global_vars
 from ....lib.tools_gpkgdao import DrGpkgDao
 from typing import Optional
@@ -47,6 +48,7 @@ class DrMeshManagerButton(DrAction):
         btn_create_mesh = self.dlg_manager.btn_create
         btn_view_mesh = self.dlg_manager.btn_view
         btn_import_mesh = self.dlg_manager.btn_import
+        btn_export_mesh = self.dlg_manager.btn_export
         btn_delete_mesh = self.dlg_manager.btn_delete
         btn_cancel = self.dlg_manager.btn_cancel
 
@@ -56,6 +58,12 @@ class DrMeshManagerButton(DrAction):
         self._set_active_mesh_label()
 
         btn_import_mesh.setToolTip("Import mesh from folder")
+
+        # Create export menu
+        export_menu = QMenu()
+        export_menu.addAction("Export as 2dm", partial(self._export_mesh_2dm))
+        export_menu.addAction("Export as Iber format", partial(self._export_mesh_iber))
+        btn_export_mesh.setMenu(export_menu)
 
         # Signals
         txt_filter.textChanged.connect(partial(self._filter_table))
@@ -227,7 +235,11 @@ class DrMeshManagerButton(DrAction):
         values = f"'{mesh_name}'"
         with open(mesh_path) as f:
             content = f.read()
-            values += f", '{content}', '{timestamp}', {int(content.splitlines()[3].strip())}"
+            if content.splitlines()[0].strip() == "MATRIU":
+                elements = int(content.splitlines()[1].strip())
+            else:
+                elements = int(content.splitlines()[3].strip())
+            values += f", '{content}', '{timestamp}', {elements}"
 
         if roof_path.exists():
             columns += ", roof"
@@ -301,3 +313,87 @@ class DrMeshManagerButton(DrAction):
                 sql = "vacuum;"
                 self.dao.execute_sql(sql)
             self._reload_manager_table()
+
+    def _get_selected_mesh_and_folder(self):
+        """Helper to get selected mesh and export folder. Returns (mesh_name, mesh, folder_path) or (None, None, None)"""
+        table = self.dlg_manager.tbl_mesh_mng
+
+        # Get selected row
+        selected_list = table.selectionModel().selectedRows()
+        if len(selected_list) != 1:
+            msg = "Select only one mesh to export"
+            tools_qgis.show_warning(msg, dialog=self.dlg_manager)
+            return None, None, None
+
+        # Get selected mesh name
+        col = 'idval'
+        col_idx = tools_qt.get_col_index_by_col_name(table, col)
+        if not col_idx:
+            col_idx = 0
+        idx = selected_list[0]
+        mesh_name = idx.sibling(idx.row(), col_idx).data()
+
+        # Ask user for folder
+        self.dao = global_vars.gpkg_dao_data.clone()
+        project_folder = str(Path(self.dao.db_filepath).parent)
+        folder_path = QFileDialog.getExistingDirectory(
+            caption="Select folder to export mesh",
+            directory=project_folder,
+        )
+
+        if not folder_path:
+            return None, None, None
+
+        # Load mesh data from database
+        sql = f"SELECT iber2d, roof, losses, bridge FROM cat_file WHERE name = '{mesh_name}'"
+        row = tools_db.get_row(sql)
+
+        if not row:
+            tools_qgis.show_warning("Mesh not found", dialog=self.dlg_manager)
+            return None, None, None
+
+        iber2d_content = row[0] if row[0] else ""
+        roof_content = row[1] if row[1] else ""
+        losses_content = row[2] if row[2] else ""
+        bridges_content = row[3] if row[3] else ""
+
+        # Parse mesh
+        mesh = mesh_parser.loads(iber2d_content, roof_content, losses_content, bridges_content)
+
+        return str(mesh_name), mesh, folder_path
+
+    def _export_mesh_2dm(self):
+        """Export selected mesh to .2dm format"""
+        mesh_name, mesh, folder_path = self._get_selected_mesh_and_folder()
+        if mesh_name is None or mesh is None or folder_path is None:
+            return
+
+        # Export to 2dm file
+        output_path = Path(folder_path) / f"{mesh_name}.2dm"
+        mesh_parser.export_to_2dm_file(mesh, str(output_path))
+
+        msg = f"Mesh successfully exported to {output_path}"
+        tools_qgis.show_info(msg, dialog=self.dlg_manager)
+        self.dao.close_db()
+
+    def _export_mesh_iber(self):
+        """Export selected mesh to Iber format (Iber2D.dat, Iber_SWMM_roof.dat, Iber_Losses.dat)"""
+        mesh_name, mesh, folder_path = self._get_selected_mesh_and_folder()
+        if mesh_name is None or mesh is None or folder_path is None:
+            return
+
+        # Export to Iber format files
+        iber2d_path = Path(folder_path) / "Iber2D.dat"
+        roof_path = Path(folder_path) / "Iber_SWMM_roof.dat"
+        losses_path = Path(folder_path) / "Iber_Losses.dat"
+        bridges_path = Path(folder_path) / "Iber_Internal_cond.dat"
+
+        with open(iber2d_path, 'w') as mesh_fp, \
+             open(roof_path, 'w') as roof_fp, \
+             open(losses_path, 'w') as losses_fp, \
+             open(bridges_path, 'w') as bridges_fp:
+            mesh_parser.dump(mesh, mesh_fp, roof_fp, losses_fp, bridges_fp)
+
+        msg = f"Mesh successfully exported to {folder_path}"
+        tools_qgis.show_info(msg, dialog=self.dlg_manager)
+        self.dao.close_db()
