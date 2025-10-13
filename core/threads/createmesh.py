@@ -13,6 +13,10 @@ from qgis.core import (
 from qgis.utils import iface
 import shapely
 
+from ...lib.tools_gpkgdao import DrGpkgDao
+
+from ..threads.savetomesh import apply_boundary_conditions_to_mesh
+
 from . import createmesh_core as core
 from .validatemesh import validate_input_layers, validate_inlets_in_triangles
 from .task import DrTask
@@ -42,6 +46,7 @@ class DrCreateMeshTask(DrTask):
         transition_slope: float,
         transition_start: float,
         transition_extent: float,
+        apply_boundary_conditions: bool,
         dem_layer: Union[QgsRasterLayer, None],
         roughness_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
         losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
@@ -65,6 +70,7 @@ class DrCreateMeshTask(DrTask):
         self.transition_slope = transition_slope
         self.transition_start = transition_start
         self.transition_extent = transition_extent
+        self.apply_boundary_conditions = apply_boundary_conditions
         self.dem_layer = dem_layer
         self.roughness_layer: Union[QgsRasterLayer, Literal["ground_layer"], None] = roughness_layer
         self.losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None] = losses_layer
@@ -96,7 +102,7 @@ class DrCreateMeshTask(DrTask):
                 return False
 
             # Load input layers
-            self.dao = global_vars.gpkg_dao_data.clone()
+            self.dao: DrGpkgDao = global_vars.gpkg_dao_data.clone()
             layers = self._prepare_input_layers()
 
             if not self._validate_roughness_data(layers):
@@ -632,6 +638,28 @@ class DrCreateMeshTask(DrTask):
             boundary_conditions={},
             bridges=bridges_df
         )
+
+        if self.apply_boundary_conditions:
+            self.feedback.setProgressText("Applying boundary conditions...")
+
+            start = time.time()
+            print("Applying boundary conditions... ", end="")
+
+            row = self.dao.get_rows("SELECT idval FROM cat_bscenario WHERE active = 1")
+            if row is None or len(row) == 0:
+                self.message = "No active boundary scenario found. Please, define one and try again."
+                return False
+            if len(row) > 1:
+                self.message = "More than one active boundary scenario found. Please, check your data and try again."
+                return False
+
+            bscenario = row[0][0]
+
+            self.feedback.setProgressText(f"Using bscenario '{bscenario}'...")
+
+            apply_boundary_conditions_to_mesh(self.mesh, bscenario, self.dao)
+
+            print(f"Done! {time.time() - start}s")
 
         # Create temp layer
         self.feedback.setProgressText("Creating temp layer for visualization...")

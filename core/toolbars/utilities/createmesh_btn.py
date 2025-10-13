@@ -134,6 +134,7 @@ class DrCreateMeshButton(DrAction):
         transition_slope = float(dlg.txt_slope.text())
         transition_start = float(dlg.txt_start.text())
         transition_extent = float(dlg.txt_extent.text())
+        apply_boundary_conditions = dlg.chk_apply_bc.isChecked()
         dem_layer = tools_qt.get_combo_value(dlg, dlg.cmb_dem_layer)
         if dem_layer == "":
             msg = "Please, select a DEM layer!"
@@ -253,6 +254,7 @@ class DrCreateMeshButton(DrAction):
             transition_slope,
             transition_start,
             transition_extent,
+            apply_boundary_conditions,
             dem_layer,
             roughness_layer,
             losses_layer,
