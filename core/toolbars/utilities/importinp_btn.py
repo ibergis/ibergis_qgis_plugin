@@ -14,7 +14,7 @@ from ...threads.importinp import DrImportInpTask
 from ...ui.ui_manager import DrImportInpUi
 from ...utils import Feedback, tools_dr
 from .... import global_vars
-from ....lib import tools_qt
+from ....lib import tools_qt, tools_qgis
 
 
 class DrImportINPButton(DrAction):
@@ -159,6 +159,8 @@ class DrImportINPButton(DrAction):
 
     def _on_task_terminated(self):
         message = "Task failed. See the Log Messages Panel for more information."
+        msg = "Error importing INP file. Try to open it in SWMM and save it."
+        tools_qgis.show_message(msg, dialog=self.dlg_import)
         if self.thread.isCanceled():
             message = "Task canceled."
         self._on_task_end(message)
