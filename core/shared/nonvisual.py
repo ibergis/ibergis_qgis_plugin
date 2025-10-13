@@ -2414,11 +2414,14 @@ class DrNonVisual:
         # Get the first selected range
         selection = selected[0]
 
-        # Extract data from selected cells
+        # Extract data from selected cells, skipping hidden columns
         rows_data = []
         for row in range(selection.topRow(), selection.bottomRow() + 1):
             columns_data = []
             for col in range(selection.leftColumn(), selection.rightColumn() + 1):
+                # Skip hidden columns
+                if table.isColumnHidden(col):
+                    continue
                 item = table.item(row, col)
                 text = item.text() if item is not None else ""
                 columns_data.append(text)
@@ -2439,11 +2442,24 @@ class DrNonVisual:
 
         for r, row in enumerate(rows):
             columns = row.split("\t")
+            c_offset = 0  # Track offset for clipboard data
             for c, value in enumerate(columns):
-                item = QTableWidgetItem(value)
+                # Find the next visible column starting from the base position
+                col_pos = selected[0].leftColumn() + c + c_offset
+
+                # Skip hidden columns and adjust offset
+                while col_pos < table.columnCount() and table.isColumnHidden(col_pos):
+                    c_offset += 1
+                    col_pos = selected[0].leftColumn() + c + c_offset
+
+                # Check if we're still within table bounds
+                if col_pos >= table.columnCount():
+                    break
+
                 row_pos = selected[0].topRow() + r
-                col_pos = selected[0].leftColumn() + c
-                table.setItem(row_pos, col_pos, item)
+                if row_pos < table.rowCount():
+                    item = QTableWidgetItem(value)
+                    table.setItem(row_pos, col_pos, item)
         tools_qgis.show_info("Values pasted from clipboard", dialog=self.dialog)
 
     # endregion
