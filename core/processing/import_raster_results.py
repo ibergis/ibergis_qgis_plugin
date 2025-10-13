@@ -17,7 +17,7 @@ from qgis.core import (
     QgsInterval,
     QgsTemporalNavigationObject,
     QgsProcessingParameterBoolean,
-    QgsRasterBandStats
+    Qgis
 )
 from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QTime, QDate
 from qgis.PyQt.QtGui import QAction
@@ -260,16 +260,16 @@ class ImportRasterResults(QgsProcessingAlgorithm):
 
         if mode == '0':
             provider = layer.dataProvider()
-            min_value = provider.bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0).minimumValue
-            max_value = provider.bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0).maximumValue
+            min_value = provider.bandStatistics(1, Qgis.RasterBandStatistic.All, layer.extent(), 0).minimumValue
+            max_value = provider.bandStatistics(1, Qgis.RasterBandStatistic.All, layer.extent(), 0).maximumValue
         elif mode == '1':
             # Get min and max values from all bands
             provider = layer.dataProvider()
-            min_value = provider.bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0).minimumValue
-            max_value = provider.bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0).maximumValue
+            min_value = provider.bandStatistics(1, Qgis.RasterBandStatistic.All, layer.extent(), 0).minimumValue
+            max_value = provider.bandStatistics(1, Qgis.RasterBandStatistic.All, layer.extent(), 0).maximumValue
             band_count = layer.bandCount()
             for band in range(1, band_count + 1):
-                stats = provider.bandStatistics(band, QgsRasterBandStats.All, layer.extent(), 0)
+                stats = provider.bandStatistics(band, Qgis.RasterBandStatistic.All, layer.extent(), 0)
                 if stats.minimumValue < min_value:
                     min_value = stats.minimumValue
                 if stats.maximumValue > max_value:

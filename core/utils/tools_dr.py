@@ -32,7 +32,7 @@ from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeatu
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
     QgsWkbTypes, QgsRectangle, QgsDateTimeRange, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, \
-    QgsMapLayerStyle, QgsRasterLayerTemporalProperties, QgsRasterBandStats, Qgis
+    QgsMapLayerStyle, QgsRasterLayerTemporalProperties, Qgis
 from qgis.gui import QgsDateTimeEdit, QgsRubberBand, QgsExtentWidget
 
 from ..ui.dialog import DrDialog
@@ -4020,14 +4020,14 @@ def _get_band_min_max(layer: QgsRasterLayer, band_num: int = None) -> tuple[floa
 
     if band_num is not None:
         # Get stats for specific band
-        stats = provider.bandStatistics(band_num, QgsRasterBandStats.All, layer.extent(), 0)
+        stats = provider.bandStatistics(band_num, Qgis.RasterBandStatistic.All, layer.extent(), 0)
         return stats.minimumValue, stats.maximumValue
 
     # Get stats across all bands
     min_value = float('inf')
     max_value = float('-inf')
     for band in range(1, layer.bandCount() + 1):
-        stats = provider.bandStatistics(band, QgsRasterBandStats.All, layer.extent(), 0)
+        stats = provider.bandStatistics(band, Qgis.RasterBandStatistic.All, layer.extent(), 0)
         min_value = min(min_value, stats.minimumValue)
         max_value = max(max_value, stats.maximumValue)
 
