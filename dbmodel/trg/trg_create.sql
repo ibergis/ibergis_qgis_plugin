@@ -184,7 +184,18 @@ END;
 
 CREATE TRIGGER trg_upd_bridge AFTER UPDATE OF geom ON bridge FOR EACH ROW
 BEGIN
+    -- Update the length of the bridge
     UPDATE bridge SET
         length = round(ST_Length(NEW.geom), 3)
     WHERE fid = NEW.fid;
+
+    -- Update the bridge_value last point for this bridge
+    UPDATE bridge_value
+    SET distance = round(ST_Length(NEW.geom), 3)
+    WHERE id = (
+        SELECT id FROM bridge_value
+        WHERE bridge_code = NEW.code
+        ORDER BY distance DESC
+        LIMIT 1
+    );
 END;
