@@ -45,6 +45,7 @@ gpkg_dao_data = None                      # Instance of class DrGpkgDao. Found i
 gpkg_dao_config = None                    # Instance of class DrGpkgDao. Found in "/lib/tools_gpkg.py"
 project_vars = {}                         # Project variables from QgsProject related to Giswater
 project_vars['project_gpkg_path'] = None  # gwProjectGpkgPath
+raster_symbology_mode = None              # raster_symbology_mode
 # endregion
 
 

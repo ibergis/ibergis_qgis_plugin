@@ -676,76 +676,88 @@ INSERT INTO edit_typevalue
 VALUES(169, 'dlg_options_layout', 'lyt_rpt_iber_2_3', 'Raster results frame', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(170, 'dlg_options_layout', 'lyt_ibergis_raster_results_1_1', 'Depth', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(170, 'dlg_options_layout', 'lyt_ibergis_raster_results_2_1', 'Depth', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(171, 'dlg_options_layout', 'lyt_ibergis_raster_results_2_1', 'Velocity', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(171, 'dlg_options_layout', 'lyt_ibergis_raster_results_3_1', 'Velocity', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(172, 'dlg_options_layout', 'lyt_ibergis_raster_results_3_1', 'Water Elevation', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(172, 'dlg_options_layout', 'lyt_ibergis_raster_results_4_1', 'Water Elevation', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(173, 'dlg_options_layout', 'lyt_ibergis_raster_results_4_1', 'Hazard ACA', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(173, 'dlg_options_layout', 'lyt_ibergis_raster_results_5_1', 'Hazard ACA', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(174, 'dlg_options_layout', 'lyt_ibergis_raster_results_5_1', 'Severe Hazard RD9-2008', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(174, 'dlg_options_layout', 'lyt_ibergis_raster_results_6_1', 'Severe Hazard RD9-2008', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(175, 'dlg_options_layout', 'lyt_ibergis_raster_results_6_1', 'Local Time Step', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(175, 'dlg_options_layout', 'lyt_ibergis_raster_results_7_1', 'Local Time Step', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(176, 'dlg_options_layout', 'lyt_ibergis_raster_results_7_1', 'Specific Discharge X', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(176, 'dlg_options_layout', 'lyt_ibergis_raster_results_8_1', 'Specific Discharge X', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(177, 'dlg_options_layout', 'lyt_ibergis_raster_results_8_1', 'Specific Discharge Y', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(177, 'dlg_options_layout', 'lyt_ibergis_raster_results_9_1', 'Specific Discharge Y', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(178, 'dlg_options_layout', 'lyt_ibergis_raster_results_9_1', 'Energy', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(178, 'dlg_options_layout', 'lyt_ibergis_raster_results_10_1', 'Energy', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(179, 'dlg_options_layout', 'lyt_ibergis_raster_results_10_1', 'Froude', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(179, 'dlg_options_layout', 'lyt_ibergis_raster_results_11_1', 'Froude', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(180, 'dlg_options_layout', 'lyt_ibergis_raster_results_11_1', 'Infiltration Rate', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(180, 'dlg_options_layout', 'lyt_ibergis_raster_results_12_1', 'Infiltration Rate', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(181, 'dlg_options_layout', 'lyt_ibergis_raster_results_12_1', 'Rain Depth', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(181, 'dlg_options_layout', 'lyt_ibergis_raster_results_13_1', 'Rain Depth', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(182, 'dlg_options_layout', 'lyt_ibergis_raster_results_13_1', 'Velocity X', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(182, 'dlg_options_layout', 'lyt_ibergis_raster_results_14_1', 'Velocity X', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(183, 'dlg_options_layout', 'lyt_ibergis_raster_results_14_1', 'Velocity Y', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(183, 'dlg_options_layout', 'lyt_ibergis_raster_results_15_1', 'Velocity Y', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(184, 'dlg_options_layout', 'lyt_ibergis_raster_results_15_1', 'Water Permanence', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(184, 'dlg_options_layout', 'lyt_ibergis_raster_results_16_1', 'Water Permanence', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(185, 'dlg_options_layout', 'lyt_ibergis_raster_results_1_2', 'MAX Depth', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(185, 'dlg_options_layout', 'lyt_ibergis_raster_results_2_2', 'MAX Depth', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(186, 'dlg_options_layout', 'lyt_ibergis_raster_results_2_2', 'MAX Velocity', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(186, 'dlg_options_layout', 'lyt_ibergis_raster_results_3_2', 'MAX Velocity', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(187, 'dlg_options_layout', 'lyt_ibergis_raster_results_3_2', 'MAX Water Elevation', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(187, 'dlg_options_layout', 'lyt_ibergis_raster_results_4_2', 'MAX Water Elevation', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(188, 'dlg_options_layout', 'lyt_ibergis_raster_results_4_2', 'MAX Hazard ACA', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(188, 'dlg_options_layout', 'lyt_ibergis_raster_results_5_2', 'MAX Hazard ACA', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(189, 'dlg_options_layout', 'lyt_ibergis_raster_results_5_2', 'MAX Severe Hazard RD9-2008', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(189, 'dlg_options_layout', 'lyt_ibergis_raster_results_6_2', 'MAX Severe Hazard RD9-2008', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(190, 'dlg_options_layout', 'lyt_ibergis_raster_results_6_2', 'MAX Local Time Step', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(190, 'dlg_options_layout', 'lyt_ibergis_raster_results_7_2', 'MAX Local Time Step', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(191, 'dlg_options_layout', 'lyt_ibergis_raster_results_7_2', 'MAX Specific Discharge', NULL, '{"collapsable": true, "collapsed": true}');
+VALUES(191, 'dlg_options_layout', 'lyt_ibergis_raster_results_8_2', 'MAX Specific Discharge', NULL, '{"collapsable": true, "collapsed": true}');
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(192, 'result_raster_colorramp', '0', 'Inverted Rainbow', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(193, 'result_raster_colorramp', '1', 'Blues', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(194, 'dlg_options_layout', 'lyt_ibergis_raster_results_1_1', 'Raster general options', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(195, 'result_raster_symbmode', '0', 'Min/Max of each band', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(196, 'result_raster_symbmode', '1', 'Min/Max for all bands', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(197, 'result_raster_symbmode', '2', 'Custom Min/Max', NULL, NULL);
 
 
 -- GROUND
@@ -2130,6 +2142,9 @@ VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xym
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xymax', 'lyt_rpt_iber_2_3', 3, 'string', 'text', 'XYmax', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0,0', 'Type coordinates separed by a comma', NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'raster_results_symbmode', 'lyt_ibergis_raster_results_1_1', 1, 'string', 'combo', 'Symbology Mode', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_symbmode'", NULL, NULL, 0, NULL, NULL, '0', 'Symbology mode for raster results (updates in real time): \nMin/Max of each band (independent range per band)\nMin/Max for all bands (common range across bands)\nCustom Min/Max (user-defined range).', NULL);
 
 -- OUTLAYER CHECK PROJECT OPTIONS
 -- manning
@@ -2225,241 +2240,241 @@ VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_orifice_cd_
 -- depth
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_depth', 'lyt_ibergis_raster_results_1_1', 1, 'real', 'spinbox', 'Max value for Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_depth', 'lyt_ibergis_raster_results_2_1', 1, 'real', 'spinbox', 'Max value for Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_depth', 'lyt_ibergis_raster_results_1_1', 2, 'real', 'spinbox', 'Min value for Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_depth', 'lyt_ibergis_raster_results_2_1', 2, 'real', 'spinbox', 'Min value for Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_depth', 'lyt_ibergis_raster_results_1_1', 3, 'real', 'combo', 'Color Ramp for Depth result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '1', 'Color Ramp for the symbology of Depth raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_depth', 'lyt_ibergis_raster_results_2_1', 3, 'real', 'combo', 'Color Ramp for Depth result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '1', 'Color Ramp for the symbology of Depth raster result', NULL);
 
 -- velocity
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_velocity', 'lyt_ibergis_raster_results_2_1', 1, 'real', 'spinbox', 'Max value for Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_velocity', 'lyt_ibergis_raster_results_3_1', 1, 'real', 'spinbox', 'Max value for Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_velocity', 'lyt_ibergis_raster_results_2_1', 2, 'real', 'spinbox', 'Min value for Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_velocity', 'lyt_ibergis_raster_results_3_1', 2, 'real', 'spinbox', 'Min value for Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_velocity', 'lyt_ibergis_raster_results_2_1', 3, 'real', 'combo', 'Color Ramp for Velocity result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Velocity raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_velocity', 'lyt_ibergis_raster_results_3_1', 3, 'real', 'combo', 'Color Ramp for Velocity result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Velocity raster result', NULL);
 
 -- water elevation
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_water_elevation', 'lyt_ibergis_raster_results_3_1', 1, 'real', 'spinbox', 'Max value for Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_water_elevation', 'lyt_ibergis_raster_results_4_1', 1, 'real', 'spinbox', 'Max value for Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_water_elevation', 'lyt_ibergis_raster_results_3_1', 2, 'real', 'spinbox', 'Min value for Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_water_elevation', 'lyt_ibergis_raster_results_4_1', 2, 'real', 'spinbox', 'Min value for Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_water_elevation', 'lyt_ibergis_raster_results_3_1', 3, 'real', 'combo', 'Color Ramp for Water Elevation result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Water Elevation raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_water_elevation', 'lyt_ibergis_raster_results_4_1', 3, 'real', 'combo', 'Color Ramp for Water Elevation result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Water Elevation raster result', NULL);
 
 -- hazard aca
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_hazard_aca', 'lyt_ibergis_raster_results_4_1', 1, 'real', 'spinbox', 'Max value for Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_hazard_aca', 'lyt_ibergis_raster_results_5_1', 1, 'real', 'spinbox', 'Max value for Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_hazard_aca', 'lyt_ibergis_raster_results_4_1', 2, 'real', 'spinbox', 'Min value for Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_hazard_aca', 'lyt_ibergis_raster_results_5_1', 2, 'real', 'spinbox', 'Min value for Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_hazard_aca', 'lyt_ibergis_raster_results_4_1', 3, 'real', 'combo', 'Color Ramp for Hazard ACA result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Hazard ACA raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_hazard_aca', 'lyt_ibergis_raster_results_5_1', 3, 'real', 'combo', 'Color Ramp for Hazard ACA result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Hazard ACA raster result', NULL);
 
 -- severe hazard
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_severe_hazard', 'lyt_ibergis_raster_results_5_1', 1, 'real', 'spinbox', 'Max value for Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_severe_hazard', 'lyt_ibergis_raster_results_6_1', 1, 'real', 'spinbox', 'Max value for Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_severe_hazard', 'lyt_ibergis_raster_results_5_1', 2, 'real', 'spinbox', 'Min value for Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_severe_hazard', 'lyt_ibergis_raster_results_6_1', 2, 'real', 'spinbox', 'Min value for Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_severe_hazard', 'lyt_ibergis_raster_results_5_1', 3, 'real', 'combo', 'Color Ramp for Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Severe Hazard RD9-2008 raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_severe_hazard', 'lyt_ibergis_raster_results_6_1', 3, 'real', 'combo', 'Color Ramp for Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Severe Hazard RD9-2008 raster result', NULL);
 
 -- local time step
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_local_time_step', 'lyt_ibergis_raster_results_6_1', 1, 'real', 'spinbox', 'Max value for Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_local_time_step', 'lyt_ibergis_raster_results_7_1', 1, 'real', 'spinbox', 'Max value for Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_local_time_step', 'lyt_ibergis_raster_results_6_1', 2, 'real', 'spinbox', 'Min value for Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_local_time_step', 'lyt_ibergis_raster_results_7_1', 2, 'real', 'spinbox', 'Min value for Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_local_time_step', 'lyt_ibergis_raster_results_6_1', 3, 'real', 'combo', 'Color Ramp for Local Time Step result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Local Time Step raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_local_time_step', 'lyt_ibergis_raster_results_7_1', 3, 'real', 'combo', 'Color Ramp for Local Time Step result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Local Time Step raster result', NULL);
 
 -- specific discharge x
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_specific_discharge_x', 'lyt_ibergis_raster_results_7_1', 1, 'real', 'spinbox', 'Max value for Specific Discharge X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Specific Discharge X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_specific_discharge_x', 'lyt_ibergis_raster_results_8_1', 1, 'real', 'spinbox', 'Max value for Specific Discharge X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Specific Discharge X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_specific_discharge_x', 'lyt_ibergis_raster_results_7_1', 2, 'real', 'spinbox', 'Min value for Specific Discharge X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Specific Discharge X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_specific_discharge_x', 'lyt_ibergis_raster_results_8_1', 2, 'real', 'spinbox', 'Min value for Specific Discharge X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Specific Discharge X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_specific_discharge_x', 'lyt_ibergis_raster_results_7_1', 3, 'real', 'combo', 'Color Ramp for Specific Discharge X result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Specific Discharge X raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_specific_discharge_x', 'lyt_ibergis_raster_results_8_1', 3, 'real', 'combo', 'Color Ramp for Specific Discharge X result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Specific Discharge X raster result', NULL);
 
 -- specific discharge y
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_specific_discharge_y', 'lyt_ibergis_raster_results_8_1', 1, 'real', 'spinbox', 'Max value for Specific Discharge Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Specific Discharge Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_specific_discharge_y', 'lyt_ibergis_raster_results_9_1', 1, 'real', 'spinbox', 'Max value for Specific Discharge Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Specific Discharge Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_specific_discharge_y', 'lyt_ibergis_raster_results_8_1', 2, 'real', 'spinbox', 'Min value for Specific Discharge Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Specific Discharge Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_specific_discharge_y', 'lyt_ibergis_raster_results_9_1', 2, 'real', 'spinbox', 'Min value for Specific Discharge Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Specific Discharge Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_specific_discharge_y', 'lyt_ibergis_raster_results_8_1', 3, 'real', 'combo', 'Color Ramp for Specific Discharge Y result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Specific Discharge Y raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_specific_discharge_y', 'lyt_ibergis_raster_results_9_1', 3, 'real', 'combo', 'Color Ramp for Specific Discharge Y result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Specific Discharge Y raster result', NULL);
 
 -- energy
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_energy', 'lyt_ibergis_raster_results_9_1', 1, 'real', 'spinbox', 'Max value for Energy result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Energy raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_energy', 'lyt_ibergis_raster_results_10_1', 1, 'real', 'spinbox', 'Max value for Energy result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Energy raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_energy', 'lyt_ibergis_raster_results_9_1', 2, 'real', 'spinbox', 'Min value for Energy result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Energy raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_energy', 'lyt_ibergis_raster_results_10_1', 2, 'real', 'spinbox', 'Min value for Energy result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Energy raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_energy', 'lyt_ibergis_raster_results_9_1', 3, 'real', 'combo', 'Color Ramp for Energy result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Energy raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_energy', 'lyt_ibergis_raster_results_10_1', 3, 'real', 'combo', 'Color Ramp for Energy result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Energy raster result', NULL);
 
 -- froude
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_froude', 'lyt_ibergis_raster_results_10_1', 1, 'real', 'spinbox', 'Max value for Froude result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Froude raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_froude', 'lyt_ibergis_raster_results_11_1', 1, 'real', 'spinbox', 'Max value for Froude result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Froude raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_froude', 'lyt_ibergis_raster_results_10_1', 2, 'real', 'spinbox', 'Min value for Froude result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Froude raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_froude', 'lyt_ibergis_raster_results_11_1', 2, 'real', 'spinbox', 'Min value for Froude result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Froude raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_froude', 'lyt_ibergis_raster_results_10_1', 3, 'real', 'combo', 'Color Ramp for Froude result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Froude raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_froude', 'lyt_ibergis_raster_results_11_1', 3, 'real', 'combo', 'Color Ramp for Froude result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Froude raster result', NULL);
 
 -- infiltration rate
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_infiltration_rate', 'lyt_ibergis_raster_results_11_1', 1, 'real', 'spinbox', 'Max value for Infiltration Rate result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Infiltration Rate raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_infiltration_rate', 'lyt_ibergis_raster_results_12_1', 1, 'real', 'spinbox', 'Max value for Infiltration Rate result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Infiltration Rate raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_infiltration_rate', 'lyt_ibergis_raster_results_11_1', 2, 'real', 'spinbox', 'Min value for Infiltration Rate result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Infiltration Rate raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_infiltration_rate', 'lyt_ibergis_raster_results_12_1', 2, 'real', 'spinbox', 'Min value for Infiltration Rate result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Infiltration Rate raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_infiltration_rate', 'lyt_ibergis_raster_results_11_1', 3, 'real', 'combo', 'Color Ramp for Infiltration Rate result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Infiltration Rate raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_infiltration_rate', 'lyt_ibergis_raster_results_12_1', 3, 'real', 'combo', 'Color Ramp for Infiltration Rate result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Infiltration Rate raster result', NULL);
 
 -- rain depth
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_rain_depth', 'lyt_ibergis_raster_results_12_1', 1, 'real', 'spinbox', 'Max value for Rain Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Rain Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_rain_depth', 'lyt_ibergis_raster_results_13_1', 1, 'real', 'spinbox', 'Max value for Rain Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Rain Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_rain_depth', 'lyt_ibergis_raster_results_12_1', 2, 'real', 'spinbox', 'Min value for Rain Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Rain Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_rain_depth', 'lyt_ibergis_raster_results_13_1', 2, 'real', 'spinbox', 'Min value for Rain Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Rain Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_rain_depth', 'lyt_ibergis_raster_results_12_1', 3, 'real', 'combo', 'Color Ramp for Rain Depth result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Rain Depth raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_rain_depth', 'lyt_ibergis_raster_results_13_1', 3, 'real', 'combo', 'Color Ramp for Rain Depth result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Rain Depth raster result', NULL);
 
 -- velocity x
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_velocity_x', 'lyt_ibergis_raster_results_13_1', 1, 'real', 'spinbox', 'Max value for Velocity X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Velocity X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_velocity_x', 'lyt_ibergis_raster_results_14_1', 1, 'real', 'spinbox', 'Max value for Velocity X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Velocity X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_velocity_x', 'lyt_ibergis_raster_results_13_1', 2, 'real', 'spinbox', 'Min value for Velocity X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Velocity X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_velocity_x', 'lyt_ibergis_raster_results_14_1', 2, 'real', 'spinbox', 'Min value for Velocity X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Velocity X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_velocity_x', 'lyt_ibergis_raster_results_13_1', 3, 'real', 'combo', 'Color Ramp for Velocity X result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Velocity X raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_velocity_x', 'lyt_ibergis_raster_results_14_1', 3, 'real', 'combo', 'Color Ramp for Velocity X result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Velocity X raster result', NULL);
 
 -- velocity y
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_velocity_y', 'lyt_ibergis_raster_results_14_1', 1, 'real', 'spinbox', 'Max value for Velocity Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Velocity Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_velocity_y', 'lyt_ibergis_raster_results_15_1', 1, 'real', 'spinbox', 'Max value for Velocity Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Velocity Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_velocity_y', 'lyt_ibergis_raster_results_14_1', 2, 'real', 'spinbox', 'Min value for Velocity Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Velocity Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_velocity_y', 'lyt_ibergis_raster_results_15_1', 2, 'real', 'spinbox', 'Min value for Velocity Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Velocity Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_velocity_y', 'lyt_ibergis_raster_results_14_1', 3, 'real', 'combo', 'Color Ramp for Velocity Y result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Velocity Y raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_velocity_y', 'lyt_ibergis_raster_results_15_1', 3, 'real', 'combo', 'Color Ramp for Velocity Y result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Velocity Y raster result', NULL);
 
 -- water permanence
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_water_permanence', 'lyt_ibergis_raster_results_15_1', 1, 'real', 'spinbox', 'Max value for Water Permanence result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Water Permanence raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_water_permanence', 'lyt_ibergis_raster_results_16_1', 1, 'real', 'spinbox', 'Max value for Water Permanence result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Water Permanence raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_water_permanence', 'lyt_ibergis_raster_results_15_1', 2, 'real', 'spinbox', 'Min value for Water Permanence result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Water Permanence raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_water_permanence', 'lyt_ibergis_raster_results_16_1', 2, 'real', 'spinbox', 'Min value for Water Permanence result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Water Permanence raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_water_permanence', 'lyt_ibergis_raster_results_15_1', 3, 'real', 'combo', 'Color Ramp for Water Permanence result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Water Permanence raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_water_permanence', 'lyt_ibergis_raster_results_16_1', 3, 'real', 'combo', 'Color Ramp for Water Permanence result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Water Permanence raster result', NULL);
 
 -- max depth
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_depth', 'lyt_ibergis_raster_results_1_2', 1, 'real', 'spinbox', 'Max value for Max Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_depth', 'lyt_ibergis_raster_results_2_2', 1, 'real', 'spinbox', 'Max value for Max Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_depth', 'lyt_ibergis_raster_results_1_2', 2, 'real', 'spinbox', 'Min value for Max Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_depth', 'lyt_ibergis_raster_results_2_2', 2, 'real', 'spinbox', 'Min value for Max Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_depth', 'lyt_ibergis_raster_results_1_2', 3, 'real', 'combo', 'Color Ramp for Max Depth result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Depth raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_depth', 'lyt_ibergis_raster_results_2_2', 3, 'real', 'combo', 'Color Ramp for Max Depth result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Depth raster result', NULL);
 
 -- max velocity
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_velocity', 'lyt_ibergis_raster_results_2_2', 1, 'real', 'spinbox', 'Max value for Max Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_velocity', 'lyt_ibergis_raster_results_3_2', 1, 'real', 'spinbox', 'Max value for Max Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_velocity', 'lyt_ibergis_raster_results_2_2', 2, 'real', 'spinbox', 'Min value for Max Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_velocity', 'lyt_ibergis_raster_results_3_2', 2, 'real', 'spinbox', 'Min value for Max Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_velocity', 'lyt_ibergis_raster_results_2_2', 3, 'real', 'combo', 'Color Ramp for Max Velocity result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Velocity raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_velocity', 'lyt_ibergis_raster_results_3_2', 3, 'real', 'combo', 'Color Ramp for Max Velocity result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Velocity raster result', NULL);
 
 -- max water elevation
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_water_elevation', 'lyt_ibergis_raster_results_3_2', 1, 'real', 'spinbox', 'Max value for Max Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_water_elevation', 'lyt_ibergis_raster_results_4_2', 1, 'real', 'spinbox', 'Max value for Max Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_water_elevation', 'lyt_ibergis_raster_results_3_2', 2, 'real', 'spinbox', 'Min value for Max Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_water_elevation', 'lyt_ibergis_raster_results_4_2', 2, 'real', 'spinbox', 'Min value for Max Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_water_elevation', 'lyt_ibergis_raster_results_3_2', 3, 'real', 'combo', 'Color Ramp for Max Water Elevation result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Water Elevation raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_water_elevation', 'lyt_ibergis_raster_results_4_2', 3, 'real', 'combo', 'Color Ramp for Max Water Elevation result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Water Elevation raster result', NULL);
 
 -- max hazard aca
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_hazard_aca', 'lyt_ibergis_raster_results_4_2', 1, 'real', 'spinbox', 'Max value for Max Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_hazard_aca', 'lyt_ibergis_raster_results_5_2', 1, 'real', 'spinbox', 'Max value for Max Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_hazard_aca', 'lyt_ibergis_raster_results_4_2', 2, 'real', 'spinbox', 'Min value for Max Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_hazard_aca', 'lyt_ibergis_raster_results_5_2', 2, 'real', 'spinbox', 'Min value for Max Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_hazard_aca', 'lyt_ibergis_raster_results_4_2', 3, 'real', 'combo', 'Color Ramp for Max Hazard ACA result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Hazard ACA raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_hazard_aca', 'lyt_ibergis_raster_results_5_2', 3, 'real', 'combo', 'Color Ramp for Max Hazard ACA result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Hazard ACA raster result', NULL);
 
 -- max severe hazard
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_severe_hazard', 'lyt_ibergis_raster_results_5_2', 1, 'real', 'spinbox', 'Max value for Max Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_severe_hazard', 'lyt_ibergis_raster_results_6_2', 1, 'real', 'spinbox', 'Max value for Max Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_severe_hazard', 'lyt_ibergis_raster_results_5_2', 2, 'real', 'spinbox', 'Min value for Max Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_severe_hazard', 'lyt_ibergis_raster_results_6_2', 2, 'real', 'spinbox', 'Min value for Max Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_severe_hazard', 'lyt_ibergis_raster_results_5_2', 3, 'real', 'combo', 'Color Ramp for Max Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Severe Hazard RD9-2008 raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_severe_hazard', 'lyt_ibergis_raster_results_6_2', 3, 'real', 'combo', 'Color Ramp for Max Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Severe Hazard RD9-2008 raster result', NULL);
 
 -- max local time step
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_local_time_step', 'lyt_ibergis_raster_results_6_2', 1, 'real', 'spinbox', 'Max value for Max Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_local_time_step', 'lyt_ibergis_raster_results_7_2', 1, 'real', 'spinbox', 'Max value for Max Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_local_time_step', 'lyt_ibergis_raster_results_6_2', 2, 'real', 'spinbox', 'Min value for Max Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_local_time_step', 'lyt_ibergis_raster_results_7_2', 2, 'real', 'spinbox', 'Min value for Max Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_local_time_step', 'lyt_ibergis_raster_results_6_2', 3, 'real', 'combo', 'Color Ramp for Max Local Time Step result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Local Time Step raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_local_time_step', 'lyt_ibergis_raster_results_7_2', 3, 'real', 'combo', 'Color Ramp for Max Local Time Step result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Local Time Step raster result', NULL);
 
 -- max specific discharge
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_specific_discharge', 'lyt_ibergis_raster_results_7_2', 1, 'real', 'spinbox', 'Max value for Max Specific Discharge result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Specific Discharge raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_specific_discharge', 'lyt_ibergis_raster_results_8_2', 1, 'real', 'spinbox', 'Max value for Max Specific Discharge result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Specific Discharge raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_specific_discharge', 'lyt_ibergis_raster_results_7_2', 2, 'real', 'spinbox', 'Min value for Max Specific Discharge result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Specific Discharge raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_specific_discharge', 'lyt_ibergis_raster_results_8_2', 2, 'real', 'spinbox', 'Min value for Max Specific Discharge result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Specific Discharge raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_specific_discharge', 'lyt_ibergis_raster_results_7_2', 3, 'real', 'combo', 'Color Ramp for Max Specific Discharge result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Specific Discharge raster result', NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_specific_discharge', 'lyt_ibergis_raster_results_8_2', 3, 'real', 'combo', 'Color Ramp for Max Specific Discharge result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Specific Discharge raster result', NULL);

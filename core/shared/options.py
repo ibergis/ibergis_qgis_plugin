@@ -180,6 +180,22 @@ class DrOptions:
     def _update_values(self, _json):
 
         _json = self._parse_values_json(_json)
+
+        # Set raster symbology mode
+        for item in _json:
+            if item['widget'] == 'raster_results_symbmode':
+                msg = "Symbology mode for raster results has changed.\nThis will update all current and newly loaded raster results.\n\nAre you sure you want to change the symbology mode?"
+                title = "Raster results symbology mode"
+                result = tools_qt.show_question(msg, title)
+                if result:
+                    global_vars.raster_symbology_mode = item['value']
+                    layers = tools_dr.valid_raster_results_layers()
+                    if len(layers) > 0:
+                        tools_dr.update_raster_symbology_mode(global_vars.raster_symbology_mode)
+                else:
+                    _json.remove(item)
+                break
+
         my_json = json.dumps(_json)
         form = '"formName":"epaoptions"'
         extras = f'"fields":{my_json}'
@@ -192,6 +208,7 @@ class DrOptions:
 
         msg = "Values has been updated"
         tools_qgis.show_info(msg)
+
         # Close dialog
         tools_dr.close_dialog(self.dlg_go2epa_options)
 

@@ -237,6 +237,12 @@ class Drain(QObject):
             msg_params = ("layer_changed", e,)
             tools_qt.show_exception_message(message, msg_params=msg_params)
 
+        try:
+            tools_dr.disconnect_signal('TemporalController')
+        except Exception as e:
+            msg_params = ("TemporalController", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
+
     def _manage_dialogs(self, msg):
         try:
             # Remove IberGIS dockers

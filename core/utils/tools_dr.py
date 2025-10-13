@@ -14,13 +14,15 @@ import re
 import sys
 import webbrowser
 import importlib
+import numpy as np
 
 if 'nt' in sys.builtin_module_names:
     import ctypes
 from functools import partial
 from sip import isdeleted
+from typing import Optional
 
-from qgis.PyQt.QtCore import Qt, QStringListModel, QVariant, QDate, QSettings, QLocale, QRegExp
+from qgis.PyQt.QtCore import Qt, QStringListModel, QVariant, QDate, QSettings, QLocale, QRegExp, QTime, QDateTime, QTimeZone
 from qgis.PyQt.QtGui import QColor, QFontMetrics, QStandardItemModel, QIcon, QStandardItem, QIntValidator, \
     QDoubleValidator, QRegExpValidator
 from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QComboBox, QGridLayout, QTabWidget, \
@@ -29,7 +31,8 @@ from qgis.PyQt.QtWidgets import QSpacerItem, QSizePolicy, QLineEdit, QLabel, QCo
 from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeature, QgsSymbol, \
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
-    QgsWkbTypes, QgsRectangle
+    QgsWkbTypes, QgsRectangle, QgsDateTimeRange, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, \
+    QgsMapLayerStyle, QgsRasterLayerTemporalProperties, QgsRasterBandStats, Qgis
 from qgis.gui import QgsDateTimeEdit, QgsRubberBand, QgsExtentWidget
 
 from ..ui.dialog import DrDialog
@@ -3044,7 +3047,29 @@ def open_dlg_help():
         return True
 
 
+def valid_raster_results_layers():
+    """ Get all valid raster results layers """
+    valid_layers = ['Depth_timeseries.nc', 'Energy_timeseries.nc', 'Froude_timeseries.nc', 'Hazard_ACA_timeseries.nc',
+        'Infiltration_Rate___timeseries.nc', 'MAX_Depth_timeseries.nc', 'MAX_Hazard_ACA_timeseries.nc', 'MAX_Local_time_step_timeseries.nc',
+        'MAX_Severe_Hazard_RD9-2008_timeseries.nc', 'MAX_Specific_Discharge_timeseries.nc', 'MAX_Velocity_timeseries.nc', 'MAX_Water_Elevation_timeseries.nc',
+        'Rain_Depth_timeseries.nc', 'Severe_Hazard_RD9-2008_timeseries.nc', 'Specific_Discharge__x_timeseries.nc', 'Specific_Discharge__y_timeseries.nc',
+        'Velocity_timeseries.nc', 'Velocity__x_timeseries.nc', 'Velocity__y_timeseries.nc', 'Water_Elevation_timeseries.nc', 'Water_Permanence_timeseries.nc']
+    valid_layers_return = []
+    layers = QgsProject().instance().layerTreeRoot().layerOrder()
+    for layer in layers:
+        if not isinstance(layer, QgsRasterLayer):
+            continue
+        try:
+            full_source = layer.source().replace('"', '')  # e.g., NETCDF:/path/file.nc:variable
+            basename = os.path.basename(full_source.split('NETCDF:')[1])
+        except Exception:
+            continue
+        if basename in valid_layers and layer not in valid_layers_return:
+            valid_layers_return.append(layer)
+    return valid_layers_return
+
 # region private functions
+
 
 def _check_user_params(section, parameter, file_name, prefix=False):
     """ Check if a parameter exists in the config/user_params.config
@@ -3546,4 +3571,467 @@ def _process_referencial_values(dialog: QDialog, widget: QWidget, field: dict, l
         list.append({"widget": "result_results_raster_xymin", "value": f"{extent.xMinimum()},{extent.yMinimum()}"})
         list.append({"widget": "result_results_raster_xymax", "value": f"{extent.xMaximum()},{extent.yMaximum()}"})
     return list
+# endregion
+
+# region raster results
+
+
+# color ramp widget name for each result
+COLORRAMP_DICT = {
+    'Depth_timeseries.nc': 'result_symbology_colorramp_depth',
+    'Energy_timeseries.nc': 'result_symbology_colorramp_energy',
+    'Froude_timeseries.nc': 'result_symbology_colorramp_froude',
+    'Hazard_ACA_timeseries.nc': 'result_symbology_colorramp_hazard_aca',
+    'Infiltration_Rate___timeseries.nc': 'result_symbology_colorramp_infiltration_rate',
+    'MAX_Depth_timeseries.nc': 'result_symbology_colorramp_max_depth',
+    'MAX_Hazard_ACA_timeseries.nc': 'result_symbology_colorramp_max_hazard_aca',
+    'MAX_Local_time_step_timeseries.nc': 'result_symbology_colorramp_max_local_time_step',
+    'MAX_Severe_Hazard_RD9-2008_timeseries.nc': 'result_symbology_colorramp_max_severe_hazard',
+    'MAX_Specific_Discharge_timeseries.nc': 'result_symbology_colorramp_max_specific_discharge',
+    'MAX_Velocity_timeseries.nc': 'result_symbology_colorramp_max_velocity',
+    'MAX_Water_Elevation_timeseries.nc': 'result_symbology_colorramp_max_water_elevation',
+    'Rain_Depth_timeseries.nc': 'result_symbology_colorramp_rain_depth',
+    'Severe_Hazard_RD9-2008_timeseries.nc': 'result_symbology_colorramp_severe_hazard',
+    'Specific_Discharge__x_timeseries.nc': 'result_symbology_colorramp_specific_discharge_x',
+    'Specific_Discharge__y_timeseries.nc': 'result_symbology_colorramp_specific_discharge_y',
+    'Velocity_timeseries.nc': 'result_symbology_colorramp_velocity',
+    'Velocity__x_timeseries.nc': 'result_symbology_colorramp_velocity_x',
+    'Velocity__y_timeseries.nc': 'result_symbology_colorramp_velocity_y',
+    'Water_Elevation_timeseries.nc': 'result_symbology_colorramp_water_elevation',
+    'Water_Permanence_timeseries.nc': 'result_symbology_colorramp_water_permanence'
+}
+
+
+# Main functions
+def on_time_changed(t_range: QgsDateTimeRange):
+    """ Update symbology based on temporal range """
+    layers = valid_raster_results_layers()
+    if global_vars.raster_symbology_mode == '0' and len(layers) > 0:
+        setup_temporal_layers(layers, t_range)
+
+
+def setup_temporal_layers(layers, t_range):
+    """ Setup temporal layers with optimized DB access """
+    colorramp_cache = _fetch_colorramp_cache()
+    for layer in layers:
+        _set_band_based_on_range(layer, t_range, colorramp_cache)
+
+
+def setup_symbology(layer: QgsRasterLayer, min_value: float, max_value: float, colorramp: str = '0', band_num: int = 1):
+    """ Setup symbology for the layer - optimized version """
+
+    # Skip symbology if values are invalid (NaN, inf, or invalid range)
+    if not (np.isfinite(min_value) and np.isfinite(max_value) and min_value < max_value):
+        # Set an empty renderer
+        renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1)
+        layer.setRenderer(renderer)
+        layer.triggerRepaint()
+        return
+
+    longest_qgis_step = 0.0000000000000001
+
+    # Define color ramps
+    colorramps: dict = {
+        '0': _generate_color_map([QColor(0, 0, 255), QColor(0, 255, 255), QColor(0, 255, 0), QColor(255, 255, 0), QColor(255, 0, 0)], min_value, max_value),  # Turbo
+        '1': _generate_color_map([QColor(205, 233, 249), QColor(137, 201, 246), QColor(74, 166, 232), QColor(30, 118, 193), QColor(8, 56, 130)], min_value, max_value),  # Blues
+    }
+
+    # Create color ramp items
+    main_colors: dict = colorramps.get(colorramp, colorramps['0'])
+    color_items = _createColorRamp(main_colors, min_value, max_value, longest_qgis_step=longest_qgis_step)
+
+    # Create shader and renderer
+    shader = QgsRasterShader()
+    color_ramp = QgsColorRampShader()
+    color_ramp.setMinimumValue(min_value)
+    color_ramp.setMaximumValue(max_value)
+    color_ramp.setColorRampItemList(color_items)
+    color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
+    shader.setRasterShaderFunction(color_ramp)
+
+    provider = layer.dataProvider()
+
+    # Ensure NoData is correctly defined
+    try:
+        for band_index in range(1, layer.bandCount() + 1):
+            provider.setNoDataValue(band_index, -9999.0)
+    except Exception:
+        pass
+
+    # Create and apply renderer
+    renderer = QgsSingleBandPseudoColorRenderer(provider, band_num, shader)
+    try:
+        renderer.setClassificationMin(min_value)
+        renderer.setClassificationMax(max_value)
+    except Exception:
+        pass
+
+    layer.setRenderer(renderer)
+    layer.triggerRepaint()
+
+    # Persist style into project
+    try:
+        style = QgsMapLayerStyle()
+        style.readFromLayer(layer)
+        style_name = f"Auto-{layer.name()}"
+        sm = layer.styleManager()
+        if style_name in sm.styles():
+            sm.removeStyle(style_name)
+        sm.addStyle(style_name, style)
+        sm.setCurrentStyle(style_name)
+    except Exception:
+        pass
+
+
+def update_raster_symbology_mode(value):
+    """ Update raster symbology mode """
+
+    if value != '0':
+        disconnect_signal('TemporalController', 'openTemporalLine_updateTemporalRange_on_time_changed')
+
+    global_vars.raster_symbology_mode = value
+
+    if value == '0':
+        # Mode 0: Temporal (dynamic based on temporal controller)
+        _apply_temporal_mode()
+    elif value == '1':
+        # Mode 1: All bands (global min/max across all bands)
+        _apply_all_bands_mode()
+    elif value == '2':
+        # Mode 2: Fixed range (user-defined min/max)
+        _apply_fixed_range_mode()
+
+
+def setup_temporal_properties(layer: QgsRasterLayer, start_date: QDate = None, start_time: QTime = None, step_time: QTime = None):
+    """ Setup temporal properties for the layer """
+
+    # Config temporal
+    temporal: QgsRasterLayerTemporalProperties = layer.temporalProperties()
+    temporal.setIsActive(True)
+    temporal.setMode(Qgis.RasterTemporalMode.FixedRangePerBand)
+
+    start_time: QDateTime = QDateTime(start_date, start_time, QTimeZone.utc())
+
+    interval_seconds: Optional[int] = None
+    if step_time is not None:
+        interval_seconds = (step_time.hour() * 60 + step_time.minute()) * 60 + step_time.second()
+
+    # Create a time range per band
+    ranges: dict = {}
+    for i in range(layer.bandCount()):
+        end_time = start_time.addSecs(interval_seconds)
+        dt_range = QgsDateTimeRange(start_time, end_time)
+        ranges[i + 1] = dt_range
+        start_time = start_time.addSecs(interval_seconds)
+
+    temporal.setFixedRangePerBand(ranges)
+
+
+def get_temporal_properties(temporal: QgsRasterLayerTemporalProperties):
+    """ Get temporal properties of QgsRasterLayerTemporalProperties """
+
+    # Get the first and last band ranges for overall temporal extent
+    ranges = temporal.fixedRangePerBand()
+    if ranges:
+        first_band_range = ranges[1]  # First band
+        last_band_range = ranges[len(ranges)]  # Last band
+        start_date = first_band_range.begin().toPyDateTime()
+        start_time = first_band_range.begin().time().toPyTime()
+        end_date = last_band_range.begin().toPyDateTime()
+        end_time = last_band_range.begin().time().toPyTime()
+        # Calculate step time from the difference between bands
+        if len(ranges) > 1:
+            first_end = first_band_range.end()
+            second_start = ranges[2].begin()
+            step_seconds = first_end.secsTo(second_start)
+            step_time = QTime(0, 0).addSecs(abs(step_seconds))
+        else:
+            step_time = QTime(0, 0)
+
+    return start_date, start_time, end_date, end_time, step_time
+
+
+def get_result_options():
+    """ Get result options """
+
+    result_options = {}
+
+    file_names: dict = {
+        'depth': 'Depth_timeseries.nc',
+        'energy': 'Energy_timeseries.nc',
+        'froude': 'Froude_timeseries.nc',
+        'hazard_aca': 'Hazard_ACA_timeseries.nc',
+        'infiltration_rate': 'Infiltration_Rate___timeseries.nc',
+        'max_depth': 'MAX_Depth_timeseries.nc',
+        'max_hazard_aca': 'MAX_Hazard_ACA_timeseries.nc',
+        'max_local_time_step': 'MAX_Local_time_step_timeseries.nc',
+        'max_severe_hazard': 'MAX_Severe_Hazard_RD9-2008_timeseries.nc',
+        'max_specific_discharge': 'MAX_Specific_Discharge_timeseries.nc',
+        'max_velocity': 'MAX_Velocity_timeseries.nc',
+        'max_water_elevation': 'MAX_Water_Elevation_timeseries.nc',
+        'local_time_step': 'Local_Time_Step_timeseries.nc',
+        'rain_depth': 'Rain_Depth_timeseries.nc',
+        'severe_hazard': 'Severe_Hazard_RD9-2008_timeseries.nc',
+        'specific_discharge_x': 'Specific_Discharge__x_timeseries.nc',
+        'specific_discharge_y': 'Specific_Discharge__y_timeseries.nc',
+        'velocity_x': 'Velocity__x_timeseries.nc',
+        'velocity_y': 'Velocity__y_timeseries.nc',
+        'velocity': 'Velocity_timeseries.nc',
+        'water_elevation': 'Water_Elevation_timeseries.nc',
+        'water_permanence': 'Water_Permanence_timeseries.nc'
+    }
+
+    sql = "SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'result_symbology_%'"
+    result = global_vars.gpkg_dao_data.get_rows(sql)
+    if result:
+        for row in result:
+            parameter, value = row
+            # Parse parameter name: result_symbology_{property}_{layer_name}
+            parts = parameter.replace('result_symbology_', '').split('_', 1)
+            if len(parts) < 2:
+                continue
+
+            property_name = parts[0]  # 'min', 'max', 'include'
+            layer_option_name = parts[1]  # 'depth', 'velocity', etc.
+            if layer_option_name.endswith('_include'):
+                layer_name = file_names[layer_option_name.replace('_include', '')]
+            else:
+                layer_name = file_names[layer_option_name]
+
+            # Initialize layer dict if it doesn't exist
+            if layer_name not in result_options:
+                result_options[layer_name] = {
+                    'min': 0.0,
+                    'max': 2.0,
+                    'include': False,
+                    'colorramp': '0'  # default
+                }
+
+            # Set the property value
+            if property_name == 'min':
+                if layer_option_name.endswith('_include'):
+                    result_options[layer_name]['include'] = True if value == '1' else False
+                    continue
+                result_options[layer_name]['min'] = float(value)
+            elif property_name == 'max':
+                result_options[layer_name]['max'] = float(value)
+            elif property_name == 'colorramp':
+                result_options[layer_name]['colorramp'] = value
+
+    return result_options
+
+
+# Private functions
+def _extract_layer_name(layer: QgsRasterLayer) -> str:
+    """ Extract layer name from NETCDF source path """
+    return os.path.basename(layer.source().replace('"', '').split('NETCDF:')[1])
+
+
+def _get_colorramp_for_layer(layer_name: str, colorramp_cache: dict) -> str:
+    """ Get color ramp value from cache for given layer name """
+    param_name = COLORRAMP_DICT.get(layer_name)
+    return colorramp_cache.get(param_name, '0') if param_name else '0'
+
+
+def _fetch_colorramp_cache() -> dict:
+    """ Fetch all color ramp configurations from database """
+    sql = "SELECT parameter, value FROM config_param_user WHERE parameter LIKE 'result_symbology_colorramp_%'"
+    rows = tools_db.get_rows(sql)
+    return {row[0]: row[1] for row in rows} if rows else {}
+
+
+def _generate_color_map(colors: list[QColor], min_val: float, max_val: float) -> dict:
+    """ Generates a color map from a list of colors and a minimum and maximum value """
+    steps = np.linspace(min_val, max_val, num=len(colors))
+    return {step: color for step, color in zip(steps, colors)}
+
+
+def _createColorRamp(main_colors: dict, min_val: float, max_val: float, num_steps: int = 20, min_invisible: bool = True, longest_qgis_step: float = 0.0000000000000001):
+    """ Creates a color ramp from main colors
+        Parameters:
+            main_colors --> Main color references to make the gradient
+            min_val --> Minimum value
+            max_val --> Maximum value
+            num_steps --> Number of ramp values. The more values, more precise color
+            min_invisible --> Boolean to set the minimum value(-9999) invisible
+            longest_qgis_step --> Longest step of QGIS
+    """
+
+    # Calculate value difference
+    step: float = (max_val - min_val) / (num_steps - 1)
+    # Create value list
+    values: list[float] = [min_val + i * step for i in range(num_steps)]
+
+    # Calculate each value color
+    color_items: list[QgsColorRampShader.ColorRampItem] = []
+    last_color: QColor = QColor(0, 0, 0)  # Default color for edge cases
+
+    for val in values:
+        # Get parent main colors
+        keys: list[float] = sorted(main_colors.keys())
+        color = QColor(0, 0, 0)  # Default color
+
+        for i in range(len(keys) - 1):
+            if keys[i] <= val <= keys[i + 1]:
+                ratio = (val - keys[i]) / (keys[i + 1] - keys[i])
+                c1 = main_colors[keys[i]]
+                c2 = main_colors[keys[i + 1]]
+
+                # Calculate color
+                r = int(c1.red() + (c2.red() - c1.red()) * ratio)
+                g = int(c1.green() + (c2.green() - c1.green()) * ratio)
+                b = int(c1.blue() + (c2.blue() - c1.blue()) * ratio)
+
+                color = QColor(r, g, b)
+                break
+        else:
+            color = QColor(0, 0, 0)  # Default color
+
+        last_color = color  # Store the last calculated color
+        # Store color into color list, enforce dot decimal to avoid NaN on reload
+        color_items.append(QgsColorRampShader.ColorRampItem(val, color, f"{val:.6g}"))
+
+    if min_invisible:
+        # Set minimum value(-9999) invisible
+        color_items.insert(0, QgsColorRampShader.ColorRampItem(-9999.0, QColor(0, 0, 0, 0), "-9999"))
+        color_items.insert(1, QgsColorRampShader.ColorRampItem(min_val - longest_qgis_step, QColor(0, 0, 0, 0), f"{(min_val - longest_qgis_step):.10g}"))
+        # Set maximum value(9999) like the last color
+        color_items.append(QgsColorRampShader.ColorRampItem(9999.0, last_color, "9999.0"))
+
+    return color_items
+
+
+def _set_band_based_on_range(layer: QgsRasterLayer, t_range: QgsDateTimeRange, colorramp_cache: dict) -> int:
+    """ Set the appropriate band based on the temporal range
+    
+    Args:
+        layer: Raster layer
+        t_range: Temporal range
+        colorramp_cache: Cache of color ramp configurations
+        
+    Returns:
+        Band number (1-based)
+    """
+    band_num = 1
+    tprops: QgsRasterLayerTemporalProperties = layer.temporalProperties()
+
+    if not (tprops.isVisibleInTemporalRange(t_range) and t_range.begin().isValid() and t_range.end().isValid()):
+        return band_num
+
+    if tprops.mode() != QgsRasterLayerTemporalProperties.FixedRangePerBand:
+        return band_num
+
+    # Get temporal properties
+    start_date, _, end_date, _, _ = get_temporal_properties(tprops)
+    delta = (end_date - start_date) / layer.bandCount()
+    band_num = int((t_range.begin().toPyDateTime() - start_date) / delta) + 1
+
+    # Get min and max values for this band
+    min_val, max_val = _get_band_min_max(layer, band_num)
+
+    # Get color ramp
+    layer_name = _extract_layer_name(layer)
+    colorramp = _get_colorramp_for_layer(layer_name, colorramp_cache)
+
+    setup_symbology(layer, min_val, max_val, colorramp=colorramp, band_num=band_num)
+    global_vars.iface.layerTreeView().refreshLayerSymbology(layer.id())
+
+    return band_num
+
+
+def _apply_temporal_mode():
+    """ Apply temporal symbology mode (mode 0) """
+    temporal_controller = global_vars.iface.mapCanvas().temporalController()
+    connect_signal(temporal_controller.updateTemporalRange, on_time_changed,
+                   'TemporalController', 'openTemporalLine_updateTemporalRange_on_time_changed')
+    # Update symbology with current temporal range
+    temporal_range = temporal_controller.dateTimeRangeForFrameNumber(temporal_controller.currentFrameNumber())
+    on_time_changed(temporal_range)
+
+
+def _apply_all_bands_mode():
+    """ Apply all bands symbology mode (mode 1) """
+    layers = valid_raster_results_layers()
+    if not layers:
+        return
+
+    colorramp_cache = _fetch_colorramp_cache()
+
+    for layer in layers:
+        layer_name = _extract_layer_name(layer)
+        colorramp = _get_colorramp_for_layer(layer_name, colorramp_cache)
+
+        # Get min and max values from all bands
+        min_value, max_value = _get_band_min_max(layer)
+
+        setup_symbology(layer, min_value, max_value, colorramp)
+        global_vars.iface.layerTreeView().refreshLayerSymbology(layer.id())
+
+
+def _apply_fixed_range_mode():
+    """ Apply fixed range symbology mode (mode 2) """
+    layers = valid_raster_results_layers()
+    if not layers:
+        return
+
+    colorramp_cache = _fetch_colorramp_cache()
+    layer_options = get_result_options()
+    longest_qgis_step = 0.0000000000000001
+
+    for layer in layers:
+        layer_name = _extract_layer_name(layer)
+        colorramp = _get_colorramp_for_layer(layer_name, colorramp_cache)
+
+        # Get user-defined min/max values
+        if layer_name in layer_options:
+            options = layer_options[layer_name]
+            min_value = options['min']
+            max_value = options['max']
+            include_min_value = options['include']
+
+            # Validate range
+            if min_value > max_value:
+                min_value = 0
+                max_value = 2
+                include_min_value = False
+
+            if not include_min_value:
+                min_value += longest_qgis_step
+        else:
+            # Default values if not found
+            min_value = 0
+            max_value = 2
+
+        setup_symbology(layer, min_value, max_value, colorramp)
+        global_vars.iface.layerTreeView().refreshLayerSymbology(layer.id())
+
+
+def _get_band_min_max(layer: QgsRasterLayer, band_num: int = None) -> tuple[float, float]:
+    """ Get min and max values for a specific band or all bands
+    
+    Args:
+        layer: Raster layer
+        band_num: Specific band number (1-based), or None to get min/max across all bands
+        
+    Returns:
+        Tuple of (min_value, max_value)
+    """
+    provider = layer.dataProvider()
+
+    if band_num is not None:
+        # Get stats for specific band
+        stats = provider.bandStatistics(band_num, QgsRasterBandStats.All, layer.extent(), 0)
+        return stats.minimumValue, stats.maximumValue
+
+    # Get stats across all bands
+    min_value = float('inf')
+    max_value = float('-inf')
+    for band in range(1, layer.bandCount() + 1):
+        stats = provider.bandStatistics(band, QgsRasterBandStats.All, layer.extent(), 0)
+        min_value = min(min_value, stats.minimumValue)
+        max_value = max(max_value, stats.maximumValue)
+
+    return min_value, max_value
+
+
 # endregion
