@@ -97,6 +97,7 @@ class DrExecuteModel(DrTask):
         self.do_write_inlets = self.params.get('do_write_inlets', True)
         self.pinlet_layer = self.params.get('pinlet_layer', tools_qgis.get_layer_by_tablename('pinlet'))
         self.do_generate_cogs = self.params.get('do_generate_cogs', False)
+        self.iber_tmax = self.params.get('iber_tmax', None)
 
     def run(self):
 
@@ -902,7 +903,10 @@ class DrExecuteModel(DrTask):
         project_name = options.get('project_name', 'test')
         result_iber_format = options.get('result_iber_format', '2')
         options_delta_time = options.get('options_delta_time', '0')
-        options_tmax = options.get('options_tmax', '0')
+        if self.iber_tmax is not None:
+            options_tmax = self.iber_tmax
+        else:
+            options_tmax = options.get('options_tmax', '0')
         options_rank_results = options.get('options_rank_results', '0')
         options_order = options.get('options_order', '0')
         options_cfl = options.get('options_cfl', '0')
