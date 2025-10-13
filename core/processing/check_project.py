@@ -9,7 +9,7 @@ from qgis.core import (
     QgsGeometry,
     QgsProcessingParameterBoolean
 )
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 from qgis.PyQt.QtCore import QVariant
 
 from ...lib.tools_gpkgdao import DrGpkgDao
@@ -1079,7 +1079,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             return None
 
     def check_bridge_checks(self, feedback: QgsProcessingFeedback):
-        """ Check bridges """
+        """ Check bridges touching edges and cellsize of the ground depending on the distance between ground and the bridge """
 
         bridge_layer = tools_qgis.get_layer_by_tablename('bridge')
         if bridge_layer is None:
@@ -1129,16 +1129,18 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         bridges_gdf = gpd.GeoDataFrame({'code': bridge_codes}, geometry=bridge_geometries)
 
         # Get ground and roof layer boundaries
-        ground_geometries = []
+        ground_geometries: list[Tuple[shape, str, float]] = []
         roof_geometries = []
 
         for feature in ground_layer.getFeatures():
-            if feature.geometry() is None or feature.geometry().isEmpty():
+            if feature.geometry() is None or feature.geometry().isEmpty() or feature['cellsize'] in (None, 'NULL', 'null'):
+                feedback.pushWarning(self.tr('ERROR: Invalid ground'))
                 continue
-            ground_geometries.append(shape(feature.geometry()))
+            ground_geometries.append((shape(feature.geometry()), feature['code'], feature['cellsize']))
 
         for feature in roof_layer.getFeatures():
             if feature.geometry() is None or feature.geometry().isEmpty():
+                feedback.pushWarning(self.tr('ERROR: Invalid roof'))
                 continue
             roof_geometries.append(shape(feature.geometry()))
 
@@ -1146,17 +1148,23 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             return temporal_layer
 
         # Check for bridges touching edges
-        for idx, bridge_row in bridges_gdf.iterrows():
+        for _, bridge_row in bridges_gdf.iterrows():
             bridge_geom = bridge_row.geometry
             bridge_code = bridge_row['code']
             touching_issues = []
 
-            # Check against ground layer boundaries
-            for ground_geom in ground_geometries:
+            # Check against ground layer boundaries and cellsize of the ground depending on the distance between ground and the bridge
+            for ground_geom, ground_code, cellsize in ground_geometries:
                 if hasattr(ground_geom, 'boundary'):
+                    valid = True
                     ground_boundary = ground_geom.boundary
                     if bridge_geom.touches(ground_boundary) or bridge_geom.intersects(ground_boundary):
-                        touching_issues.append('ground layer edge')
+                        touching_issues.append('touches ground layer edge')
+                        valid = False
+                    if bridge_geom.distance(ground_boundary) < cellsize:
+                        touching_issues.append('invalid cellsize')
+                        valid = False
+                    if not valid:
                         break
 
             # Check against roof layer boundaries
@@ -1164,7 +1172,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 if hasattr(roof_geom, 'boundary'):
                     roof_boundary = roof_geom.boundary
                     if bridge_geom.touches(roof_boundary) or bridge_geom.intersects(roof_boundary):
-                        touching_issues.append('roof layer edge')
+                        touching_issues.append('touches roof layer edge')
                         break
 
             # If bridge touches any edges, add to error features
@@ -1172,7 +1180,7 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
                 new_feature = QgsFeature()
                 new_feature.setAttributes([
                     bridge_code,
-                    f'Bridge touches: {", ".join(touching_issues)}'
+                    ", ".join(touching_issues)
                 ])
                 new_feature.setGeometry(QgsGeometry.fromWkt(bridge_geom.wkt))
                 features_to_add.append(new_feature)
@@ -1181,8 +1189,6 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         if features_to_add:
             temporal_layer.dataProvider().addFeatures(features_to_add)
             temporal_layer.updateExtents()
-
-        # TODO: Check cellsize of the ground depending on the distance between ground and the bridge
 
         return temporal_layer
 
