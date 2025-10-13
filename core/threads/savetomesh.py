@@ -21,6 +21,7 @@ from ..utils import mesh_parser
 from ..utils.join_boundaries import SetBoundaryConditonsToMeshBoundaries
 from ... import global_vars
 
+
 def apply_boundary_conditions_to_mesh(mesh: mesh_parser.Mesh, bc_scenario: str, dao: DrGpkgDao):
     db_file_path = dao.db_filepath
     bc_path = f"{db_file_path}|layername=boundary_conditions|subset=bscenario = '{bc_scenario}'"
