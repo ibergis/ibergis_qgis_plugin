@@ -86,6 +86,7 @@ class DrExecuteModel(DrTask):
         self.process: Optional[ImportRasterResults] = None
         self.output = None
         self.import_results_infolog = None
+        self.exists_netcdf = False
 
     def init_params(self):
         self.dialog = self.params.get('dialog')
@@ -109,6 +110,11 @@ class DrExecuteModel(DrTask):
         tools_log.log_info(msg, msg_params=msg_params)
         self._delete_raster_results(show_question=False)
         status = self._execute_model()
+
+        # Create results folder,results GPKG and NetCDF files
+        if not self.isCanceled() and status:
+            self._export_results()
+
         self._close_dao()
 
         return status
@@ -121,16 +127,17 @@ class DrExecuteModel(DrTask):
         self.dialog.btn_accept.setVisible(False)
         self.dialog.btn_close.setVisible(True)
 
-        # Create report geopackage
+        if self.timer:
+            self.timer.stop()
+
+        # UI operations that must be on main thread
         if not self.isCanceled() and result:
             relative_path = os.path.relpath(self.folder_path, QgsProject.instance().absolutePath())
             tools_qgis.set_project_variable('project_results_folder', relative_path)
-            self._create_results_folder()
+            self._import_results()
             self._delete_raster_results()
 
         # self._close_file()
-        if self.timer:
-            self.timer.stop()
         if self.isCanceled():
             return
 
@@ -146,8 +153,8 @@ class DrExecuteModel(DrTask):
         # self._close_file()
         super().cancel()
 
-    def _create_results_folder(self):
-        """Create results folder and generate results GPKG and NetCDF files"""
+    def _export_results(self):
+        """ Create results folder and generate results GPKG and NetCDF files """
 
         msg = "Exporting results"
         title = "Export results"
@@ -174,15 +181,20 @@ class DrExecuteModel(DrTask):
         if self.isCanceled():
             return
 
-        exists_netcdf = False
+        # Check if NetCDF exists for later import decision
+        self.exists_netcdf = False
         for file in os.listdir(f'{self.folder_path}{os.sep}IberGisResults'):
             if file.endswith('.nc'):
-                exists_netcdf = True
+                self.exists_netcdf = True
                 break
 
-        if self.do_import and exists_netcdf:
+    def _import_results(self):
+        """ Import results into the project """
+
+        title = 'Import results'
+
+        if self.do_import and self.exists_netcdf:
             msg = "Do you want to import the results into the project?"
-            title = 'Import results'
             result: Optional[bool] = tools_qt.show_question(msg, title, force_action=True)
             if result is not None and result:
                 # Execute ImportRasterResults algorithm
@@ -210,7 +222,7 @@ class DrExecuteModel(DrTask):
         self.progress_changed.emit(None, self.PROGRESS_END, None, False)
 
     def _convert_asc_to_netcdf(self, destination_folder: str, generate_cogs: bool = False) -> None:
-        """Convert ASC files to NetCDF files"""
+        """ Convert ASC files to NetCDF files """
 
         converter_exe_path = f"{global_vars.plugin_dir}{os.sep}resources{os.sep}scripts{os.sep}ascii_to_netcdf{os.sep}ascii_grid_to_netcdf.exe"
         title = "Export results"
@@ -229,7 +241,7 @@ class DrExecuteModel(DrTask):
 
         # Read output in real-time
         while not self.isCanceled():
-            output = process.stdout.readline()  # TODO: Read the output from the file proceso.rep
+            output = process.stdout.readline()
             if output == '' and process.poll() is not None:
                 break
             if output:
@@ -264,7 +276,6 @@ class DrExecuteModel(DrTask):
         """Fill rpt gpkg"""
         dao_rpt = DrGpkgDao()
         dao_rpt.init_db(f'{self.folder_path}{os.sep}IberGisResults{os.sep}results.gpkg')
-        dao_data = global_vars.gpkg_dao_data
 
         if os.path.exists(f'{self.folder_path}{os.sep}Iber_SWMM.rpt'):
             report_values = read_rpt_file(f'{self.folder_path}{os.sep}Iber_SWMM.rpt')
@@ -501,8 +512,8 @@ class DrExecuteModel(DrTask):
         msg = "Filling rpt gpkg"
         self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
 
-        node_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=node', 'node', 'ogr')
-        arc_layer = QgsVectorLayer(f'{global_vars.gpkg_dao_data.db_filepath}|layername=arc', 'arc', 'ogr')
+        node_layer = QgsVectorLayer(f'{self.dao.db_filepath}|layername=node', 'node', 'ogr')
+        arc_layer = QgsVectorLayer(f'{self.dao.db_filepath}|layername=arc', 'arc', 'ogr')
 
         node_dict: dict[str, QgsFeature] = {}
         arc_dict: dict[str, QgsFeature] = {}
@@ -525,13 +536,13 @@ class DrExecuteModel(DrTask):
                         if swmm_field is None:
                             # Get value from inp table
                             sql = f"SELECT table_name FROM {cfg.parent_table} WHERE code = '{index}'"
-                            row = dao_data.get_row(sql)
+                            row = self.dao.get_row(sql)
                             if row is None:
                                 msg = f"Error getting table name for {cfg.topic}: \n {sql}"
                                 self.progress_changed.emit(tools_qt.tr(title), None, tools_qt.tr(msg), True)
                                 continue
                             sql = f"SELECT {field} FROM {cfg.parent_table} AS general INNER JOIN {row[0]} inp ON general.code = inp.code WHERE general.code = '{index}'"
-                            row = dao_data.get_row(sql)
+                            row = self.dao.get_row(sql)
                             if row is None:
                                 sql = f"SELECT {field} FROM {'rpt_node' if cfg.parent_table == 'node' else 'rpt_arc'} WHERE code = '{index}'"
                                 row = dao_rpt.get_row(sql)
