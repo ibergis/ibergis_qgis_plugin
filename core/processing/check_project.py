@@ -1129,14 +1129,14 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
         bridges_gdf = gpd.GeoDataFrame({'code': bridge_codes}, geometry=bridge_geometries)
 
         # Get ground and roof layer boundaries
-        ground_geometries: list[Tuple[shape, str, float]] = []
+        ground_geometries: list[Tuple[shape, float]] = []
         roof_geometries = []
 
         for feature in ground_layer.getFeatures():
             if feature.geometry() is None or feature.geometry().isEmpty() or feature['cellsize'] in (None, 'NULL', 'null'):
                 feedback.pushWarning(self.tr('ERROR: Invalid ground'))
                 continue
-            ground_geometries.append((shape(feature.geometry()), feature['code'], feature['cellsize']))
+            ground_geometries.append((shape(feature.geometry()), feature['cellsize']))
 
         for feature in roof_layer.getFeatures():
             if feature.geometry() is None or feature.geometry().isEmpty():
@@ -1154,17 +1154,16 @@ class DrCheckProjectAlgorithm(QgsProcessingAlgorithm):
             touching_issues = []
 
             # Check against ground layer boundaries and cellsize of the ground depending on the distance between ground and the bridge
-            for ground_geom, ground_code, cellsize in ground_geometries:
+            for ground_geom, cellsize in ground_geometries:
                 if hasattr(ground_geom, 'boundary'):
-                    valid = True
                     ground_boundary = ground_geom.boundary
                     if bridge_geom.touches(ground_boundary) or bridge_geom.intersects(ground_boundary):
-                        touching_issues.append('touches ground layer edge')
-                        valid = False
+                        if 'touches ground layer edge' not in touching_issues:
+                            touching_issues.append('touches ground layer edge')
                     if bridge_geom.distance(ground_boundary) < cellsize:
-                        touching_issues.append('invalid cellsize')
-                        valid = False
-                    if not valid:
+                        if 'invalid cellsize' not in touching_issues:
+                            touching_issues.append('invalid cellsize')
+                    if 'touches ground layer edge' in touching_issues and 'invalid cellsize' in touching_issues:
                         break
 
             # Check against roof layer boundaries
