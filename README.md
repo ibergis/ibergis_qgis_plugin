@@ -5,7 +5,7 @@
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg?logo=python)](https://www.python.org)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-A comprehensive QGIS plugin for advanced water management and hydraulic modeling, providing seamless integration with **EPA SWMM** networks and **Iber** sophisticated mesh generation capabilities for flood modeling and urban drainage analysis.
+A QGIS plugin for advanced water management and hydraulic modeling in urban environments based on the integration of EPA SWMM (1D) and Iber (2D) models for flood modelling and urban drainage analysis.
 
 ## ✨ Features
 
