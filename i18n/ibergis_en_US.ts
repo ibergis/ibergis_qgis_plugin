@@ -682,10 +682,6 @@
 			<translation>Exception: {0}</translation>
 		</message>
 		<message>
-			<source>Reset position form done successfully.</source>
-			<translation>Reset position form done successfully.</translation>
-		</message>
-		<message>
 			<source>Marked values must be greater than 0</source>
 			<translation>Marked values must be greater than 0</translation>
 		</message>
@@ -1142,14 +1138,6 @@
 			<translation>Check Project Algorithm.....Finished</translation>
 		</message>
 		<message>
-			<source>Exported results</source>
-			<translation>Exported results</translation>
-		</message>
-		<message>
-			<source>NetCDF file created</source>
-			<translation>NetCDF file created</translation>
-		</message>
-		<message>
 			<source>Skipping {0}, not found in project.</source>
 			<translation>Skipping {0}, not found in project.</translation>
 		</message>
@@ -1529,6 +1517,230 @@
 			<source>ERROR-{0} ({1}) ({2}): Error getting additional conditions for table "{3}"</source>
 			<translation>ERROR-{0} ({1}) ({2}): Error getting additional conditions for table "{3}"</translation>
 		</message>
+		<message>
+			<source>Advanced Menu</source>
+			<translation>Advanced Menu</translation>
+		</message>
+		<message>
+			<source>{0} task is already active!</source>
+			<translation>{0} task is already active!</translation>
+		</message>
+		<message>
+			<source>Are you sure you want to delete this rows{0}?</source>
+			<translation>Are you sure you want to delete this rows{0}?</translation>
+		</message>
+		<message>
+			<source>Boundary conditions exist but they aren't in the mesh.\nTo save them to the mesh, use the boundary conditions manager.\nDo you want to continue anyway?</source>
+			<translation>Boundary conditions exist but they aren't in the mesh.\nTo save them to the mesh, use the boundary conditions manager.\nDo you want to continue anyway?</translation>
+		</message>
+		<message>
+			<source>You can only add one row at a time.</source>
+			<translation>You can only add one row at a time.</translation>
+		</message>
+		<message>
+			<source>ERROR-{0} ({1}) ({2}): Error getting outlayer values for column "{3}" on table "{4}"</source>
+			<translation>ERROR-{0} ({1}) ({2}): Error getting outlayer values for column "{3}" on table "{4}"</translation>
+		</message>
+		<message>
+			<source>There was an error getting the generated bridge code.</source>
+			<translation>There was an error getting the generated bridge code.</translation>
+		</message>
+		<message>
+			<source>Select only one mesh to export</source>
+			<translation>Select only one mesh to export</translation>
+		</message>
+		<message>
+			<source>INFO (bridge): No bridge errors detected</source>
+			<translation>INFO (bridge): No bridge errors detected</translation>
+		</message>
+		<message>
+			<source>Error importing INP file. Try to open it in SWMM and save it.</source>
+			<translation>Error importing INP file. Try to open it in SWMM and save it.</translation>
+		</message>
+		<message>
+			<source>Raster results symbology mode</source>
+			<translation>Raster results symbology mode</translation>
+		</message>
+		<message>
+			<source>Distances must be unique.</source>
+			<translation>Distances must be unique.</translation>
+		</message>
+		<message>
+			<source>WARNING (rain): Missing rain options ({0})</source>
+			<translation>WARNING (rain): Missing rain options ({0})</translation>
+		</message>
+		<message>
+			<source>You have to select a row.</source>
+			<translation>You have to select a row.</translation>
+		</message>
+		<message>
+			<source>Bridge layer not found. Please make sure the bridge layer is loaded in your project.</source>
+			<translation>Bridge layer not found. Please make sure the bridge layer is loaded in your project.</translation>
+		</message>
+		<message>
+			<source>Iber_SWMM.rpt file not found</source>
+			<translation>Iber_SWMM.rpt file not found</translation>
+		</message>
+		<message>
+			<source>Invalid value '{0}'.</source>
+			<translation>Invalid value '{0}'.</translation>
+		</message>
+		<message>
+			<source>First node already selected with id: {0}. Select second one.</source>
+			<translation>First node already selected with id: {0}. Select second one.</translation>
+		</message>
+		<message>
+			<source>ERROR: Error getting outlayer values</source>
+			<translation>ERROR: Error getting outlayer values</translation>
+		</message>
+		<message>
+			<source>Error setting extent from xymin and xymax: {0}</source>
+			<translation>Error setting extent from xymin and xymax: {0}</translation>
+		</message>
+		<message>
+			<source>Select a bridge to edit.</source>
+			<translation>Select a bridge to edit.</translation>
+		</message>
+		<message>
+			<source>Variable log_sql from user config file has been enabled.</source>
+			<translation>Variable log_sql from user config file has been enabled.</translation>
+		</message>
+		<message>
+			<source>You have empty values.</source>
+			<translation>You have empty values.</translation>
+		</message>
+		<message>
+			<source>This dialog is already open. You can only have one open at a time.</source>
+			<translation>This dialog is already open. You can only have one open at a time.</translation>
+		</message>
+		<message>
+			<source>There was an error deleting old bridge values.</source>
+			<translation>There was an error deleting old bridge values.</translation>
+		</message>
+		<message>
+			<source>Bridge not found</source>
+			<translation>Bridge not found</translation>
+		</message>
+		<message>
+			<source>At least one field must have a value.</source>
+			<translation>At least one field must have a value.</translation>
+		</message>
+		<message>
+			<source>Node 2 selected</source>
+			<translation>Node 2 selected</translation>
+		</message>
+		<message>
+			<source>Variable log_sql from user config file has been disabled.</source>
+			<translation>Variable log_sql from user config file has been disabled.</translation>
+		</message>
+		<message>
+			<source>Symbology mode for raster results has changed.\nThis will update all current and newly loaded raster results.\n\nAre you sure you want to change the symbology mode?</source>
+			<translation>Symbology mode for raster results has changed.\nThis will update all current and newly loaded raster results.\n\nAre you sure you want to change the symbology mode?</translation>
+		</message>
+		<message>
+			<source>The folder is missing data; some result buttons will be disabled</source>
+			<translation>The folder is missing data; some result buttons will be disabled</translation>
+		</message>
+		<message>
+			<source>Changes on this page are dangerous and can break Drain plugin in various ways. \nYou will need to restart QGIS to apply changes. Do you want continue?</source>
+			<translation>Changes on this page are dangerous and can break Drain plugin in various ways. \nYou will need to restart QGIS to apply changes. Do you want continue?</translation>
+		</message>
+		<message>
+			<source>Geometry has been added!</source>
+			<translation>Geometry has been added!</translation>
+		</message>
+		<message>
+			<source>Distances must be between 0 and the bridge length.</source>
+			<translation>Distances must be between 0 and the bridge length.</translation>
+		</message>
+		<message>
+			<source>Warning: Could not set field order for layer {0}: {1}</source>
+			<translation>Warning: Could not set field order for layer {0}: {1}</translation>
+		</message>
+		<message>
+			<source>There was an error updating bridge.</source>
+			<translation>There was an error updating bridge.</translation>
+		</message>
+		<message>
+			<source>Distances must include 0 and {0}.</source>
+			<translation>Distances must include 0 and {0}.</translation>
+		</message>
+		<message>
+			<source>You need at least start(0) and end({0}) points.</source>
+			<translation>You need at least start(0) and end({0}) points.</translation>
+		</message>
+		<message>
+			<source>You have to select at least one row.</source>
+			<translation>You have to select at least one row.</translation>
+		</message>
+		<message>
+			<source>Reset position and dimension form done successfully.</source>
+			<translation>Reset position and dimension form done successfully.</translation>
+		</message>
+		<message>
+			<source>Node 1 selected</source>
+			<translation>Node 1 selected</translation>
+		</message>
+		<message>
+			<source>Results folder saved successfully</source>
+			<translation>Results folder saved successfully</translation>
+		</message>
+		<message>
+			<source>Draw a linestring to define the bridge and then use right click to finish the drawing.</source>
+			<translation>Draw a linestring to define the bridge and then use right click to finish the drawing.</translation>
+		</message>
+		<message>
+			<source>No results found in the folder</source>
+			<translation>No results found in the folder</translation>
+		</message>
+		<message>
+			<source>No mesh selected. Please select a mesh.</source>
+			<translation>No mesh selected. Please select a mesh.</translation>
+		</message>
+		<message>
+			<source>There was an error getting the generated bridge id.</source>
+			<translation>There was an error getting the generated bridge id.</translation>
+		</message>
+		<message>
+			<source>ERROR (bridge): Bridge errors detected ({0})</source>
+			<translation>ERROR (bridge): Bridge errors detected ({0})</translation>
+		</message>
+		<message>
+			<source>Results folder is not valid</source>
+			<translation>Results folder is not valid</translation>
+		</message>
+		<message>
+			<source>Node already selected</source>
+			<translation>Node already selected</translation>
+		</message>
+		<message>
+			<source>Filled rpt gpkg</source>
+			<translation>Filled rpt gpkg</translation>
+		</message>
+		<message>
+			<source>Filling rpt gpkg</source>
+			<translation>Filling rpt gpkg</translation>
+		</message>
+		<message>
+			<source>IberGIS plugin cannot be loaded</source>
+			<translation>IberGIS plugin cannot be loaded</translation>
+		</message>
+		<message>
+			<source>Invalid results frame: extent is empty or null. All frame values must be valid to be saved.</source>
+			<translation>Invalid results frame: extent is empty or null. All frame values must be valid to be saved.</translation>
+		</message>
+		<message>
+			<source>INFO (rain): Necessary rain options found</source>
+			<translation>INFO (rain): Necessary rain options found</translation>
+		</message>
+		<message>
+			<source>Error getting xymin and xymax</source>
+			<translation>Error getting xymin and xymax</translation>
+		</message>
+		<message>
+			<source>There was an error inserting bridge.</source>
+			<translation>There was an error inserting bridge.</translation>
+		</message>
 	</context>
 
 	<!-- UI TRANSLATION -->
@@ -1754,14 +1966,6 @@
 		</message>
 		<message>
 			<source>tooltip_lbl_path</source>
-			<translation>None</translation>
-		</message>
-		<message>
-			<source>lbl_locale</source>
-			<translation>Locale:</translation>
-		</message>
-		<message>
-			<source>tooltip_lbl_locale</source>
 			<translation>None</translation>
 		</message>
 		<message>
@@ -2369,6 +2573,101 @@
 		</message>
 	</context>
 	<context>
+		<name>bridge</name>
+		<message>
+			<source>title</source>
+			<translation>Bridge</translation>
+		</message>
+		<message>
+			<source>dlg_bridge</source>
+			<translation>Bridge</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_bridge</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_cancel</source>
+			<translation>Cancel</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_accept</source>
+			<translation>OK</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_accept</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_freeflow_cd</source>
+			<translation>Free Flow CD</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_freeflow_cd</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_sumergeflow</source>
+			<translation>Sumerge Flow CD</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_sumergeflow</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_length</source>
+			<translation>Length</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_length</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_code</source>
+			<translation>Code</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_code</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_deck_cd</source>
+			<translation>Deck CD</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_deck_cd</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_dem</source>
+			<translation>Raster file (DEM)</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_dem</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>label_2</source>
+			<translation>Description</translation>
+		</message>
+		<message>
+			<source>tooltip_label_2</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>tbl_bridge_value</source>
+			<translation>Opening Val</translation>
+		</message>
+		<message>
+			<source>tooltip_tbl_bridge_value</source>
+			<translation>None</translation>
+		</message>
+	</context>
+	<context>
 		<name>common</name>
 		<message>
 			<source>btn_help</source>
@@ -2663,6 +2962,22 @@
 		</message>
 		<message>
 			<source>tooltip_tab_infolog</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_boundary_contidions</source>
+			<translation>Boundary Conditions</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_boundary_contidions</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>chk_apply_bc</source>
+			<translation>Apply boundary contition from current scenario</translation>
+		</message>
+		<message>
+			<source>tooltip_chk_apply_bc</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -3008,6 +3323,14 @@
 			<source>tooltip_tab_infolog</source>
 			<translation>None</translation>
 		</message>
+		<message>
+			<source>chk_cog</source>
+			<translation>Generate COG (Cloud Optimized GeoTIFF)</translation>
+		</message>
+		<message>
+			<source>tooltip_chk_cog</source>
+			<translation>None</translation>
+		</message>
 	</context>
 	<context>
 		<name>go2epa</name>
@@ -3246,6 +3569,29 @@
 		</message>
 	</context>
 	<context>
+		<name>load_menu</name>
+		<message>
+			<source>title</source>
+			<translation>Dialog</translation>
+		</message>
+		<message>
+			<source>dlg_load_menu</source>
+			<translation>Dialog</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_load_menu</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_close</source>
+			<translation>Close</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_close</source>
+			<translation>None</translation>
+		</message>
+	</context>
+	<context>
 		<name>mesh_manager</name>
 		<message>
 			<source>title</source>
@@ -3305,6 +3651,14 @@
 		</message>
 		<message>
 			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_export</source>
+			<translation>Export</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_export</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -4420,11 +4774,11 @@
 		<name>nonvisual_raster</name>
 		<message>
 			<source>title</source>
-			<translation>Curve Editor</translation>
+			<translation>Raster Editor</translation>
 		</message>
 		<message>
 			<source>dlg_nonvisual_raster</source>
-			<translation>Curve Editor</translation>
+			<translation>Raster Editor</translation>
 		</message>
 		<message>
 			<source>tooltip_dlg_nonvisual_raster</source>
@@ -4557,12 +4911,186 @@
 			<source>tooltip_lbl_fname</source>
 			<translation>None</translation>
 		</message>
+	</context>
+	<context>
+		<name>profile</name>
 		<message>
-			<source>tbl_timeseries_value</source>
-			<translation>Value</translation>
+			<source>title</source>
+			<translation>Draw Profile</translation>
 		</message>
 		<message>
-			<source>tooltip_tbl_timeseries_value</source>
+			<source>dlg_profile</source>
+			<translation>Draw Profile</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_profile</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_profile</source>
+			<translation>Profile</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_profile</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_node_init</source>
+			<translation>Initial node:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_node_init</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_node_end</source>
+			<translation>Final node:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_node_end</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_composer</source>
+			<translation>Parameters</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_composer</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>rb_depth</source>
+			<translation>Depth</translation>
+		</message>
+		<message>
+			<source>tooltip_rb_depth</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>rb_elevation</source>
+			<translation>Elevation</translation>
+		</message>
+		<message>
+			<source>tooltip_rb_elevation</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_period_sep</source>
+			<translation>-</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_period_sep</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_timestamp</source>
+			<translation>Timestamp:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_timestamp</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>rb_instant</source>
+			<translation>Instant</translation>
+		</message>
+		<message>
+			<source>tooltip_rb_instant</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dtm_instant</source>
+			<translation>dd/MM/yyyy HH:mm:ss</translation>
+		</message>
+		<message>
+			<source>tooltip_dtm_instant</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dtm_end</source>
+			<translation>dd/MM/yyyy HH:mm:ss</translation>
+		</message>
+		<message>
+			<source>tooltip_dtm_end</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_offsets</source>
+			<translation>Offsets:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_offsets</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>rb_period</source>
+			<translation>Period</translation>
+		</message>
+		<message>
+			<source>tooltip_rb_period</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>dtm_start</source>
+			<translation>dd/MM/yyyy HH:mm:ss</translation>
+		</message>
+		<message>
+			<source>tooltip_dtm_start</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_draw_profile</source>
+			<translation>Draw profile</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_draw_profile</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>toolBar</source>
+			<translation>Set nodes</translation>
+		</message>
+		<message>
+			<source>tooltip_toolBar</source>
+			<translation>None</translation>
+		</message>
+	</context>
+	<context>
+		<name>profile_list</name>
+		<message>
+			<source>title</source>
+			<translation>Load profiles</translation>
+		</message>
+		<message>
+			<source>dlg_profile_list</source>
+			<translation>Load profiles</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_profile_list</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>groupBox_2</source>
+			<translation>List of profiles</translation>
+		</message>
+		<message>
+			<source>tooltip_groupBox_2</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_open</source>
+			<translation>Open</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_open</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_delete_profile</source>
+			<translation>Delete</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_delete_profile</source>
 			<translation>None</translation>
 		</message>
 	</context>
@@ -4633,6 +5161,283 @@
 		</message>
 		<message>
 			<source>tooltip_lbl_subtitle</source>
+			<translation>None</translation>
+		</message>
+	</context>
+	<context>
+		<name>report_summary</name>
+		<message>
+			<source>title</source>
+			<translation>Report Summary</translation>
+		</message>
+		<message>
+			<source>dlg_report_summary</source>
+			<translation>Report Summary</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_report_summary</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_topic</source>
+			<translation>Topic:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_topic</source>
+			<translation>None</translation>
+		</message>
+	</context>
+	<context>
+		<name>results_folder_selector</name>
+		<message>
+			<source>title</source>
+			<translation>Select Results Folder</translation>
+		</message>
+		<message>
+			<source>dlg_results_folder_selector</source>
+			<translation>Select Results Folder</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_results_folder_selector</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>label</source>
+			<translation>Select a folder:</translation>
+		</message>
+		<message>
+			<source>tooltip_label</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_folder_path</source>
+			<translation>...</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_folder_path</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_cancel</source>
+			<translation>Cancel</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_accept</source>
+			<translation>OK</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_accept</source>
+			<translation>None</translation>
+		</message>
+	</context>
+	<context>
+		<name>timeseries_graph</name>
+		<message>
+			<source>title</source>
+			<translation>Time Series Plot Selection</translation>
+		</message>
+		<message>
+			<source>dlg_timeseries_graph</source>
+			<translation>Time Series Plot Selection</translation>
+		</message>
+		<message>
+			<source>tooltip_dlg_timeseries_graph</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_time_periods</source>
+			<translation>Time Periods</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_time_periods</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_enddate</source>
+			<translation>End Date</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_enddate</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_startdate</source>
+			<translation>Start Date</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_startdate</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>rb_elapsed_time</source>
+			<translation>Elapsed Time</translation>
+		</message>
+		<message>
+			<source>tooltip_rb_elapsed_time</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>rb_datetime</source>
+			<translation>Date/Time</translation>
+		</message>
+		<message>
+			<source>tooltip_rb_datetime</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_data_series</source>
+			<translation>Data Series</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_data_series</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_delete</source>
+			<translation>Delete</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_delete</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_add</source>
+			<translation>Add</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_add</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_data_series_sel</source>
+			<translation>Data Series Selection</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_data_series_sel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>rb_axis_left</source>
+			<translation>Left</translation>
+		</message>
+		<message>
+			<source>tooltip_rb_axis_left</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>rb_axis_right</source>
+			<translation>Right</translation>
+		</message>
+		<message>
+			<source>tooltip_rb_axis_right</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_type</source>
+			<translation>Object Type:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_type</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_variable</source>
+			<translation>Variable:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_variable</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_legend_label</source>
+			<translation>Legend Label:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_legend_label</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_axis</source>
+			<translation>Axis:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_axis</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_name</source>
+			<translation>Object Name:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_name</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_save</source>
+			<translation>Save...</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_save</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_accept</source>
+			<translation>Show Graph</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_accept</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_cancel</source>
+			<translation>Cancel</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_cancel</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>btn_load</source>
+			<translation>Load...</translation>
+		</message>
+		<message>
+			<source>tooltip_btn_load</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>grb_plot_config</source>
+			<translation>Plot Configuration</translation>
+		</message>
+		<message>
+			<source>tooltip_grb_plot_config</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_left_axis</source>
+			<translation>Left Axis:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_left_axis</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_title</source>
+			<translation>Title:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_title</source>
+			<translation>None</translation>
+		</message>
+		<message>
+			<source>lbl_right_axis</source>
+			<translation>Right Axis:</translation>
+		</message>
+		<message>
+			<source>tooltip_lbl_right_axis</source>
 			<translation>None</translation>
 		</message>
 	</context>
