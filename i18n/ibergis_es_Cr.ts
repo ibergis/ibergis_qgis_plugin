@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="es_Es">
+<TS version="2.0" language="es_Cr">
 	<context>
-		<name>drain</name>
+		<name>ibergis</name>
 		<!-- TOOLBARS AND ACTIONS -->
 		<!-- PYTHON MESSAGES -->
 		<message>
@@ -123,7 +123,7 @@
 		</message>
 		<message>
 			<source>Error executing file: {0}\nDatabase error: {1}</source>
-			<translation>Error al ejecutar archivo: {0}\nError en la base de datos: {1}</translation>
+			<translation>Error al ejecutar archivo: {0}Error en la base de datos: {1}</translation>
 		</message>
 		<message>
 			<source>File not found: {0}</source>
@@ -4551,7 +4551,7 @@
 		</message>
 		<message>
 			<source>lbl_fname</source>
-			<translation>Nombre del archivo</translation>
+			<translation>Nombre del fichero</translation>
 		</message>
 		<message>
 			<source>tooltip_lbl_fname</source>

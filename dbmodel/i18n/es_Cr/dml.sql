@@ -1,5 +1,5 @@
 /*
-This file is part of drain project software
+This file is part of IberGIS project software
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This version of Giswater is provided by Giswater Association.
 */
 
@@ -209,21 +209,21 @@ UPDATE config_form_fields SET label = 'Descripción:', tooltip = NULL, placehold
 UPDATE config_form_fields SET label = 'Usuario:', tooltip = NULL, placeholder = NULL, descript = 'Nombre de usuario' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'project_user';
 UPDATE config_form_fields SET label = 'Fecha de creación:', tooltip = NULL, placeholder = NULL, descript = 'Fecha de creación' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'project_tstamp';
 UPDATE config_form_fields SET label = 'Versión:', tooltip = NULL, placeholder = NULL, descript = 'Versión del proyecto' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'project_version';
-UPDATE config_form_fields SET label = 'Tiempo delta:', tooltip = NULL, placeholder = NULL, descript = 'Aumento del tiempo máximo' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_delta_time';
-UPDATE config_form_fields SET label = 'Tmáx:', tooltip = NULL, placeholder = NULL, descript = 'Tiempo máximo de simulación' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_tmax';
-UPDATE config_form_fields SET label = 'Resultados de la clasificación:', tooltip = NULL, placeholder = NULL, descript = 'Clasificación de los resultados' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_rank_results';
-UPDATE config_form_fields SET label = 'Orden de ecuación:', tooltip = NULL, placeholder = NULL, descript = 'Orden de ecuación' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_order';
-UPDATE config_form_fields SET label = 'CFL:', tooltip = NULL, placeholder = NULL, descript = 'CFL' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_cfl';
-UPDATE config_form_fields SET label = 'Borde húmedo-seco:', tooltip = NULL, placeholder = NULL, descript = 'Borde húmedo-seco' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_wetdry_edge';
-UPDATE config_form_fields SET label = 'Coeficiente de viscosidad:', tooltip = NULL, placeholder = NULL, descript = 'Coeficiente de viscosidad' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_viscosity_coeff';
-UPDATE config_form_fields SET label = 'Tiempo inicial:', tooltip = NULL, placeholder = NULL, descript = 'Tiempo inicial' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_t0';
-UPDATE config_form_fields SET label = 'Los detalles de la simulación están escritos:', tooltip = NULL, placeholder = NULL, descript = 'Los detalles de la simulación se escriben o no' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_simulation_details';
-UPDATE config_form_fields SET label = 'Nueva simulación o simulación actual:', tooltip = NULL, placeholder = NULL, descript = 'Continuar la simulación o crear una nueva' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_simulation_new';
-UPDATE config_form_fields SET label = 'Plan ID:', tooltip = NULL, placeholder = NULL, descript = 'Plan ID' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_plan_id';
+UPDATE config_form_fields SET label = 'Max time increment [s]', tooltip = NULL, placeholder = NULL, descript = 'Aumento del tiempo máximo' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_delta_time';
+UPDATE config_form_fields SET label = 'Max simulation time [s]', tooltip = NULL, placeholder = NULL, descript = 'Tiempo máximo de simulación' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_tmax';
+UPDATE config_form_fields SET label = 'Results 2D time interval [s]', tooltip = NULL, placeholder = NULL, descript = 'Writing time for 2D results' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_rank_results';
+UPDATE config_form_fields SET label = 'Numerical Scheme', tooltip = NULL, placeholder = NULL, descript = 'Numerical scheme' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_order';
+UPDATE config_form_fields SET label = 'CFL', tooltip = NULL, placeholder = NULL, descript = 'CFL' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_cfl';
+UPDATE config_form_fields SET label = 'Wet-dry limit [m]', tooltip = NULL, placeholder = NULL, descript = 'Wet-dry limit' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_wetdry_edge';
+UPDATE config_form_fields SET label = 'Molecular viscosity [m2/s]', tooltip = NULL, placeholder = NULL, descript = 'Molecular viscosity of the fluid' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_viscosity_coeff';
+UPDATE config_form_fields SET label = 'Initial time [s]', tooltip = NULL, placeholder = NULL, descript = 'Initial time for hydrological processes' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_t0';
+UPDATE config_form_fields SET label = 'Simulation details', tooltip = NULL, placeholder = NULL, descript = 'Los detalles de la simulación se escriben o no' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_simulation_details';
+UPDATE config_form_fields SET label = 'Simulation', tooltip = NULL, placeholder = NULL, descript = 'Continuar la simulación o crear una nueva' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_simulation_new';
+UPDATE config_form_fields SET label = 'Plan ID', tooltip = NULL, placeholder = NULL, descript = 'ID of the simulation plan' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_plan_id';
 UPDATE config_form_fields SET label = 'Activar o desactivar el plan de simulación:', tooltip = NULL, placeholder = NULL, descript = 'Activar o desactivar el plan de simulación' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_simulation_plan';
-UPDATE config_form_fields SET label = 'Resultados de la clasificación Timeseries:', tooltip = NULL, placeholder = NULL, descript = 'Clasificar los resultados de las series temporales' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_timeseries';
-UPDATE config_form_fields SET label = 'Método utilizado para las pérdidas:', tooltip = NULL, placeholder = NULL, descript = 'Método utilizado para las pérdidas (0 desactivado, 2-SCS)' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_losses_method';
-UPDATE config_form_fields SET label = 'Tipo de lluvia:', tooltip = NULL, placeholder = NULL, descript = 'Tipo de lluvia' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_rain_class';
+UPDATE config_form_fields SET label = 'Timeseries time interval [s]', tooltip = NULL, placeholder = NULL, descript = 'Writing time for timeseries results' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_timeseries';
+UPDATE config_form_fields SET label = 'Losses method', tooltip = NULL, placeholder = NULL, descript = 'Método utilizado para las pérdidas (0 desactivado, 2-SCS)' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_losses_method';
+UPDATE config_form_fields SET label = 'Precipitation', tooltip = NULL, placeholder = NULL, descript = 'Tipo de lluvia' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'options_rain_class';
 UPDATE config_form_fields SET label = 'Profundidad', tooltip = NULL, placeholder = NULL, descript = 'Profundidad de los resultados' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_depth';
 UPDATE config_form_fields SET label = 'Velocidad', tooltip = NULL, placeholder = NULL, descript = 'Velocidad de los resultados' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_vel';
 UPDATE config_form_fields SET label = 'Vertido específico', tooltip = NULL, placeholder = NULL, descript = 'Aprobación específica de la gestión de los resultados' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_specific_discharge';
@@ -244,9 +244,9 @@ UPDATE config_form_fields SET label = 'Vector de profundidad:', tooltip = NULL, 
 UPDATE config_form_fields SET label = 'Tensión de cizallamiento del lecho:', tooltip = NULL, placeholder = NULL, descript = 'Esfuerzo cortante del lecho' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_bed_shear_stress';
 UPDATE config_form_fields SET label = 'Esfuerzo cortante máximo del lecho:', tooltip = NULL, placeholder = NULL, descript = 'Esfuerzo cortante máximo del lecho' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_max_bed_shear_stress';
 UPDATE config_form_fields SET label = 'Energía', tooltip = NULL, placeholder = NULL, descript = 'Energía' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_energy';
-UPDATE config_form_fields SET label = 'Steamlines:', tooltip = NULL, placeholder = NULL, descript = 'Líneas de vapor' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_steamlines';
+UPDATE config_form_fields SET label = 'Steamlines', tooltip = NULL, placeholder = NULL, descript = 'Líneas de vapor' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_steamlines';
 UPDATE config_form_fields SET label = NULL, tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'plg_swmm';
-UPDATE config_form_fields SET label = 'Sólo barrancos o red completa:', tooltip = NULL, placeholder = NULL, descript = 'Sólo barrancos o red completa' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'plg_swmm_options';
+UPDATE config_form_fields SET label = 'Only inlets or complete network:', tooltip = NULL, placeholder = NULL, descript = 'Only inlets or complete network' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'plg_swmm_options';
 UPDATE config_form_fields SET label = 'Activar o desactivar la pérdida de salida:', tooltip = NULL, placeholder = NULL, descript = 'Activa la pérdida de salida' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'plg_swmm_outlet';
 UPDATE config_form_fields SET label = NULL, tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'plg_swmm_result_dis1';
 UPDATE config_form_fields SET label = NULL, tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'plg_swmm_result_dis2';
@@ -307,14 +307,14 @@ UPDATE config_form_fields SET label = 'transecto', tooltip = NULL, placeholder =
 UPDATE config_form_fields SET label = 'grupo_datos', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_transects_value' AND formtype = 'form_feature' AND columnname = 'data_group';
 UPDATE config_form_fields SET label = 'valor', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_transects_value' AND formtype = 'form_feature' AND columnname = 'value';
 UPDATE config_form_fields SET label = 'curva', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_curve_value' AND formtype = 'form_feature' AND columnname = 'curve';
-UPDATE config_form_fields SET label = 'tipo_tiempo
-tipo_tiempo
+UPDATE config_form_fields SET label = 'timser_type
+times_type
 descript', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries' AND formtype = 'form_feature' AND columnname = 'timser_type';
-UPDATE config_form_fields SET label = 'tipo_tiempo
-tipo_tiempo
+UPDATE config_form_fields SET label = 'timser_type
+times_type
 descript', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries' AND formtype = 'form_feature' AND columnname = 'times_type';
-UPDATE config_form_fields SET label = 'tipo_tiempo
-tipo_tiempo
+UPDATE config_form_fields SET label = 'timser_type
+times_type
 descript', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries' AND formtype = 'form_feature' AND columnname = 'descript';
 UPDATE config_form_fields SET label = 'series temporales', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries_value' AND formtype = 'form_feature' AND columnname = 'timeseries';
 UPDATE config_form_fields SET label = 'fecha', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'cat_timeseries_value' AND formtype = 'form_feature' AND columnname = 'date';
@@ -404,32 +404,53 @@ UPDATE config_form_fields SET label = 'método', tooltip = NULL, placeholder = N
 UPDATE config_form_fields SET label = 'Peatones', tooltip = NULL, placeholder = NULL, descript = 'Stability criteria for pedestrians (Martínez-Gomariz et al. 2016)' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_hazard_pedestrians';
 UPDATE config_form_fields SET label = 'Vehículos', tooltip = NULL, placeholder = NULL, descript = 'Criterios de estabilidad para vehículos parados (Shand et al. 2011)' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_hazard_vehicles';
 UPDATE config_form_fields SET label = 'Máximos al final', tooltip = NULL, placeholder = NULL, descript = 'Sólo escribe la trama de máximos al final de la simulación [sobre].' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_maxs';
-UPDATE config_form_fields SET label = 'Trama de trama', tooltip = NULL, placeholder = NULL, descript = 'Generar trama sólo en un fotograma' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_frame';
+UPDATE config_form_fields SET label = 'Usar marco de trama', tooltip = NULL, placeholder = NULL, descript = 'Generar trama sólo en un marco' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_frame';
 UPDATE config_form_fields SET label = 'XYmin', tooltip = NULL, placeholder = NULL, descript = 'Escriba las coordenadas separadas por una coma' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_xymin';
 UPDATE config_form_fields SET label = 'XYmax', tooltip = NULL, placeholder = NULL, descript = 'Escriba las coordenadas separadas por una coma' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_xymax';
-UPDATE config_csv SET alias = 'Importar patrones inp', descript = 'Función para automatizar la importación de ficheros de patrones inp.
-El archivo csv debe contener las siguientes columnas en la misma posición:
-pattern_id, pattern_type, factor1,.......,factorn.
-Para WS utilice hasta factor18, repitiendo filas si lo desea.
-Para UD utilice hasta factor24. No se permite más de una fila por patrón' WHERE id = 386;
+UPDATE config_form_fields SET label = 'a_param', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'pinlet' AND formtype = 'form_feature' AND columnname = 'a_param';
+UPDATE config_form_fields SET label = 'b_param', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'pinlet' AND formtype = 'form_feature' AND columnname = 'b_param';
+UPDATE config_form_fields SET label = 'Max allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Maximum value for manning on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_manning_max';
+UPDATE config_form_fields SET label = 'Min allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Minimum value for manning on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_manning_min';
+UPDATE config_form_fields SET label = 'Max allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Maximum value for roughness on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_roughness_max';
+UPDATE config_form_fields SET label = 'Min allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Minimum value for roughness on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_roughness_min';
+UPDATE config_form_fields SET label = 'Max allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Maximum value for cellsize on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_cellsize_max';
+UPDATE config_form_fields SET label = 'Min allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Minimum value for cellsize on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_cellsize_min';
+UPDATE config_form_fields SET label = 'Max allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Maximum value for mfactor on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_mfactor_max';
+UPDATE config_form_fields SET label = 'Min allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Minimum value for mfactor on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_mfactor_min';
+UPDATE config_form_fields SET label = 'Max allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Maximum value for sfactor on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_sfactor_max';
+UPDATE config_form_fields SET label = 'Min allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Minimum value for sfactor on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_sfactor_min';
+UPDATE config_form_fields SET label = 'Max allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Maximum value for ufactor on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_ufactor_max';
+UPDATE config_form_fields SET label = 'Min allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Minimum value for ufactor on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_ufactor_min';
+UPDATE config_form_fields SET label = 'Max allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Maximum value for slope on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_slope_max';
+UPDATE config_form_fields SET label = 'Min allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Minimum value for slope on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_slope_min';
+UPDATE config_form_fields SET label = 'Max allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Maximum value for outlet_vol on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_outlet_vol_max';
+UPDATE config_form_fields SET label = 'Min allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Minimum value for outlet_vol on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_outlet_vol_min';
+UPDATE config_form_fields SET label = 'Max allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Maximum value for street_vol on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_street_vol_max';
+UPDATE config_form_fields SET label = 'Min allowed value:', tooltip = NULL, placeholder = NULL, descript = 'Minimum value for street_vol on check project' WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'outlayer_street_vol_min';
+UPDATE config_form_fields SET label = 'Set raster frame', tooltip = NULL, placeholder = NULL, descript = NULL WHERE formname = 'dlg_options' AND formtype = 'form_options' AND columnname = 'result_results_raster_xybtn';
+UPDATE config_csv SET alias = 'Importar patrones inp', descript = 'Function to automatize the import of inp patterns files. 
+The csv file must containts next columns on same position: 
+pattern_id, pattern_type, factor1,.......,factorn. 
+For WS use up factor18, repeating rows if you like. 
+For UD use up factor24. More than one row for pattern is not allowed' WHERE id = 386;
 UPDATE edit_typevalue SET idval = 'INDEFINIDO', descript = NULL WHERE rowid = 1;
-UPDATE edit_typevalue SET idval = 'Pedido 0', descript = NULL WHERE rowid = 2;
-UPDATE edit_typevalue SET idval = 'Pedido 1', descript = NULL WHERE rowid = 3;
-UPDATE edit_typevalue SET idval = 'Pedido 10', descript = NULL WHERE rowid = 4;
-UPDATE edit_typevalue SET idval = 'Pedido 101', descript = NULL WHERE rowid = 5;
+UPDATE edit_typevalue SET idval = '1st Order', descript = NULL WHERE rowid = 2;
+UPDATE edit_typevalue SET idval = '2nd Order', descript = NULL WHERE rowid = 3;
+UPDATE edit_typevalue SET idval = 'DHD', descript = NULL WHERE rowid = 4;
+UPDATE edit_typevalue SET idval = 'DHD Basin', descript = NULL WHERE rowid = 5;
 UPDATE edit_typevalue SET idval = 'Nueva simulación', descript = NULL WHERE rowid = 6;
 UPDATE edit_typevalue SET idval = 'Continuar la simulación', descript = NULL WHERE rowid = 7;
 UPDATE edit_typevalue SET idval = 'Lineal', descript = NULL WHERE rowid = 8;
 UPDATE edit_typevalue SET idval = 'SCS', descript = NULL WHERE rowid = 9;
 UPDATE edit_typevalue SET idval = 'Horton', descript = NULL WHERE rowid = 10;
-UPDATE edit_typevalue SET idval = 'Ampt verde', descript = NULL WHERE rowid = 11;
-UPDATE edit_typevalue SET idval = 'SCSC', descript = NULL WHERE rowid = 12;
-UPDATE edit_typevalue SET idval = 'No_rain', descript = NULL WHERE rowid = 13;
-UPDATE edit_typevalue SET idval = 'Hietograma', descript = NULL WHERE rowid = 14;
+UPDATE edit_typevalue SET idval = 'Green-Ampt', descript = NULL WHERE rowid = 11;
+UPDATE edit_typevalue SET idval = 'SCS continuous', descript = NULL WHERE rowid = 12;
+UPDATE edit_typevalue SET idval = 'No rain', descript = NULL WHERE rowid = 13;
+UPDATE edit_typevalue SET idval = 'Hyetograph', descript = NULL WHERE rowid = 14;
 UPDATE edit_typevalue SET idval = 'Rejilla', descript = NULL WHERE rowid = 15;
 UPDATE edit_typevalue SET idval = 'Intensidad', descript = NULL WHERE rowid = 17;
 UPDATE edit_typevalue SET idval = 'Volumen', descript = NULL WHERE rowid = 18;
-UPDATE edit_typevalue SET idval = 'Sólo barrancos', descript = NULL WHERE rowid = 19;
+UPDATE edit_typevalue SET idval = 'Only inlets', descript = NULL WHERE rowid = 19;
 UPDATE edit_typevalue SET idval = 'Red completa', descript = NULL WHERE rowid = 20;
 UPDATE edit_typevalue SET idval = 'SÍ', descript = NULL WHERE rowid = 21;
 UPDATE edit_typevalue SET idval = 'NO', descript = NULL WHERE rowid = 22;
@@ -439,7 +460,7 @@ UPDATE edit_typevalue SET idval = 'FULL', descript = NULL WHERE rowid = 27;
 UPDATE edit_typevalue SET idval = 'NONE', descript = NULL WHERE rowid = 28;
 UPDATE edit_typevalue SET idval = 'AMBOS', descript = NULL WHERE rowid = 29;
 UPDATE edit_typevalue SET idval = 'FLOWDE', descript = NULL WHERE rowid = 30;
-UPDATE edit_typevalue SET idval = 'PENDIENTE', descript = NULL WHERE rowid = 31;
+UPDATE edit_typevalue SET idval = 'bbbbb', descript = NULL WHERE rowid = 31;
 UPDATE edit_typevalue SET idval = 'Infiltración valor por defecto', descript = NULL WHERE rowid = 32;
 UPDATE edit_typevalue SET idval = 'INDEFINIDO', descript = NULL WHERE rowid = 33;
 UPDATE edit_typevalue SET idval = 'SFC', descript = NULL WHERE rowid = 34;
@@ -561,6 +582,46 @@ UPDATE edit_typevalue SET idval = 'Valor por defecto para las pérdidas al crear
 UPDATE edit_typevalue SET idval = 'Valor por defecto de la rugosidad al crear la malla', descript = NULL WHERE rowid = 150;
 UPDATE edit_typevalue SET idval = 'CIRCULAR', descript = NULL WHERE rowid = 151;
 UPDATE edit_typevalue SET idval = 'RECTANGULAR', descript = NULL WHERE rowid = 152;
+UPDATE edit_typevalue SET idval = 'Check project - manning', descript = NULL WHERE rowid = 153;
+UPDATE edit_typevalue SET idval = 'Check project - roughness', descript = NULL WHERE rowid = 154;
+UPDATE edit_typevalue SET idval = 'Check project - cellsize', descript = NULL WHERE rowid = 155;
+UPDATE edit_typevalue SET idval = 'Check project - mfactor', descript = NULL WHERE rowid = 156;
+UPDATE edit_typevalue SET idval = 'Check project - sfactor', descript = NULL WHERE rowid = 157;
+UPDATE edit_typevalue SET idval = 'Check project - ufactor', descript = NULL WHERE rowid = 158;
+UPDATE edit_typevalue SET idval = 'Check project - slope', descript = NULL WHERE rowid = 159;
+UPDATE edit_typevalue SET idval = 'Check project - outlet_vol', descript = NULL WHERE rowid = 160;
+UPDATE edit_typevalue SET idval = 'Check project - street_vol', descript = NULL WHERE rowid = 161;
+UPDATE edit_typevalue SET idval = 'Hydrodynamics', descript = NULL WHERE rowid = 162;
+UPDATE edit_typevalue SET idval = 'Hazard', descript = NULL WHERE rowid = 163;
+UPDATE edit_typevalue SET idval = 'Raster results', descript = NULL WHERE rowid = 164;
+UPDATE edit_typevalue SET idval = 'Maximums', descript = NULL WHERE rowid = 165;
+UPDATE edit_typevalue SET idval = 'Other results', descript = NULL WHERE rowid = 166;
+UPDATE edit_typevalue SET idval = 'Check project - weir_cd', descript = NULL WHERE rowid = 167;
+UPDATE edit_typevalue SET idval = 'Check project - orifice_cd', descript = NULL WHERE rowid = 168;
+UPDATE edit_typevalue SET idval = 'Raster results frame', descript = NULL WHERE rowid = 169;
+UPDATE edit_typevalue SET idval = 'Velocity', descript = NULL WHERE rowid = 171;
+UPDATE edit_typevalue SET idval = 'Water Elevation', descript = NULL WHERE rowid = 172;
+UPDATE edit_typevalue SET idval = 'Hazard ACA', descript = NULL WHERE rowid = 173;
+UPDATE edit_typevalue SET idval = 'Severe Hazard RD9-2008', descript = NULL WHERE rowid = 174;
+UPDATE edit_typevalue SET idval = 'Local Time Step', descript = NULL WHERE rowid = 175;
+UPDATE edit_typevalue SET idval = 'Specific Discharge X', descript = NULL WHERE rowid = 176;
+UPDATE edit_typevalue SET idval = 'Specific Discharge Y', descript = NULL WHERE rowid = 177;
+UPDATE edit_typevalue SET idval = 'Energy', descript = NULL WHERE rowid = 178;
+UPDATE edit_typevalue SET idval = 'Froude', descript = NULL WHERE rowid = 179;
+UPDATE edit_typevalue SET idval = 'Infiltration Rate', descript = NULL WHERE rowid = 180;
+UPDATE edit_typevalue SET idval = 'Rain Depth', descript = NULL WHERE rowid = 181;
+UPDATE edit_typevalue SET idval = 'Velocity X', descript = NULL WHERE rowid = 182;
+UPDATE edit_typevalue SET idval = 'Velocity Y', descript = NULL WHERE rowid = 183;
+UPDATE edit_typevalue SET idval = 'Water Permanence', descript = NULL WHERE rowid = 184;
+UPDATE edit_typevalue SET idval = 'MAX Depth', descript = NULL WHERE rowid = 185;
+UPDATE edit_typevalue SET idval = 'MAX Velocity', descript = NULL WHERE rowid = 186;
+UPDATE edit_typevalue SET idval = 'MAX Water Elevation', descript = NULL WHERE rowid = 187;
+UPDATE edit_typevalue SET idval = 'MAX Hazard ACA', descript = NULL WHERE rowid = 188;
+UPDATE edit_typevalue SET idval = 'MAX Severe Hazard RD9-2008', descript = NULL WHERE rowid = 189;
+UPDATE edit_typevalue SET idval = 'MAX Local Time Step', descript = NULL WHERE rowid = 190;
+UPDATE edit_typevalue SET idval = 'MAX Specific Discharge', descript = NULL WHERE rowid = 191;
+UPDATE edit_typevalue SET idval = 'Inverted Rainbow', descript = NULL WHERE rowid = 192;
+UPDATE edit_typevalue SET idval = 'Blues', descript = NULL WHERE rowid = 193;
 UPDATE sys_message SET text = 'Elementos con valores nulos en la columna "{0}" ({1})' WHERE id = '1';
 UPDATE sys_message SET text = 'Elementos con valores nulos en la columna "{0}" cuando "{1}" es "{2}" ({3})' WHERE id = '2';
 UPDATE sys_message SET text = 'Elementos duplicados ({0})' WHERE id = '3';

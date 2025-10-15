@@ -71,7 +71,6 @@ class DrLoadProject(QObject):
         # Manage locale and corresponding 'i18n' file
         global_vars.plugin_name = tools_qgis.get_plugin_metadata('name', 'drain', global_vars.plugin_dir)
         tools_qt._add_translator()
-        self._translate_config()
 
         # Create menu
         tools_dr.create_drain_menu(True)

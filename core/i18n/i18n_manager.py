@@ -67,8 +67,8 @@ class DrSchemaI18NManager:
         self.dlg_qm.lbl_info.clear()
         self._close_db_org()
         # Connection with origin db
-        path_i18n = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}drain_i18n.gpkg"
-        path_sample = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}drain_sample.gpkg"
+        path_i18n = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}ibergis_i18n.gpkg"
+        path_sample = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}ibergis_sample.gpkg"
         status_i18n = self._init_db_i18n(path_i18n)
         status_org = self._init_db_org(path_sample)
 
@@ -257,7 +257,7 @@ class DrSchemaI18NManager:
 
                     if 'dbconfig_form_fields' in table_i18n:
                         query = f"""INSERT INTO {table_i18n} (context, source_code, source, formname, formtype, lb_en_us, tt_en_us, pl_en_us, ds_en_us) 
-                                        VALUES ('{table_org}', 'drain', '{row_org_dict['columnname']}', '{row_org_dict['formname']}', '{row_org_dict['formtype']}',
+                                        VALUES ('{table_org}', 'ibergis', '{row_org_dict['columnname']}', '{row_org_dict['formname']}', '{row_org_dict['formtype']}',
                                         {texts[0]}, {texts[1]}, {texts[2]}, {texts[3]}) 
                                         ON CONFLICT (context, source_code, source, formname, formtype) 
                                         DO UPDATE SET lb_en_us = {texts[0]}, tt_en_us = {texts[1]}, pl_en_us = {texts[2]}, ds_en_us = {texts[3]};\n"""
@@ -274,7 +274,7 @@ class DrSchemaI18NManager:
                         elif table_org == "gpkg_spatial_ref_sys":
                             source = row_org_dict['srs_id']
                         query = f"""INSERT INTO {table_i18n} (source_code, context, source, al_en_us, ds_en_us) 
-                                        VALUES ('drain', '{table_org}', '{source}', {texts[0]}, {texts[1]}) 
+                                        VALUES ('ibergis', '{table_org}', '{source}', {texts[0]}, {texts[1]}) 
                                         ON CONFLICT (source_code, context, source) 
                                         DO UPDATE SET al_en_us = {texts[0]}, ds_en_us = {texts[1]};\n"""
                         

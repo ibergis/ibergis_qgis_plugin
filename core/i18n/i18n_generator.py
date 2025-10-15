@@ -68,7 +68,7 @@ class DrI18NGenerator:
         self.dlg_qm.cmb_language.clear()
         self.dlg_qm.lbl_info.clear()
         self._close_db()
-        self.path = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}drain_i18n.gpkg"
+        self.path = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}ibergis_i18n.gpkg"
         status = self._init_db(self.path)
 
         if not status:
@@ -165,7 +165,7 @@ class DrI18NGenerator:
                 f" ORDER BY dialog_name;")
             py_dialogs = self._get_rows(sql, self.cursor_i18n)
 
-        ts_path = self.plugin_dir + os.sep + 'i18n' + os.sep + f'drain_{self.language}.ts'
+        ts_path = self.plugin_dir + os.sep + 'i18n' + os.sep + f'ibergis_{self.language}.ts'
 
         # Check if file exist
         if os.path.exists(ts_path):
@@ -184,7 +184,7 @@ class DrI18NGenerator:
 
         # Create children for toolbars and actions
         line = '\t<context>\n'
-        line += '\t\t<name>drain</name>\n'
+        line += '\t\t<name>ibergis</name>\n'
         line += '\t\t<!-- TOOLBARS AND ACTIONS -->\n'
         ts_file.write(line)
         for py_tlb in py_toolbars:
@@ -570,7 +570,7 @@ class DrI18NGenerator:
 
         file = open(path, "w")
         header = ('/*\n'
-                  'This file is part of drain project software\n'
+                  'This file is part of IberGIS project software\n'
                   'The program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License '
                   'as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. '
                   'This version of Giswater is provided by Giswater Association.\n'
