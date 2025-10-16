@@ -17,7 +17,8 @@ from qgis.core import (
     QgsVectorLayer,
     QgsProcessingParameterBoolean,
     QgsProcessingFeatureSourceDefinition,
-    QgsFeatureRequest
+    QgsFeatureRequest,
+    QgsWkbTypes
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis, tools_gpkgdao
@@ -226,6 +227,11 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         """
         main process algorithm of this tool
         """
+
+        self.converted_geometries_layer = None
+        self.file_target = None
+        self.field_map = None
+        self.unique_fields = None
 
         # reading geodata
         feedback.setProgressText(self.tr('Reading geodata and mapping fields:'))
@@ -487,12 +493,18 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         if len(error_message) > 0:
             return False, error_message
 
-        if source_layer.geometryType() != target_layer.geometryType():
-            error_message += self.tr('Source and target layer types do not match.\n\n')
-            return False, error_message
+        # get geometry types
+        source_geom_type = QgsWkbTypes.displayString(source_layer.wkbType())
+        target_geom_type = QgsWkbTypes.displayString(target_layer.wkbType())
 
+        # check if target layer is an inlet or pinlet layer
         if target_layer != inlet_layer and target_layer != pinlet_layer:
             error_message += self.tr('Target layer is not an inlet or pinlet layer.\n\n')
+            return False, error_message
+
+        # check if source and target layer types match
+        if source_geom_type != target_geom_type:
+            error_message += self.tr(f'Source and target layer types do not match.\n\nSource: {source_geom_type}\nTarget: {target_geom_type}\n\n')
             return False, error_message
 
         if len(error_message) > 0:
