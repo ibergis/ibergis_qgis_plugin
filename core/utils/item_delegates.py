@@ -18,17 +18,41 @@ class NumericDelegate(QStyledItemDelegate):
         self.min_value = min_value
         self.max_value = max_value
         self.step = step
+        self.decimals = decimals
 
     def createEditor(self, parent, option, index):
         editor = QDoubleSpinBox(parent)
-        editor.setDecimals(3)  # Number of decimal places
+        editor.setDecimals(self.decimals)  # Number of decimal places
         editor.setMinimum(self.min_value)  # Set your minimum value
         editor.setMaximum(self.max_value)   # Set your maximum value
         editor.setSingleStep(self.step)     # Step size
         editor.setAlignment(Qt.AlignCenter)
         editor.setKeyboardTracking(False)
         editor.setToolTip("Enter a floating value")
+
+        # Commit data when editing is finished
+        editor.editingFinished.connect(lambda: self.commitData.emit(editor))
+
         return editor
+
+    def setEditorData(self, editor, index):
+        value = index.data(Qt.EditRole)
+        try:
+            editor.setValue(float(value))
+        except (TypeError, ValueError):
+            editor.setValue(0.0)
+
+    def setModelData(self, editor, model, index):
+        editor.interpretText()
+        value = round(editor.value(), self.decimals)
+        model.setData(index, value, Qt.EditRole)
+
+        # Optional: force visible update
+        widget = self.parent()
+        if widget:
+            item = widget.item(index.row(), index.column())
+            if item:
+                item.setText(str(value))
 
 
 class NumericTableWidgetItem(QTableWidgetItem):
