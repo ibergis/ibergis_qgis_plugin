@@ -32,7 +32,7 @@ from qgis.core import QgsProject, QgsPointXY, QgsVectorLayer, QgsField, QgsFeatu
     QgsSimpleFillSymbolLayer, QgsRendererCategory, QgsCategorizedSymbolRenderer, QgsCoordinateTransform, \
     QgsCoordinateReferenceSystem, QgsFieldConstraints, QgsEditorWidgetSetup, QgsRasterLayer, QgsSpatialIndex, \
     QgsWkbTypes, QgsRectangle, QgsDateTimeRange, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, \
-    QgsMapLayerStyle, QgsRasterLayerTemporalProperties, Qgis
+    QgsMapLayerStyle, QgsRasterLayerTemporalProperties, Qgis, QgsAttributeTableConfig
 from qgis.gui import QgsDateTimeEdit, QgsRubberBand, QgsExtentWidget
 
 from ..ui.dialog import DrDialog
@@ -567,6 +567,20 @@ def load_gpkg(gpkg_file) -> dict:
 
 def config_layer_attributes(json_result, layer, layer_name, thread=None):
 
+    # Get attribute table config and fields
+    config = layer.attributeTableConfig()
+    fields = layer.fields()
+
+    # Build new column list from actual fields if current config does not match the fields
+    if not config.columns() or len(config.columns()) != len(fields):
+        new_columns = []
+        for field in fields:
+            col = QgsAttributeTableConfig.ColumnConfig()
+            col.name = field.name()
+            new_columns.append(col)
+        config.setColumns(new_columns)
+        layer.setAttributeTableConfig(config)
+
     for field in json_result['body']['data']['fields']:
         valuemap_values = {}
 
@@ -710,9 +724,15 @@ def config_layer_attributes(json_result, layer, layer_name, thread=None):
 
         # Create new column list in the correct order
         new_columns = []
+
+        # Add configured fields in order
         for field in sorted_fields:
+            field_name = field.get('columnname', '')
+            if not field_name:
+                continue
+
             for column in columns:
-                if column.name == field['columnname']:
+                if column.name == field_name:
                     new_columns.append(column)
                     break
 

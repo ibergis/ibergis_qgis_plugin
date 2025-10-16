@@ -804,7 +804,7 @@ INSERT INTO config_form_fields
 VALUES('roof', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'decript', NULL, 4, 'test', 'text', 'decript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'descript', NULL, 4, 'test', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('roof', 'form_feature', 'tabdata', 'slope', NULL, 5, 'real', 'text', 'slope', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
