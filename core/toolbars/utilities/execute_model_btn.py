@@ -6,7 +6,7 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-
+import shutil
 from functools import partial
 from sip import isdeleted
 from time import time
@@ -92,11 +92,15 @@ class DrExecuteModelButton(DrAction):
                 return False
 
         if os.path.exists(f"{self.export_path}{os.sep}Iber2D.dat"):
-            msg = "Results files already exist in this path. Do you want to overwrite them?"
+            msg = "Results files already exist in this path. Do you want to overwrite them? This will delete the old data."
             title = "Overwrite file"
             answer = tools_qt.show_question(msg, title, force_action=True)
             if not answer:
                 return False
+
+        result = self._delete_results()
+        if not result:
+            return False
 
         mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
         if mesh_id is None or mesh_id == '' or mesh_id == -1:
@@ -237,3 +241,34 @@ class DrExecuteModelButton(DrAction):
 
         lbl_timer = dialog.findChild(QLabel, 'lbl_timer')
         lbl_timer.setText(text)
+
+    def _delete_results(self):
+        """Delete results folder, with improved error handling to prevent QGIS crashes."""
+
+        results_folder = os.path.join(self.export_path, "IberGisResults")
+
+        try:
+            if os.path.exists(results_folder):
+                shutil.rmtree(results_folder)
+        except PermissionError as e:
+            if hasattr(e, 'winerror') and e.winerror == 32:
+                locked_file = e.filename if hasattr(e, 'filename') else "Unknown file"
+                msg = (
+                    f"Cannot delete the results folder because a file is being used by another process:\n\n"
+                    f"{locked_file}\n\n"
+                    "Please close any application or QGIS layer using this file and try again."
+                )
+                tools_qt.show_info_box(msg, title="File In Use")
+                return False
+
+            # Handle other permission errors
+            msg = f"Permission error deleting folder: {e}"
+            tools_qt.show_info_box(msg, title="Permission Error")
+            return False
+
+        except Exception as e:
+            msg = f"Unexpected error deleting old data: {e}"
+            tools_qt.show_info_box(msg, title="Error")
+            return False
+
+        return True
