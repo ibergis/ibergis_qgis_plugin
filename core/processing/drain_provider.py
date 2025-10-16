@@ -17,6 +17,7 @@ from .set_outlet_for_inlets import SetOutletForInlets
 from .set_outlet_for_roofs import SetOutletForRoofs
 from .import_inlet_geometries import ImportInletGeometries
 from .check_project import DrCheckProjectAlgorithm
+from .multiparte_to_monoparte import MultiparteToMonoparte
 
 
 class DrainProvider(QgsProcessingProvider):
@@ -46,6 +47,7 @@ class DrainProvider(QgsProcessingProvider):
         self.addAlgorithm(SetOutletForInlets())
         self.addAlgorithm(SetOutletForRoofs())
         self.addAlgorithm(DrCheckProjectAlgorithm())
+        self.addAlgorithm(MultiparteToMonoparte())
 
     def id(self):
         """
