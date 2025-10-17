@@ -21,6 +21,7 @@ Changelog=Version 1.0.0
     - Read and import rasters for all results
     - Removed option to mesh with roughness set to zero
     - Reordered options in 'Config' dialog
+    - Added an option to manage different raster visualization modes
     - Various bug fixes and improvements
 
 tags= urban drainage, flooding, iber, swmm
