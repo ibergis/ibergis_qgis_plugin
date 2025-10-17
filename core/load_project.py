@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -95,7 +95,7 @@ class DrLoadProject(QObject):
         # Set indexing strategy for snapping so that it uses less memory if possible
         self.iface.mapCanvas().snappingUtils().setIndexingStrategy(QgsSnappingUtils.IndexHybrid)
 
-        # Manage versions of Giswater and PostgreSQL
+        # Manage versions of IberGIS and PostgreSQL
         plugin_version = tools_qgis.get_plugin_metadata('version', 0, global_vars.plugin_dir)
         # Only get the x.y.zzz, not x.y.zzz.n
         try:

@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -94,7 +94,7 @@ def save_settings(dialog, plugin='core'):
 
 
 def initialize_parsers():
-    """ Initialize parsers of configuration files: init, session, giswater, user_params """
+    """ Initialize parsers of configuration files: init, session, drain, user_params """
 
     for config in global_vars.list_configs:
         filepath, parser = _get_parser_from_filename(config)
@@ -121,7 +121,7 @@ def get_config_parser(section: str, parameter: str, config_type, file_name, pref
         parser = None
         chk_user_params = False
 
-    # Needed to avoid errors with giswater plugins
+    # Needed to avoid errors with ibergis plugins
     if path is None:
         msg = "{0}: Config file is not set"
         msg_params = ("get_config_parser",)
@@ -3024,14 +3024,14 @@ def open_help_link(context, uiname, tabname=None):
     """ Opens the help link for the given dialog, or a default link if not found. """
 
     # Base URL for the documentation
-    # domain = "https://docs.giswater.org" #TODO Change to drain domain
+    # domain = "https://drain-iber.github.io" #TODO Change to drain domain
     # language = "es_CR" # TODO: get dynamic language
     # plugin_version = "testing" # TODO: get dynamic version
 
     # if plugin_version == "":
     #     plugin_version = "latest"
 
-    # base_url = f"{domain}/{plugin_version}/{language}/docs/giswater/for-users" #TODO Change to drain path
+    # base_url = f"{domain}/{plugin_version}/{language}/docs/drain/for-users" #TODO Change to drain path
 
     # uiname = uiname.replace("_", "-").replace(" ", "-").lower() + ".html" # sanitize uiname
 

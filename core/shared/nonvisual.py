@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -1557,7 +1557,6 @@ class DrNonVisual:
         self.dialog.btn_ok.clicked.connect(partial(self._accept_lids, self.dialog, is_new, lidco_id))
         self.dialog.btn_cancel.clicked.connect(self.dialog.reject)
         self.dialog.finished.connect(partial(tools_dr.close_dialog, self.dialog))
-        self.dialog.btn_help.clicked.connect(partial(self._open_help))
 
         self._manage_lids_tabs(self.dialog)
 
@@ -1568,9 +1567,6 @@ class DrNonVisual:
 
         # Open dialog
         tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_lids')
-
-    def _open_help(self):
-        webbrowser.open('https://giswater.gitbook.io/giswater-manual/7.-export-import-of-the-hydraulic-model')
 
     def _populate_lids_widgets(self, dialog, lidco_id, duplicate=False):
         """ Fills in all the values for lid dialog """
