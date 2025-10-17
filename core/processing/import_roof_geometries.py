@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -17,7 +17,8 @@ from qgis.core import (
     QgsVectorLayer,
     QgsProcessingParameterBoolean,
     QgsProcessingFeatureSourceDefinition,
-    QgsFeatureRequest
+    QgsFeatureRequest,
+    QgsWkbTypes
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis, tools_gpkgdao
@@ -40,7 +41,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
     FIELD_WIDTH = 'FIELD_WIDTH'
     FIELD_ROUGHNESS = 'FIELD_ROUGHNESS'
     FIELD_ISCONNECTED = 'FIELD_ISCONNECTED'
-    FIELD_OUTLET_TYPE = 'FIELD_OUTLET_TYPE'
     FIELD_OUTLET_CODE = 'FIELD_OUTLET_CODE'
     FIELD_OUTLET_VOL = 'FIELD OUTLET_VOL'
     FIELD_STREET_VOL = 'FIELD_STREET_VOL'
@@ -127,15 +127,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         )
         isconnected.setFlags(isconnected.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
-        outlet_type = QgsProcessingParameterField(
-            self.FIELD_OUTLET_TYPE,
-            self.tr('Select *outlet_type* reference'),
-            parentLayerParameterName=self.FILE_SOURCE,
-            type=QgsProcessingParameterField.String,
-            optional=True
-        )
-        outlet_type.setFlags(outlet_type.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
-
         outlet_code = QgsProcessingParameterField(
             self.FIELD_OUTLET_CODE,
             self.tr('Select *outlet_code* reference'),
@@ -187,7 +178,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         self.addParameter(width)
         self.addParameter(roughness)
         self.addParameter(isconnected)
-        self.addParameter(outlet_type)
         self.addParameter(outlet_code)
         self.addParameter(outlet_vol)
         self.addParameter(street_vol)
@@ -198,6 +188,11 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
         """
         main process algorithm of this tool
         """
+
+        self.converted_geometries_layer = None
+        self.file_target = None
+        self.field_map = None
+        self.unique_fields = None
 
         # reading geodata
         feedback.setProgressText(self.tr('Reading geodata and mapping fields:'))
@@ -212,7 +207,6 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
             "width": next(iter(self.parameterAsFields(parameters, self.FIELD_WIDTH, context)), None),
             "roughness": next(iter(self.parameterAsFields(parameters, self.FIELD_ROUGHNESS, context)), None),
             "isconnected": next(iter(self.parameterAsFields(parameters, self.FIELD_ISCONNECTED, context)), None),
-            "outlet_type": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_TYPE, context)), None),
             "outlet_code": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_CODE, context)), None),
             "outlet_vol": next(iter(self.parameterAsFields(parameters, self.FIELD_OUTLET_VOL, context)), None),
             "street_vol": next(iter(self.parameterAsFields(parameters, self.FIELD_STREET_VOL, context)), None),
@@ -424,6 +418,31 @@ class ImportRoofGeometries(QgsProcessingAlgorithm):
             return False
         feedback.setProgressText(self.tr(f"File {fct_path} executed"))
         return True
+
+    def checkParameterValues(self, parameters, context):
+        """ Check if parameters are valid """
+
+        error_message = ''
+        source_layer: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
+        target_layer = tools_qgis.get_layer_by_tablename('roof')
+
+        if source_layer is None:
+            error_message += self.tr('Source layer not found in this schema.\n\n')
+        if target_layer is None:
+            error_message += self.tr('Target layer not found in this schema.\n\n')
+
+        if len(error_message) > 0:
+            return False, error_message
+
+        # get geometry types
+        source_geom_type = QgsWkbTypes.displayString(source_layer.wkbType())
+        target_geom_type = QgsWkbTypes.displayString(target_layer.wkbType())
+
+        # check if source and target layer types match
+        if source_geom_type != target_geom_type:
+            error_message += self.tr(f'Source layer must be a single polygon layer. Found: {source_geom_type}.')
+            return False, error_message
+        return True, ''
 
     def shortHelpString(self):
         return self.tr("""Imports features from a source polygon layer into the project's Drain-Roof layer, with options to map fields and avoid duplicates. 

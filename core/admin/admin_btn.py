@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -415,7 +415,7 @@ class DrAdminButton(DrGpkgBase):
         self.error_count = 0
 
         # Set title
-        window_title = f'Drain ({self.plugin_version})'
+        window_title = f'IberGIS ({self.plugin_version})'
         self.dlg_readsql.setWindowTitle(window_title)
 
         tools_dr.open_dialog(self.dlg_readsql, 'admin_ui')
@@ -750,6 +750,10 @@ class DrAdminButton(DrGpkgBase):
         gpkg_name = self.gpkg_name
         path = self.project_path
 
+        # Create directory if it doesn't exist
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
+
         self.gpkg_full_path = path + "/" + gpkg_name + ".gpkg"
         if os.path.exists(self.gpkg_full_path):
             msg = "Geopackage already exists."
@@ -848,6 +852,10 @@ class DrRptGpkgCreate(DrGpkgBase):
 
     def create_rpt_gpkg(self):
         """Create and initialize the report geopackage"""
+
+        # Create directory if it doesn't exist
+        if not os.path.exists(self.project_path):
+            os.makedirs(self.project_path, exist_ok=True)
 
         # Create the geopackage file
         self.gpkg_full_path = os.path.join(self.project_path, f"{self.gpkg_name}.gpkg")

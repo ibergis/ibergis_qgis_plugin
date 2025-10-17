@@ -5,6 +5,3 @@ openpyxl==3.1.2
 pandamesh==0.1.6
 xlsxwriter==3.1.9
 geopandas==1.0.1
-rasterio==1.4.3
-xarray==2025.7.1
-rioxarray==0.19.0

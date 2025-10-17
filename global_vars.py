@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -43,8 +43,9 @@ db_qsql_data = None                       # Instance of class QSqlDatabase (QSQL
 db_qsql_config = None                     # Instance of class QSqlDatabase (QSQLITE) used to manage QTableView widgets
 gpkg_dao_data = None                      # Instance of class DrGpkgDao. Found in "/lib/tools_gpkg.py"
 gpkg_dao_config = None                    # Instance of class DrGpkgDao. Found in "/lib/tools_gpkg.py"
-project_vars = {}                         # Project variables from QgsProject related to Giswater
+project_vars = {}                         # Project variables from QgsProject related to IberGIS
 project_vars['project_gpkg_path'] = None  # gwProjectGpkgPath
+raster_symbology_mode = None              # raster_symbology_mode
 # endregion
 
 
@@ -64,7 +65,7 @@ date_format = None                      # Display format of the dates allowed in
 session_vars = {}
 session_vars['last_error'] = None          # An instance of the last database runtime error
 session_vars['last_error_msg'] = None      # An instance of the last database runtime error message used in threads
-session_vars['threads'] = []               # An instance of the different threads for the execution of the Giswater functionalities (type:list)
+session_vars['threads'] = []               # An instance of the different threads for the execution of the IberGIS functionalities (type:list)
 session_vars['dialog_docker'] = None       # An instance of DrDocker from "/core/ui/docker.py" which is used to mount a docker form
 session_vars['docker_type'] = None         # An instance of current status of the docker form configured by user. Can be configured "qgis_info_docker" and "qgis_form_docker"
 snappers = []                              # A list of all the snapper managers, used to disable them in 'Reset plugin' action
@@ -87,7 +88,7 @@ def init_global(p_iface, p_canvas, p_plugin_dir, p_plugin_name, p_user_folder_di
 
 
 def init_plugin_settings(setting_file):
-    """ Function to set Giswater settings: stored in the registry (on Windows) or .ini file (on Unix) """
+    """ Function to set IberGIS settings: stored in the registry (on Windows) or .ini file (on Unix) """
 
     global plugin_settings
     plugin_settings = QSettings(setting_file, QSettings.IniFormat)

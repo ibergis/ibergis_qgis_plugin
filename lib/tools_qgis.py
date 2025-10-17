@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -20,7 +20,7 @@ from qgis.PyQt.QtWidgets import QDockWidget, QApplication, QPushButton
 from qgis.core import QgsExpressionContextUtils, QgsProject, QgsPointLocator, QgsSnappingUtils, QgsTolerance, \
     QgsPointXY, QgsFeatureRequest, QgsRectangle, QgsSymbol, QgsLineSymbol, QgsRendererCategory, \
     QgsCategorizedSymbolRenderer, QgsGeometry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
-from qgis.core import QgsExpression, QgsVectorLayer
+from qgis.core import QgsExpression, QgsVectorLayer, QgsSnappingConfig, Qgis
 from qgis.utils import iface
 
 from . import tools_log, tools_qt, tools_os
@@ -466,6 +466,31 @@ def get_layer_by_tablename(tablename, show_warning_=False, log_info=False, schem
     return layer
 
 
+def hide_node_from_treeview(node, root, ltv):
+    # Hide the node from the tree view
+    index = get_node_index(node, ltv)
+    ltv.setRowHidden(index.row(), index.parent(), True)
+    node.setCustomProperty('nodeHidden', 'true')
+    ltv.setCurrentIndex(get_node_index(root, ltv))
+
+
+def get_node_index(node, ltv):
+    if Qgis.QGIS_VERSION_INT >= 31800:
+        return ltv.node2index(node)
+    else:
+        # Older QGIS versions
+        return ltv.layerTreeModel().node2index(node)
+
+
+def restore_hidden_nodes():
+    root = QgsProject.instance().layerTreeRoot()
+    ltv = iface.layerTreeView()
+
+    for node in root.children():
+        if node.customProperty('nodeHidden', '') == 'true':
+            hide_node_from_treeview(node, root, ltv)
+
+
 def get_tablename_from_layer(layer):
     """ Gets tablename of a layer """
     layer_tablename = layer.name()
@@ -493,6 +518,61 @@ def manage_snapping_layer(layername, snapping_type=0, tolerance=15.0):
         snapping_type = QgsPointLocator.All
 
     QgsSnappingUtils.LayerConfig(layer, snapping_type, tolerance, QgsTolerance.Pixels)
+
+
+def set_project_snapping_settings(enabled=None, mode=None, tolerance=None, units=None, snapping_types=None):
+    """
+    Configures project-wide snapping settings.
+
+    This function operates in two modes:
+    1.  **Creation Mode (no arguments):** When called with no arguments, it applies a
+        comprehensive set of default snapping settings for a new project.
+    2.  **Update Mode (arguments provided):** When any argument is provided, it
+        modifies only the specified settings, preserving existing ones. This is
+        used when loading an existing project.
+    """
+    project = QgsProject.instance()
+    cfg = project.snappingConfig()
+
+    is_create_project_mode = all(arg is None for arg in (enabled, mode, tolerance, units, snapping_types))
+    is_new_api = Qgis.QGIS_VERSION_INT >= 32200
+
+    if is_create_project_mode:
+        # Apply a full default configuration for new projects.
+        cfg.setEnabled(True)
+        cfg.setMode(QgsSnappingConfig.AllLayers)
+        cfg.setTolerance(15.0)
+        cfg.setUnits(QgsTolerance.Pixels)
+        if is_new_api:
+            # For QGIS 3.22 and later
+            types = Qgis.SnappingType.Vertex | Qgis.SnappingType.Segment
+            cfg.setTypeFlag(Qgis.SnappingTypes(types))
+        else:
+            # For older QGIS versions
+            cfg.setTypeFlag(QgsSnappingConfig.VertexFlag | QgsSnappingConfig.SegmentFlag)
+    else:
+        # Apply only the settings that were explicitly passed to the function.
+        if enabled is not None:
+            cfg.setEnabled(enabled)
+        if mode is not None:
+            cfg.setMode(mode)
+        if tolerance is not None:
+            cfg.setTolerance(tolerance)
+        if units is not None:
+            cfg.setUnits(units)
+        if snapping_types is not None:
+            if is_new_api:
+                cfg.setTypeFlag(Qgis.SnappingTypes(snapping_types))
+            else:
+                cfg.setTypeFlag(snapping_types)
+
+    # Commit the configuration to the project and map canvas.
+    project.setSnappingConfig(cfg)
+    mc = iface.mapCanvas()
+    if mc:
+        mc.snappingUtils().setConfig(cfg)
+
+    return True
 
 
 def select_features_by_ids(feature_type, expr, layers=None):

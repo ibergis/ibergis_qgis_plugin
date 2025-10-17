@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -16,7 +16,7 @@ from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QAp
 from . import global_vars
 from .lib import tools_qgis, tools_os, tools_log, tools_qt
 try:
-    required_packages = ['geopandas', 'gmsh', 'pandamesh', 'openpyxl', 'xlsxwriter', 'rasterio', 'xarray', 'rioxarray']
+    required_packages = ['geopandas', 'gmsh', 'pandamesh', 'openpyxl', 'xlsxwriter']
     imported_packages = []
     not_imported = []
 
@@ -35,12 +35,6 @@ try:
     imported_packages.append('openpyxl')
     import xlsxwriter  # noqa: F401
     imported_packages.append('xlsxwriter')
-    import rasterio  # noqa: F401
-    imported_packages.append('rasterio')
-    import xarray  # noqa: F401
-    imported_packages.append('xarray')
-    import rioxarray  # noqa: F401
-    imported_packages.append('rioxarray')
 except ImportError:
     not_imported = [pkg for pkg in required_packages if pkg not in imported_packages]
     msg = (
@@ -161,7 +155,7 @@ class Drain(QObject):
             tools_log.log_info(msg, parameter=str(e), msg_params=msg_params)
 
         try:
-            # Check if project is current loaded and remove giswater action from PluginMenu and Toolbars
+            # Check if project is current loaded and remove IberGIS action from PluginMenu and Toolbars
             if self.load_project:
                 global_vars.project_type = None
                 if self.load_project.buttons != {}:
@@ -173,7 +167,7 @@ class Drain(QObject):
             tools_qt.show_exception_message(msg, msg_params=msg_params)
 
         try:
-            # Check if project is current loaded and remove giswater toolbars from qgis
+            # Check if project is current loaded and remove IberGIS toolbars from qgis
             if self.load_project:
                 if self.load_project.plugin_toolbars:
                     for plugin_toolbar in list(self.load_project.plugin_toolbars.values()):
@@ -237,6 +231,12 @@ class Drain(QObject):
             msg_params = ("layer_changed", e,)
             tools_qt.show_exception_message(message, msg_params=msg_params)
 
+        try:
+            tools_dr.disconnect_signal('TemporalController')
+        except Exception as e:
+            msg_params = ("TemporalController", e,)
+            tools_qt.show_exception_message(message, msg_params=msg_params)
+
     def _manage_dialogs(self, msg):
         try:
             # Remove IberGIS dockers
@@ -297,7 +297,7 @@ class Drain(QObject):
         # Check if user config folder exists
         self._manage_user_config_folder(f"{global_vars.user_folder_dir}{os.sep}core")
 
-        # Initialize parsers of configuration files: init, session, giswater, user_params
+        # Initialize parsers of configuration files: init, session, drain, user_params
         tools_dr.initialize_parsers()
 
         # Load all the variables from user_params.config to their respective user config files
@@ -365,6 +365,8 @@ class Drain(QObject):
                                     'main', 'newProjectCreated')
             tools_dr.connect_signal(self.iface.actionSaveProject().triggered, self._save_toolbars_position,
                                     'main', 'actionSaveProject_save_toolbars_position')
+            tools_dr.connect_signal(QgsProject.instance().readProject, tools_qgis.restore_hidden_nodes,
+                                    'main', 'projectRead_restore_hidden_nodes')
         except AttributeError:
             pass
 
@@ -383,10 +385,14 @@ class Drain(QObject):
             tools_dr.disconnect_signal('main', 'actionSaveProject_save_toolbars_position')
         except TypeError:
             pass
+        try:
+            tools_dr.disconnect_signal('main', 'projectRead_restore_hidden_nodes')
+        except TypeError:
+            pass
 
     def _set_info_button(self):
-        """ Set Giswater information button (always visible)
-            If project is loaded show information form relating to Plugin Giswater
+        """ Set IberGIS information button (always visible)
+            If project is loaded show information form relating to Plugin IberGIS
             Else open admin form with which can manage database and qgis projects
         """
 
@@ -407,7 +413,7 @@ class Drain(QObject):
         self.action.triggered.connect(partial(admin_button.init_sql))
 
     def _unset_info_button(self):
-        """ Unset Giswater information button (when plugin is disabled or reloaded) """
+        """ Unset IberGIS information button (when plugin is disabled or reloaded) """
 
         # Disconnect signal from action if exists
         if self.action:
@@ -478,7 +484,7 @@ class Drain(QObject):
         project.write()
 
     def _remove_dockers(self):
-        """ Remove Giswater dockers """
+        """ Remove IberGIS dockers """
 
         # Get 'Search' docker form from qgis iface and remove it if exists
         docker_search = self.iface.mainWindow().findChild(QDockWidget, 'dlg_search')
@@ -505,12 +511,12 @@ class Drain(QObject):
             self.btn_add_layers = None
 
     def _close_open_dialogs(self):
-        """ Close Giswater open dialogs """
+        """ Close IberGIS open dialogs """
 
         # Get all widgets
         allwidgets = QApplication.allWidgets()
 
-        # Only keep Giswater widgets that are currently open
+        # Only keep IberGIS widgets that are currently open
         windows = [x for x in allwidgets if getattr(x, "isVisible", False)
                    and (issubclass(type(x), DrMainWindow) or issubclass(type(x), DrDialog))]
 

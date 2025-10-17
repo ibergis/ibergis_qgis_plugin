@@ -13,6 +13,10 @@ from qgis.core import (
 from qgis.utils import iface
 import shapely
 
+from ...lib.tools_gpkgdao import DrGpkgDao
+
+from ..threads.savetomesh import apply_boundary_conditions_to_mesh
+
 from . import createmesh_core as core
 from .validatemesh import validate_input_layers, validate_inlets_in_triangles
 from .task import DrTask
@@ -27,6 +31,7 @@ import numpy as np
 import pandas as pd
 import processing
 import bisect
+from datetime import datetime
 
 
 class DrCreateMeshTask(DrTask):
@@ -41,6 +46,7 @@ class DrCreateMeshTask(DrTask):
         transition_slope: float,
         transition_start: float,
         transition_extent: float,
+        apply_boundary_conditions: bool,
         dem_layer: Union[QgsRasterLayer, None],
         roughness_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
         losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None],
@@ -64,6 +70,7 @@ class DrCreateMeshTask(DrTask):
         self.transition_slope = transition_slope
         self.transition_start = transition_start
         self.transition_extent = transition_extent
+        self.apply_boundary_conditions = apply_boundary_conditions
         self.dem_layer = dem_layer
         self.roughness_layer: Union[QgsRasterLayer, Literal["ground_layer"], None] = roughness_layer
         self.losses_layer: Union[QgsRasterLayer, Literal["ground_layer"], None] = losses_layer
@@ -95,7 +102,7 @@ class DrCreateMeshTask(DrTask):
                 return False
 
             # Load input layers
-            self.dao = global_vars.gpkg_dao_data.clone()
+            self.dao: DrGpkgDao = global_vars.gpkg_dao_data.clone()
             layers = self._prepare_input_layers()
 
             if not self._validate_roughness_data(layers):
@@ -379,7 +386,7 @@ class DrCreateMeshTask(DrTask):
         # Initialize raster flags
         self.roughness_from_raster = False
         self.losses_from_raster = False
-        
+
         # Triangles
         ground_triangles_df = pd.DataFrame(triangles, columns=["v1", "v2", "v3"], dtype=np.uint32)
         ground_triangles_df["v4"] = ground_triangles_df["v1"]
@@ -617,12 +624,12 @@ class DrCreateMeshTask(DrTask):
             print(f"Done! {time.time() - start}s")
         return bridges_df
 
-    def _finalize_mesh(self, triangles_df: pd.DataFrame, vertices_df: pd.DataFrame, 
+    def _finalize_mesh(self, triangles_df: pd.DataFrame, vertices_df: pd.DataFrame,
                       roofs_df: pd.DataFrame, bridges_df: pd.DataFrame) -> bool:
         """Finalize mesh creation and processing."""
         # Get losses data
         losses_data = self._process_ground_losses()
-        
+
         self.mesh = mesh_parser.Mesh(
             polygons=triangles_df,
             vertices=vertices_df,
@@ -631,6 +638,28 @@ class DrCreateMeshTask(DrTask):
             boundary_conditions={},
             bridges=bridges_df
         )
+
+        if self.apply_boundary_conditions:
+            self.feedback.setProgressText("Applying boundary conditions...")
+
+            start = time.time()
+            print("Applying boundary conditions... ", end="")
+
+            row = self.dao.get_rows("SELECT idval FROM cat_bscenario WHERE active = 1")
+            if row is None or len(row) == 0:
+                self.message = "No active boundary scenario found. Please, define one and try again."
+                return False
+            if len(row) > 1:
+                self.message = "More than one active boundary scenario found. Please, check your data and try again."
+                return False
+
+            bscenario = row[0][0]
+
+            self.feedback.setProgressText(f"Using bscenario '{bscenario}'...")
+
+            apply_boundary_conditions_to_mesh(self.mesh, bscenario, self.dao)
+
+            print(f"Done! {time.time() - start}s")
 
         # Create temp layer
         self.feedback.setProgressText("Creating temp layer for visualization...")
@@ -701,9 +730,10 @@ class DrCreateMeshTask(DrTask):
         mesh_str, roof_str, losses_str, bridges_str = mesh_parser.dumps(self.mesh)
         print(f"Done! {time.time() - start}s")
 
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.dao.execute_sql(f"""
-            INSERT INTO cat_file (name, iber2d, roof, losses, bridge)
-            VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}')
+            INSERT INTO cat_file (name, iber2d, roof, losses, bridge, timestamp, elements)
+            VALUES ('{self.mesh_name}', '{mesh_str}', '{roof_str}', '{losses_str}', '{bridges_str}', '{timestamp}', {int(len(self.mesh.polygons))})
         """)
         return True
 
@@ -787,7 +817,7 @@ class DrCreateMeshTask(DrTask):
     def _create_bridges_df(self, polygons_df: pd.DataFrame, vertices_df: pd.DataFrame, bridge_layer: QgsVectorLayer) -> pd.DataFrame:
         bridges = layer_to_gdf(
             bridge_layer,
-            ["code", "freeflow_cd", "deck_cd", "sumergeflow_cd", "gaugenumber"],
+            ["code", "freeflow_cd", "deck_cd", "sumergeflow_cd", "fid"],
         )
         bridges_values_dict = self.get_bridges_values_dict()
 
@@ -891,7 +921,7 @@ class DrCreateMeshTask(DrTask):
                     freepressureflowcd = bridge.freeflow_cd
                     deckcd = bridge.deck_cd
                     sumergeflowcd = bridge.sumergeflow_cd
-                    gaugenumber = bridge.gaugenumber
+                    gaugenumber = bridge.fid
 
                     feature_list = [
                         idx,

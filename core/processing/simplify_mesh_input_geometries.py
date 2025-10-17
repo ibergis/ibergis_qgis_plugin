@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -54,8 +54,16 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
         """
         inputs and output of the algorithm
         """
-        ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
-        roof_layer_param = tools_qgis.get_layer_by_tablename('roof')
+        ground_layer_param = None
+        try:
+            ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
+        except Exception:
+            pass
+        roof_layer_param = None
+        try:
+            roof_layer_param = tools_qgis.get_layer_by_tablename('roof')
+        except Exception:
+            pass
 
         self.addParameter(
             QgsProcessingParameterVectorLayer(
@@ -173,7 +181,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
             self.SIMPLIFIED_ROOF_LAYER,
             context,
             self.roof_layer.fields(),
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             self.simplified_layer.crs()
         )
 
@@ -182,7 +190,7 @@ class SimplifyMeshInputGeometries(QgsProcessingAlgorithm):
             self.SIMPLIFIED_GROUND_LAYER,
             context,
             self.ground_layer.fields(),
-            QgsWkbTypes.MultiPolygon,
+            QgsWkbTypes.Polygon,
             self.simplified_layer.crs()
         )
 

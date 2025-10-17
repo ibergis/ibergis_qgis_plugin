@@ -1,12 +1,11 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-import webbrowser
 from functools import partial
 
 try:
@@ -1261,7 +1260,7 @@ class DrNonVisual:
             if timeser_type in timeser_type_headers:
                 headers = timeser_type_headers.get(timeser_type)
             else:
-                headers = ['Date\n(M/D/Y)', 'Time\n(H:M)', 'Value']
+                headers = ['Date\n(M/D/Y)', 'Time\n(H:M)', 'Value\n(mm/h)']
             tbl_timeseries_value.setHorizontalHeaderLabels(headers)
 
         text = tools_qt.get_combo_value(dialog, dialog.cmb_timeser_type)
@@ -1557,7 +1556,6 @@ class DrNonVisual:
         self.dialog.btn_ok.clicked.connect(partial(self._accept_lids, self.dialog, is_new, lidco_id))
         self.dialog.btn_cancel.clicked.connect(self.dialog.reject)
         self.dialog.finished.connect(partial(tools_dr.close_dialog, self.dialog))
-        self.dialog.btn_help.clicked.connect(partial(self._open_help))
 
         self._manage_lids_tabs(self.dialog)
 
@@ -1568,9 +1566,6 @@ class DrNonVisual:
 
         # Open dialog
         tools_dr.open_dialog(self.dialog, dlg_name='nonvisual_lids')
-
-    def _open_help(self):
-        webbrowser.open('https://giswater.gitbook.io/giswater-manual/7.-export-import-of-the-hydraulic-model')
 
     def _populate_lids_widgets(self, dialog, lidco_id, duplicate=False):
         """ Fills in all the values for lid dialog """
@@ -2414,11 +2409,14 @@ class DrNonVisual:
         # Get the first selected range
         selection = selected[0]
 
-        # Extract data from selected cells
+        # Extract data from selected cells, skipping hidden columns
         rows_data = []
         for row in range(selection.topRow(), selection.bottomRow() + 1):
             columns_data = []
             for col in range(selection.leftColumn(), selection.rightColumn() + 1):
+                # Skip hidden columns
+                if table.isColumnHidden(col):
+                    continue
                 item = table.item(row, col)
                 text = item.text() if item is not None else ""
                 columns_data.append(text)
@@ -2439,11 +2437,24 @@ class DrNonVisual:
 
         for r, row in enumerate(rows):
             columns = row.split("\t")
+            c_offset = 0  # Track offset for clipboard data
             for c, value in enumerate(columns):
-                item = QTableWidgetItem(value)
+                # Find the next visible column starting from the base position
+                col_pos = selected[0].leftColumn() + c + c_offset
+
+                # Skip hidden columns and adjust offset
+                while col_pos < table.columnCount() and table.isColumnHidden(col_pos):
+                    c_offset += 1
+                    col_pos = selected[0].leftColumn() + c + c_offset
+
+                # Check if we're still within table bounds
+                if col_pos >= table.columnCount():
+                    break
+
                 row_pos = selected[0].topRow() + r
-                col_pos = selected[0].leftColumn() + c
-                table.setItem(row_pos, col_pos, item)
+                if row_pos < table.rowCount():
+                    item = QTableWidgetItem(value)
+                    table.setItem(row_pos, col_pos, item)
         tools_qgis.show_info("Values pasted from clipboard", dialog=self.dialog)
 
     # endregion

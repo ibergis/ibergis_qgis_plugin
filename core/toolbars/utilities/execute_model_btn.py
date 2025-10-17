@@ -1,12 +1,12 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-
+import shutil
 from functools import partial
 from sip import isdeleted
 from time import time
@@ -39,7 +39,9 @@ class DrExecuteModelButton(DrAction):
         self.execute_model_task = None
 
     def clicked_event(self):
-
+        # Return if theres one execute model dialog already open
+        if tools_dr.check_if_already_open('execute_dlg', self):
+            return
         self._open_execute_dlg()
 
     def _open_execute_dlg(self):
@@ -90,17 +92,34 @@ class DrExecuteModelButton(DrAction):
                 return False
 
         if os.path.exists(f"{self.export_path}{os.sep}Iber2D.dat"):
-            msg = "Results files already exist in this path. Do you want to overwrite them?"
+            msg = "Results files already exist in this path. Do you want to overwrite them? This will delete the old data."
             title = "Overwrite file"
             answer = tools_qt.show_question(msg, title, force_action=True)
             if not answer:
                 return False
+
+        result = self._delete_results()
+        if not result:
+            return False
 
         mesh_id = tools_qt.get_combo_value(self.execute_dlg, 'cmb_mesh')
         if mesh_id is None or mesh_id == '' or mesh_id == -1:
             msg = "No mesh selected. Please select a mesh."
             tools_qgis.show_warning(msg, dialog=self.execute_dlg)
             return False
+
+        # Check if boundary conditions exist but mesh doesn't have them
+        # NOTE: this doesn't check the actual boundary conditions, only if there are any boundary conditions.
+        sql = """SELECT COUNT(*) FROM boundary_conditions WHERE bscenario = (SELECT idval FROM cat_bscenario WHERE active = 1 LIMIT 1)"""
+        row = tools_db.get_row(sql)
+        if row and row[0] > 0:
+            sql = f"""SELECT COUNT(*) FROM cat_file WHERE id = '{mesh_id}' AND iber2d LIKE '%CONDICIONS INICIALS_CC: CONDICIONS CONTORN_123456789%';"""
+            row = tools_db.get_row(sql)
+            if row and row[0] > 0:
+                msg = "Boundary conditions exist but they aren't in the mesh.\nTo save them to the mesh, use the boundary conditions manager.\nDo you want to continue anyway?"
+                answer = tools_qt.show_question(msg)
+                if not answer:
+                    return False
 
         # TODO: ask for import
         do_import = True
@@ -110,6 +129,8 @@ class DrExecuteModelButton(DrAction):
         row = global_vars.gpkg_dao_data.get_row(sql)
         if row and row[0] == '0':
             do_generate_inp = False
+
+        do_generate_cogs = tools_qt.is_checked(self.execute_dlg, 'chk_cog')
 
         self._save_user_values()
 
@@ -130,7 +151,8 @@ class DrExecuteModelButton(DrAction):
         description = "Execute model"
 
         params = {"dialog": self.execute_dlg, "folder_path": self.export_path,
-                  "do_generate_inp": do_generate_inp, "do_export": True, "do_run": True, "do_import": do_import}
+                  "do_generate_inp": do_generate_inp, "do_export": True, "do_run": True, "do_import": do_import,
+                  "do_generate_cogs": do_generate_cogs}
         self.feedback = Feedback()
         self.execute_model_task = DrExecuteModel(description, params, self.feedback, timer=self.timer)
         self.execute_model_task.progress_changed.connect(self._progress_changed)
@@ -184,6 +206,12 @@ class DrExecuteModelButton(DrAction):
         if value:
             tools_qt.set_widget_text(self.execute_dlg, 'txt_folder_path', value)
 
+        # Generate COG checkbox
+        value = tools_dr.get_config_parser('btn_execute_model', 'chk_cog', "user", "session")
+        if value:
+            value = tools_os.set_boolean(value)
+            tools_qt.set_checked(self.execute_dlg, 'chk_cog', value)
+
     def _save_user_values(self):
         """ Save QGIS settings related with file_manager """
 
@@ -194,6 +222,10 @@ class DrExecuteModelButton(DrAction):
         # Export file path
         value = f"{tools_qt.get_text(self.execute_dlg, 'txt_folder_path', return_string_null=False)}"
         tools_dr.set_config_parser('btn_execute_model', 'txt_folder_path', f"{value}")
+
+        # Generate COG checkbox
+        value = tools_qt.is_checked(self.execute_dlg, 'chk_cog')
+        tools_dr.set_config_parser('btn_execute_model', 'chk_cog', value, "user", "session")
 
     def _calculate_elapsed_time(self, dialog):
 
@@ -209,3 +241,34 @@ class DrExecuteModelButton(DrAction):
 
         lbl_timer = dialog.findChild(QLabel, 'lbl_timer')
         lbl_timer.setText(text)
+
+    def _delete_results(self):
+        """Delete results folder, with improved error handling to prevent QGIS crashes."""
+
+        results_folder = os.path.join(self.export_path, "IberGisResults")
+
+        try:
+            if os.path.exists(results_folder):
+                shutil.rmtree(results_folder)
+        except PermissionError as e:
+            if hasattr(e, 'winerror') and e.winerror == 32:
+                locked_file = e.filename if hasattr(e, 'filename') else "Unknown file"
+                msg = (
+                    f"Cannot delete the results folder because a file is being used by another process:\n\n"
+                    f"{locked_file}\n\n"
+                    "Please close any application or QGIS layer using this file and try again."
+                )
+                tools_qt.show_info_box(msg, title="File In Use")
+                return False
+
+            # Handle other permission errors
+            msg = f"Permission error deleting folder: {e}"
+            tools_qt.show_info_box(msg, title="Permission Error")
+            return False
+
+        except Exception as e:
+            msg = f"Unexpected error deleting old data: {e}"
+            tools_qt.show_info_box(msg, title="Error")
+            return False
+
+        return True

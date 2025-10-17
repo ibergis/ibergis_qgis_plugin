@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -40,13 +40,13 @@ class DrDialog(QDialog):
                         self.layout().addLayout(item.layout(), row + 1, column, rowSpan, columnSpan)
             self.layout().addWidget(self.messageBar(), 0, 0, 1, -1)
         except Exception:
-            self._messageBar = global_vars.iface
+            self._messageBar = global_vars.iface.messageBar()
 
         # Set window icon
         icon_folder = f"{global_vars.plugin_dir}{os.sep}icons"
         icon_path = f"{icon_folder}{os.sep}dialogs{os.sep}20x20{os.sep}drain.png"
-        giswater_icon = QIcon(icon_path)
-        self.setWindowIcon(giswater_icon)
+        ibergis_icon = QIcon(icon_path)
+        self.setWindowIcon(ibergis_icon)
 
     def keyPressEvent(self, event):
 

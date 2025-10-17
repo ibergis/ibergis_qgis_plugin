@@ -1,9 +1,9 @@
 
 /*
-This file is part of drain project software
+This file is part of IberGIS project software
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-This version of Giswater is provided by Giswater Association
+This version of IberGIS is provided by IberGIS Team
 */
 
 
@@ -184,7 +184,18 @@ END;
 
 CREATE TRIGGER trg_upd_bridge AFTER UPDATE OF geom ON bridge FOR EACH ROW
 BEGIN
+    -- Update the length of the bridge
     UPDATE bridge SET
         length = round(ST_Length(NEW.geom), 3)
     WHERE fid = NEW.fid;
+
+    -- Update the bridge_value last point for this bridge
+    UPDATE bridge_value
+    SET distance = round(ST_Length(NEW.geom), 3)
+    WHERE id = (
+        SELECT id FROM bridge_value
+        WHERE bridge_code = NEW.code
+        ORDER BY distance DESC
+        LIMIT 1
+    );
 END;

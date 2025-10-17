@@ -82,6 +82,11 @@ def dump(mesh: Mesh, mesh_fp: io.TextIOWrapper, roof_fp: io.TextIOWrapper, losse
         roof_fp.write("\nRoof elements\n")
         for pol in mesh.polygons[mesh.polygons["category"] == "roof"].itertuples():
             roof_fp.write(f"{pol.Index} {pol.roof_id}\n")
+    else:
+        roof_fp.write("Number of roofs\n")
+        roof_fp.write(str(0) + "\n")
+        roof_fp.write("Roofs properties\n")
+        roof_fp.write("\nRoof elements\n")
 
     if len(mesh.bridges):
         for bridge in mesh.bridges.itertuples():
@@ -406,3 +411,38 @@ def loads(mesh_string, roof_string="", losses_string="", bridges_string=""):
         io.StringIO(bridges_string) as bridges_file,
     ):
         return load(mesh_file, roof_file, losses_file, bridges_file)
+
+
+def export_to_2dm_file(mesh: Mesh, filepath: str) -> None:
+    """
+    Export the mesh to a .2dm file.
+    
+    Args:
+        mesh: The mesh to export
+        filepath: Path to the output .2dm file
+    """
+    with open(filepath, 'w') as f:
+        export_to_2dm(mesh, f)
+
+
+def export_to_2dm(mesh: Mesh, output_file: io.TextIOWrapper) -> None:
+    """
+    Export the mesh to a .2dm file format.
+    
+    Args:
+        mesh: The mesh to export
+        output_file: A text file object to write the .2dm data to
+    """
+    # Write header
+    output_file.write("MESH2D\n")
+
+    # Write nodes
+    for v in mesh.vertices.itertuples():
+        # Format: ND node_id x y z
+        output_file.write(f"ND {v.Index} {v.x:.6f} {v.y:.6f} {v.z:.6f}\n")
+
+    # Write elements
+    for tri in mesh.polygons.itertuples():
+        # Format: E3T element_id node1 node2 node3 material_id
+        # For triangles, we use the same node for v3 and v4
+        output_file.write(f"E3T {tri.Index} {tri.v1} {tri.v2} {tri.v3} {tri.roughness:.6f}\n")

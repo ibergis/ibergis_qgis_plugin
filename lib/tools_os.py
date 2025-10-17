@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -194,4 +194,3 @@ def manage_pg_service(section):
         tools_log.log_warning(e)
     finally:
         return credentials
-

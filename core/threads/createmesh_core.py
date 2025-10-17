@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def feature_to_layer(feature, crs):
-    layer = QgsVectorLayer("MultiPolygon", "temp", "memory")
+    layer = QgsVectorLayer("Polygon", "temp", "memory")
     layer.startEditing()
     layer.setCrs(crs)
     for field in feature.fields():

@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -8,6 +8,7 @@ or (at your option) any later version.
 
 from ..dialog import DrAction
 from ...shared.nonvisual import DrNonVisual
+from ...utils import tools_dr
 
 
 class DrNonVisualManagerButton(DrAction):
@@ -19,6 +20,7 @@ class DrNonVisualManagerButton(DrAction):
         self.nonvisual = DrNonVisual()
 
     def clicked_event(self):
+        # Return if theres one nonvisual manager dialog already open
+        if tools_dr.check_if_already_open('manager_dlg', self.nonvisual):
+            return
         self.nonvisual.manage_nonvisual()
-
-

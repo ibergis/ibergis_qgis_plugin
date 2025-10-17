@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -38,7 +38,7 @@ class DrI18NGenerator:
         self._load_user_values()
 
         self._check_connection()
-        
+
         # Mysteriously without the partial the function check_connection is not called
         self.dlg_qm.btn_translate.clicked.connect(partial(self._check_translate_options))
         self.dlg_qm.btn_close.clicked.connect(partial(tools_dr.close_dialog, self.dlg_qm))
@@ -68,7 +68,7 @@ class DrI18NGenerator:
         self.dlg_qm.cmb_language.clear()
         self.dlg_qm.lbl_info.clear()
         self._close_db()
-        self.path = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}drain_i18n.gpkg"
+        self.path = f"{self.plugin_dir}{os.sep}core{os.sep}i18n{os.sep}ibergis_i18n.gpkg"
         status = self._init_db(self.path)
 
         if not status:
@@ -114,7 +114,7 @@ class DrI18NGenerator:
                 msg += tools_qt.tr("Python translation canceled\n")
 
         self._create_path_dic()
-        for type_dbfile in self.path_dic:     
+        for type_dbfile in self.path_dic:
             if tools_qt.is_checked(self.dlg_qm, self.path_dic[type_dbfile]['checkbox']):
                 status_all_db_msg, dbtable = self._create_all_db_files(self.path_dic[type_dbfile]["path"], type_dbfile)
                 if status_all_db_msg is True:
@@ -122,7 +122,7 @@ class DrI18NGenerator:
                 elif status_all_db_msg is False:
                     msg += f"{type_dbfile} {tools_qt.tr('translation failed in table')}: {dbtable}\n"
                 elif status_all_db_msg is None:
-                    msg += f"{type_dbfile} {tools_qt.tr('translation canceled')}\n"     
+                    msg += f"{type_dbfile} {tools_qt.tr('translation canceled')}\n"
 
         if msg != '':
             tools_qt.set_widget_text(self.dlg_qm, 'lbl_info', msg)
@@ -165,7 +165,7 @@ class DrI18NGenerator:
                 f" ORDER BY dialog_name;")
             py_dialogs = self._get_rows(sql, self.cursor_i18n)
 
-        ts_path = self.plugin_dir + os.sep + 'i18n' + os.sep + f'drain_{self.language}.ts'
+        ts_path = self.plugin_dir + os.sep + 'i18n' + os.sep + f'ibergis_{self.language}.ts'
 
         # Check if file exist
         if os.path.exists(ts_path):
@@ -184,7 +184,7 @@ class DrI18NGenerator:
 
         # Create children for toolbars and actions
         line = '\t<context>\n'
-        line += '\t\t<name>drain</name>\n'
+        line += '\t\t<name>ibergis</name>\n'
         line += '\t\t<!-- TOOLBARS AND ACTIONS -->\n'
         ts_file.write(line)
         for py_tlb in py_toolbars:
@@ -297,13 +297,13 @@ class DrI18NGenerator:
                     return title
                 return title
         return title
-    
+
     # endregion
     # region Database files
-    
+
     def _create_all_db_files(self, cfg_path, file_type):
         """ Read the values of the database and update the i18n files """
-            
+
         file_name = f"{self.path_dic[file_type]["name"]}"
 
         # Check if file exist
@@ -327,10 +327,10 @@ class DrI18NGenerator:
                 if "json" in dbtable:
                     self._write_dbjson_values(dbtable_rows, cfg_path + file_name)
                 else:
-                    self._write_table_values(dbtable_rows, dbtable_columns, dbtable, cfg_path + file_name, file_type)            
+                    self._write_table_values(dbtable_rows, dbtable_columns, dbtable, cfg_path + file_name, file_type)
 
         return True, ""
-    
+
     # endregion
     # region Gen. any table files
 
@@ -348,14 +348,14 @@ class DrI18NGenerator:
 
         if table == 'dbconfig_form_fields':
             columns = ["source_code", "context", "formname", "formtype", "source", "lb_en_us", "tt_en_us", "pl_en_us", "ds_en_us"]
-            lang_colums = [f"lb_{self.lower_lang}", f"auto_lb_{self.lower_lang}", f"va_auto_lb_{self.lower_lang}", 
-                           f"tt_{self.lower_lang}", f"auto_tt_{self.lower_lang}", f"va_auto_tt_{self.lower_lang}", 
-                           f"pl_{self.lower_lang}", f"auto_pl_{self.lower_lang}", f"va_auto_pl_{self.lower_lang}", 
+            lang_colums = [f"lb_{self.lower_lang}", f"auto_lb_{self.lower_lang}", f"va_auto_lb_{self.lower_lang}",
+                           f"tt_{self.lower_lang}", f"auto_tt_{self.lower_lang}", f"va_auto_tt_{self.lower_lang}",
+                           f"pl_{self.lower_lang}", f"auto_pl_{self.lower_lang}", f"va_auto_pl_{self.lower_lang}",
                            f"ds_{self.lower_lang}", f"auto_ds_{self.lower_lang}", f"va_auto_ds_{self.lower_lang}"]
 
         if table == "dbtexts":
             columns = ["source_code", "source", "context", "al_en_us", "ds_en_us"]
-            lang_colums = [f"al_{self.lower_lang}", f"auto_al_{self.lower_lang}", f"va_auto_al_{self.lower_lang}", 
+            lang_colums = [f"al_{self.lower_lang}", f"auto_al_{self.lower_lang}", f"va_auto_al_{self.lower_lang}",
                            f"ds_{self.lower_lang}", f"auto_ds_{self.lower_lang}", f"va_auto_ds_{self.lower_lang}"]
 
         if table == 'dbconfig_form_fields_json':
@@ -441,7 +441,7 @@ class DrI18NGenerator:
                         for item_row, txt in data:
                             query += (f"UPDATE {context} SET idval = {txt[0]}, descript = {txt[1]} WHERE "
                                      f"rowid = {item_row['source']};\n")
-                            
+
             file.write(query)
         del file
 
@@ -466,7 +466,7 @@ class DrI18NGenerator:
         for key, related_rows_dicts in updates.items():  # related_rows_dicts are now lists of dicts
             # Unpack key
             source, context, original_text, *extra = key
-            
+
             # Correct column based on context
             if context == "config_report":
                 column = "filterparam"
@@ -534,7 +534,7 @@ class DrI18NGenerator:
                 values_by_context[context] = []
 
             # related_rows_dicts[0] is the first dict for this group
-            values_by_context[context].append((source, related_rows_dicts[0], new_text, column)) 
+            values_by_context[context].append((source, related_rows_dicts[0], new_text, column))
 
         # Now write to file
         with open(path, "a", encoding="utf-8") as file:
@@ -556,10 +556,10 @@ class DrI18NGenerator:
                     file.write(f"UPDATE {context} AS t\nSET {column} = v.text::json\nFROM (\n    VALUES\n    {values_str}\n) AS v(id, text)\nWHERE t.id = v.id;\n\n")
 
             if closing:
-                file.write("UPDATE config_param_system SET value = FALSE WHERE parameter = 'admin_config_control_trigger';\\n")  
+                file.write("UPDATE config_param_system SET value = FALSE WHERE parameter = 'admin_config_control_trigger';\\n")
 
     # endregion
- 
+
     # region Extra functions
 
     def _write_header(self, path):
@@ -570,10 +570,10 @@ class DrI18NGenerator:
 
         file = open(path, "w")
         header = ('/*\n'
-                  'This file is part of drain project software\n'
+                  'This file is part of IberGIS project software\n'
                   'The program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License '
                   'as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. '
-                  'This version of Giswater is provided by Giswater Association.\n'
+                  'This version of IberGIS is provided by IberGIS Team.\n'
                   '*/\n\n\n')
 
         file.write(header)
@@ -610,7 +610,7 @@ class DrI18NGenerator:
 
         try:
             self.conn_i18n = sqlite3.connect(gpkg_path)
-            self.conn_i18n.row_factory = sqlite3.Row 
+            self.conn_i18n.row_factory = sqlite3.Row
             self.cursor_i18n = self.conn_i18n.cursor()
             status = True
         except sqlite3.DatabaseError as e:

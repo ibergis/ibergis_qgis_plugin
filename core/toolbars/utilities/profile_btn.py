@@ -1,5 +1,5 @@
 """
-This file is part of Giswater
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -9,13 +9,13 @@ import subprocess
 import os
 from functools import partial
 
-from qgis.PyQt.QtCore import QDate, QDateTime
-from qgis.PyQt.QtWidgets import QListWidgetItem, QAction, QButtonGroup
-from qgis.core import QgsFeatureRequest, QgsVectorLayer, QgsExpression, QgsProject
+from qgis.PyQt.QtCore import QDateTime
+from qgis.PyQt.QtWidgets import QAction, QButtonGroup
+from qgis.core import QgsVectorLayer, QgsProject
 from qgis.gui import QgsMapToolEmitPoint
 
 from ..dialog import DrAction
-from ...ui.ui_manager import DrProfileUi, DrProfilesListUi
+from ...ui.ui_manager import DrProfileUi
 from ...utils import tools_dr
 from ...utils.snap_manager import DrSnapManager
 from ....lib import tools_qt, tools_qgis
@@ -80,8 +80,6 @@ class DrProfileButton(DrAction):
         self.rotation_vd_exist = False
         self.lastnode_datatype = 'REAL'
         self.none_values = []
-        self.add_points = False
-        self.add_points_list = []
 
     def clicked_event(self):
 
@@ -94,23 +92,19 @@ class DrProfileButton(DrAction):
         self.dlg_draw_profile = DrProfileUi()
         tools_dr.load_settings(self.dlg_draw_profile)
 
-        self.dlg_draw_profile.grb_profile.setVisible(False)
-        # Set layer_node
+        # Set allowed node layers for snapping (junction, divider, outfall, storage)
         self.layer_node = tools_qgis.get_layer_by_tablename('inp_junction', show_warning_=False)
+        self.allowed_node_layers = []
+        for _layer_name in ['inp_junction', 'inp_divider', 'inp_outfall', 'inp_storage']:
+            _layer_obj = tools_qgis.get_layer_by_tablename(_layer_name, show_warning_=False)
+            if _layer_obj:
+                self.allowed_node_layers.append(_layer_obj)
 
         # Toolbar actions
         action = self.dlg_draw_profile.findChild(QAction, "actionProfile")
         tools_dr.add_icon(action, "131", sub_folder="24x24")
-        action.triggered.connect(partial(self._activate_add_points, False))
         action.triggered.connect(partial(self._activate_snapping_node))
         self.action_profile = action
-
-        action = self.dlg_draw_profile.findChild(QAction, "actionAddPoint")
-        tools_dr.add_icon(action, "111", sub_folder="24x24")
-        action.triggered.connect(partial(self._activate_add_points, True))
-        action.triggered.connect(partial(self._activate_snapping_node))
-        self.action_add_point = action
-        self.action_add_point.setDisabled(True)
 
         # Set radio button groups
         self.rbg_timestamp = QButtonGroup()
@@ -126,23 +120,17 @@ class DrProfileButton(DrAction):
 
         # Triggers
         self.dlg_draw_profile.btn_draw_profile.clicked.connect(partial(self._get_profile))
-        self.dlg_draw_profile.btn_save_profile.clicked.connect(self._save_profile)
-        self.dlg_draw_profile.btn_load_profile.clicked.connect(self._open_profile)
-        self.dlg_draw_profile.btn_clear_profile.clicked.connect(self._clear_profile)
+        # self.dlg_draw_profile.btn_clear_profile.clicked.connect(self._clear_profile)
         self.dlg_draw_profile.rb_instant.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.rb_period.clicked.connect(partial(self._manage_timestamp_widgets))
         self.dlg_draw_profile.dlg_closed.connect(partial(tools_dr.save_settings, self.dlg_draw_profile))
         self.dlg_draw_profile.dlg_closed.connect(partial(self._remove_selection, actionpan=True))
+        self.dlg_draw_profile.dlg_closed.connect(partial(self._disable_snapping))
         self.dlg_draw_profile.dlg_closed.connect(partial(self._reset_profile_variables))
         self.dlg_draw_profile.dlg_closed.connect(partial(tools_dr.disconnect_signal, 'profile'))
 
         # Set shortcut keys
         self.dlg_draw_profile.key_escape.connect(partial(tools_dr.close_dialog, self.dlg_draw_profile))
-
-        # Set calendar date as today
-        # tools_qt.set_calendar(self.dlg_draw_profile, "dtm_instant", None)
-        # tools_qt.set_calendar(self.dlg_draw_profile, "dtm_start", None)
-        # tools_qt.set_calendar(self.dlg_draw_profile, "dtm_end", None)
 
         # Set default values
         self.dlg_draw_profile.rb_instant.setChecked(True)
@@ -150,6 +138,14 @@ class DrProfileButton(DrAction):
         self._manage_timestamp_widgets()
 
         # Restore datetime values
+        self._load_user_values()
+
+        # Show form
+        tools_dr.open_dialog(self.dlg_draw_profile, dlg_name='profile')
+
+    # region private functions
+
+    def _load_user_values(self):
         dtm_instant_val = tools_dr.get_config_parser('btn_profile', 'dtm_instant', "user", "session")
         dtm_start_val = tools_dr.get_config_parser('btn_profile', 'dtm_start', "user", "session")
         dtm_end_val = tools_dr.get_config_parser('btn_profile', 'dtm_end', "user", "session")
@@ -163,25 +159,11 @@ class DrProfileButton(DrAction):
             dtm_end_qdt = QDateTime.fromString(dtm_end_val, 'yyyy-MM-dd HH:mm:ss')
             self.dlg_draw_profile.dtm_end.setDateTime(dtm_end_qdt)
 
-        # Show form
-        tools_dr.open_dialog(self.dlg_draw_profile, dlg_name='profile')
-
-    # region private functions
-
     def _reset_profile_variables(self):
 
         self.initNode = None
         self.endNode = None
         self.first_node = True
-        self.add_points = False
-        self.add_points_list = []
-
-    def _activate_add_points(self, activate=True):
-        self.add_points = activate
-        if not activate:
-            self.add_points_list.clear()
-            self.add_points_list = []
-            self.endNode = None
 
     def _manage_timestamp_widgets(self):
         if self.dlg_draw_profile.rb_instant.isChecked():
@@ -224,123 +206,6 @@ class DrProfileButton(DrAction):
         #     msg = "There are missing values in these nodes:"
         #     tools_qt.show_info_box(msg, inf_text=self.none_values)
 
-    def _save_profile(self):
-        """ Save profile """
-
-        profile_id = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_profile_id)
-        if profile_id in (None, 'null'):
-            msg = "Profile name is mandatory."
-            tools_qgis.show_warning(msg)
-            return
-
-        # Clear and populate list with new arcs
-        list_arc = []
-        n = self.dlg_draw_profile.tbl_list_arc.count()
-        for i in range(n):
-            list_arc.append(int(self.dlg_draw_profile.tbl_list_arc.item(i).text()))
-
-        # Get values from profile form
-        links_distance = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_min_distance)
-        if links_distance in ("", "None", None):
-            links_distance = 1
-        title = tools_qt.get_text(self.dlg_draw_profile, self.dlg_draw_profile.txt_title)
-        date = tools_qt.get_calendar_date(self.dlg_draw_profile, self.dlg_draw_profile.date, date_format='dd/MM/yyyy')
-
-        # Create variable with all the content of the form
-        extras = f'"profile_id":"{profile_id}", "listArcs":"{list_arc}","initNode":"{self.initNode}", ' \
-            f'"endNode":"{self.endNode}", ' \
-            f'"linksDistance":{links_distance}, "scale":{{ "eh":1000, ' \
-            f'"ev":1000}}, "title":"{title}", "date":"{date}"'
-        body = tools_dr.create_body(extras=extras)
-        result = tools_dr.execute_procedure('gw_fct_setprofile', body)
-        if result is None or result['status'] == 'Failed':
-            return
-        message = f"{result['message']}"
-        tools_qgis.show_info(message)
-
-    def _open_profile(self):
-        """ Open dialog profile_list.ui """
-
-        self.dlg_load = DrProfilesListUi(self)
-        tools_dr.load_settings(self.dlg_load)
-
-        # Get profils on database
-        body = tools_dr.create_body()
-        result_profile = tools_dr.execute_procedure('gw_fct_getprofile', body)
-        if not result_profile or result_profile['status'] == 'Failed':
-            return
-        message = f"{result_profile['message']}"
-        tools_qgis.show_info(message)
-
-        self.dlg_load.btn_open.clicked.connect(partial(self._load_profile, result_profile))
-        self.dlg_load.btn_delete_profile.clicked.connect(partial(self._delete_profile))
-
-        # Populate profile list
-        for profile in result_profile['body']['data']:
-            item_arc = QListWidgetItem(str(profile['profile_id']))
-            self.dlg_load.tbl_profiles.addItem(item_arc)
-
-        tools_dr.open_dialog(self.dlg_load, dlg_name='profile_list')
-
-    def _load_profile(self, parameters):
-        """ Open selected profile from dialog load_profiles.ui """
-
-        selected_list = self.dlg_load.tbl_profiles.selectionModel().selectedRows()
-        if len(selected_list) == 0:
-            msg = "Any record selected"
-            tools_qgis.show_warning(msg)
-            return
-
-        tools_dr.close_dialog(self.dlg_load)
-
-        profile_id = self.dlg_load.tbl_profiles.currentItem().text()
-
-        # Setting parameters on profile form
-        self.dlg_draw_profile.btn_draw_profile.setEnabled(True)
-        self.dlg_draw_profile.btn_save_profile.setEnabled(True)
-        for profile in parameters['body']['data']:
-            if profile['profile_id'] == profile_id:
-                # Get data
-                self.initNode = profile['values']['initNode']
-                self.endNode = profile['values']['endNode']
-                list_arcs = profile['values']['listArcs']
-
-                # Get arcs from profile
-                expr_filter = "\"arc_id\" IN ("
-                for arc in list_arcs.strip('][').split(', '):
-                    expr_filter += f"'{arc}', "
-                expr_filter = expr_filter[:-2] + ")"
-                expr = QgsExpression(expr_filter)
-                # Get a featureIterator from this expression:
-                self.layer_arc = tools_qgis.get_layer_by_tablename("v_edit_arc")
-                it = self.layer_arc.getFeatures(QgsFeatureRequest(expr))
-
-                self.id_list = [i.id() for i in it]
-                if not self.id_list:
-                    msg = "Couldn't draw profile. You may need to select another exploitation."
-                    tools_qgis.show_warning(msg)
-                    return
-
-                # Set data in dialog
-                self.dlg_draw_profile.txt_profile_id.setText(str(profile_id))
-                self.dlg_draw_profile.tbl_list_arc.clear()
-
-                for arc in list_arcs.strip('][').split(', '):
-                    item_arc = QListWidgetItem(str(arc))
-                    self.dlg_draw_profile.tbl_list_arc.addItem(item_arc)
-                self.dlg_draw_profile.txt_min_distance.setText(str(profile['values']['linksDistance']))
-
-                self.dlg_draw_profile.txt_title.setText(str(profile['values']['title']))
-                date = QDate.fromString(profile['values']['date'], 'dd-MM-yyyy')
-                tools_qt.set_calendar(self.dlg_draw_profile, self.dlg_draw_profile.date, date)
-
-                # Select features in map
-                self._remove_selection()
-                self.layer_arc.selectByIds(self.id_list)
-
-                # Center shortest path in canvas - ZOOM SELECTION
-                self.canvas.zoomToSelected(self.layer_arc)
-
     def _activate_snapping_node(self):
 
         if hasattr(self, "first_node"):
@@ -349,10 +214,10 @@ class DrProfileButton(DrAction):
         self.endNode = None if not hasattr(self, "endNode") else self.endNode
         self.first_node = True if not hasattr(self, "first_node") else self.first_node
 
-        if self.first_node is False and not self.add_points:
+        if self.first_node is False:
             msg = "First node already selected with id: {0}. Select second one."
-            mgs_params = (self.initNode)
-            tools_qgis.show_info(msg, mgs_params=mgs_params)
+            msg_params = (self.initNode)
+            tools_qgis.show_info(msg, msg_params=msg_params)
 
         # Set vertex marker propierties
         self.snapper_manager.set_vertex_marker(self.vertex_marker, icon_type=4)
@@ -378,11 +243,13 @@ class DrProfileButton(DrAction):
         event_point = self.snapper_manager.get_event_point(point=point)
 
         # Snapping
-        result = self.snapper_manager.snap_to_current_layer(event_point)
+        result = self.snapper_manager.snap_to_project_config_layers(event_point)
         if result.isValid():
             layer = self.snapper_manager.get_snapped_layer(result)
-            if layer == self.layer_node:
+            if hasattr(self, 'allowed_node_layers') and layer in self.allowed_node_layers:
                 self.snapper_manager.add_marker(result, self.vertex_marker)
+            else:
+                self.vertex_marker.hide()
         else:
             self.vertex_marker.hide()
 
@@ -392,95 +259,51 @@ class DrProfileButton(DrAction):
         event_point = self.snapper_manager.get_event_point(point=point)
 
         # Snapping
-        result = self.snapper_manager.snap_to_current_layer(event_point)
+        result = self.snapper_manager.snap_to_project_config_layers(event_point)
 
         if result.isValid():
+            # Only allow features from the configured node layers
+            snapped_layer = self.snapper_manager.get_snapped_layer(result)
+            if hasattr(self, 'allowed_node_layers') and snapped_layer not in self.allowed_node_layers:
+                tools_qgis.show_warning("Please select a node from inp_junction, inp_divider, inp_outfall or inp_storage")
+                return
             # Get the feature
             snapped_feat = self.snapper_manager.get_snapped_feature(result)
             element_id = snapped_feat.attribute('code')
             self.element_id = str(element_id)
 
-            if self.first_node and not self.add_points:
+            if self.first_node:
                 self.initNode = element_id
                 self.first_node = False
                 msg = "Node 1 selected"
                 tools_qgis.show_info(msg, parameter=element_id)
+                tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_init', element_id)
             else:
-                if self.element_id == self.initNode or self.element_id == self.endNode \
-                        or self.element_id in self.add_points_list:
+                if self.element_id == self.initNode or self.element_id == self.endNode:
                     msg = "Node already selected"
                     param = element_id
                     tools_qgis.show_warning(msg, parameter=param)
-                    if not self.add_points:
-                        tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
-                        tools_dr.disconnect_signal('profile')
-                        self.dlg_draw_profile.btn_save_profile.setEnabled(False)
-                        self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
-                        self.action_add_point.setDisabled(True)
-                        # Clear old list arcs
-                        self.dlg_draw_profile.tbl_list_arc.clear()
+                    tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
+                    tools_dr.disconnect_signal('profile')
+                    self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
+                    # Clear old list arcs
+                    # self.dlg_draw_profile.tbl_list_arc.clear()
 
-                        self._remove_selection()
+                    self._remove_selection()
                 else:
-                    if self.add_points:
-                        self.add_points_list.append(element_id)
-                    else:
-                        self.endNode = element_id
+                    self.endNode = element_id
+                    msg = "Node 2 selected"
+                    tools_qgis.show_info(msg, parameter=element_id)
+                    tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_end', element_id)
                     tools_qgis.disconnect_snapping(False, self.emit_point, self.vertex_marker)
                     tools_dr.disconnect_signal('profile')
                     self.dlg_draw_profile.btn_draw_profile.setEnabled(True)
-                    self.dlg_draw_profile.btn_save_profile.setEnabled(True)
 
                     # Clear old list arcs
-                    self.dlg_draw_profile.tbl_list_arc.clear()
-
-                    return
-
-                    # Populate list arcs
-                    extras = f'"initNode":"{self.initNode}", "endNode":"{self.endNode}"'
-                    if self.add_points and self.add_points_list:
-                        points_list = str(self.add_points_list).replace("'", "")
-                        extras += f', "midNodes":{points_list}'
-                    body = tools_dr.create_body(extras=extras)
-                    result = tools_dr.execute_procedure('gw_fct_getprofilevalues', body)
-                    if result is None or result['status'] == 'Failed':
-                        return
-                    self.layer_arc = tools_qgis.get_layer_by_tablename("v_edit_arc")
-
-                    # Manage level and message from query result
-                    if result['message']:
-                        level = int(result['message']['level'])
-                        msg = result['message']['text']
-                        tools_qgis.show_message(msg, level)
-                        if result['message']['level'] != 3:
-                            # If error reset profile
-                            self._clear_profile()
-                            return
-
-                    self._remove_selection()
-                    list_arcs = []
-                    for arc in result['body']['data']['arc']:
-                        item_arc = QListWidgetItem(str(arc['arc_id']))
-                        self.dlg_draw_profile.tbl_list_arc.addItem(item_arc)
-                        list_arcs.append(arc['arc_id'])
-
-                    expr_filter = "\"arc_id\" IN ("
-                    for arc in result['body']['data']['arc']:
-                        expr_filter += f"'{arc['arc_id']}', "
-                    expr_filter = expr_filter[:-2] + ")"
-                    expr = QgsExpression(expr_filter)
-                    # Get a featureIterator from this expression:
-                    it = self.layer_arc.getFeatures(QgsFeatureRequest(expr))
-
-                    self.id_list = [i.id() for i in it]
-                    self.layer_arc.selectByIds(self.id_list)
-
-                    self.action_add_point.setDisabled(False)
+                    # self.dlg_draw_profile.tbl_list_arc.clear()
 
                 # Next profile will be done from scratch
                 self.first_node = True
-                if self.add_points:
-                    self.add_points = False
 
     def _action_pan(self):
         if self.first_node:
@@ -534,7 +357,7 @@ class DrProfileButton(DrAction):
         # Temporal parameters
         write_time_step = out.report_interval
         start_date = out.start_date
-        end_date = start_date + out.n_periods * out.report_interval
+        end_date = start_date + out.n_periods * write_time_step
 
         print(f"Start date = {start_date}")
         print(f"End date   = {end_date}")
@@ -549,6 +372,16 @@ class DrProfileButton(DrAction):
         custom_end = pd.Timestamp(custom_end)
         print(f"Custom start = {custom_start}")
         print(f"Custom end   = {custom_end}")
+
+        # Helper function to check if timestamp aligns with simulation timesteps
+        def is_valid_timestep(check_time, start_time, timestep_interval):
+            """Check if a timestamp aligns with simulation timesteps"""
+            time_diff = check_time - start_time
+            total_seconds = time_diff.total_seconds()
+            timestep_seconds = timestep_interval.total_seconds()
+
+            # Check if the time difference is a multiple of the timestep
+            return abs(total_seconds % timestep_seconds) < 1e-6  # Small tolerance for floating point precision
 
         # Nodes
         start_node = self.initNode
@@ -580,6 +413,13 @@ class DrProfileButton(DrAction):
                 msg_params = (start_date.strftime('%d-%m-%Y %H:%M:%S'), end_date.strftime('%d-%m-%Y %H:%M:%S'))
                 tools_qgis.show_warning("The selected time must be within the simulation period. ({0} - {1})", msg_params=msg_params)
                 return
+
+            # Check if timestamp aligns with simulation timesteps
+            if not is_valid_timestep(timestamp, start_date, write_time_step):
+                timestep_minutes = int(write_time_step.total_seconds() / 60)
+                tools_qgis.show_warning("The selected timestamp does not align with simulation timesteps. Timestep interval is {0} minutes.", msg_params=(timestep_minutes,))
+                return
+
             fig, ax = profile_plotter.plot_longitudinal(start_node, end_node, timestamp, add_node_labels=False)
             fig.show()
 
@@ -593,6 +433,18 @@ class DrProfileButton(DrAction):
                 msg_params = (custom_start.strftime('%d-%m-%Y %H:%M:%S'), custom_end.strftime('%d-%m-%Y %H:%M:%S'))
                 tools_qgis.show_warning("The end time must be bigger than the start time. ({0} >= {1})", msg_params=msg_params)
                 return
+
+            # Check if custom_start and custom_end align with simulation timesteps
+            if not is_valid_timestep(custom_start, start_date, write_time_step):
+                timestep_minutes = int(write_time_step.total_seconds() / 60)
+                tools_qgis.show_warning("The start time does not align with simulation timesteps. Timestep interval is {0} minutes.", msg_params=(timestep_minutes,))
+                return
+
+            if not is_valid_timestep(custom_end, start_date, write_time_step):
+                timestep_minutes = int(write_time_step.total_seconds() / 60)
+                tools_qgis.show_warning("The end time does not align with simulation timesteps. Timestep interval is {0} minutes.", msg_params=(timestep_minutes,))
+                return
+
             profile_plotter.show_with_slider(start_node, end_node, write_time_step, custom_start, custom_end)
 
     def _clear_profile(self):
@@ -605,12 +457,11 @@ class DrProfileButton(DrAction):
         self.nodes = []
 
         # Clear widgets
-        self.dlg_draw_profile.tbl_list_arc.clear()
-        self.dlg_draw_profile.txt_profile_id.clear()
+        # self.dlg_draw_profile.tbl_list_arc.clear()
+        tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_init', '')
+        tools_qt.set_widget_text(self.dlg_draw_profile, 'txt_node_end', '')
         self.action_profile.setDisabled(False)
-        self.action_add_point.setDisabled(True)
         self.dlg_draw_profile.btn_draw_profile.setEnabled(False)
-        self.dlg_draw_profile.btn_save_profile.setEnabled(False)
 
         # Clear selection
         self._remove_selection()
@@ -647,5 +498,18 @@ class DrProfileButton(DrAction):
         self.canvas.refresh()
         if actionpan:
             self.iface.actionPan().trigger()
+
+    def _disable_snapping(self):
+        """ Disable snapping """
+        from qgis.core import QgsProject
+
+        # Get the current snapping configuration
+        snapping_config = QgsProject.instance().snappingConfig()
+
+        # Disable snapping
+        snapping_config.setEnabled(False)
+
+        # Apply the configuration to the project
+        QgsProject.instance().setSnappingConfig(snapping_config)
 
     # endregion

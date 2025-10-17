@@ -1,8 +1,8 @@
 /*
-This file is part of drain project software
+This file is part of IberGIS project software
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-This version of Giswater is provided by Giswater Association
+This version of IberGIS is provided by IberGIS Team
 */
 
 -- ----------------------------
@@ -18,8 +18,8 @@ INSERT INTO gpkg_spatial_ref_sys (srs_name, srs_id, organization, organization_c
 -- ---------------------------
 
 INSERT INTO tables_geom (table_name, isgeom, index_col) values
-('ground', 'MULTIPOLYGON', 'code'),
-('roof', 'MULTIPOLYGON', 'code'),
+('ground', 'POLYGON', 'code'),
+('roof', 'POLYGON', 'code'),
 ('mesh_anchor_points', 'POINT', null),
 ('mesh_anchor_lines', 'LINESTRINGZ', null),
 ('boundary_conditions', 'MULTILINESTRING', 'code'),
@@ -49,7 +49,7 @@ INSERT INTO tables_geom (table_name, isgeom, index_col) values
 ('hyetograph', 'POINT', null),
 ('vi_inlet', 'POINT', null),
 ('culvert', 'LINESTRING', 'code'),
-('pinlet', 'MULTIPOLYGON', 'code'),
+('pinlet', 'POLYGON', 'code'),
 ('bridge', 'LINESTRING', 'code');
 
 
@@ -70,6 +70,7 @@ insert into tables_nogeom (table_name, index_col) values
 ('cat_raster', 'idval'),
 ('cat_raster_value', null),
 ('cat_controls', null),
+('cat_tsgraph', null),
 ('inp_files', 'idval'),
 ('inp_dwf', 'code'),
 ('inp_inflow', 'code'),
@@ -106,7 +107,7 @@ insert into tables_nogeom (table_name, index_col) values
 INSERT INTO checkproject_query
 (id, query_type, table_name, columns, extra_condition, create_layer, geometry_type, error_message_id, info_message_id, except_lvl, error_code)
 VALUES
-(1, 'MANDATORY NULL', 'cat_bscenario', '{descript}', NULL, 0, NULL, 1, 10, 3, 119),
+(1, 'MANDATORY NULL', 'cat_bscenario', '{idval}', NULL, 0, NULL, 1, 10, 3, 119),
 (2, 'MANDATORY NULL', 'boundary_conditions', '{bscenario, boundary_type}', NULL, 0, 'MultiLineString', 1, 10, 3, 105),
 (3, 'MANDATORY NULL', 'cat_controls', '{descript}', NULL, 0, NULL, 1, 10, 3, 120),
 (4, 'MANDATORY NULL', 'cat_curve', '{curve_type}', NULL, 0, NULL, 1, 10, 3, 121),
@@ -118,7 +119,7 @@ VALUES
 (10, 'MANDATORY NULL', 'cat_raster_value', '{time, fname}', NULL, 0, NULL, 1, 10, 3, 127),
 (11, 'MANDATORY NULL', 'cat_timeseries', '{timser_type, times_type}', NULL, 0, NULL, 1, 10, 3, 128),
 (12, 'MANDATORY NULL', 'cat_timeseries_value', '{time, value}', NULL, 0, NULL, 1, 10, 3, 129),
-(13, 'MANDATORY NULL', 'ground', '{code, cellsize}', NULL, 0, 'MultiPolygon', 1, 10, 3, 106),
+(13, 'MANDATORY NULL', 'ground', '{code, cellsize}', NULL, 0, 'Polygon', 1, 10, 3, 106),
 (14, 'MANDATORY NULL', 'hyetograph', '{code}', NULL, 0, 'Point', 1, 10, 3, 107),
 (15, 'MANDATORY NULL', 'inlet', '{code, outlet_node, top_elev, width, length, method, efficiency}', NULL, 1, 'Point', 1, 10, 3, 108),
 (16, 'MANDATORY NULL', 'inp_conduit', '{code, shape, geom1, roughness, length, z1, z2, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 109),
@@ -131,8 +132,8 @@ VALUES
 (23, 'MANDATORY NULL', 'inp_outlet', '{code, flap, outlet_type, offsetval, cd1, cd2, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 114),
 (24, 'MANDATORY NULL', 'inp_pump', '{code, state, startup, shutoff, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 115),
 (25, 'MANDATORY NULL', 'inp_storage', '{code, elev, ymax, y0, ysur, storage_type}', NULL, 0, 'Point', 1, 10, 3, 116),
-(26, 'MANDATORY NULL', 'inp_weir', '{code, flap, weir_type, geom1, geom2, cd2, ec, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 117),
-(27, 'MANDATORY NULL', 'roof', '{code, slope, width, roughness, isconnected, outlet_code, outlet_vol, street_vol, infiltr_vol}', NULL, 0, 'MultiPolygon', 1, 10, 3, 118),
+(26, 'MANDATORY NULL', 'inp_weir', '{code, flap, weir_type, geom1, geom2, cd, cd2, ec, node_1, node_2}', NULL, 0, 'LineString', 1, 10, 3, 117),
+(27, 'MANDATORY NULL', 'roof', '{code, slope, width, roughness, isconnected, outlet_code, outlet_vol, street_vol, infiltr_vol}', NULL, 0, 'Polygon', 1, 10, 3, 118),
 (28, 'GEOMETRIC DUPLICATE', 'arc', NULL, NULL, 1, 'LineString', 3, 7, 3, 101),
 (29, 'GEOMETRIC DUPLICATE', 'node', NULL, NULL, 1, 'Point', 4, 8, 3, 102),
 (30, 'GEOMETRIC ORPHAN', 'node', NULL, NULL, 1, 'Point', 5, 9, 3, 103),
@@ -149,7 +150,9 @@ VALUES
 (42, 'OUTLAYER', 'roof', '{slope}', NULL, 0, NULL, 6, 12, 2, 142),
 (43, 'OUTLAYER', 'roof', '{roughness, outlet_vol, street_vol}', NULL, 0, NULL, 6, 12, 3, 143),
 (44, 'MANDATORY NULL', 'inp_storage', '{a1, a2, a0}', 'AND storage_type == "FUNCTIONAL"', 0, NULL, 2, 11, 3, 144),
-(45, 'MANDATORY NULL', 'inlet', '{weir_cd, orifice_cd}', 'AND method == "W_O"', 0, NULL, 2, 11, 3, 145);
+(45, 'MANDATORY NULL', 'inlet', '{weir_cd, orifice_cd}', 'AND method == "W_O"', 0, NULL, 2, 11, 3, 145),
+(46, 'OUTLAYER', 'inlet', '{weir_cd, orifice_cd}', NULL, 0, NULL, 6, 12, 3, 143),
+(47, 'OUTLAYER', 'pinlet', '{weir_cd, orifice_cd}', NULL, 0, NULL, 6, 12, 3, 143);
 
 
 INSERT INTO sys_message (id, "text") VALUES
@@ -229,7 +232,7 @@ INSERT INTO edit_typevalue
 VALUES(18, 'options_rain_format', '1', 'Volume', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(19, 'plg_swmm_options', '0', 'Only gullies', NULL, NULL);
+VALUES(19, 'plg_swmm_options', '0', 'Only inlets', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(20, 'plg_swmm_options', '1', 'Complete network', NULL, NULL);
@@ -388,16 +391,16 @@ INSERT INTO edit_typevalue
 VALUES(73, 'options_losses_method', '0', 'NO LOSSES', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(74, 'dlg_options_layout', 'lyt_main_1_1', 'Project details', NULL, NULL);
+VALUES(74, 'dlg_options_layout', 'lyt_ibergis_options_1_1', 'Project details', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(75, 'dlg_options_layout', 'lyt_main_1_2', 'Numerical scheme', NULL, NULL);
+VALUES(75, 'dlg_options_layout', 'lyt_main_1_1', 'Numerical scheme', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(76, 'dlg_options_layout', 'lyt_main_2_1', 'Time && Simulation control', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(77, 'dlg_options_layout', 'lyt_main_2_2', 'Hydrological processes', NULL, NULL);
+VALUES(77, 'dlg_options_layout', 'lyt_main_1_2', 'Hydrological processes', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
 VALUES(78, 'inp_typevalue_outfall_type', 'FREE', 'FREE', NULL, NULL);
@@ -604,9 +607,6 @@ INSERT INTO edit_typevalue
 VALUES(145, 'inp_typevalue_file_type', 'RUNOFF', 'RUNOFF', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(146, 'result_results_raster', '0', 'No raster results', NULL, NULL);
-INSERT INTO edit_typevalue
-(rowid, typevalue, id, idval, descript, addparam)
 VALUES(147, 'result_results_raster', '1', 'Linear interpolation', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
@@ -625,193 +625,1022 @@ INSERT INTO edit_typevalue
 VALUES(152, 'culvert_type', 'RECTANGULAR', 'RECTANGULAR', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(153, 'dlg_options_layout', 'lyt_ibergis_1_1', 'Result options', NULL, NULL);
+VALUES(153, 'dlg_options_layout', 'lyt_ibergis_check_1_1', 'Check project - manning', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(154, 'dlg_options_layout', 'lyt_ibergis_1_2', 'Check project - manning', NULL, NULL);
+VALUES(154, 'dlg_options_layout', 'lyt_ibergis_check_1_2', 'Check project - roughness', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(155, 'dlg_options_layout', 'lyt_ibergis_2_1', 'Check project - roughness', NULL, NULL);
+VALUES(155, 'dlg_options_layout', 'lyt_ibergis_check_2_1', 'Check project - cellsize', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(156, 'dlg_options_layout', 'lyt_ibergis_2_2', 'Check project - cellsize', NULL, NULL);
+VALUES(156, 'dlg_options_layout', 'lyt_ibergis_check_2_2', 'Check project - mfactor', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(157, 'dlg_options_layout', 'lyt_ibergis_3_1', 'Check project - mfactor', NULL, NULL);
+VALUES(157, 'dlg_options_layout', 'lyt_ibergis_check_3_1', 'Check project - sfactor', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(158, 'dlg_options_layout', 'lyt_ibergis_3_2', 'Check project - sfactor', NULL, NULL);
+VALUES(158, 'dlg_options_layout', 'lyt_ibergis_check_3_2', 'Check project - ufactor', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(159, 'dlg_options_layout', 'lyt_ibergis_4_1', 'Check project - ufactor', NULL, NULL);
+VALUES(159, 'dlg_options_layout', 'lyt_ibergis_check_4_1', 'Check project - slope', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(160, 'dlg_options_layout', 'lyt_ibergis_4_2', 'Check project - slope', NULL, NULL);
+VALUES(160, 'dlg_options_layout', 'lyt_ibergis_check_4_2', 'Check project - outlet_vol', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(161, 'dlg_options_layout', 'lyt_ibergis_5_1', 'Check project - outlet_vol', NULL, NULL);
+VALUES(161, 'dlg_options_layout', 'lyt_ibergis_check_5_1', 'Check project - street_vol', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(162, 'dlg_options_layout', 'lyt_ibergis_5_2', 'Check project - street_vol', NULL, NULL);
+VALUES(162, 'dlg_options_layout', 'lyt_rpt_iber_1_1', 'Hydrodynamics', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(163, 'dlg_options_layout', 'lyt_rpt_iber_1_1', 'Hydrodynamics', NULL, NULL);
+VALUES(163, 'dlg_options_layout', 'lyt_rpt_iber_2_1', 'Hazard', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(164, 'dlg_options_layout', 'lyt_rpt_iber_2_1', 'Hazard', NULL, NULL);
+VALUES(164, 'dlg_options_layout', 'lyt_rpt_iber_2_2', 'Raster results', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(165, 'dlg_options_layout', 'lyt_rpt_iber_2_2', 'Raster results', NULL, NULL);
+VALUES(165, 'dlg_options_layout', 'lyt_rpt_iber_1_2', 'Maximums', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(166, 'dlg_options_layout', 'lyt_rpt_iber_1_2', 'Maximums', NULL, NULL);
+VALUES(166, 'dlg_options_layout', 'lyt_rpt_iber_1_3', 'Other results', NULL, NULL);
 INSERT INTO edit_typevalue
 (rowid, typevalue, id, idval, descript, addparam)
-VALUES(167, 'dlg_options_layout', 'lyt_rpt_iber_1_3', 'Other results', NULL, NULL);
+VALUES(167, 'dlg_options_layout', 'lyt_ibergis_check_5_2', 'Check project - weir_cd', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(168, 'dlg_options_layout', 'lyt_ibergis_check_6_1', 'Check project - orifice_cd', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(169, 'dlg_options_layout', 'lyt_rpt_iber_2_3', 'Raster results frame', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(170, 'dlg_options_layout', 'lyt_ibergis_raster_results_2_1', 'Depth', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(171, 'dlg_options_layout', 'lyt_ibergis_raster_results_3_1', 'Velocity', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(172, 'dlg_options_layout', 'lyt_ibergis_raster_results_4_1', 'Water Elevation', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(173, 'dlg_options_layout', 'lyt_ibergis_raster_results_5_1', 'Hazard ACA', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(174, 'dlg_options_layout', 'lyt_ibergis_raster_results_6_1', 'Severe Hazard RD9-2008', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(175, 'dlg_options_layout', 'lyt_ibergis_raster_results_7_1', 'Local Time Step', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(176, 'dlg_options_layout', 'lyt_ibergis_raster_results_8_1', 'Specific Discharge X', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(177, 'dlg_options_layout', 'lyt_ibergis_raster_results_9_1', 'Specific Discharge Y', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(178, 'dlg_options_layout', 'lyt_ibergis_raster_results_10_1', 'Energy', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(179, 'dlg_options_layout', 'lyt_ibergis_raster_results_11_1', 'Froude', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(180, 'dlg_options_layout', 'lyt_ibergis_raster_results_12_1', 'Infiltration Rate', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(181, 'dlg_options_layout', 'lyt_ibergis_raster_results_13_1', 'Rain Depth', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(182, 'dlg_options_layout', 'lyt_ibergis_raster_results_14_1', 'Velocity X', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(183, 'dlg_options_layout', 'lyt_ibergis_raster_results_15_1', 'Velocity Y', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(184, 'dlg_options_layout', 'lyt_ibergis_raster_results_16_1', 'Water Permanence', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(185, 'dlg_options_layout', 'lyt_ibergis_raster_results_2_2', 'MAX Depth', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(186, 'dlg_options_layout', 'lyt_ibergis_raster_results_3_2', 'MAX Velocity', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(187, 'dlg_options_layout', 'lyt_ibergis_raster_results_4_2', 'MAX Water Elevation', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(188, 'dlg_options_layout', 'lyt_ibergis_raster_results_5_2', 'MAX Hazard ACA', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(189, 'dlg_options_layout', 'lyt_ibergis_raster_results_6_2', 'MAX Severe Hazard RD9-2008', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(190, 'dlg_options_layout', 'lyt_ibergis_raster_results_7_2', 'MAX Local Time Step', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(191, 'dlg_options_layout', 'lyt_ibergis_raster_results_8_2', 'MAX Specific Discharge', NULL, '{"collapsable": true, "collapsed": true}');
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(192, 'result_raster_colorramp', '0', 'Inverted Rainbow', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(193, 'result_raster_colorramp', '1', 'Blues', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(194, 'dlg_options_layout', 'lyt_ibergis_raster_results_1_1', 'Raster general options', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(195, 'result_raster_symbmode', '0', 'Min/Max of each band', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(196, 'result_raster_symbmode', '1', 'Min/Max for all bands', NULL, NULL);
+INSERT INTO edit_typevalue
+(rowid, typevalue, id, idval, descript, addparam)
+VALUES(197, 'result_raster_symbmode', '2', 'Custom Min/Max', NULL, NULL);
 
 
+-- GROUND
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'landuse', NULL, NULL, 'text', 'combo', 'landuse', 'idval of cat_landuses', 0, 1, 'SELECT idval as id, idval FROM cat_landuses', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_landuse", "nullValue": false, "keyColumn": "id", "valueColumn": "idval", "filterExpression": null}}
-');
+VALUES('ground', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'outlet_code', NULL, NULL, 'text', 'text', 'outlet_code', 'code of inp_junction', 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "inp_junction", "nullValue": false, "keyColumn": "fid", "valueColumn": "code", "filterExpression": null}}');
+VALUES('ground', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('ground', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'cellsize', NULL, NULL, 'real', 'text', 'cellsize', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('ground', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'custom_roughness', NULL, NULL, 'real', 'text', 'custom_roughness', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('ground', 'form_feature', 'tabdata', 'cellsize', NULL, 5, 'real', 'text', 'cellsize', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'scs_cn', NULL, NULL, 'real', 'text', 'scs_cn', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, '65', NULL, NULL);
+VALUES('ground', 'form_feature', 'tabdata', 'annotation', NULL, 6, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+VALUES('ground', 'form_feature', 'tabdata', 'landuse', NULL, 7, 'text', 'combo', 'landuse', 'idval of cat_landuses', 0, 1, 'SELECT idval as id, idval FROM cat_landuses', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_landuses", "nullValue": true, "keyColumn": "id", "valueColumn": "idval", "filterExpression": null}}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+VALUES('ground', 'form_feature', 'tabdata', 'custom_roughness', NULL, 8, 'real', 'text', 'custom_roughness', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'decript', NULL, NULL, 'test', 'text', 'decript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('ground', 'form_feature', 'tabdata', 'scs_cn', NULL, 9, 'real', 'text', 'scs_cn', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, '65', NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'cellsize', NULL, NULL, 'real', 'text', 'cellsize', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('ground', 'form_feature', 'tabdata', 'geom', NULL, 10, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- ROOF
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'elev', NULL, NULL, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'slope', NULL, NULL, 'real', 'text', 'slope', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'width', NULL, NULL, 'real', 'text', 'width', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'roughness', NULL, NULL, 'real', 'text', 'roughness', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'descript', NULL, 4, 'test', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'isconnected', NULL, NULL, 'integer', 'text', 'isconnected', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'slope', NULL, 5, 'real', 'text', 'slope', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'width', NULL, 6, 'real', 'text', 'width', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'roughness', NULL, 7, 'real', 'text', 'roughness', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('ground', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'isconnected', NULL, 8, 'integer', 'text', 'isconnected', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'outlet_code', NULL, 9, 'text', 'text', 'outlet_code', 'code of inp_junction', 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "inp_junction", "nullValue": false, "keyColumn": "fid", "valueColumn": "code", "filterExpression": null}}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'outlet_vol', NULL, 10, 'text', 'text', 'outlet_vol', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'street_vol', NULL, 11, 'real', 'text', 'street_vol', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('roof', 'form_feature', 'tabdata', 'infiltr_vol', NULL, 12, 'real', 'text', 'infiltr_vol', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('roof', 'form_feature', 'tabdata', 'annotation', NULL, 13, 'text', 'text', 'annotation', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('roof', 'form_feature', 'tabdata', 'geom', NULL, 14, 'geometry', 'text', 'geom', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+
+-- MESH_ANCHOR_POINTS
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('mesh_anchor_points', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('mesh_anchor_points', 'form_feature', 'tabdata', 'geom', NULL, 2, 'geometry', 'text', 'geom', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('mesh_anchor_points', 'form_feature', 'tabdata', 'cellsize', NULL, 3, 'real', 'text', 'cellsize', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('mesh_anchor_points', 'form_feature', 'tabdata', 'z_value', NULL, 4, 'real', 'text', 'z_value', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- MESH_ANCHOR_LINES
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('mesh_anchor_lines', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('mesh_anchor_lines', 'form_feature', 'tabdata', 'geom', NULL, 2, 'geometry', 'text', 'geom', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('mesh_anchor_lines', 'form_feature', 'tabdata', 'cellsize', NULL, 3, 'real', 'text', 'cellsize', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+
+-- INLET
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'outlet_node', NULL, 5, 'text', 'text', 'outlet_node', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'outlet_type', NULL, 6, 'text', 'combo', 'outlet_type', NULL, NULL, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_inlet_outlet_type''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'top_elev', NULL, 7, 'real', 'text', 'top_elev', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'width', NULL, 8, 'real', 'text', 'width', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'length', NULL, 9, 'real', 'text', 'length', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'depth', NULL, 10, 'real', 'text', 'depth', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'method', NULL, 11, 'text', 'combo', 'method', NULL, NULL, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_method''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'weir_cd', NULL, 12, 'integer', 'text', 'weir_cd', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'orifice_cd', NULL, 13, 'integer', 'text', 'orifice_cd', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'a_param', NULL, 14, 'integer', 'text', 'a_param', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'b_param', NULL, 15, 'integer', 'text', 'b_param', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'efficiency', NULL, 16, 'integer', 'text', 'efficiency', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'annotation', NULL, 17, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inlet', 'form_feature', 'tabdata', 'geom', NULL, 18, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- HYETOGRAPH
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('hyetograph', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('hyetograph', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('hyetograph', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('hyetograph', 'form_feature', 'tabdata', 'timeseries', NULL, 4, 'text', 'combo', 'timeseries', 'idval of cat_timeseries', 0, 1, 'SELECT idval as id, idval FROM cat_timeseries', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_timeseries", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('hyetograph', 'form_feature', 'tabdata', 'geom', NULL, 5, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- BOUNDARY_CONDITIONS
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'bscenario', NULL, 5, 'text', 'combo', 'bscenario', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_bscenario', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_bscenario", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'boundary_type', NULL, 6, 'text', 'combo', 'boundary_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_boundary_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'timeseries', NULL, 7, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_timeseries", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'other1', NULL, 8, 'real', 'text', 'other1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'other2', NULL, 9, 'real', 'text', 'other2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('boundary_conditions', 'form_feature', 'tabdata', 'geom', NULL, 10, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- CULVERT
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'culvert_type', NULL, 4, 'text', 'combo', 'culvert_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''culvert_type''', 0, 1, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'geom1', NULL, 5, 'real', 'text', 'geom1', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'geom2', NULL, 6, 'real', 'text', 'geom2', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'z_start', NULL, 7, 'real', 'text', 'z_start', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'z_end', NULL, 8, 'real', 'text', 'z_end', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'manning', NULL, 9, 'real', 'text', 'manning', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'iscalculate', NULL, 10, 'integer', 'text', 'iscalculate', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('culvert', 'form_feature', 'tabdata', 'collapse_moment', NULL, 11, 'real', 'text', 'collapse_moment', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+
+-- PINLET
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'outlet_node', NULL, 5, 'text', 'text', 'outlet_node', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'outlet_type', NULL, 6, 'text', 'combo', 'outlet_type', NULL, NULL, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_inlet_outlet_type''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'top_elev', NULL, 7, 'real', 'text', 'top_elev', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'width', NULL, 8, 'real', 'text', 'width', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'length', NULL, 9, 'real', 'text', 'length', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'depth', NULL, 10, 'real', 'text', 'depth', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'method', NULL, 11, 'text', 'combo', 'method', NULL, NULL, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_method''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'weir_cd', NULL, 12, 'integer', 'text', 'weir_cd', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'orifice_cd', NULL, 13, 'integer', 'text', 'orifice_cd', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'a_param', NULL, 14, 'integer', 'text', 'a_param', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'b_param', NULL, 15, 'integer', 'text', 'b_param', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'efficiency', NULL, 16, 'integer', 'text', 'efficiency', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'annotation', NULL, 17, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('pinlet', 'form_feature', 'tabdata', 'geom', NULL, 18, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- BRIDGE
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('bridge', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('bridge', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('bridge', 'form_feature', 'tabdata', 'deck_cd', NULL, 3, 'real', 'text', 'deck_cd', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, 1.7, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('bridge', 'form_feature', 'tabdata', 'freeflow_cd', NULL, 4, 'real', 'text', 'freeflow_cd', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, 0.6, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('bridge', 'form_feature', 'tabdata', 'sumergeflow_cd', NULL, 5, 'real', 'text', 'sumergeflow_cd', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, 0.8, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('bridge', 'form_feature', 'tabdata', 'gaugenumber', NULL, 6, 'integer', 'text', 'gaugenumber', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, 1, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('bridge', 'form_feature', 'tabdata', 'length', NULL, 7, 'real', 'text', 'length', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('bridge', 'form_feature', 'tabdata', 'descript', NULL, 8, 'text', 'text', 'descript', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('bridge', 'form_feature', 'tabdata', 'geom', NULL, 9, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_CONDUIT
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', 'autonumeric', 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'node_1', NULL, 5, 'text', 'text', 'node_1', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'node_2', NULL, 6, 'text', 'text', 'node_2', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'shape', NULL, 7, 'text', 'combo', 'shape', NULL, 1, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_shape''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom1', NULL, 8, 'real', 'text', 'geom1', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom2', NULL, 9, 'real', 'text', 'geom2', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom3', NULL, 10, 'real', 'text', 'geom3', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom4', NULL, 11, 'real', 'text', 'geom4', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'curve_transect', NULL, 12, 'text', 'combo', 'curve_transect', NULL, 0, 1, 'SELECT idval as id, idval from cat_transects', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'roughness', NULL, 13, 'real', 'text', 'roughness', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'length', NULL, 14, 'real', 'text', 'length', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'z1', NULL, 15, 'real', 'text', 'z1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'z2', NULL, 16, 'real', 'text', 'z2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'q0', NULL, 17, 'real', 'text', 'q0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'qmax', NULL, 18, 'real', 'text', 'qmax', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'barrels', NULL, 19, 'real', 'text', 'barrels', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'culvert', NULL, 20, 'text', 'text', 'culvert', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'kentry', NULL, 21, 'real', 'text', 'kentry', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'kexit', NULL, 22, 'real', 'text', 'kexit', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'kavg', NULL, 23, 'real', 'text', 'kavg', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'flap', NULL, 24, 'text', 'combo', 'flap', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_value_yesno''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'seepage', NULL, 25, 'text', 'text', 'seepage', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'annotation', NULL, 26, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom', NULL, 27, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_OUTLET
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'node_1', NULL, 5, 'text', 'text', 'node_1', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'node_2', NULL, 6, 'text', 'text', 'node_2', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'flap', NULL, 7, 'text', 'combo', 'flap', NULL, NULL, 1, 'SELECT id, idval FROM inp_typevalue WHERE typevalue = ''inp_typevalue_yesno''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'outlet_type', NULL, 8, 'text', 'combo', 'outlet_type', NULL, NULL, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_outlet_type''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'offsetval', NULL, 9, 'real', 'text', 'offsetval', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'cd1', NULL, 10, 'real', 'text', 'cd1', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'cd2', NULL, 11, 'real', 'text', 'cd2', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'curve', NULL, 12, 'text', 'combo', 'curve', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_curve', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'annotation', NULL, 13, 'text', 'text', 'annotation', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outlet', 'form_feature', 'tabdata', 'geom', NULL, 14, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_ORIFICE
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'node_1', NULL, 5, 'text', 'text', 'node_1', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'node_2', NULL, 6, 'text', 'text', 'node_2', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'ori_type', NULL, 7, 'text', 'combo', 'ori_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_ori_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'shape', NULL, 8, 'text', 'combo', 'shape', NULL, 1, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_shape'' AND id IN (''CIRCULAR'', ''RECT_CLOSED'')', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'geom1', NULL, 9, 'real', 'text', 'geom1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'geom2', NULL, 10, 'real', 'text', 'geom2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'offsetval', NULL, 11, 'real', 'text', 'offsetval', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'cd1', NULL, 12, 'real', 'text', 'cd1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'flap', NULL, 13, 'text', 'combo', 'flap', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_value_yesno''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'close_time', NULL, 14, 'real', 'text', 'close_time', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'annotation', NULL, 15, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_orifice', 'form_feature', 'tabdata', 'geom', NULL, 16, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_WEIR
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'node_1', NULL, 5, 'text', 'text', 'node_1', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'node_2', NULL, 6, 'text', 'text', 'node_2', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'weir_type', NULL, 7, 'text', 'combo', 'weir_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_weir_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'offsetval', NULL, 8, 'real', 'text', 'offsetval', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'geom1', NULL, 9, 'real', 'text', 'geom1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'geom2', NULL, 10, 'real', 'text', 'geom2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'geom3', NULL, 11, 'real', 'text', 'geom3', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'geom4', NULL, 12, 'real', 'text', 'geom4', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'elev', NULL, 13, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'cd', NULL, 14, 'real', 'text', 'cd', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'cd2', NULL, 15, 'real', 'text', 'cd2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'flap', NULL, 16, 'text', 'combo', 'flap', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_value_yesno''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'ec', NULL, 17, 'integer', 'text', 'ec', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'surcharge', NULL, 18, 'text', 'text', 'surcharge', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'road_width', NULL, 19, 'real', 'text', 'road_width', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'road_surf', NULL, 20, 'text', 'combo', 'road_surf', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_road_surf''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'curve', NULL, 21, 'text', 'combo', 'curve', 'idval of cat_curve', 0, 1, 'SELECT idval as id, idval FROM cat_curve', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'crest_height', NULL, 22, 'real', 'text', 'crest_height', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'annotation', NULL, 23, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_weir', 'form_feature', 'tabdata', 'geom', NULL, 24, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_PUMP
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'node_1', NULL, 5, 'text', 'text', 'node_1', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'node_2', NULL, 6, 'text', 'text', 'node_2', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'curve', NULL, 7, 'text', 'combo', 'curve', 'idval of cat_curve', 0, 1, 'SELECT idval as id, idval FROM cat_curve', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'state', NULL, 8, 'text', 'combo', 'state', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_state_pump''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'startup', NULL, 9, 'real', 'text', 'startup', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'shutoff', NULL, 10, 'real', 'text', 'shutoff', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'annotation', NULL, 11, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_pump', 'form_feature', 'tabdata', 'geom', NULL, 12, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_OUTFALL
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'elev', NULL, 4, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'gate', NULL, 5, 'text', 'combo', 'gate', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_value_yesno''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'outfall_type', NULL, 6, 'text', 'combo', 'outfall_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_outfall_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'stage', NULL, 7, 'real', 'text', 'stage', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'curve', NULL, 8, 'text', 'combo', 'curve', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_curve', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'timeseries', NULL, 9, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'routeto', NULL, 10, 'text', 'text', 'routeto', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'annotation', NULL, 11, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_outfall', 'form_feature', 'tabdata', 'geom', NULL, 12, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_DIVIDER
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'elev', NULL, 5, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'ymax', NULL, 6, 'real', 'text', 'ymax', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'y0', NULL, 7, 'real', 'text', 'y0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'ysur', NULL, 8, 'real', 'text', 'ysur', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'apond', NULL, 9, 'real', 'text', 'apond', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'divert_arc', NULL, 10, 'text', 'text', 'divert_arc', 'code of inp_conduit', 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'divider_type', NULL, 11, 'text', 'combo', 'divider_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_divider_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'cutoff_flow', NULL, 12, 'real', 'text', 'cutoff_flow', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'qmin', NULL, 13, 'real', 'text', 'qmin', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'curve', NULL, 14, 'text', 'combo', 'curve', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_curve', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'q0', NULL, 15, 'real', 'text', 'q0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'qmax', NULL, 16, 'real', 'text', 'qmax', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'annotation', NULL, 17, 'text', 'text', 'annotation', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_divider', 'form_feature', 'tabdata', 'geom', NULL, 18, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_STORAGE
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'elev', NULL, 5, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'ymax', NULL, 6, 'real', 'text', 'ymax', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'y0', NULL, 7, 'real', 'text', 'y0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'ysur', NULL, 8, 'real', 'text', 'ysur', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'storage_type', NULL, 9, 'text', 'combo', 'storage_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_storage_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'curve', NULL, 10, 'text', 'combo', 'curve', 'idval of cat_curve', 0, 1, 'SELECT idval as id, idval FROM cat_curve', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'a1', NULL, 11, 'real', 'text', 'a1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'a2', NULL, 12, 'real', 'text', 'a2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'a0', NULL, 13, 'real', 'text', 'a0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'fevap', NULL, 14, 'real', 'text', 'fevap', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'psi', NULL, 15, 'real', 'text', 'psi', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'ksat', NULL, 16, 'real', 'text', 'ksat', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'imd', NULL, 17, 'real', 'text', 'imd', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'annotation', NULL, 18, 'text', 'text', 'annotation', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_storage', 'form_feature', 'tabdata', 'geom', NULL, 19, 'geometry', 'text', 'geom', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_JUNCTION
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'elev', NULL, 5, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'ymax', NULL, 6, 'real', 'text', 'ymax', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'y0', NULL, 7, 'real', 'text', 'y0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'ysur', NULL, 8, 'real', 'text', 'ysur', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'apond', NULL, 9, 'real', 'text', 'apond', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'annotation', NULL, 10, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_junction', 'form_feature', 'tabdata', 'geom', NULL, 11, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+
+-- INP_DWF
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'format', NULL, 5, 'text', 'text', 'format', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'avg_value', NULL, 6, 'real', 'text', 'avg_value', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern1', NULL, 7, 'text', 'combo', 'pattern1', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern2', NULL, 8, 'text', 'combo', 'pattern2', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern3', NULL, 9, 'text', 'combo', 'pattern3', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern4', NULL, 10, 'text', 'combo', 'pattern4', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+
+-- INP_INFLOW
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'fid', NULL, 1, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'code', NULL, 2, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'custom_code', NULL, 3, 'text', 'text', 'custom_code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'descript', NULL, 4, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'timeseries', NULL, 5, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_timeseries", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'format', NULL, 6, 'text', 'text', 'format', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'mfactor', NULL, 7, 'real', 'text', 'mfactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'sfactor', NULL, 8, 'real', 'text', 'sfactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'ufactor', NULL, 9, 'real', 'text', 'ufactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'base', NULL, 10, 'real', 'text', 'base', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'pattern', NULL, 11, 'text', 'combo', 'pattern', 'idval of cat_pattern', 0, 1, 'SELECT idval as id, idval FROM cat_pattern', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, '{"setMultiline": false,"valueRelation": {"activated": true, "layer": "cat_pattern", "nullValue": true, "keyColumn": "idval", "valueColumn": "idval", "filterExpression": null}}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('inp_inflow', 'form_feature', 'tabdata', 'type', NULL, 12, 'text', 'text', 'type', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+
+
+-- OTHERS
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_timeseries', 'form_feature', 'tabdata', 'fname', NULL, NULL, 'text', 'text', 'fname', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('mesh_anchor_points', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('mesh_anchor_lines', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'outlet_type', NULL, NULL, 'text', 'text', 'outlet_type', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'outlet_vol', NULL, NULL, 'text', 'text', 'outlet_vol', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'street_vol', NULL, NULL, 'real', 'text', 'street_vol', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'infiltr_vol', NULL, NULL, 'real', 'text', 'infiltr_vol', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'totalvol', NULL, NULL, 'real', 'text', 'totalvol', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'inletvol', NULL, NULL, 'real', 'text', 'inletvol', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'lossvol', NULL, NULL, 'real', 'text', 'lossvol', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, '0.2', NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'flap', NULL, NULL, 'text', 'combo', 'flap', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_value_yesno''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'close_time', NULL, NULL, 'real', 'text', 'close_time', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_curve_value', 'form_feature', 'tabdata', 'ycoord', NULL, NULL, 'real', 'text', 'ycoord', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'ec', NULL, NULL, 'integer', 'text', 'ec', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'surcharge', NULL, NULL, 'text', 'text', 'surcharge', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'y0', NULL, NULL, 'real', 'text', 'y0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'ysur', NULL, NULL, 'real', 'text', 'ysur', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'apond', NULL, NULL, 'real', 'text', 'apond', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('inp_files', 'form_feature', 'tabdata', 'actio_type', NULL, NULL, 'text', 'combo', 'actio_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_file_action''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
@@ -826,22 +1655,7 @@ INSERT INTO config_form_fields
 VALUES('cat_file', 'form_feature', 'tabdata', 'losses', NULL, NULL, 'text', 'text', 'losses', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('mesh_anchor_lines', 'form_feature', 'tabdata', 'cellsize', NULL, NULL, 'real', 'text', 'cellsize', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'boundary_type', NULL, NULL, 'text', 'combo', 'boundary_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_boundary_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'other1', NULL, NULL, 'real', 'text', 'other1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'other2', NULL, NULL, 'real', 'text', 'other2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('inp_eri', 'form_feature', 'tabdata', 'shape', NULL, NULL, 'text', 'text', 'shape', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'weir_cd', NULL, NULL, 'integer', 'text', 'weir_cd', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_pattern', 'form_feature', 'tabdata', 'idval', NULL, NULL, 'text', 'text', 'idval', NULL, 1, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
@@ -853,199 +1667,16 @@ INSERT INTO config_form_fields
 VALUES('cat_raster', 'form_feature', 'tabdata', 'idval', NULL, NULL, 'text', 'text', 'idval', NULL, 1, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'elev', NULL, NULL, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'ymax', NULL, NULL, 'real', 'text', 'ymax', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'divert_arc', NULL, NULL, 'text', 'text', 'divert_arc', 'code of inp_conduit', 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'curve', NULL, NULL, 'text', 'combo', 'curve', 'idval of cat_curve', 0, 1, 'SELECT idval as id, idval FROM cat_curve', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'y0', NULL, NULL, 'real', 'text', 'y0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'ysur', NULL, NULL, 'real', 'text', 'ysur', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_timeseries', 'form_feature', 'tabdata', 'idval', NULL, NULL, 'text', 'text', 'idval', NULL, 1, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'storage_type', NULL, NULL, 'text', 'combo', 'storage_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_storage_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'a1', NULL, NULL, 'real', 'text', 'a1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'a2', NULL, NULL, 'real', 'text', 'a2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'a0', NULL, NULL, 'real', 'text', 'a0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'geom1', NULL, NULL, 'real', 'text', 'geom1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'geom2', NULL, NULL, 'real', 'text', 'geom2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_transects', 'form_feature', 'tabdata', 'idval', NULL, NULL, 'text', 'text', 'idval', NULL, 1, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'geom3', NULL, NULL, 'real', 'text', 'geom3', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'geom4', NULL, NULL, 'real', 'text', 'geom4', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'elev', NULL, NULL, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'cd2', NULL, NULL, 'real', 'text', 'cd2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'orifice_cd', NULL, NULL, 'integer', 'text', 'orifice_cd', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'cd1', NULL, NULL, 'real', 'text', 'cd1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_pattern', 'form_feature', 'tabdata', 'pattern_type', NULL, NULL, 'text', 'text', 'pattern_type', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_pattern_value', 'form_feature', 'tabdata', 'timestep', NULL, NULL, 'datetime', 'text', 'timestep', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'elev', NULL, NULL, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'gate', NULL, NULL, 'text', 'combo', 'gate', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_value_yesno''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'outfall_type', NULL, NULL, 'text', 'combo', 'outfall_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_outfall_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'stage', NULL, NULL, 'real', 'text', 'stage', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'routeto', NULL, NULL, 'text', 'text', 'routeto', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'elev', NULL, NULL, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'ymax', NULL, NULL, 'real', 'text', 'ymax', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'y0', NULL, NULL, 'real', 'text', 'y0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'ysur', NULL, NULL, 'real', 'text', 'ysur', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'apond', NULL, NULL, 'real', 'text', 'apond', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'divider_type', NULL, NULL, 'text', 'combo', 'divider_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_divider_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'node_1', NULL, NULL, 'text', 'text', 'node_1', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'node_2', NULL, NULL, 'text', 'text', 'node_2', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('hyetograph', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'weir_type', NULL, NULL, 'text', 'combo', 'weir_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_weir_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'offsetval', NULL, NULL, 'real', 'text', 'offsetval', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('hyetograph', 'form_feature', 'tabdata', 'timeseries', NULL, NULL, 'text', 'combo', 'timeseries', 'idval of cat_timeseries', 0, 1, 'SELECT idval as id, idval FROM cat_timeseries', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'curve', NULL, NULL, 'text', 'combo', 'curve', 'idval of cat_curve', 0, 1, 'SELECT idval as id, idval FROM cat_curve', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'curve', NULL, NULL, 'text', 'combo', 'curve', 'idval of cat_curve', 0, 1, 'SELECT idval as id, idval FROM cat_curve', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'pattern', NULL, NULL, 'text', 'combo', 'pattern', 'idval of cat_pattern', 0, 1, 'SELECT idval as id, idval FROM cat_pattern', 0, 0, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'road_width', NULL, NULL, 'real', 'text', 'road_width', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'road_surf', NULL, NULL, 'text', 'combo', 'road_surf', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_road_surf''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'crest_height', NULL, NULL, 'real', 'text', 'crest_height', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'end_coeff', NULL, NULL, 'real', 'text', 'end_coeff', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'sfactor', NULL, NULL, 'real', 'text', 'sfactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'ufactor', NULL, NULL, 'real', 'text', 'ufactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'base', NULL, NULL, 'real', 'text', 'base', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('hyetograph', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_bscenario', 'form_feature', 'tabdata', 'name', NULL, NULL, 'text', 'text', 'name', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
@@ -1057,91 +1688,13 @@ INSERT INTO config_form_fields
 VALUES('cat_file', 'form_feature', 'tabdata', 'name', NULL, NULL, 'text', 'text', 'name', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_landuses', 'form_feature', 'tabdata', 'idval', NULL, NULL, 'text', 'text', 'idval', NULL, 1, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'roughness', NULL, NULL, 'real', 'text', 'roughness', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'fid', NULL, NULL, 'integer', 'text', 'fid', NULL, 1, 0, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'type', NULL, NULL, 'text', 'text', 'type', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_bscenario', 'form_feature', 'tabdata', 'active', NULL, NULL, 'integer', 'text', 'active', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_file', 'form_feature', 'tabdata', 'iber2d', NULL, NULL, 'text', 'text', 'iber2d', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'a_param', NULL, NULL, 'integer', 'text', 'a_param', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'b_param', NULL, NULL, 'integer', 'text', 'b_param', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'efficiency', NULL, NULL, 'integer', 'text', 'efficiency', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'node_1', NULL, NULL, 'text', 'text', 'node_1', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'node_2', NULL, NULL, 'text', 'text', 'node_2', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'node_1', NULL, NULL, 'text', 'text', 'node_1', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'node_2', NULL, NULL, 'text', 'text', 'node_2', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'ori_type', NULL, NULL, 'text', 'combo', 'ori_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_ori_type''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'shape', NULL, NULL, 'text', 'combo', 'shape', NULL, 1, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_shape'' AND id IN (''CIRCULAR'', ''RECT_CLOSED'')', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'geom1', NULL, NULL, 'real', 'text', 'geom1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'geom2', NULL, NULL, 'real', 'text', 'geom2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'offsetval', NULL, NULL, 'real', 'text', 'offsetval', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_landuses', 'form_feature', 'tabdata', 'id', NULL, NULL, 'integer', 'text', 'id', NULL, 1, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
@@ -1180,21 +1733,6 @@ INSERT INTO config_form_fields
 VALUES('cat_transects_value', 'form_feature', 'tabdata', 'id', NULL, NULL, 'integer', 'text', 'id', NULL, 1, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'length', NULL, NULL, 'real', 'text', 'length', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'z1', NULL, NULL, 'real', 'text', 'z1', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'z2', NULL, NULL, 'real', 'text', 'z2', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'q0', NULL, NULL, 'real', 'text', 'q0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'qmax', NULL, NULL, 'real', 'text', 'qmax', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_controls', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
@@ -1204,19 +1742,10 @@ INSERT INTO config_form_fields
 VALUES('cat_raster_value', 'form_feature', 'tabdata', 'fname', NULL, NULL, 'text', 'text', 'fname', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'barrels', NULL, NULL, 'real', 'text', 'barrels', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_pattern_value', 'form_feature', 'tabdata', 'value', NULL, NULL, 'real', 'text', 'value', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_raster', 'form_feature', 'tabdata', 'raster_type', NULL, NULL, 'text', 'text', 'raster_type', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'culvert', NULL, NULL, 'text', 'text', 'culvert', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('config_param_user', 'form_feature', 'tabdata', 'parameter', NULL, NULL, 'text', 'text', 'parameter', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
@@ -1234,58 +1763,22 @@ INSERT INTO config_form_fields
 VALUES('cat_curve_value', 'form_feature', 'tabdata', 'xcoord', NULL, NULL, 'real', 'text', 'xcoord', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'state', NULL, NULL, 'text', 'combo', 'state', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_state_pump''', 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_name', 'lyt_ibergis_options_1_1', 1, 'string', 'text', 'Project name:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Name of the project', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'startup', NULL, NULL, 'real', 'text', 'startup', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_descript', 'lyt_ibergis_options_1_1', 2, 'string', 'text', 'Description:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Description of the project', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_pump', 'form_feature', 'tabdata', 'shutoff', NULL, NULL, 'real', 'text', 'shutoff', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_user', 'lyt_ibergis_options_1_1', 3, 'string', 'text', 'User:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Nombre de usuario', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'cutoff_flow', NULL, NULL, 'real', 'text', 'cutoff_flow', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_tstamp', 'lyt_ibergis_options_1_1', 4, 'date', 'datetime', 'Creation date:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Fecha de creación', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'qmin', NULL, NULL, 'real', 'text', 'qmin', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_options', 'project_version', 'lyt_ibergis_options_1_1', 5, 'string', 'text', 'Version:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Versión del proyecto', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'q0', NULL, NULL, 'real', 'text', 'q0', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'elev', NULL, NULL, 'real', 'text', 'elev', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'ymax', NULL, NULL, 'real', 'text', 'ymax', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'avg_value', NULL, NULL, 'real', 'text', 'avg_value', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'baseline', NULL, NULL, 'text', 'text', 'baseline', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'format', NULL, NULL, 'text', 'text', 'format', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'mfactor', NULL, NULL, 'real', 'text', 'mfactor', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_name', 'lyt_main_1_1', 1, 'string', 'text', 'Project name:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Name of the project', NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_descript', 'lyt_main_1_1', 2, 'string', 'text', 'Description:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Description of the project', NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_user', 'lyt_main_1_1', 3, 'string', 'text', 'User:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Nombre de usuario', NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_tstamp', 'lyt_main_1_1', 4, 'date', 'datetime', 'Creation date:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Fecha de creación', NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'project_version', 'lyt_main_1_1', 5, 'string', 'text', 'Version:', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, 'Versión del proyecto', NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_delta_time', 'lyt_main_1_2', 3, 'integer', 'text', 'Max time increment [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Increase of maximum time', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_delta_time', 'lyt_main_1_1', 3, 'integer', 'text', 'Max time increment [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Increase of maximum time', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_tmax', 'lyt_main_2_1', 2, 'integer', 'text', 'Max simulation time [s]', NULL, 0, 0, NULL, NULL, NULL, 1, NULL, NULL, '10800', 'Maximum time of simulation', NULL);
@@ -1294,16 +1787,16 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_rank_results', 'lyt_main_2_1', 3, 'integer', 'text', 'Results 2D time interval [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '300', 'Writing time for 2D results', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_order', 'lyt_main_1_2', 1, 'integer', 'combo', 'Numerical Scheme', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_order''', 0, 0, 0, NULL, NULL, '10', 'Numerical scheme', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_order', 'lyt_main_1_1', 1, 'integer', 'combo', 'Numerical Scheme', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_order''', 0, 0, 0, NULL, NULL, '10', 'Numerical scheme', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_cfl', 'lyt_main_1_2', 2, 'integer', 'text', 'CFL', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.45', 'CFL', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_cfl', 'lyt_main_1_1', 2, 'integer', 'text', 'CFL', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.45', 'CFL', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_wetdry_edge', 'lyt_main_1_2', 4, 'double', 'text', 'Wet-dry limit [m]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.0001', 'Wet-dry limit', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_wetdry_edge', 'lyt_main_1_1', 4, 'double', 'text', 'Wet-dry limit [m]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.0001', 'Wet-dry limit', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_viscosity_coeff', 'lyt_main_1_2', 5, 'double', 'text', 'Molecular viscosity [m2/s]', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, '0.000001', 'Molecular viscosity of the fluid', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_viscosity_coeff', 'lyt_main_1_1', 5, 'double', 'text', 'Molecular viscosity [m2/s]', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, '0.000001', 'Molecular viscosity of the fluid', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_t0', 'lyt_main_2_1', 1, 'integer', 'text', 'Initial time [s]', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0', 'Initial time for hydrological processes', NULL);
@@ -1324,10 +1817,10 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_main', 'options_timeseries', 'lyt_main_2_1', 4, 'integer', 'text', 'Timeseries time interval [s]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '300', 'Writing time for timeseries results', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_method', 'lyt_main_2_2', 5, 'integer', 'combo', 'Losses method', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_losses_method''', 0, 0, 0, NULL, NULL, '2', 'Method used for losses (0 disabled, 2-SCS)', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_method', 'lyt_main_1_2', 5, 'integer', 'combo', 'Losses method', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_losses_method''', 0, 0, 0, NULL, NULL, '2', 'Method used for losses (0 disabled, 2-SCS)', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_rain_class', 'lyt_main_2_2', 2, 'integer', 'combo', 'Precipitation', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_rain_class''', 0, 0, 0, NULL, NULL, '0', 'Type of rain', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_rain_class', 'lyt_main_1_2', 2, 'integer', 'combo', 'Precipitation', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''options_rain_class''', 0, 0, 0, NULL, NULL, '0', 'Type of rain', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_depth', 'lyt_rpt_iber_1_1', 1, 'boolean', 'check', 'Depth', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Depth of the results', NULL);
@@ -1396,7 +1889,7 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_plugins', 'plg_swmm', 'lyt_plugins_1_1', 1, 'boolean', 'check', NULL, NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_plugins', 'plg_swmm_options', 'lyt_plugins_1_1', 2, 'integer', 'combo', 'Only gullies or complete network:', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''plg_swmm_options''', 0, 0, 0, NULL, NULL, '1', 'Only gullies or complete network', NULL);
+VALUES('dlg_options', 'form_options', 'tab_plugins', 'plg_swmm_options', 'lyt_plugins_1_1', 2, 'integer', 'combo', 'Only inlets or complete network:', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''plg_swmm_options''', 0, 0, 0, NULL, NULL, '1', 'Only inlets or complete network', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_plugins', 'plg_swmm_outlet', 'lyt_plugins_1_1', 3, 'boolean', 'check', 'Enable or disable outlet loss:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Enables outlet loss', NULL);
@@ -1420,10 +1913,10 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_inp_swmm', 'inp_options_start_date', 'lyt_swmm_inp_3_1', 2, 'date', 'datetime', 'Start date', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2017-01-01', 'Value of start date, which is the date when the simulation begins', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_inp_swmm', 'inp_options_report_start_date', 'lyt_swmm_inp_3_1', 3, 'date', 'datetime', 'Report start date', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2017-01-01', 'Value of report start date, which is the date when reporting of results is to begin', NULL);
+VALUES('dlg_options', 'form_options', 'tab_inp_swmm', 'inp_options_report_start_date', 'lyt_swmm_inp_3_1', 4, 'date', 'datetime', 'Report start date', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2017-01-01', 'Value of report start date, which is the date when reporting of results is to begin', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_inp_swmm', 'inp_options_end_date', 'lyt_swmm_inp_3_1', 4, 'date', 'datetime', 'End date', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2017-01-01', 'Value of end date, which is the date when the simulation is to end', NULL);
+VALUES('dlg_options', 'form_options', 'tab_inp_swmm', 'inp_options_end_date', 'lyt_swmm_inp_3_1', 3, 'date', 'datetime', 'End date', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2017-01-01', 'Value of end date, which is the date when the simulation is to end', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_inp_swmm', 'inp_options_report_step', 'lyt_swmm_inp_3_2', 1, 'string', 'linetext', 'Report step', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '00:05:00', 'Value of report step, which is the time interval for reporting of computed results', NULL);
@@ -1552,19 +2045,19 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_rpt_swmm', 'inp_report_links', 'lyt_swmm_rpt_1_2', 4, 'string', 'linetext', 'Timestep detailed links', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '', 'Value of links, which  gives a list of links whose results are to be reported', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_setallhyetografs', 'lyt_main_2_2', 3, 'integer', 'combo', 'Set rainfall for all hyetografs', NULL, 0, 1, 'SELECT group_concat(idval) AS id, group_concat(idval) AS idval from cat_timeseries WHERE times_type =''RELATIVE'' AND timser_type = ''RAINFALL'' ', 0, 1, 1, 'Rainfall timeseries (from cat_timeseries table)', '{"execute_on": "data"}', NULL, 'Set rainfall timeseries for all hyetografs', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_setallhyetografs', 'lyt_main_1_2', 3, 'integer', 'combo', 'Set rainfall for all hyetografs', NULL, 0, 1, 'SELECT group_concat(idval) AS id, group_concat(idval) AS idval from cat_timeseries WHERE times_type =''RELATIVE'' AND timser_type = ''RAINFALL'' ', 0, 1, 1, 'Rainfall timeseries (from cat_timeseries table)', '{"execute_on": "data"}', NULL, 'Set rainfall timeseries for all hyetografs', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_setrainfall_raster', 'lyt_main_2_2', 4, 'integer', 'combo', 'Set rainfall raster', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from cat_raster WHERE id is not null', 0, 1, 0, 'Raster (from cat_raster table)', '{"execute_on": "data"}', NULL, 'Set rainfall raster', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_setrainfall_raster', 'lyt_main_1_2', 4, 'integer', 'combo', 'Set rainfall raster', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from cat_raster WHERE id is not null', 0, 1, 0, 'Raster (from cat_raster table)', '{"execute_on": "data"}', NULL, 'Set rainfall raster', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_starttime', 'lyt_main_2_2', 1, 'date', 'text', 'Start time:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Start time for losses method', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_starttime', 'lyt_main_1_2', 1, 'date', 'text', 'Start time:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Start time for losses method', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_scs_cn_multiplier', 'lyt_main_2_2', 6, 'double', 'text', 'CN multiplier', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'CN multiplier  (tool to calibrate)', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_scs_cn_multiplier', 'lyt_main_1_2', 6, 'double', 'text', 'CN multiplier', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'CN multiplier  (tool to calibrate)', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_scs_ia_coefficient', 'lyt_main_2_2', 7, 'double', 'text', 'Ia', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.2', 'Ia coefficient', NULL);
+VALUES('dlg_options', 'form_options', 'tab_main', 'options_losses_scs_ia_coefficient', 'lyt_main_1_2', 7, 'double', 'text', 'Ia', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0.2', 'Ia coefficient', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_transects_value', 'form_feature', 'tabdata', 'transect', NULL, NULL, 'text', 'combo', 'transect', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
@@ -1579,19 +2072,13 @@ INSERT INTO config_form_fields
 VALUES('cat_curve_value', 'form_feature', 'tabdata', 'curve', NULL, NULL, 'text', 'combo', 'curve', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('cat_timeseries', 'form_feature', 'tabdata', 'timser_type', NULL, NULL, 'text', 'text', 'timser_type
-times_type
-descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('cat_timeseries', 'form_feature', 'tabdata', 'timser_type', NULL, NULL, 'text', 'text', 'timser_type', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('cat_timeseries', 'form_feature', 'tabdata', 'times_type', NULL, NULL, 'text', 'text', 'timser_type
-times_type
-descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('cat_timeseries', 'form_feature', 'tabdata', 'times_type', NULL, NULL, 'text', 'text', 'times_type', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('cat_timeseries', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'timser_type
-times_type
-descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
+VALUES('cat_timeseries', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('cat_timeseries_value', 'form_feature', 'tabdata', 'timeseries', NULL, NULL, 'text', 'combo', 'timeseries', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
@@ -1618,186 +2105,6 @@ INSERT INTO config_form_fields
 VALUES('cat_raster_value', 'form_feature', 'tabdata', 'time', NULL, NULL, 'text', 'text', 'time', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('roof', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'outlet_node', NULL, NULL, 'text', 'text', 'outlet_node', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'outlet_type', NULL, NULL, 'text', 'combo', 'outlet_type', NULL, NULL, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_inlet_outlet_type''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'top_elev', NULL, NULL, 'real', 'text', 'top_elev', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'width', NULL, NULL, 'real', 'text', 'width', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'length', NULL, NULL, 'real', 'text', 'length', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'depth', NULL, NULL, 'real', 'text', 'depth', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inlet', 'form_feature', 'tabdata', 'method', NULL, NULL, 'text', 'combo', 'method', NULL, NULL, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_method''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('hyetograph', 'form_feature', 'tabdata', 'idval', NULL, NULL, 'text', 'text', 'text', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'bscenario', NULL, NULL, 'text', 'combo', 'bscenario', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_bscenario', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('boundary_conditions', 'form_feature', 'tabdata', 'timeseries', NULL, NULL, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', 'autonumeric', 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'node_1', NULL, NULL, 'text', 'text', 'node_1', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'node_2', NULL, NULL, 'text', 'text', 'node_2', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'shape', NULL, NULL, 'text', 'combo', 'shape', NULL, 1, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_shape''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom1', NULL, NULL, 'real', 'text', 'geom1', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom2', NULL, NULL, 'real', 'text', 'geom2', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom3', NULL, NULL, 'real', 'text', 'geom3', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom4', NULL, NULL, 'real', 'text', 'geom4', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'curve_transect', NULL, NULL, 'text', 'combo', 'curve_transect', NULL, 0, 1, 'SELECT idval as id, idval from cat_transects', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'kentry', NULL, NULL, 'real', 'text', 'kentry', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'kexit', NULL, NULL, 'real', 'text', 'kexit', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'kavg', NULL, NULL, 'real', 'text', 'kavg', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'flap', NULL, NULL, 'text', 'combo', 'flap', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_value_yesno''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_conduit', 'form_feature', 'tabdata', 'seepage', NULL, NULL, 'text', 'text', 'seepage', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'node_1', NULL, NULL, 'text', 'text', 'node_1', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'node_2', NULL, NULL, 'text', 'text', 'node_2', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'flap', NULL, NULL, 'text', 'combo', 'flap', NULL, NULL, 1, 'SELECT id, idval FROM inp_typevalue WHERE typevalue = ''inp_typevalue_yesno''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'outlet_type', NULL, NULL, 'text', 'combo', 'outlet_type', NULL, NULL, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_outlet_type''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'offsetval', NULL, NULL, 'real', 'text', 'offsetval', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'cd1', NULL, NULL, 'real', 'text', 'cd1', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'cd2', NULL, NULL, 'real', 'text', 'cd2', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'curve', NULL, NULL, 'text', 'combo', 'curve', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_curve', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outlet', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_orifice', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'shape', NULL, NULL, 'text', 'combo', 'shape', NULL, 1, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_shape'' AND id IN (''RECT_OPEN'', ''TRIANGULAR'', ''TRAPEZOIDAL'');', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_weir', 'form_feature', 'tabdata', 'flap', NULL, NULL, 'text', 'combo', 'flap', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_value_yesno''', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'curve', NULL, NULL, 'text', 'combo', 'curve', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_curve', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_outfall', 'form_feature', 'tabdata', 'timeseries', NULL, NULL, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'curve', NULL, NULL, 'text', 'combo', 'curve', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_curve', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_divider', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'fevap', NULL, NULL, 'real', 'text', 'fevap', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'psi', NULL, NULL, 'real', 'text', 'psi', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'ksat', NULL, NULL, 'real', 'text', 'ksat', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'imd', NULL, NULL, 'real', 'text', 'imd', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_storage', 'form_feature', 'tabdata', 'geom', NULL, NULL, 'geometry', 'text', 'geom', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_junction', 'form_feature', 'tabdata', 'annotation', NULL, NULL, 'text', 'text', 'annotation', NULL, 0, 1, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('inp_files', 'form_feature', 'tabdata', 'id', NULL, NULL, 'text', 'text', 'id', NULL, NULL, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
@@ -1810,46 +2117,10 @@ INSERT INTO config_form_fields
 VALUES('inp_files', 'form_feature', 'tabdata', 'fname', NULL, NULL, 'text', 'text', 'fname', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'format', NULL, NULL, 'text', 'text', 'format', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern1', NULL, NULL, 'text', 'combo', 'pattern1', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern2', NULL, NULL, 'text', 'combo', 'pattern2', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern3', NULL, NULL, 'text', 'combo', 'pattern3', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_dwf', 'form_feature', 'tabdata', 'pattern4', NULL, NULL, 'text', 'combo', 'pattern4', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_pattern', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'code', NULL, NULL, 'text', 'text', 'code', NULL, 0, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'descript', NULL, NULL, 'text', 'text', 'descript', NULL, NULL, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('inp_inflow', 'form_feature', 'tabdata', 'timeseries', NULL, NULL, 'text', 'combo', 'timeseries', NULL, NULL, 1, 'SELECT idval as id, idval FROM cat_timeseries', NULL, NULL, 0, NULL, '{"execute_on": "data"}', NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster', 'lyt_rpt_iber_2_2', 1, 'string', 'combo', 'Raster results', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''result_results_raster''', NULL, NULL, 0, NULL, NULL, '0', 'Results 2 raster', NULL);
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster', 'lyt_rpt_iber_2_2', 1, 'string', 'combo', 'Raster results', NULL, 0, 1, 'SELECT group_concat(id) AS id, group_concat(idval) AS idval from edit_typevalue WHERE typevalue = ''result_results_raster''', NULL, NULL, 0, NULL, NULL, '1', 'Results 2 raster', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_cell', 'lyt_rpt_iber_2_2', 2, 'real', 'text', 'Cell size [m]', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '100', 'Size of the pixel [m]', NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('culvert', 'form_feature', 'tabdata', 'culvert_type', NULL, NULL, 'text', 'combo', 'culvert_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''culvert_type''', 0, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('pinlet', 'form_feature', 'tabdata', 'outlet_type', NULL, NULL, 'text', 'combo', 'outlet_type', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_inlet_outlet_type''', 0, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('pinlet', 'form_feature', 'tabdata', 'method', NULL, NULL, 'text', 'combo', 'method', NULL, 0, 1, 'SELECT id, idval FROM edit_typevalue WHERE typevalue = ''inp_typevalue_method''', 0, 1, 0, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
 VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_hazard_pedestrians', 'lyt_rpt_iber_2_1', 3, 'boolean', 'check', 'Pedestrians', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Stability criteria for pedestrians (Martínez-Gomariz et al. 2016)', NULL);
@@ -1861,102 +2132,349 @@ INSERT INTO config_form_fields
 VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_maxs', 'lyt_rpt_iber_2_2', 3, 'boolean', 'check', 'Maximums at the end', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Only writes the raster of maximums at the end of the simulation [envelope]', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_frame', 'lyt_rpt_iber_2_2', 4, 'boolean', 'check', 'Raster frame', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Generate raster only in a frame', NULL);
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_frame', 'lyt_rpt_iber_2_2', 4, 'boolean', 'check', 'Use raster frame', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Generate raster only in a frame', NULL);
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols, widgetfunction)
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xybtn', 'lyt_rpt_iber_2_3', 1, NULL, 'button', 'Set raster frame', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, '{"qgis_widget": "QgsExtentWidget"}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xymin', 'lyt_rpt_iber_2_2', 5, 'string', 'text', 'XYmin', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0,0', 'Type coordinates separed by a comma', NULL);
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xymin', 'lyt_rpt_iber_2_3', 2, 'string', 'text', 'XYmin', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0,0', 'Type coordinates separed by a comma', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xymax', 'lyt_rpt_iber_2_2', 6, 'string', 'text', 'XYmax', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0,0', 'Type coordinates separed by a comma', NULL);
+VALUES('dlg_options', 'form_options', 'tab_rpt_iber', 'result_results_raster_xymax', 'lyt_rpt_iber_2_3', 3, 'string', 'text', 'XYmax', NULL, 0, 1, NULL, NULL, NULL, 1, NULL, NULL, '0,0', 'Type coordinates separed by a comma', NULL);
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('pinlet', 'form_feature', 'tabdata', 'a_param', NULL, NULL, 'integer', 'text', 'a_param', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('pinlet', 'form_feature', 'tabdata', 'b_param', NULL, NULL, 'integer', 'text', 'b_param', NULL, 0, 1, NULL, 0, 0, 1, NULL, NULL, NULL, NULL, NULL);
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'raster_results_symbmode', 'lyt_ibergis_raster_results_1_1', 1, 'string', 'combo', 'Symbology Mode', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_symbmode'", NULL, NULL, 0, NULL, NULL, '0', 'Symbology mode for raster results (updates in real time): \nMin/Max of each band (independent range per band)\nMin/Max for all bands (common range across bands)\nCustom Min/Max (user-defined range).', NULL);
 
--- raster results values
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_max_depth', 'lyt_ibergis_1_1', 1, 'real', 'spinbox', 'Max value for depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_min_depth', 'lyt_ibergis_1_1', 2, 'real', 'spinbox', 'Min value for depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_max_velocity', 'lyt_ibergis_1_1', 3, 'real', 'spinbox', 'Max value for velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
-INSERT INTO config_form_fields
-(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'result_symbology_min_velocity', 'lyt_ibergis_1_1', 4, 'real', 'spinbox', 'Min value for velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
-
+-- OUTLAYER CHECK PROJECT OPTIONS
 -- manning
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_manning_max', 'lyt_ibergis_1_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for manning on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_manning_max', 'lyt_ibergis_check_1_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for manning on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_manning_min', 'lyt_ibergis_1_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for manning on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_manning_min', 'lyt_ibergis_check_1_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for manning on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 
 -- roughness
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_roughness_max', 'lyt_ibergis_2_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for roughness on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_roughness_max', 'lyt_ibergis_check_1_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for roughness on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_roughness_min', 'lyt_ibergis_2_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for roughness on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_roughness_min', 'lyt_ibergis_check_1_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for roughness on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 
 -- cellsize
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_cellsize_max', 'lyt_ibergis_2_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1000', 'Maximum value for cellsize on check project', '{"spinboxDecimals": 2, "maximumNumber": 10000, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_cellsize_max', 'lyt_ibergis_check_2_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1000', 'Maximum value for cellsize on check project', '{"spinboxDecimals": 2, "maximumNumber": 10000, "minimumNumber": 0, "include_widget": true}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_cellsize_min', 'lyt_ibergis_2_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for cellsize on check project', '{"spinboxDecimals": 2, "maximumNumber": 10000, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_cellsize_min', 'lyt_ibergis_check_2_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for cellsize on check project', '{"spinboxDecimals": 2, "maximumNumber": 10000, "minimumNumber": 0, "include_widget": true}');
 
 -- mfactor
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_mfactor_max', 'lyt_ibergis_3_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for mfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_mfactor_max', 'lyt_ibergis_check_2_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for mfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_mfactor_min', 'lyt_ibergis_3_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for mfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_mfactor_min', 'lyt_ibergis_check_2_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for mfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 
 -- sfactor
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_sfactor_max', 'lyt_ibergis_3_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for sfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_sfactor_max', 'lyt_ibergis_check_3_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for sfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_sfactor_min', 'lyt_ibergis_3_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for sfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_sfactor_min', 'lyt_ibergis_check_3_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for sfactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 
 -- ufactor
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_ufactor_max', 'lyt_ibergis_4_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for ufactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_ufactor_max', 'lyt_ibergis_check_3_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '1', 'Maximum value for ufactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_ufactor_min', 'lyt_ibergis_4_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for ufactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_ufactor_min', 'lyt_ibergis_check_3_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for ufactor on check project', '{"spinboxDecimals": 2, "maximumNumber": 100, "minimumNumber": 0, "include_widget": true}');
 
 -- slope
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_slope_max', 'lyt_ibergis_4_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '20', 'Maximum value for slope on check project', '{"spinboxDecimals": 2, "maximumNumber": 500, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_slope_max', 'lyt_ibergis_check_4_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '20', 'Maximum value for slope on check project', '{"spinboxDecimals": 2, "maximumNumber": 500, "minimumNumber": 0, "include_widget": true}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_slope_min', 'lyt_ibergis_4_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for slope on check project', '{"spinboxDecimals": 2, "maximumNumber": 500, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_slope_min', 'lyt_ibergis_check_4_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for slope on check project', '{"spinboxDecimals": 2, "maximumNumber": 500, "minimumNumber": 0, "include_widget": true}');
 
 -- outlet_vol
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_outlet_vol_max', 'lyt_ibergis_5_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '100', 'Maximum value for outlet_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_outlet_vol_max', 'lyt_ibergis_check_4_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '100', 'Maximum value for outlet_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_outlet_vol_min', 'lyt_ibergis_5_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for outlet_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_outlet_vol_min', 'lyt_ibergis_check_4_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for outlet_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
 
 -- street_vol
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_street_vol_max', 'lyt_ibergis_5_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '100', 'Maximum value for street_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_street_vol_max', 'lyt_ibergis_check_5_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '100', 'Maximum value for street_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
 INSERT INTO config_form_fields
 (formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
-VALUES('dlg_options', 'form_options', 'tab_ibergis', 'outlayer_street_vol_min', 'lyt_ibergis_5_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for street_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_street_vol_min', 'lyt_ibergis_check_5_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for street_vol on check project', '{"spinboxDecimals": 2, "maximumNumber": 1000, "minimumNumber": 0, "include_widget": true}');
+
+-- weir_cd
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_weir_cd_max', 'lyt_ibergis_check_5_2', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '10', 'Maximum value for weir_cd on check project', '{"spinboxDecimals": 2, "maximumNumber": 10, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_weir_cd_min', 'lyt_ibergis_check_5_2', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for weir_cd on check project', '{"spinboxDecimals": 2, "maximumNumber": 10, "minimumNumber": 0, "include_widget": true}');
+
+-- orifice_cd
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_orifice_cd_max', 'lyt_ibergis_check_6_1', 1, 'real', 'spinbox', 'Max allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '10', 'Maximum value for orifice_cd on check project', '{"spinboxDecimals": 2, "maximumNumber": 10, "minimumNumber": 0, "include_widget": true}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_check', 'outlayer_orifice_cd_min', 'lyt_ibergis_check_6_1', 2, 'real', 'spinbox', 'Min allowed value:', NULL, 1, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Minimum value for orifice_cd on check project', '{"spinboxDecimals": 2, "maximumNumber": 10, "minimumNumber": 0, "include_widget": true}');
+
+
+-- raster results values
+-- depth
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_depth', 'lyt_ibergis_raster_results_2_1', 1, 'real', 'spinbox', 'Max value for Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_depth', 'lyt_ibergis_raster_results_2_1', 2, 'real', 'spinbox', 'Min value for Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_depth', 'lyt_ibergis_raster_results_2_1', 3, 'real', 'combo', 'Color Ramp for Depth result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '1', 'Color Ramp for the symbology of Depth raster result', NULL);
+
+-- velocity
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_velocity', 'lyt_ibergis_raster_results_3_1', 1, 'real', 'spinbox', 'Max value for Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_velocity', 'lyt_ibergis_raster_results_3_1', 2, 'real', 'spinbox', 'Min value for Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_velocity', 'lyt_ibergis_raster_results_3_1', 3, 'real', 'combo', 'Color Ramp for Velocity result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Velocity raster result', NULL);
+
+-- water elevation
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_water_elevation', 'lyt_ibergis_raster_results_4_1', 1, 'real', 'spinbox', 'Max value for Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_water_elevation', 'lyt_ibergis_raster_results_4_1', 2, 'real', 'spinbox', 'Min value for Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_water_elevation', 'lyt_ibergis_raster_results_4_1', 3, 'real', 'combo', 'Color Ramp for Water Elevation result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Water Elevation raster result', NULL);
+
+-- hazard aca
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_hazard_aca', 'lyt_ibergis_raster_results_5_1', 1, 'real', 'spinbox', 'Max value for Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_hazard_aca', 'lyt_ibergis_raster_results_5_1', 2, 'real', 'spinbox', 'Min value for Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_hazard_aca', 'lyt_ibergis_raster_results_5_1', 3, 'real', 'combo', 'Color Ramp for Hazard ACA result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Hazard ACA raster result', NULL);
+
+-- severe hazard
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_severe_hazard', 'lyt_ibergis_raster_results_6_1', 1, 'real', 'spinbox', 'Max value for Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_severe_hazard', 'lyt_ibergis_raster_results_6_1', 2, 'real', 'spinbox', 'Min value for Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_severe_hazard', 'lyt_ibergis_raster_results_6_1', 3, 'real', 'combo', 'Color Ramp for Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Severe Hazard RD9-2008 raster result', NULL);
+
+-- local time step
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_local_time_step', 'lyt_ibergis_raster_results_7_1', 1, 'real', 'spinbox', 'Max value for Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_local_time_step', 'lyt_ibergis_raster_results_7_1', 2, 'real', 'spinbox', 'Min value for Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_local_time_step', 'lyt_ibergis_raster_results_7_1', 3, 'real', 'combo', 'Color Ramp for Local Time Step result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Local Time Step raster result', NULL);
+
+-- specific discharge x
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_specific_discharge_x', 'lyt_ibergis_raster_results_8_1', 1, 'real', 'spinbox', 'Max value for Specific Discharge X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Specific Discharge X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_specific_discharge_x', 'lyt_ibergis_raster_results_8_1', 2, 'real', 'spinbox', 'Min value for Specific Discharge X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Specific Discharge X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_specific_discharge_x', 'lyt_ibergis_raster_results_8_1', 3, 'real', 'combo', 'Color Ramp for Specific Discharge X result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Specific Discharge X raster result', NULL);
+
+-- specific discharge y
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_specific_discharge_y', 'lyt_ibergis_raster_results_9_1', 1, 'real', 'spinbox', 'Max value for Specific Discharge Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Specific Discharge Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_specific_discharge_y', 'lyt_ibergis_raster_results_9_1', 2, 'real', 'spinbox', 'Min value for Specific Discharge Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Specific Discharge Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_specific_discharge_y', 'lyt_ibergis_raster_results_9_1', 3, 'real', 'combo', 'Color Ramp for Specific Discharge Y result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Specific Discharge Y raster result', NULL);
+
+-- energy
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_energy', 'lyt_ibergis_raster_results_10_1', 1, 'real', 'spinbox', 'Max value for Energy result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Energy raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_energy', 'lyt_ibergis_raster_results_10_1', 2, 'real', 'spinbox', 'Min value for Energy result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Energy raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_energy', 'lyt_ibergis_raster_results_10_1', 3, 'real', 'combo', 'Color Ramp for Energy result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Energy raster result', NULL);
+
+-- froude
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_froude', 'lyt_ibergis_raster_results_11_1', 1, 'real', 'spinbox', 'Max value for Froude result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Froude raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_froude', 'lyt_ibergis_raster_results_11_1', 2, 'real', 'spinbox', 'Min value for Froude result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Froude raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_froude', 'lyt_ibergis_raster_results_11_1', 3, 'real', 'combo', 'Color Ramp for Froude result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Froude raster result', NULL);
+
+-- infiltration rate
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_infiltration_rate', 'lyt_ibergis_raster_results_12_1', 1, 'real', 'spinbox', 'Max value for Infiltration Rate result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Infiltration Rate raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_infiltration_rate', 'lyt_ibergis_raster_results_12_1', 2, 'real', 'spinbox', 'Min value for Infiltration Rate result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Infiltration Rate raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_infiltration_rate', 'lyt_ibergis_raster_results_12_1', 3, 'real', 'combo', 'Color Ramp for Infiltration Rate result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Infiltration Rate raster result', NULL);
+
+-- rain depth
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_rain_depth', 'lyt_ibergis_raster_results_13_1', 1, 'real', 'spinbox', 'Max value for Rain Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Rain Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_rain_depth', 'lyt_ibergis_raster_results_13_1', 2, 'real', 'spinbox', 'Min value for Rain Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Rain Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_rain_depth', 'lyt_ibergis_raster_results_13_1', 3, 'real', 'combo', 'Color Ramp for Rain Depth result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Rain Depth raster result', NULL);
+
+-- velocity x
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_velocity_x', 'lyt_ibergis_raster_results_14_1', 1, 'real', 'spinbox', 'Max value for Velocity X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Velocity X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_velocity_x', 'lyt_ibergis_raster_results_14_1', 2, 'real', 'spinbox', 'Min value for Velocity X result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Velocity X raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_velocity_x', 'lyt_ibergis_raster_results_14_1', 3, 'real', 'combo', 'Color Ramp for Velocity X result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Velocity X raster result', NULL);
+
+-- velocity y
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_velocity_y', 'lyt_ibergis_raster_results_15_1', 1, 'real', 'spinbox', 'Max value for Velocity Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Velocity Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_velocity_y', 'lyt_ibergis_raster_results_15_1', 2, 'real', 'spinbox', 'Min value for Velocity Y result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Velocity Y raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_velocity_y', 'lyt_ibergis_raster_results_15_1', 3, 'real', 'combo', 'Color Ramp for Velocity Y result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Velocity Y raster result', NULL);
+
+-- water permanence
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_water_permanence', 'lyt_ibergis_raster_results_16_1', 1, 'real', 'spinbox', 'Max value for Water Permanence result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Water Permanence raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_water_permanence', 'lyt_ibergis_raster_results_16_1', 2, 'real', 'spinbox', 'Min value for Water Permanence result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Water Permanence raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_water_permanence', 'lyt_ibergis_raster_results_16_1', 3, 'real', 'combo', 'Color Ramp for Water Permanence result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Water Permanence raster result', NULL);
+
+-- max depth
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_depth', 'lyt_ibergis_raster_results_2_2', 1, 'real', 'spinbox', 'Max value for Max Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_depth', 'lyt_ibergis_raster_results_2_2', 2, 'real', 'spinbox', 'Min value for Max Depth result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Depth raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_depth', 'lyt_ibergis_raster_results_2_2', 3, 'real', 'combo', 'Color Ramp for Max Depth result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Depth raster result', NULL);
+
+-- max velocity
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_velocity', 'lyt_ibergis_raster_results_3_2', 1, 'real', 'spinbox', 'Max value for Max Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_velocity', 'lyt_ibergis_raster_results_3_2', 2, 'real', 'spinbox', 'Min value for Max Velocity result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Velocity raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_velocity', 'lyt_ibergis_raster_results_3_2', 3, 'real', 'combo', 'Color Ramp for Max Velocity result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Velocity raster result', NULL);
+
+-- max water elevation
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_water_elevation', 'lyt_ibergis_raster_results_4_2', 1, 'real', 'spinbox', 'Max value for Max Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_water_elevation', 'lyt_ibergis_raster_results_4_2', 2, 'real', 'spinbox', 'Min value for Max Water Elevation result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Water Elevation raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_water_elevation', 'lyt_ibergis_raster_results_4_2', 3, 'real', 'combo', 'Color Ramp for Max Water Elevation result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Water Elevation raster result', NULL);
+
+-- max hazard aca
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_hazard_aca', 'lyt_ibergis_raster_results_5_2', 1, 'real', 'spinbox', 'Max value for Max Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_hazard_aca', 'lyt_ibergis_raster_results_5_2', 2, 'real', 'spinbox', 'Min value for Max Hazard ACA result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Hazard ACA raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_hazard_aca', 'lyt_ibergis_raster_results_5_2', 3, 'real', 'combo', 'Color Ramp for Max Hazard ACA result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Hazard ACA raster result', NULL);
+
+-- max severe hazard
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_severe_hazard', 'lyt_ibergis_raster_results_6_2', 1, 'real', 'spinbox', 'Max value for Max Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_severe_hazard', 'lyt_ibergis_raster_results_6_2', 2, 'real', 'spinbox', 'Min value for Max Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Severe Hazard RD9-2008 raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_severe_hazard', 'lyt_ibergis_raster_results_6_2', 3, 'real', 'combo', 'Color Ramp for Max Severe Hazard RD9-2008 result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Severe Hazard RD9-2008 raster result', NULL);
+
+-- max local time step
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_local_time_step', 'lyt_ibergis_raster_results_7_2', 1, 'real', 'spinbox', 'Max value for Max Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_local_time_step', 'lyt_ibergis_raster_results_7_2', 2, 'real', 'spinbox', 'Min value for Max Local Time Step result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Local Time Step raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_local_time_step', 'lyt_ibergis_raster_results_7_2', 3, 'real', 'combo', 'Color Ramp for Max Local Time Step result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Local Time Step raster result', NULL);
+
+-- max specific discharge
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_max_max_specific_discharge', 'lyt_ibergis_raster_results_8_2', 1, 'real', 'spinbox', 'Max value for Max Specific Discharge result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '2', 'Maximum value for the symbology of Max Specific Discharge raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_min_max_specific_discharge', 'lyt_ibergis_raster_results_8_2', 2, 'real', 'spinbox', 'Min value for Max Specific Discharge result symbology:', NULL, 0, 1, NULL, NULL, NULL, 0, NULL, NULL, '0', 'Maximum value for the symbology of Max Specific Discharge raster result', '{"spinboxDecimals": 6, "maximumNumber": 100, "minimumNumber": 0, "include_widget": false}');
+INSERT INTO config_form_fields
+(formname, formtype, tabname, columnname, layoutname, layoutorder, datatype, widgettype, label, placeholder, ismandatory, iseditable, dv_querytext, dv_orderby_id, dv_isnullvalue, hidden, tooltip, addparam, vdefault, descript, widgetcontrols)
+VALUES('dlg_options', 'form_options', 'tab_ibergis_raster_results', 'result_symbology_colorramp_max_specific_discharge', 'lyt_ibergis_raster_results_8_2', 3, 'real', 'combo', 'Color Ramp for Max Specific Discharge result symbology:', NULL, 0, 1, "SELECT group_concat(id) AS id, group_concat(idval) AS idval FROM edit_typevalue WHERE typevalue = 'result_raster_colorramp'", NULL, NULL, 0, NULL, NULL, '0', 'Color Ramp for the symbology of Max Specific Discharge raster result', NULL);

@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -59,7 +59,11 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
         """
         inputs and output of the algorithm
         """
-        roof_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('roof')
+        roof_layer: QgsVectorLayer = None
+        try:
+            roof_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('roof')
+        except Exception:
+            pass
         roof_layer_param = QgsProcessingParameterVectorLayer(
             name=self.FILE_ROOFS,
             description=self.tr('Roof layer'),
@@ -76,7 +80,11 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
             defaultValue=False
         ))
 
-        elev_raster_layer: QgsRasterLayer = tools_qgis.get_layer_by_layername('dem')
+        elev_raster_layer: QgsRasterLayer = None
+        try:
+            elev_raster_layer: QgsRasterLayer = tools_qgis.get_layer_by_layername('dem')
+        except Exception:
+            pass
         elev_raster_layer_param = QgsProcessingParameterRasterLayer(
             name=self.FILE_ELEV_RASTER,
             description=self.tr('Elevation raster layer'),
@@ -86,7 +94,11 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
             elev_raster_layer_param.setDefaultValue(elev_raster_layer)
         self.addParameter(elev_raster_layer_param)
 
-        outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
+        outlet_layer: QgsVectorLayer = None
+        try:
+            outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
+        except Exception:
+            pass
         outlet_layer_param = QgsProcessingParameterVectorLayer(
             name=self.FILE_OUTLETS,
             description=self.tr('Outlets layer'),
@@ -243,7 +255,7 @@ class SetOutletForRoofs(QgsProcessingAlgorithm):
             if len(self.skipped_roofs) > 0 or len(self.below_roofs) > 0:
                 # Create a temporal layer with skipped features and load it on QGIS
                 srid = QgsProject.instance().crs().authid()
-                temporal_features_layer: QgsVectorLayer = QgsVectorLayer(f"MultiPolygon?crs={srid}", "roof_features", "memory")
+                temporal_features_layer: QgsVectorLayer = QgsVectorLayer(f"Polygon?crs={srid}", "roof_features", "memory")
                 temporal_features_layer.dataProvider().addAttributes(self.roof_elev_layer.fields())
                 temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
                 temporal_features_layer.updateFields()

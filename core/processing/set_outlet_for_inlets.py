@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -64,7 +64,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         """
         inputs and output of the algorithm
         """
-        inlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
+        inlet_layer: QgsVectorLayer = None
+        try:
+            inlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
+        except Exception:
+            pass
         inlet_layer_param = QgsProcessingParameterVectorLayer(
             name=self.FILE_INLETS,
             description=self.tr('Inlets layer'),
@@ -81,7 +85,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             defaultValue=False
         ))
 
-        pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('pinlet')
+        pinlet_layer: QgsVectorLayer = None
+        try:
+            pinlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('pinlet')
+        except Exception:
+            pass
         pinlet_layer_param = QgsProcessingParameterVectorLayer(
             name=self.FILE_PINLETS,
             description=self.tr('Pinlets layer'),
@@ -98,7 +106,11 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
             defaultValue=False
         ))
 
-        outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
+        outlet_layer: QgsVectorLayer = None
+        try:
+            outlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inp_junction')
+        except Exception:
+            pass
         outlet_layer_param = QgsProcessingParameterVectorLayer(
             name=self.FILE_OUTLETS,
             description=self.tr('Outlets layer'),
@@ -351,7 +363,7 @@ class SetOutletForInlets(QgsProcessingAlgorithm):
         if len(self.skipped_pinlets) > 0 or len(self.below_pinlets) > 0:
             # Create a temporal layer with skipped features and load it on QGIS
             srid = QgsProject.instance().crs().authid()
-            temporal_features_layer: QgsVectorLayer = QgsVectorLayer(f"MultiPolygon?crs={srid}", "pinlet_features", "memory")
+            temporal_features_layer: QgsVectorLayer = QgsVectorLayer(f"Polygon?crs={srid}", "pinlet_features", "memory")
             temporal_features_layer.dataProvider().addAttributes(self.file_pinlets.fields())
             temporal_features_layer.dataProvider().addAttributes([QgsField("action", QVariant.String)])
             temporal_features_layer.updateFields()

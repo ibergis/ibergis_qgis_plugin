@@ -94,7 +94,6 @@ class DrImportInpTask(DrTask):
         context = QgsProcessingContext()
         self.output = self.process.processAlgorithm(params, context, self.feedback)
 
-        # processing.run("GenSwmmInp:ImportInpFile", {'INP_FILE':'P:\\31_GISWATER\\313_DEV\\epa_importinp\\maspi_proves\\ud_bcn_prim_saved.inp','GEODATA_DRIVER':1,'SAVE_FOLDER':'C:\\Users\\usuario\\Desktop\\QGIS Projects\\drain\\importinp','PREFIX':'','DATA_CRS':QgsCoordinateReferenceSystem('EPSG:25831')})
         return True
 
     def _execute_after_import_fct(self):

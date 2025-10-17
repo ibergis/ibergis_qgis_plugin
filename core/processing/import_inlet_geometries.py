@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -17,7 +17,8 @@ from qgis.core import (
     QgsVectorLayer,
     QgsProcessingParameterBoolean,
     QgsProcessingFeatureSourceDefinition,
-    QgsFeatureRequest
+    QgsFeatureRequest,
+    QgsWkbTypes
 )
 from qgis.PyQt.QtCore import QCoreApplication
 from ...lib import tools_qgis, tools_gpkgdao
@@ -77,14 +78,18 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
             description=self.tr('Selected features only'),
             defaultValue=False
         ))
-        target_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
+        inlet_layer: QgsVectorLayer = None
+        try:
+            inlet_layer: QgsVectorLayer = tools_qgis.get_layer_by_tablename('inlet')
+        except Exception:
+            pass
         target_layer_param = QgsProcessingParameterVectorLayer(
             self.FILE_TARGET,
             self.tr('Target layer (inlet or pinlet)'),
             types=[QgsProcessing.SourceType.VectorPoint, QgsProcessing.SourceType.VectorPolygon]
         )
-        if target_layer:
-            target_layer_param.setDefaultValue(target_layer)
+        if inlet_layer:
+            target_layer_param.setDefaultValue(inlet_layer)
         self.addParameter(target_layer_param)
         custom_code = QgsProcessingParameterField(
             self.FIELD_CUSTOM_CODE,
@@ -222,6 +227,11 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         """
         main process algorithm of this tool
         """
+
+        self.converted_geometries_layer = None
+        self.file_target = None
+        self.field_map = None
+        self.unique_fields = None
 
         # reading geodata
         feedback.setProgressText(self.tr('Reading geodata and mapping fields:'))
@@ -459,7 +469,16 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         error_message = ''
         source_layer: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_SOURCE, context)
         target_layer: QgsVectorLayer = self.parameterAsVectorLayer(parameters, self.FILE_TARGET, context)
-        inlet_layer = tools_qgis.get_layer_by_tablename('inlet')
+        inlet_layer = None
+        try:
+            inlet_layer = tools_qgis.get_layer_by_tablename('inlet')
+        except Exception:
+            pass
+        pinlet_layer = None
+        try:
+            pinlet_layer = tools_qgis.get_layer_by_tablename('pinlet')
+        except Exception:
+            pass
         pinlet_layer = tools_qgis.get_layer_by_tablename('pinlet')
 
         if source_layer is None:
@@ -474,12 +493,18 @@ class ImportInletGeometries(QgsProcessingAlgorithm):
         if len(error_message) > 0:
             return False, error_message
 
-        if source_layer.geometryType() != target_layer.geometryType():
-            error_message += self.tr('Source and target layer types do not match.\n\n')
-            return False, error_message
+        # get geometry types
+        source_geom_type = QgsWkbTypes.displayString(source_layer.wkbType())
+        target_geom_type = QgsWkbTypes.displayString(target_layer.wkbType())
 
+        # check if target layer is an inlet or pinlet layer
         if target_layer != inlet_layer and target_layer != pinlet_layer:
             error_message += self.tr('Target layer is not an inlet or pinlet layer.\n\n')
+            return False, error_message
+
+        # check if source and target layer types match
+        if source_geom_type != target_geom_type:
+            error_message += self.tr(f'Source and target layer types do not match.\n\nSource: {source_geom_type}\nTarget: {target_geom_type}\n\n')
             return False, error_message
 
         if len(error_message) > 0:

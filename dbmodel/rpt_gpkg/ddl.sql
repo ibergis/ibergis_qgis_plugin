@@ -1,8 +1,8 @@
 /*
-This file is part of drain project software
+This file is part of IberGIS project software
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-This version of Giswater is provided by Giswater Association
+This version of IberGIS is provided by IberGIS Team
 */
 
 
@@ -10,7 +10,7 @@ CREATE TABLE rpt_arc (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
 	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
-	shape text unique check (typeof(shape) = 'text' or shape = null),
+	shape text check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
@@ -27,12 +27,11 @@ CREATE TABLE rpt_arcflow_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
 	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
-	shape text unique check (typeof(shape) = 'text' or shape = null),
+	shape text check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
 	geom4 real check (typeof(geom4)='real' or geom4=null),
-    flow real check (typeof(flow) = 'real' or flow = null),
     arc_type text check (typeof(arc_type) = 'text' or arc_type = null),
     max_flow real check (typeof(max_flow) = 'real' or max_flow = null),
     time_days text check (typeof(time_days) = 'text' or time_days = null),
@@ -40,14 +39,6 @@ CREATE TABLE rpt_arcflow_sum (
     max_veloc real check (typeof(max_veloc) = 'real' or max_veloc = null),
     mfull_flow real check (typeof(mfull_flow) = 'real' or mfull_flow = null),
     mfull_dept real check (typeof(mfull_dept) = 'real' or mfull_dept = null),
-    max_shear real check (typeof(max_shear) = 'real' or max_shear = null),
-    max_hr real check (typeof(max_hr) = 'real' or max_hr = null),
-    max_slope real check (typeof(max_slope) = 'real' or max_slope = null),
-    day_max text check (typeof(day_max) = 'text' or day_max = null),
-    time_max text check (typeof(time_max) = 'text 'or time_max = null),
-    min_shear real check (typeof(min_shear) = 'real' or min_shear = null),
-    day_min text check (typeof(day_min) = 'text' or day_min = null),
-    time_min text check (typeof(time_min) = 'text' or time_min = null),
     geom geometry
 );
 
@@ -56,12 +47,11 @@ CREATE TABLE rpt_condsurcharge_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
 	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
-	shape text unique check (typeof(shape) = 'text' or shape = null),
+	shape text check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
 	geom4 real check (typeof(geom4)='real' or geom4=null),
-    flow real check (typeof(flow) = 'real' or flow = null),
     both_ends real check (typeof(both_ends) = 'real' or both_ends = null),
     upstream real check (typeof(upstream) = 'real' or upstream = null),
     dnstream real check (typeof(dnstream) = 'real' or dnstream = null),
@@ -75,12 +65,11 @@ CREATE TABLE rpt_flowclass_sum (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
 	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
-	shape text unique check (typeof(shape) = 'text' or shape = null),
+	shape text check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
 	geom4 real check (typeof(geom4)='real' or geom4=null),
-    flow real check (typeof(flow) = 'real' or flow = null),
     length real check (typeof(length) = 'real' or length = null),
     dry real check (typeof(dry) = 'real' or dry = null),
     up_dry real check (typeof(up_dry) = 'real' or up_dry = null),
@@ -89,8 +78,8 @@ CREATE TABLE rpt_flowclass_sum (
     sub_crit_1 real check (typeof(sub_crit_1) = 'real' or sub_crit_1 = null),
     up_crit real check (typeof(up_crit) = 'real' or up_crit = null),
     down_crit real check (typeof(down_crit) = 'real' or down_crit = null),
-    froud_numb real check (typeof(froud_numb) = 'real' or froud_numb = null),
-    flow_chang real check (typeof(flow_chang) = 'real' or flow_chang = null),
+    norm_ltd real check (typeof(norm_ltd) = 'real' or norm_ltd = null),
+    inlet_ctrl real check (typeof(inlet_ctrl) = 'real' or inlet_ctrl = null),
     geom geometry
 );
 
@@ -98,7 +87,7 @@ CREATE TABLE rpt_flowrouting_cont (
 	fid integer primary key,
     code text unique check (typeof(code) = 'text' or code = null),
 	epa_type text check (typeof(epa_type) = 'text' or epa_type = null),
-	shape text unique check (typeof(shape) = 'text' or shape = null),
+	shape text check (typeof(shape) = 'text' or shape = null),
 	geom1 real check (typeof(geom1)='real' or geom1=null),
 	geom2 real check (typeof(geom2)='real' or geom2=null),
 	geom3 real check (typeof(geom3)='real' or geom3=null),
@@ -145,7 +134,6 @@ CREATE TABLE rpt_nodedepth_sum (
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
 	ysur real check (typeof(ysur)='real' or ysur=null),
-    swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
     aver_depth real check (typeof(aver_depth) = 'real' or aver_depth = null),
     max_depth real check (typeof(max_depth) = 'real' or max_depth = null),
     max_hgl real check (typeof(max_hgl) = 'real' or max_hgl = null),
@@ -180,7 +168,6 @@ CREATE TABLE rpt_nodeinflow_sum (
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
 	ysur real check (typeof(ysur)='real' or ysur=null),
-    swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
     max_latinf real check (typeof(max_latinf) = 'real' or max_latinf = null),
     max_totinf real check (typeof(max_totinf) = 'real' or max_totinf = null),
     time_days text check (typeof(time_days) = 'text' or time_days = null),
@@ -188,7 +175,6 @@ CREATE TABLE rpt_nodeinflow_sum (
     latinf_vol real check (typeof(latinf_vol) = 'real' or latinf_vol = null),
     totinf_vol real check (typeof(totinf_vol) = 'real' or totinf_vol = null),
     flow_balance_error real check (typeof(flow_balance_error) = 'real' or flow_balance_error = null),
-    other_info text check (typeof(other_info) = 'text' or other_info = null),
     geom geometry
 );
 
@@ -200,7 +186,6 @@ CREATE TABLE rpt_nodesurcharge_sum (
 	elev real check (typeof(elev)='real' or elev=null),
 	y0 real check (typeof(y0)='real' or y0=null),
 	ysur real check (typeof(ysur)='real' or ysur=null),
-    swnod_type text check (typeof(swnod_type) = 'text' or swnod_type = null),
     hour_surch real check (typeof(hour_surch) = 'real' or hour_surch = null),
     max_height real check (typeof(max_height) = 'real' or max_height = null),
     min_depth real check (typeof(min_depth) = 'real' or min_depth = null),
@@ -249,7 +234,8 @@ CREATE TABLE rpt_storagevol_sum (
 	ysur real check (typeof(ysur)='real' or ysur=null),
     aver_vol real check (typeof(aver_vol) = 'real' or aver_vol = null),
     avg_full real check (typeof(avg_full) = 'real' or avg_full = null),
-    ei_loss real check (typeof(ei_loss) = 'real' or ei_loss = null),
+    evap_loss real check (typeof(evap_loss) = 'real' or evap_loss = null),
+    exfil_loss real check (typeof(exfil_loss) = 'real' or exfil_loss = null),
     max_vol real check (typeof(max_vol) = 'real' or max_vol = null),
     max_full real check (typeof(max_full) = 'real' or max_full = null),
     time_days text check (typeof(time_days) = 'text' or time_days = null),

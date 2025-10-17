@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -12,7 +12,6 @@ from qgis.PyQt.QtWidgets import QTableView, QSizePolicy, QLineEdit, \
     QApplication, QShortcut, QMenu, QAction
 from qgis.PyQt.QtGui import QKeySequence, QIcon, QDoubleValidator
 from qgis.core import QgsFeature, QgsEditFormConfig, QgsProject, QgsMapLayer, QgsCoordinateTransform, QgsPointXY
-from qgis.PyQt.QtCore import Qt
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 
@@ -22,7 +21,6 @@ from ...utils import tools_dr
 from ....lib import tools_qgis, tools_qt, tools_db
 from .... import global_vars
 from typing import Optional
-from sip import isdeleted
 from ....core.toolbars.dialog import DrAction
 from ....core.utils.item_delegates import NumericDelegate, NumericTableWidgetItem
 
@@ -62,7 +60,6 @@ class DrBridgeButton(DrAction):
     DECK_DEFAULT = 1.7
     FREEFLOW_DEFAULT = 0.6
     SUMERGEFLOW_DEFAULT = 0.8
-    GAUGENUMBER_DEFAULT = 1
 
     def __init__(self, icon_path, action_name, text, toolbar, action_group):
         super().__init__(icon_path, action_name, text, toolbar, action_group)
@@ -117,8 +114,7 @@ class DrBridgeButton(DrAction):
         line_texts = {
             'txt_deck': str(self.DECK_DEFAULT),
             'txt_freeflow': str(self.FREEFLOW_DEFAULT),
-            'txt_sumergeflow': str(self.SUMERGEFLOW_DEFAULT),
-            'txt_gaugenumber': str(self.GAUGENUMBER_DEFAULT)
+            'txt_sumergeflow': str(self.SUMERGEFLOW_DEFAULT)
         }
         for line_name, line_text in line_texts.items():
             self.dialog.findChild(QLineEdit, line_name).setPlaceholderText(line_text)
@@ -193,13 +189,7 @@ class DrBridgeButton(DrAction):
         """ Edit bridge """
 
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
-            # Bring the existing dialog to the front
-            self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
-            self.dialog.raise_()
-            self.dialog.show()
-            self.dialog.activateWindow()
-            tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
+        if tools_dr.check_if_already_open('dialog', self):
             return
 
         # Show info message
@@ -236,7 +226,6 @@ class DrBridgeButton(DrAction):
         txt_deck = dialog.txt_deck
         txt_freeflow = dialog.txt_freeflow
         txt_sumergeflow = dialog.txt_sumergeflow
-        txt_gaugenumber = dialog.txt_gaugenumber
         txt_length = dialog.txt_length
         txt_descript = dialog.txt_descript
 
@@ -245,7 +234,6 @@ class DrBridgeButton(DrAction):
         deck = tools_qt.get_text(dialog, txt_deck, add_quote=False)
         freeflow = tools_qt.get_text(dialog, txt_freeflow, add_quote=False)
         sumergeflow = tools_qt.get_text(dialog, txt_sumergeflow, add_quote=False)
-        gaugenumber = tools_qt.get_text(dialog, txt_gaugenumber, add_quote=False)
         length = tools_qt.get_text(dialog, txt_length, add_quote=False)
         descript = tools_qt.get_text(dialog, txt_descript, add_quote=False)
 
@@ -253,7 +241,6 @@ class DrBridgeButton(DrAction):
             'deck': deck,
             'freeflow': freeflow,
             'sumergeflow': sumergeflow,
-            'gaugenumber': gaugenumber,
             'length': length,
             'descript': descript,
             'geom': f"ST_GeomFromText('{bridge.geometry().asWkt()}')"
@@ -277,7 +264,6 @@ class DrBridgeButton(DrAction):
             'deck': 'deck_cd',
             'freeflow': 'freeflow_cd',
             'sumergeflow': 'sumergeflow_cd',
-            'gaugenumber': 'gaugenumber',
             'length': 'length',
             'descript': 'descript',
             'geom': 'geom'
@@ -287,8 +273,7 @@ class DrBridgeButton(DrAction):
         default_values = {
             'deck': self.DECK_DEFAULT,
             'freeflow': self.FREEFLOW_DEFAULT,
-            'sumergeflow': self.SUMERGEFLOW_DEFAULT,
-            'gaugenumber': self.GAUGENUMBER_DEFAULT
+            'sumergeflow': self.SUMERGEFLOW_DEFAULT
         }
 
         # Insert or update
@@ -325,7 +310,6 @@ class DrBridgeButton(DrAction):
             deck = default_values['deck']
             freeflow = default_values['freeflow']
             sumergeflow = default_values['sumergeflow']
-            gaugenumber = default_values['gaugenumber']
 
             # Insert bridge
             columns_str = ', '.join(columns)
@@ -417,13 +401,7 @@ class DrBridgeButton(DrAction):
         """ Add bridge interactively by drawing a linestring and then opening the bridge dialog. """
 
         # Return if theres one bridge dialog already open
-        if self.dialog is not None and not isdeleted(self.dialog) and self.dialog.isVisible():
-            # Bring the existing dialog to the front
-            self.dialog.setWindowState(self.dialog.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
-            self.dialog.raise_()
-            self.dialog.show()
-            self.dialog.activateWindow()
-            tools_qgis.show_warning("There's a Bridge dialog already open.", dialog=self.dialog)
+        if tools_dr.check_if_already_open('dialog', self):
             return
 
         # Show info message
@@ -971,7 +949,6 @@ class DrBridgeButton(DrAction):
             'txt_deck': bridge['deck_cd'],
             'txt_freeflow': bridge['freeflow_cd'],
             'txt_sumergeflow': bridge['sumergeflow_cd'],
-            'txt_gaugenumber': bridge['gaugenumber'],
             'txt_length': bridge['length'],
             'txt_descript': bridge['descript']
         }

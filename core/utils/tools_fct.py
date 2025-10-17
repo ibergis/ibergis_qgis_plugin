@@ -1,10 +1,11 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
 """
 import json
+import traceback
 from ctypes import Union
 from datetime import datetime
 
@@ -22,9 +23,9 @@ def getconfig(p_input: dict) -> dict:
     v_widgets: list
     v_raw_values: list
     v_addparam: Union[str, dict]
+    v_message: str = ""
 
     try:
-
         # get widgets from sys_param_user
         column_names = ['columnname', 'label', 'datatype', 'widgettype',
                         'descript', 'layoutname', 'layoutorder', 'vdefault',
@@ -34,7 +35,7 @@ def getconfig(p_input: dict) -> dict:
                         'CASE WHEN hidden = 1 THEN True ELSE False END AS hidden',
                         'CASE WHEN iseditable = 1 THEN True ELSE False END AS iseditable',
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
-                        'vdefault AS value', 'tooltip', 'addparam', 'widgetcontrols'
+                        'vdefault AS value', 'tooltip', 'addparam', 'widgetcontrols', 'widgetfunction'
                         ]
         v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM config_form_fields " \
@@ -122,8 +123,11 @@ def getconfig(p_input: dict) -> dict:
     except Exception as e:
         print(f"EXCEPTION IN getconfig: {e}")
         accepted = False
+        v_message = _get_message(dao_data=True)
 
     v_return = _create_return(v_return, accepted=accepted)
+    if v_message:
+        v_return["MSGERR"] = v_message
     return v_return
 
 
@@ -131,6 +135,7 @@ def setconfig(p_input: dict) -> dict:
     accepted: bool = True
     v_return: dict = {}
     v_sql: str
+    v_message: str = ""
 
     try:
         v_table = 'config_param_user'
@@ -146,8 +151,11 @@ def setconfig(p_input: dict) -> dict:
     except Exception as e:
         print(f"EXCEPTION IN setconfig: {e}")
         accepted = False
+        v_message = _get_message(dao_data=True)
 
     v_return = _create_return(v_return, accepted=accepted)
+    if v_message:
+        v_return["MSGERR"] = v_message
     return v_return
 
 
@@ -155,9 +163,9 @@ def getselectors(p_input: dict) -> dict:
     accepted: bool = True
     v_return: dict = {}
     v_sql: str
-    v_message: str
     v_fields_aux: {}
     v_fields: list
+    v_message: str = None
 
     try:
 
@@ -220,7 +228,7 @@ def getselectors(p_input: dict) -> dict:
     except Exception as e:
         print(f"EXCEPTION IN getselectors: {e}")
         accepted = False
-        v_message = f"{e}"
+        v_message = _get_message(dao_data=True)
 
     v_return = _create_return(v_return, accepted=accepted, message=v_message)
     return v_return
@@ -230,7 +238,7 @@ def setselectors(p_input: dict) -> dict:
     accepted: bool = True
     v_return: dict = {}
     v_sql: str
-    v_message: str
+    v_message: str = ""
 
     try:
         v_return = _create_return(v_return, accepted=True, message="Process done successfully")
@@ -277,32 +285,12 @@ def setselectors(p_input: dict) -> dict:
     except Exception as e:
         print(f"EXCEPTION IN setselectors: {e}")
         accepted = False
-        v_message = f"{e}"
+        v_message = _get_message(dao_data=True)
 
     v_return = _create_return(v_return, accepted=accepted, message=v_message)
+    if v_message:
+        v_return["MSGERR"] = v_message
     return v_return
-
-
-def get_sectors():
-    sectors = 'NULL'
-
-    sql = 'SELECT sector_id FROM selector_sector'
-    rows = global_vars.gpkg_dao_data.get_rows(sql)
-    if rows:
-        sectors = ", ".join(str(x[0]) for x in rows)
-
-    return sectors
-
-
-def get_scenarios():
-    scenarios = 'NULL'
-
-    sql = 'SELECT scenario_id FROM selector_scenario'
-    rows = global_vars.gpkg_dao_data.get_rows(sql)
-    if rows:
-        scenarios = ", ".join(str(x[0]) for x in rows)
-
-    return scenarios
 
 
 def setfields(p_input: dict) -> dict:
@@ -347,7 +335,7 @@ def setfields(p_input: dict) -> dict:
     except Exception as e:
         print(f"EXCEPTION IN setfields: {e}")
         accepted = False
-        v_message = f"{e}"
+        v_message = _get_message(dao_data=True)
         global_vars.gpkg_dao_data.rollback()
 
     v_return = _create_return(v_return, accepted=accepted, message=v_message)
@@ -363,6 +351,7 @@ def getinfofromid(p_input: dict) -> dict:
     v_raw_widgets: list = []
     v_widgets: list = []
     v_addparam: Union[str, dict]
+    v_message: str = ""
 
     try:
 
@@ -410,14 +399,14 @@ def getinfofromid(p_input: dict) -> dict:
                         v_addparam = widget['addparam']
                         if v_addparam:
                             v_addparam = json.loads(v_addparam)
-                            if v_addparam.get('execute_on') == 'data':
+                            if v_addparam.get('execute_on') == 'config':
                                 # Execute query on data gpkg if configured in addparam
-                                result = dao_data.get_rows(v_querystring)
+                                result = dao_config.get_rows(v_querystring)
                                 executed = True
 
                         # Execute on config gpkg if not configured
                         if not result and not executed:
-                            result = dao_config.get_rows(v_querystring)
+                            result = dao_data.get_rows(v_querystring)
 
                         if result:
                             for row in result:
@@ -450,8 +439,11 @@ def getinfofromid(p_input: dict) -> dict:
     except Exception as e:
         print(f"EXCEPTION IN getconfig: {e}")
         accepted = False
+        v_message = _get_message(dao_data=True, dao_config=True)
 
     v_return = _create_return(v_return, accepted=accepted)
+    if v_message:
+        v_return["MSGERR"] = v_message
     return v_return
 
 
@@ -476,3 +468,19 @@ def _create_return(p_data: dict, accepted: bool = True, message: str = "") -> di
     v_return["body"].setdefault("data", {})
 
     return v_return
+
+
+def _get_message(dao_data: bool = False, dao_config: bool = False) -> str:
+    """ Builds a message from the last error of the dao_data and dao_config and the traceback of the exception """
+
+    message: str = ""
+    if dao_data:
+        if global_vars.gpkg_dao_data.last_error:
+            message += global_vars.gpkg_dao_data.last_error.args[0]
+            message += "\n\n"
+    if dao_config:
+        if global_vars.gpkg_dao_config.last_error:
+            message += global_vars.gpkg_dao_config.last_error.args[0]
+            message += "\n\n"
+    message += traceback.format_exc()
+    return message

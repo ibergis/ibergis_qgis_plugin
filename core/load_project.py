@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -71,7 +71,6 @@ class DrLoadProject(QObject):
         # Manage locale and corresponding 'i18n' file
         global_vars.plugin_name = tools_qgis.get_plugin_metadata('name', 'drain', global_vars.plugin_dir)
         tools_qt._add_translator()
-        self._translate_config()
 
         # Create menu
         tools_dr.create_drain_menu(True)
@@ -96,7 +95,7 @@ class DrLoadProject(QObject):
         # Set indexing strategy for snapping so that it uses less memory if possible
         self.iface.mapCanvas().snappingUtils().setIndexingStrategy(QgsSnappingUtils.IndexHybrid)
 
-        # Manage versions of Giswater and PostgreSQL
+        # Manage versions of IberGIS and PostgreSQL
         plugin_version = tools_qgis.get_plugin_metadata('version', 0, global_vars.plugin_dir)
         # Only get the x.y.zzz, not x.y.zzz.n
         try:
@@ -111,9 +110,23 @@ class DrLoadProject(QObject):
         # Set boundary_conditions filter
         set_bc_filter()
 
+        # Set project snapping settings
+        tools_qgis.set_project_snapping_settings()
+
         # Connect signal for topocontrol
         tools_dr.connect_signal(self.iface.layerTreeView().currentLayerChanged, tools_dr.current_layer_changed,
                                 'load_project', 'currentLayerChanged')
+
+        # Connect signal for temporal controller if raster_symbology_mode is 0
+        sql = "SELECT value FROM config_param_user WHERE parameter = 'raster_results_symbmode'"
+        row = global_vars.gpkg_dao_data.get_row(sql)
+        if row:
+            global_vars.raster_symbology_mode = row[0]
+        else:
+            global_vars.raster_symbology_mode = '0'
+        valid_raster_layers = tools_dr.valid_raster_results_layers()
+        if len(valid_raster_layers) > 0 and global_vars.raster_symbology_mode == '0':
+            tools_dr.connect_signal(global_vars.iface.mapCanvas().temporalController().updateTemporalRange, tools_dr.on_time_changed, 'TemporalController', 'openTemporalLine_updateTemporalRange_on_time_changed')
 
         msg = "Project read finished. Plugin version: {0}"
         msg_params = (plugin_version,)

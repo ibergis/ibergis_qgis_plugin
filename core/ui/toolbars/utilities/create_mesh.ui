@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>436</width>
-    <height>930</height>
+    <height>754</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -84,42 +84,49 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
-           <item row="1" column="0">
-            <widget class="QGroupBox" name="grb_cleanup_data">
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="grb_input_data">
              <property name="title">
-              <string>Clean up input data</string>
+              <string>Input data</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_13">
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="txt_tolerance">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
+             <layout class="QGridLayout" name="gridLayout_7">
+              <item row="0" column="0">
+               <widget class="QCheckBox" name="chk_validation">
                 <property name="text">
-                 <string>0.5</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="lbl_tolerance">
-                <property name="text">
-                 <string>Tolerance:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0" colspan="2">
-               <widget class="QCheckBox" name="chk_clean_geometries">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="toolTip">
-                 <string>Clean up the input data by removing duplicate and closely positioned vertices.</string>
-                </property>
-                <property name="text">
-                 <string>Clean up polygons</string>
+                 <string>Check input data for errors and warnings</string>
                 </property>
                 <property name="checked">
-                 <bool>false</bool>
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QToolButton" name="btn_config">
+                <property name="text">
+                 <string>Configure...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="1" column="0">
+               <widget class="QCheckBox" name="chk_only_selected">
+                <property name="toolTip">
+                 <string>Use only the selected features for creating the mesh.</string>
+                </property>
+                <property name="text">
+                 <string>Use selected features ONLY</string>
                 </property>
                </widget>
               </item>
@@ -187,26 +194,7 @@
              </layout>
             </widget>
            </item>
-           <item row="6" column="0">
-            <widget class="QGroupBox" name="grb_mesh_options">
-             <property name="title">
-              <string>Mesh options</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_8">
-              <item row="0" column="0" colspan="2">
-               <widget class="QLabel" name="lbl_name">
-                <property name="text">
-                 <string>Mesh name:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0" colspan="2">
-               <widget class="QLineEdit" name="txt_name"/>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="4" column="0">
+           <item row="5" column="0">
             <widget class="QGroupBox" name="grb_roughness">
              <property name="title">
               <string>Roughness</string>
@@ -225,7 +213,7 @@
              </layout>
             </widget>
            </item>
-           <item row="3" column="0">
+           <item row="4" column="0">
             <widget class="QGroupBox" name="grb_elevation">
              <property name="title">
               <string>Elevation</string>
@@ -244,7 +232,7 @@
              </layout>
             </widget>
            </item>
-           <item row="5" column="0">
+           <item row="6" column="0">
             <widget class="QGroupBox" name="grb_losses">
              <property name="title">
               <string>Losses</string>
@@ -263,49 +251,80 @@
              </layout>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QGroupBox" name="grb_input_data">
+           <item row="1" column="0">
+            <widget class="QGroupBox" name="grb_cleanup_data">
              <property name="title">
-              <string>Input data</string>
+              <string>Clean up input data</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_7">
-              <item row="0" column="0">
-               <widget class="QCheckBox" name="chk_validation">
+             <layout class="QGridLayout" name="gridLayout_13">
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="txt_tolerance">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
-                 <string>Check input data for errors and warnings</string>
+                 <string>0.5</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="lbl_tolerance">
+                <property name="text">
+                 <string>Tolerance:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0" colspan="2">
+               <widget class="QCheckBox" name="chk_clean_geometries">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="toolTip">
+                 <string>Clean up the input data by removing duplicate and closely positioned vertices.</string>
+                </property>
+                <property name="text">
+                 <string>Clean up polygons</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QGroupBox" name="grb_mesh_options">
+             <property name="title">
+              <string>Mesh options</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_8">
+              <item row="0" column="0" colspan="2">
+               <widget class="QLabel" name="lbl_name">
+                <property name="text">
+                 <string>Mesh name:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0" colspan="2">
+               <widget class="QLineEdit" name="txt_name"/>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QGroupBox" name="grb_boundary_contidions">
+             <property name="title">
+              <string>Boundary Conditions</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_14">
+              <item row="0" column="0">
+               <widget class="QCheckBox" name="chk_apply_bc">
+                <property name="text">
+                 <string>Apply boundary contition from current scenario</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QToolButton" name="btn_config">
-                <property name="text">
-                 <string>Configure...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <spacer name="horizontalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="1" column="0">
-               <widget class="QCheckBox" name="chk_only_selected">
-                <property name="toolTip">
-                 <string>Use only the selected features for creating the mesh.</string>
-                </property>
-                <property name="text">
-                 <string>Use selected features ONLY</string>
                 </property>
                </widget>
               </item>

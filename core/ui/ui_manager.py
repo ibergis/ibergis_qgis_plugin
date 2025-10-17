@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -154,6 +154,13 @@ FROM_CLASS = _get_ui_class('bridge.ui', 'main')
 
 
 class DrBridgeUi(DrDialog, FROM_CLASS):
+    pass
+
+
+FROM_CLASS = _get_ui_class('timeseries_graph.ui', 'utilities')
+
+
+class DrTimeseriesGraphUi(DrDialog, FROM_CLASS):
     pass
 
 # endregion

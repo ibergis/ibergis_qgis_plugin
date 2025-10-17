@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -40,6 +40,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
     IS_VALID = 'IS_VALID'
     MESH_OUTPUT = 'MESH_OUTPUT'
     VALIDATE_LAYERS = 'VALIDATE_LAYERS'
+    APPLY_BOUNDARY_CONDITIONS = 'APPLY_BOUNDARY_CONDITIONS'
 
     roof_layer: Optional[QgsVectorLayer] = None
     ground_layer: Optional[QgsVectorLayer] = None
@@ -50,8 +51,16 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         """
         inputs and output of the algorithm
         """
-        ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
-        roof_layer_param = tools_qgis.get_layer_by_tablename('roof')
+        ground_layer_param = None
+        try:
+            ground_layer_param = tools_qgis.get_layer_by_tablename('ground')
+        except Exception:
+            pass
+        roof_layer_param = None
+        try:
+            roof_layer_param = tools_qgis.get_layer_by_tablename('roof')
+        except Exception:
+            pass
 
         self.addParameter(
             QgsProcessingParameterFeatureSource(
@@ -75,6 +84,13 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             QgsProcessingParameterBoolean(
                 self.VALIDATE_LAYERS,
                 self.tr('Validate layers'),
+                defaultValue=True
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.APPLY_BOUNDARY_CONDITIONS,
+                self.tr('Apply boundary conditions'),
                 defaultValue=True
             )
         )
@@ -103,6 +119,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
         self.validation_layer_intersect = None
         self.validation_layer_vert_edge = None
         self.validate_layers = self.parameterAsBoolean(parameters, self.VALIDATE_LAYERS, context)
+        self.apply_boundary_conditions = self.parameterAsBoolean(parameters, self.APPLY_BOUNDARY_CONDITIONS, context)
 
         if self.ground_layer is None or self.roof_layer is None:
             feedback.pushWarning(self.tr('Error getting source layers.'))
@@ -146,6 +163,7 @@ class CreateTemporalMesh(QgsProcessingAlgorithm):
             dem_layer=None,
             roughness_layer=None,
             losses_layer=None,
+            apply_boundary_conditions=self.apply_boundary_conditions,
             mesh_name="temporal_mesh",
             point_anchor_layer=None,
             line_anchor_layer=None,

@@ -5,7 +5,7 @@
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg?logo=python)](https://www.python.org)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-A comprehensive QGIS plugin for advanced water management and hydraulic modeling, providing seamless integration with **EPA SWMM** networks and **Iber** sophisticated mesh generation capabilities for flood modeling and urban drainage analysis.
+A QGIS plugin for advanced water management and hydraulic modeling in urban environments based on the integration of EPA SWMM (1D) and Iber (2D) models for flood modelling and urban drainage analysis.
 
 ## ✨ Features
 
@@ -13,7 +13,7 @@ A comprehensive QGIS plugin for advanced water management and hydraulic modeling
 - **Hydraulic Modeling Integration**: Native EPA SWMM5 support for urban drainage simulation
 - **Mesh Generation**: Automatic mesh generation for finite element analysis
 - **Flood Modeling**: Comprehensive flood analysis and visualization tools
-- **Multi-language Support**: Available in English, Spanish (CR), and Spanish (ES)
+- **Multi-language Support**: Available in English, Spanish (ES), and Spanish (CR)
 - **Cross-platform**: Works on Windows and Linux systems
 
 ## 📋 Requirements
@@ -70,11 +70,66 @@ The plugin includes comprehensive sample datasets located in the `resources/exam
    flake8 .
    ```
 
+## 🔍 Troubleshooting
+
+### Mesh Creation Issues
+If you encounter problems creating a mesh, try uninstalling potentially conflicting packages from the OSGeo shell (you may need to run with administrator privileges):
+
+**Windows**:
+1. Open OSGeo4W Shell (`osgeo4w.bat`)
+2. Run:
+   ```bash
+   pip uninstall gmsh pandamesh geopandas triangle
+   ```
+
+**Linux**:
+1. Open your OSGeo shell
+2. Run:
+   ```bash
+   pip uninstall gmsh pandamesh geopandas triangle
+   ```
+
+After uninstalling them, restart QGIS. The plugin will use its bundled versions of these packages.
+
+### IberGIS Simulation Issues
+If you encounter problems running simulations, use the **Check Project** button to validate your project. Review any errors or warnings that appear, as they typically indicate configuration or data model issues that need to be addressed before running the simulation.
+
 ## 📚 Documentation
 
 - **Wiki**: Comprehensive documentation available at [GitHub Wiki](https://drain-iber.github.io/testing/en/docs/)
 - **FAQ**: Common questions and troubleshooting at [GitHub FAQ](https://github.com/ibergis/ibergis_qgis_plugin/wiki/FAQs)
-- **API Reference**: Developer documentation for extending functionality
+
+## 🌍 Translations
+
+IberGIS includes a comprehensive multi-language system with AI-powered translation support. The plugin currently supports three language variants:
+
+### Available Languages
+
+| Language | Code | Completion | Strings |
+|----------|------|------------|---------|
+| **English (US)** | `en_US` | 100% | 2,781 |
+| **Spanish (Spain)** | `es_Es` | ~99.6% | 2,769 |
+| **Spanish (Costa Rica)** | `es_Cr` | ~99.6% | 2,769 |
+
+### How It Works
+
+The translation system operates across three main components:
+
+1. **Python Code Messages**: Translatable strings in the Python source code are extracted and stored in Qt `.ts` (Translation Source) files located in the `i18n/` directory. These files are then compiled into `.qm` (Qt Message) binary files that QGIS loads at runtime.
+
+2. **UI Interface Elements**: User interface elements defined in `.ui` files (Qt Designer forms) are also included in the translation files. This ensures that dialogs, buttons, labels, and menus are translated consistently.
+
+3. **Database Content**: The plugin uses a GeoPackage database (`core/i18n/ibergis_i18n.gpkg`) to store translations for dynamic content like tooltips, field names, and form configurations. This allows for runtime translation of database-driven UI elements.
+
+### Translation Workflow
+
+The translation process is managed through specialized tools in the `core/i18n/` directory:
+
+- **`i18n_generator.py`**: Generates `.ts` and `.qm` translation files from the codebase and databases
+- **`i18n_manager.py`**: Manages translation databases and syncs translations across components
+- **`schema_i18n_update.py`**: Updates project database schemas with translated content
+
+Admin users can access translation management tools through the plugin's admin interface to generate new translations or update existing ones for additional languages.
 
 ## 🔧 Development
 
@@ -126,18 +181,6 @@ IberGIS uses the following third-party libraries:
   geopandas extends the datatypes used by pandas to allow spatial operations on geometric types.
   The geopandas license can be viewed in the [LICENSE](./packages/geopandas/LICENSE.txt) or in their [repository](https://github.com/geopandas/geopandas/blob/main/LICENSE.txt).
 
-- **rasterio**: [rasterio GitHub](https://github.com/rasterio/rasterio)
-  Rasterio reads and writes geospatial raster data.
-  The rasterio license can be viewed in the [LICENSE](./packages/rasterio/LICENSE.txt) or in their [repository](https://github.com/rasterio/rasterio/blob/main/LICENSE.txt).
-
-- **xarray**: [xarray GitHub](https://github.com/geopandas/geopandas)
-  xarray is an open source project and Python package that makes working with labelled multi-dimensional arrays simple, efficient, and fun.
-  The geopandas license can be viewed in the [LICENSE](./packages/xarray/LICENSE) or in their [repository](https://github.com/pydata/xarray/blob/main/LICENSE).
-
-- **rioxarray**: [rioxarray GitHub](https://github.com/corteva/rioxarray)
-  rioxarray is an extension of rasterio and xarray.
-  The rioxarray license can be viewed in the [LICENSE](./packages/rioxarray/LICENSE) or in their [repository](https://github.com/corteva/rioxarray/blob/master/LICENSE).
-
 ## 📄 License
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See LICENSE file for more information.
@@ -149,7 +192,7 @@ We welcome contributions! Please see our contributing guidelines and feel free t
 ## 💬 Support
 
 - **Issues**: Report bugs and request features via GitHub Issues
-- **Documentation**: Check our [Wiki](https://github.com/Giswater/giswater_dbmodel/wiki) for detailed guides
+- **Documentation**: Check our [Wiki](https://drain-iber.github.io/testing/en/docs/index.html) for detailed guides
 - **Community**: Join discussions in our project forums
 
 ---

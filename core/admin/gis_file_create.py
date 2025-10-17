@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -19,7 +19,7 @@ class DrGisFileCreate:
         self.plugin_dir = plugin_dir
         self.layer_source = None
 
-    def gis_project_database(self, folder_path, filename, gpkg_file, srid, roletype='admin'):
+    def gis_project_database(self, folder_path, filename, gpkg_file, srid):
 
         # Get locale of QGIS application
         locale = tools_qgis.get_locale()
@@ -36,7 +36,7 @@ class DrGisFileCreate:
             gis_locale_path = os.path.join(gis_folder, "en_US")
 
         # Check if template_path and folder_path exists
-        template_path = os.path.join(gis_locale_path, f"{roletype}.{gis_extension}")
+        template_path = os.path.join(gis_locale_path, f"template.{gis_extension}")
         if not os.path.exists(template_path):
             msg = "Template GIS file not found: {0}"
             msg_params = (template_path,)
@@ -48,7 +48,7 @@ class DrGisFileCreate:
             folder_path = gis_locale_path
 
         if not os.path.exists(folder_path):
-            os.mkdir(folder_path)
+            os.makedirs(folder_path, exist_ok=True)
 
         # Set QGS file path
         qgs_path = folder_path + os.sep + filename + "." + gis_extension

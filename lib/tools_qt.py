@@ -1,5 +1,5 @@
 """
-This file is part of Giswater 3
+This file is part of IberGIS
 The program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the License,
 or (at your option) any later version.
@@ -1331,13 +1331,13 @@ def _add_translator(log_info=False):
     if locale == "en_US" and global_vars.user_level['level'] in global_vars.user_level['showadminadvanced']:
         return
     
-    locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'drain_{locale}.qm')
+    locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name.lower()}_{locale}.qm')
 
     if not os.path.exists(locale_path):
         msg = "Locale not found: {0}"
         msg_params = (locale_path,)
         tools_log.log_info(msg, msg_params=msg_params)
-        locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name}_en_US.qm')
+        locale_path = os.path.join(global_vars.plugin_dir, 'i18n', f'{global_vars.plugin_name.lower()}_en_US.qm')
         # If English locale file not found, exit function
         # It means that probably that form has not been translated yet
         if not os.path.exists(locale_path):
