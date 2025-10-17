@@ -1,3 +1,0 @@
-Inlet     element, side, time, logs/min, Dmin, Dmax, Lmin, Lmax, ro_min_i, ro_max_i, Inlet_Num, ro_min_f, ro_max_f,  K  , Min_Root_Coef, Max_Root_Coef
-End Inlet
-Initial Condition   Log_num, Diameter, Length, Density_i, X, Y, Angle[rad], Time,  Density_f, K, Root_Coefficient
