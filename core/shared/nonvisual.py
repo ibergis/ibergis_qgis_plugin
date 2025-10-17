@@ -6,7 +6,6 @@ or (at your option) any later version.
 """
 # -*- coding: utf-8 -*-
 import os
-import webbrowser
 from functools import partial
 
 try:

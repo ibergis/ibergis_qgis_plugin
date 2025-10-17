@@ -37,7 +37,7 @@ def getconfig(p_input: dict) -> dict:
                         'CASE WHEN ismandatory = 1 THEN True ELSE False END AS ismandatory',
                         'vdefault AS value', 'tooltip', 'addparam', 'widgetcontrols', 'widgetfunction'
                         ]
-        v_sql = f"SELECTT {', '.join(column_names)} " \
+        v_sql = f"SELECT {', '.join(column_names)} " \
                 f"FROM config_form_fields " \
                 f"WHERE formname = 'dlg_options' " \
                 f"ORDER BY layoutname, layoutorder, columnname"
