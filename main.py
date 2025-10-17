@@ -16,7 +16,7 @@ from qgis.PyQt.QtWidgets import QAction, QDockWidget, QToolBar, QToolButton, QAp
 from . import global_vars
 from .lib import tools_qgis, tools_os, tools_log, tools_qt
 try:
-    required_packages = ['geopandas', 'gmsh', 'pandamesh', 'openpyxl', 'xlsxwriter', 'rasterio', 'xarray', 'rioxarray']
+    required_packages = ['geopandas', 'gmsh', 'pandamesh', 'openpyxl', 'xlsxwriter']
     imported_packages = []
     not_imported = []
 
