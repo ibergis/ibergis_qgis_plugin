@@ -13,7 +13,7 @@ A QGIS plugin for advanced water management and hydraulic modeling in urban envi
 - **Hydraulic Modeling Integration**: Native EPA SWMM5 support for urban drainage simulation
 - **Mesh Generation**: Automatic mesh generation for finite element analysis
 - **Flood Modeling**: Comprehensive flood analysis and visualization tools
-- **Multi-language Support**: Available in English, Spanish (CR), and Spanish (ES)
+- **Multi-language Support**: Available in English, Spanish (ES), and Spanish (CR)
 - **Cross-platform**: Works on Windows and Linux systems
 
 ## 📋 Requirements
@@ -98,7 +98,38 @@ If you encounter problems running simulations, use the **Check Project** button 
 
 - **Wiki**: Comprehensive documentation available at [GitHub Wiki](https://drain-iber.github.io/testing/en/docs/)
 - **FAQ**: Common questions and troubleshooting at [GitHub FAQ](https://github.com/ibergis/ibergis_qgis_plugin/wiki/FAQs)
-- **API Reference**: Developer documentation for extending functionality
+
+## 🌍 Translations
+
+IberGIS includes a comprehensive multi-language system with AI-powered translation support. The plugin currently supports three language variants:
+
+### Available Languages
+
+| Language | Code | Completion | Strings |
+|----------|------|------------|---------|
+| **English (US)** | `en_US` | 100% | 2,781 |
+| **Spanish (Spain)** | `es_Es` | ~99.6% | 2,769 |
+| **Spanish (Costa Rica)** | `es_Cr` | ~99.6% | 2,769 |
+
+### How It Works
+
+The translation system operates across three main components:
+
+1. **Python Code Messages**: Translatable strings in the Python source code are extracted and stored in Qt `.ts` (Translation Source) files located in the `i18n/` directory. These files are then compiled into `.qm` (Qt Message) binary files that QGIS loads at runtime.
+
+2. **UI Interface Elements**: User interface elements defined in `.ui` files (Qt Designer forms) are also included in the translation files. This ensures that dialogs, buttons, labels, and menus are translated consistently.
+
+3. **Database Content**: The plugin uses a GeoPackage database (`core/i18n/ibergis_i18n.gpkg`) to store translations for dynamic content like tooltips, field names, and form configurations. This allows for runtime translation of database-driven UI elements.
+
+### Translation Workflow
+
+The translation process is managed through specialized tools in the `core/i18n/` directory:
+
+- **`i18n_generator.py`**: Generates `.ts` and `.qm` translation files from the codebase and databases
+- **`i18n_manager.py`**: Manages translation databases and syncs translations across components
+- **`schema_i18n_update.py`**: Updates project database schemas with translated content
+
+Admin users can access translation management tools through the plugin's admin interface to generate new translations or update existing ones for additional languages.
 
 ## 🔧 Development
 
